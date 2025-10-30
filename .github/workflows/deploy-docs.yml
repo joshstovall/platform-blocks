@@ -32,15 +32,13 @@ jobs:
             package-lock.json
             docs/package-lock.json
 
-      - name: Install dependencies (root)
-        run: npm ci
-
       - name: Install dependencies (docs)
         run: npm ci
         working-directory: docs
 
       - name: Build Expo web bundle
-        run: npm run build-web --workspace=docs
+        run: npm run build-web
+        working-directory: docs
         env:
           EXPO_NO_TELEMETRY: "1"
           EXPO_PUBLIC_WEB_APP_ROOT: "/platform-blocks/"
