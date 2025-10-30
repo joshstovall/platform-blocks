@@ -16,4 +16,4 @@ export const DISCORD_INVITE = 'https://discord.gg/kbHjwzgXbc';
 /**
  * NPM package link
  */
-export const NPM_PACKAGE = 'https://www.npmjs.com/package/platform-blocks';
+export const NPM_PACKAGE = 'https://www.npmjs.com/package/@platform-blocks/ui';
