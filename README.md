@@ -23,7 +23,7 @@ Full documentation and examples are available at [platform-blocks.com](https://p
 
 ## Installation
 
-[`@platform-blocks/ui`](http://npmjs.com/package/@platform-blocks/core) (core component library)
+[`@platform-blocks/ui`](http://npmjs.com/package/@platform-blocks/ui) (core component library)
 
 ```sh
 npm i @platform-blocks/ui
