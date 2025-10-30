@@ -27,7 +27,6 @@
     "docs:baseline": "npm run build-web --workspace=docs && npx playwright test --config=playwright.config.ts"
   },
   "devDependencies": {
-    "@rollup/rollup-darwin-arm64": "4.52.3",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "rollup": "^4.52.3",
