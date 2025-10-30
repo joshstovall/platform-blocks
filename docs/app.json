@@ -9,9 +9,6 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "experiments": {
-      "baseUrl": "/platform-blocks/"
-    },
     "extra": {
       "router": {},
       "eas": {

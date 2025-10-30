@@ -41,7 +41,7 @@ jobs:
         working-directory: docs
         env:
           EXPO_NO_TELEMETRY: "1"
-          EXPO_PUBLIC_WEB_APP_ROOT: "/platform-blocks/"
+          EXPO_PUBLIC_WEB_APP_ROOT: "/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
