@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://platform-blocks.com/sitemap.xml
+
+# Specific rules for search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block access to development/internal files
+Disallow: /*.json$
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /src/
+Disallow: /scripts/
+
+# Allow access to important assets
+Allow: /favicon.ico
+Allow: /apple-touch-icon.png
+Allow: /manifest.json
+Allow: /static/

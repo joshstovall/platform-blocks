@@ -1,0 +1,48 @@
+{
+  "name": "platform-blocks",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "ui",
+    "docs",
+    "charts",
+    "icons"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=ui",
+    "build:charts": "npm run build --workspace=@platform-blocks/charts",
+    "dev": "npm run start --workspace=docs",
+    "docs": "npm run start --workspace=docs",
+    "ui:build": "npm run build --workspace=ui",
+    "ui:test": "npm run test --workspace=ui",
+    "clean": "npm run clean --workspace=ui",
+    "i18n:scan": "tsx scripts/scan-i18n-keys.ts",
+    "demos:generate": "npx --yes tsx scripts/generate-demos.ts",
+    "demos:validate": "npx --yes tsx scripts/validate-demos.ts",
+    "demos:all": "npm run demos:generate && npm run demos:validate",
+    "docs:all": "npm run demos:generate && npm run demos:validate && npm run docs:generate --workspace=docs && npm run generate-code-map --workspace=docs",
+    "site:build": "npm run ui:build && npm run docs:all && npm run build-web --workspace=docs",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "docs:baseline": "npm run build-web --workspace=docs && npx playwright test --config=playwright.config.ts"
+  },
+  "devDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.52.3",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "rollup": "^4.52.3",
+    "typescript": "~5.9.2",
+    "@playwright/test": "^1.49.0"
+  },
+  "dependencies": {
+    "@lottiefiles/dotlottie-react": "^0.13.5",
+    "@shopify/flash-list": "^2.1.0",
+    "lottie-react": "^2.4.1",
+    "lottie-react-native": "^7.3.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-reanimated-carousel": "^4.0.3",
+    "react-native-svg": "^15.12.1"
+  }
+}

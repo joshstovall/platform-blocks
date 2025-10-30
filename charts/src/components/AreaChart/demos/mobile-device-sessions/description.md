@@ -1,0 +1,1 @@
+Overlays mobile and web session curves to show how each platform contributes to overall engagement throughout a feature launch rollout.

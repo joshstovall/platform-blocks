@@ -1,0 +1,54 @@
+{
+  "app": {
+    "title": "Platform Blocks",
+    "tagline": "Système de design React Native",
+    "version": "Version",
+    "libraryDescription": "Bibliothèque UI React Native pour iOS, Android et le Web"
+  },
+  "nav": {
+    "gettingStarted": "Commencer",
+    "overview": "Vue d'ensemble",
+    "installation": "Installation",
+    "platforms": "Plateformes",
+    "faq": "FAQ",
+    "faqs": "FAQs",
+    "components": "Composants",
+    "allComponents": "Tous les composants",
+    "examples": "Exemples",
+    "spotlight": "Spotlight",
+    "icons": "Icônes SVG",
+    "demos": "Démos",
+    "theming": "Thématisation",
+    "textSizeTest": "Test Taille Texte",
+    "changelog": "Journal des modifications",
+    "docs": "Docs"
+  },
+  "actions": {
+    "searchPlaceholder": "Rechercher composants, démos, documentation...",
+    "github": "GitHub",
+    "npm": "NPM",
+    "toggleTheme": "Changer thème",
+    "switchLocale": "Changer de langue",
+    "starOnGithub": "Star sur GitHub",
+    "joinDiscord": "Rejoindre Discord",
+    "githubShort": "GitHub",
+    "discordShort": "Discord"
+  },
+  "footer": {
+      "app": {
+      "title": "Platform Blocks",
+      "tagline": "Un système de conception React Native complet avec des composants qui fonctionnent de manière transparente sur iOS, Android et Web.",
+      "version": "Version",
+      "libraryDescription": "Bibliothèque UI React Native pour iOS, Android et le Web"
+    },
+    "versionLine": "{{version}} - Créé avec React Native",
+    "builtBy": "Créé par"
+  },
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français"
+  },
+  "spotlight": {
+    "noResults": "Aucun résultat pour \"{{query}}\""
+  }
+}

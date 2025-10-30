@@ -1,0 +1,1 @@
+Different semantic color variants available for dividers, including primary, success, warning, error, muted, subtle, and gray options.

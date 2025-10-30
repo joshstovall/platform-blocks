@@ -1,0 +1,38 @@
+# Build output
+lib/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+
+# Config files
+*.config.js
+*.config.ts
+babel.config.js
+metro.config.js
+jest.config.js
+
+# TypeScript declaration files
+*.d.ts
+
+# Generated files
+__generated__/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,53 @@
+{
+  "app": {
+    "title": "Platform Blocks",
+    "tagline": "React Native Design System",
+    "version": "Version",
+    "libraryDescription": "React Native UI Library for iOS, Android, and Web"
+  },
+  "nav": {
+    "gettingStarted": "Getting Started",
+    "overview": "Overview",
+    "installation": "Installation",
+    "platforms": "Platforms",
+    "faq": "FAQ",
+    "faqs": "FAQs",
+    "components": "Components",
+    "allComponents": "All Components",
+    "examples": "Examples",
+    "spotlight": "Spotlight",
+    "demos": "Demos",
+    "theming": "Theming",
+    "textSizeTest": "Text Size Test",
+    "changelog": "Changelog",
+    "docs": "Docs"
+  },
+  "actions": {
+    "searchPlaceholder": "Search...",
+    "github": "GitHub",
+    "npm": "NPM",
+    "toggleTheme": "Toggle theme",
+    "switchLocale": "Switch Locale",
+    "starOnGithub": "Star on GitHub",
+    "joinDiscord": "Join Discord",
+    "githubShort": "GitHub",
+    "discordShort": "Discord"
+  },
+  "footer": {
+    "app": {
+      "title": "Platform Blocks",
+      "tagline": "A comprehensive React Native design system with components that work seamlessly across iOS, Android, and Web.",
+      "version": "Version",
+      "libraryDescription": "React Native UI Library for iOS, Android, and Web"
+    },
+    "versionLine": "{{version}} - Built with React Native",
+    "builtBy": "Built by"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "French"
+  },
+  "spotlight": {
+    "noResults": "No results found for \"{{query}}\""
+  }
+}

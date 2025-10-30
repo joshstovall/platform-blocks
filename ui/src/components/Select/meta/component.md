@@ -1,0 +1,55 @@
+---
+title: Select
+description: A dropdown component for selecting from a list of options with support for disabled states, custom styling, and multi-value selection.
+source: "@platform-blocks/ui"
+status: "stable"
+category: "Input"
+accessibility: "Supports keyboard navigation, ARIA attributes, and screen readers"
+variants:
+  - name: "basic"
+    description: "Standard single-value select with label and placeholder"
+  - name: "disabled" 
+    description: "Select with disabled state and disabled options"
+  - name: "fullWidth"
+    description: "Select that takes full width of container"
+  - name: "noCloseOnSelect"
+    description: "Multi-select that stays open when selecting options"
+  - name: "custom"
+    description: "Customized styling and advanced features"
+dependencies:
+  - "@platform-blocks/core"
+related:
+  - "Input"
+  - "Dropdown"
+  - "Autocomplete"
+props:
+  - name: "label"
+    type: "string"
+    description: "Label text for the select"
+  - name: "placeholder"
+    type: "string"
+    description: "Placeholder text when no option is selected"
+  - name: "options"
+    type: "Array<{label: string, value: any, disabled?: boolean}>"
+    description: "Array of selectable options"
+  - name: "value"
+    type: "any"
+    description: "Currently selected value"
+  - name: "onChange"
+    type: "(value: any) => void"
+    description: "Callback when selection changes"
+  - name: "disabled"
+    type: "boolean"
+    description: "Whether the entire select is disabled"
+  - name: "helperText"
+    type: "string"
+    description: "Helper text shown below the select"
+  - name: "fullWidth"
+    type: "boolean"
+    description: "Whether select takes full width"
+  - name: "closeOnSelect"
+    type: "boolean"
+    description: "Whether dropdown closes on selection (for multi-select)"
+---
+
+Select provides a dropdown interface for choosing from predefined options. It supports single and multi-selection modes, disabled states, validation, and customizable styling.

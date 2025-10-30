@@ -1,0 +1,1 @@
+Comparison of all chip variants including the new subtle variant with minimal background and transparent border.

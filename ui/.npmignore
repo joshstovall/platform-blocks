@@ -1,0 +1,40 @@
+# Source files (only publish compiled lib folder)
+src/
+tsconfig.json
+.eslintrc.js
+jest.config.js
+
+# Development files
+example/
+.vscode/
+.idea/
+
+# Tests
+**/*.test.*
+**/__tests__/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.test
+
+# Temporary files
+tmp/
+temp/
+
+# Demo files
+src/components/demo
