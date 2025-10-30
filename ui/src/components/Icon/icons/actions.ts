@@ -81,7 +81,6 @@ export const actionIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Diagonal cross used for dismissal or closing elements.',
   },
-  // Alias commonly used name 'close' -> same glyph as 'x'
   close: {
     content: 'm18 6-12 12M6 6l12 12',
     viewBox: '0 0 24 24',
@@ -131,14 +130,12 @@ export const actionIcons: IconRegistry = {
     description: 'Stacked documents indicating duplicate or copy to clipboard.',
   },
   download: {
-    // Clean download: vertical arrow into a tray line
     content: 'M12 3v12 M8 11l4 4 4-4 M4 21h16',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Arrow descending into a tray for download or save locally.',
   },
   upload: {
-    // Clean upload: vertical up arrow from a tray line
     content: 'M12 21v-12 M8 13l4-4 4 4 M4 21h16',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -260,7 +257,6 @@ export const actionIcons: IconRegistry = {
     preserveStrokeOnFill: true,
     description: 'Half-shaded circle for contrast or dark mode toggles.',
   },
-  // Additional app icons
   record: {
     content: 'M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z',
     viewBox: '0 0 24 24',
@@ -268,7 +264,6 @@ export const actionIcons: IconRegistry = {
     description: 'Solid recording dot for capture or live status.',
   },
   paper: {
-    // paper-plane (send)
     content: 'M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -287,7 +282,6 @@ export const actionIcons: IconRegistry = {
     description: 'Shopping cart with wheels for commerce and checkout flows.',
   },
   shop: {
-    // Storefront with marquee awning and centered doorway
     content: 'M4 4h16l1 6H3l1-6ZM5 12h14v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-8Zm5 0v8h4v-8Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,

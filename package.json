@@ -43,5 +43,8 @@
     "react-native": "0.81.4",
     "react-native-reanimated-carousel": "^4.0.3",
     "react-native-svg": "^15.12.1"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.52.3"
   }
 }

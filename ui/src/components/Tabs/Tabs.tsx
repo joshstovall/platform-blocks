@@ -46,7 +46,7 @@ const getTabStyles = (
 ) => {
   const fontSize = getFontSize(size);
   const padding = getSpacing(size);
-  const colorPalette = theme.colors[color];
+  const colorPalette = theme.colors[color as keyof PlatformBlocksTheme['colors']] ?? theme.colors.primary;
   const isVertical = orientation === 'vertical';
   const isHorizontalLayout = orientation === 'horizontal';
   const isEnd = location === 'end';

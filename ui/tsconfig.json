@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "lib": ["es2018", "esnext.asynciterable", "dom"],
+    "lib": [
+      "es2018",
+      "esnext.asynciterable",
+      "dom"
+    ],
     "module": "commonjs",
     "declaration": true,
     "outDir": "./lib",
@@ -15,25 +19,39 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
-  "jsx": "react-native"
-  ,"baseUrl": "./src"
-  ,"paths": {
-      "platform-blocks": ["./index.ts"],
-      "platform-blocks/*": ["./*"],
-      "@platform-blocks/ui": ["./index.ts"],
-      "@platform-blocks/ui/*": ["./*"],
-      "@platform-blocks/charts": ["../charts/src/index.ts"],
-      "@platform-blocks/charts/*": ["../charts/*"]
+    "jsx": "react-native",
+    "baseUrl": "./src",
+    "paths": {
+      "platform-blocks": [
+        "./index.ts"
+      ],
+      "platform-blocks/*": [
+        "./*"
+      ],
+      "@platform-blocks/ui": [
+        "./index.ts"
+      ],
+      "@platform-blocks/ui/*": [
+        "./*"
+      ],
+      "@platform-blocks/charts": [
+        "../charts/src/index.ts"
+      ],
+      "@platform-blocks/charts/*": [
+        "../charts/*"
+      ]
     }
   },
   "include": [
     "src/**/*"
-, "../docs/app/speech.tsx", "../docs/components/examples/AccessibilityDemo.tsx", "../docs/components/examples/SoundExample.tsx"  ],
+  ],
   "exclude": [
     "node_modules",
     "lib",
     "lib/**/*",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "src/**/demos/**/*",
+    "src/**/__examples__/**/*"
   ]
 }

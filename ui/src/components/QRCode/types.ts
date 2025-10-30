@@ -70,9 +70,6 @@ export interface QRCodeProps extends SpacingProps, LayoutProps {
   
   /** Callback when QR code finishes loading */
   onLoadEnd?: () => void;
-  // Deprecated legacy props retained for backward compatibility (ignored):
-  showLoadingLoader?: never;
-  useApiGeneration?: never;
   /**
    * Which QR engine to use.
    * - internal: new in-house full spec implementation.

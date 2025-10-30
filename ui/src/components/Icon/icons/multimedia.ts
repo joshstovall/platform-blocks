@@ -39,31 +39,24 @@ export const multimediaIcons: IconRegistry = {
     description: 'Headphones for listening experiences or audio output.',
   },
   bluetooth: {
-    // Outlined Bluetooth rune with upper/lower lobes and cross-links
-    // Upper lobe: 12,2 -> 18,8 -> 12,14
-    // Lower lobe: 12,10 -> 18,16 -> 12,22
-    // Cross links: 6,6 -> 12,12 and 6,18 -> 12,12
     content: 'M12 2 L18 8 L12 14 L12 2 M12 10 L18 16 L12 22 L12 10 M6 6 L12 12 M6 18 L12 12',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Bluetooth rune for wireless pairing or devices.',
   },
   wifi: {
-    // Smooth, balanced arcs + center dot (dot via short round-capped segment)
     content: 'M3.2 10.2C7.3 6.4 16.7 6.4 20.8 10.2M5.8 13.1C9.2 10.1 14.8 10.1 18.2 13.1M8.6 16.0C10.4 14.6 13.6 14.6 15.4 16.0M12 19.0L12.01 19.0',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Wi-Fi signal strength arcs for network connectivity.',
   },
   piano: {
-    // Piano keyboard: case, key bed, and key separators
     content: 'M3 5h18v14H3z M3 11h18 M7 11v8 M12 11v8 M17 11v8',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Piano keyboard for instrumentation or music apps.',
   },
   guitar: {
-    // Acoustic guitar: body, sound hole, and simple diagonal neck/head
     content: 'M10 12 a5 5 0 1 0 0 10 a5 5 0 1 0 0 -10 M10 17 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M13 13l2-2 M15 11l7-7 M22 4 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -81,7 +74,6 @@ export const multimediaIcons: IconRegistry = {
     variant: 'filled' as const,
     description: 'Alternate mic glyph used for voice assistants or capture.',
   },
-  // Tuning fork icon for tuner apps
   tuning: {
     content: 'M7 2v8M17 2v8M7 10a5 5 0 0 0 10 0M12 15v7M10 22h4',
     viewBox: '0 0 24 24',

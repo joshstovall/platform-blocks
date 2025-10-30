@@ -1,6 +1,6 @@
 {
   "name": "@platform-blocks/ui",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A React Native UI library",
   "type": "module",
   "main": "lib/cjs/index.js",
@@ -19,11 +19,10 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "scripts": {
-    "build": "npm run clean && rollup -c",
+    "build": "npm run clean && rollup -c && npm run build:types",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
@@ -64,9 +63,10 @@
   },
   "homepage": "https://github.com/joshstovall/platform-blocks#readme",
   "dependencies": {
-    "@platform-blocks/charts": "file:../charts",
+  "@platform-blocks/charts": "^0.1.1",
     "@react-native-masked-view/masked-view": "^0.3.2",
     "@shopify/flash-list": "^2.1.0",
+    "expo-document-picker": "~14.0.7",
     "expo-audio": "^1.0.13",
     "expo-linear-gradient": "^14.1.5",
     "expo-video": "^2.2.2",

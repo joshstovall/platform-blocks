@@ -9,7 +9,6 @@ export const uiIcons: IconRegistry = {
     description: 'Open eye for visibility or reveal password toggles.',
   },
   eyeOff: {
-    // Eye with diagonal slash: same base shape as eye + strike-through line
     content: 'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z M3 3l18 18',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -58,7 +57,6 @@ export const uiIcons: IconRegistry = {
     description: 'Abstract palette showing multiple colors or themes.',
   },
   palette: {
-    // Painter's palette: blob with thumb hole and paint dabs
     content: 'M12 2C6.48 2 2 6.3 2 11.5S6.5 21 10 21h3a2 2 0 0 0 0-4h-1a2 2 0 0 1-2-2v-.5c0-1.38 1.12-2.5 2.5-2.5H16a6 6 0 0 0 6-6C22 3.79 17.52 2 12 2Zm-5 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm6-4a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm4 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-7 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -107,7 +105,6 @@ export const uiIcons: IconRegistry = {
     description: 'Document file icon with folded corner.',
   },
   timeline: {
-    // Timeline UI: vertical spine with three connected nodes and alternating data rails
     content: 'M12 3v18 M3 7H9 M15 12H21 M3 17H9 M12 7 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0 M12 12 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0 M12 17 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -132,7 +129,6 @@ export const uiIcons: IconRegistry = {
     description: 'Switching arrows representing swap or change layout.',
   },
   carousel: {
-    // Carousel UI: viewport, left/right chevrons, and indicator dots
     content: 'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z M9 10l-2 2 2 2 M15 10l2 2-2 2 M9 16 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M12 16 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M15 16 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -169,14 +165,12 @@ export const uiIcons: IconRegistry = {
     description: 'Image gallery frame with stacked photos.',
   },
   tree: {
-    // Pine tree: three tiered branches and a central trunk
     content: 'M12 2l-5 6h10l-5-6 M12 8l-6 7h12l-6-7 M12 15l-4 5h8l-4-5 M12 15v7',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Stylized evergreen tree for nature or hierarchy.',
   },
   keycap: {
-    // Mechanical keycap: rounded body + inset top face
     content: 'M6 8h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z M8.5 10.5h7a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -267,7 +261,6 @@ export const uiIcons: IconRegistry = {
     description: 'Text input field with header and body sections.',
   },
   number: {
-    // Hash symbol: two horizontals and two verticals
     content: 'M4 9h16 M4 15h16 M10 4v16 M14 4v16',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -436,7 +429,6 @@ export const uiIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Status indicator badge with vertical bar.',
   },
-  // Text formatting icons for RichTextEditor
   bold: {
     content: 'M6 4h8a4 4 0 0 1 4 4 3.5 3.5 0 0 1-2.5 3.37A4 4 0 0 1 14 20H6V4Zm2 5v3h4a1.5 1.5 0 0 0 0-3H8ZM8 14v4h6a2 2 0 0 0 0-4H8Z',
     viewBox: '0 0 24 24',
@@ -444,7 +436,6 @@ export const uiIcons: IconRegistry = {
     description: 'Bold typography icon for strong text formatting.',
   },
   italic: {
-    // Clean italic: top/bottom guides with a slanted stem
     content: 'M15 6H9 M9 18h6 M13 6l-4 12',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
@@ -457,7 +448,6 @@ export const uiIcons: IconRegistry = {
     description: 'Underlined text icon representing underline formatting.',
   },
   link: {
-    // Interlocking rings with connecting diagonal
     content: 'M8.5 8.5 m -3 0 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0 M15.5 15.5 m -3 0 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0 M10.5 10.5l3 3',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,

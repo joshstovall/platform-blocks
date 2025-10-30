@@ -69,7 +69,6 @@ export const statusIcons: IconRegistry = {
     description: 'Bell silhouette for notifications or alerts.',
   },
   bone: {
-    // Simple femur-style bone: two bulbous ends connected by a rod
     content: 'M8 12h8 M6 12 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0 M18 12 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,

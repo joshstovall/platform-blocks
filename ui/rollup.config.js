@@ -3,7 +3,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import dts from 'rollup-plugin-dts';
 import { readFileSync } from 'fs';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
@@ -74,17 +73,5 @@ export default [
         rootDir: './src',
       }),
     ],
-  },
-  // Types build
-  {
-    input: 'src/index.ts',
-    output: {
-      file: pkg.types,
-      format: 'esm',
-    },
-    plugins: [dts({
-      tsconfig: './tsconfig.json',
-    })],
-    external,
   },
 ];

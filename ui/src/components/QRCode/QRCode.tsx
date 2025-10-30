@@ -1,8 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Pressable } from 'react-native';
-import { useTheme } from '../../core/theme';
-import { getSpacingStyles, extractSpacingProps, getLayoutStyles, extractLayoutProps } from '../../core/utils';
-import { Text } from '../Text';
+import { extractSpacingProps, extractLayoutProps } from '../../core/utils';
 import type { QRCodeProps } from './types';
 import { QRCodeSVG } from './QRCodeSVG';
 import { CopyButton } from '../CopyButton/CopyButton';
@@ -21,7 +19,7 @@ export function QRCode(props: QRCodeProps) {
   const {
     value,
     size = 400,
-    bg = 'transparent',
+    backgroundColor = 'transparent',
     color = '#000000',
     errorCorrectionLevel = 'M',
     quietZone = 4,
@@ -32,8 +30,6 @@ export function QRCode(props: QRCodeProps) {
     onError,
     onLoadStart, // deprecated noop
     onLoadEnd,   // deprecated noop
-    showLoadingLoader, // deprecated
-    useApiGeneration,   // deprecated
     ...rest
   } = otherProps;
 
@@ -62,7 +58,7 @@ export function QRCode(props: QRCodeProps) {
         value={value}
         size={size}
         maxWidth={'100%'}
-        backgroundColor={bg}
+        backgroundColor={backgroundColor}
         color={color}
         errorCorrectionLevel={errorCorrectionLevel}
         quietZone={quietZone}

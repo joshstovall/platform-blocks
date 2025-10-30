@@ -7,7 +7,6 @@ export const navigationIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Arrow pointing left for back or previous navigation.',
   },
-  // Aliases (camelCase) for convenience in apps
   arrowLeft: {
     content: 'M19 12H5M12 19L5 12L12 5',
     variant: 'outlined' as const,

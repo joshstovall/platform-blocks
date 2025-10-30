@@ -1,6 +1,6 @@
 {
   "name": "@platform-blocks/charts",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Chart components for Platform Blocks (React Native + SVG)",
   "type": "module",
   "main": "lib/cjs/index.js",
@@ -19,8 +19,7 @@
   },
   "sideEffects": false,
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "scripts": {
     "build": "npm run clean && rollup -c",
@@ -37,7 +36,7 @@
     "react-native-reanimated": "~4.1.1",
     "react-native-svg": "15.12.1",
     "react-native-worklets": "0.5.1",
-    "@platform-blocks/ui": "file:../ui"
+    "@platform-blocks/ui": "^0.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
