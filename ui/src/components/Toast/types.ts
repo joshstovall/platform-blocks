@@ -74,6 +74,8 @@ export interface ToastProps extends SpacingProps, BorderRadiusProps {
   maxWidth?: number;
   /** Persist toast until manually dismissed */
   persistent?: boolean;
+  /** Keep toast mounted in the tree when hidden */
+  keepMounted?: boolean;
   /** Animation configuration */
   animationConfig?: ToastAnimationConfig;
   /** Swipe to dismiss configuration */

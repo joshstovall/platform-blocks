@@ -11,15 +11,18 @@ import {
   Block,
   Title,
   Divider,
-  Button
+  Button,
+  Icon
 } from '@platform-blocks/ui';
 import { PageLayout } from '../PageLayout';
+import { useRouter } from 'expo-router';
 
 export default function LayoutPlayground() {
+  const router = useRouter();
   return (
     <ScrollView>
       {/* Block Section */}
-      <Title text="Block" variant="h2" afterline />
+      <Title text="Block" variant="h2" afterline action={<Button title="Learn more" variant="ghost" endIcon={<Icon name="arrow-right" />} onPress={() => router.push('/components/Block')} />} />
       <Text variant="body" colorVariant="secondary">
         Block is a low-level layout primitive with universal props. It can act as a flexible container or item.
       </Text>
@@ -32,7 +35,7 @@ export default function LayoutPlayground() {
       </Card>
 
       {/* Row Section */}
-      <Title text="Row" variant="h2" afterline />
+      <Title text="Row" variant="h2" afterline action={<Button title="Learn more" variant="ghost" endIcon={<Icon name="arrow-right" />} onPress={() => router.push('/components/Row')} />} />
       <Text variant="body" colorVariant="secondary">
         Row is a layout component that arranges its children in a horizontal line.
       </Text>
@@ -45,7 +48,7 @@ export default function LayoutPlayground() {
       </Card>
 
       {/* Flex Section */}
-      <Title text="Flex" variant="h2" afterline />
+      <Title text="Flex" variant="h2" afterline action={<Button title="Learn more" variant="ghost" endIcon={<Icon name="arrow-right" />} onPress={() => router.push('/components/Flex')} />} />
       <Text variant="body" colorVariant="secondary">
         Flex wraps flexbox with simplified props like direction, gap, justify, and align.
       </Text>
@@ -58,7 +61,7 @@ export default function LayoutPlayground() {
       </Card>
 
       {/* Grid Section */}
-      <Title text="Grid" variant="h2" afterline />
+      <Title text="Grid" variant="h2" afterline action={<Button title="Learn more" variant="ghost" endIcon={<Icon name="arrow-right" />} onPress={() => router.push('/components/Grid')} />} />
       <Text variant="body" colorVariant="secondary">
         Grid provides a 12-column layout. Each GridItem declares its span.
       </Text>
@@ -73,7 +76,7 @@ export default function LayoutPlayground() {
       </Card>
 
       {/* PageLayout Section */}
-      <Title text="PageLayout" variant="h2" afterline />
+      <Title text="PageLayout" variant="h2" afterline action={<Button title="Learn more" variant="ghost" endIcon={<Icon name="arrow-right" />} onPress={() => router.push('/components/PageLayout')} />} />
       <Text variant="body" colorVariant="secondary">
         PageLayout gives you a consistent page container with optional content container styling.
       </Text>

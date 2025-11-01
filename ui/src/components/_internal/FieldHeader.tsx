@@ -39,12 +39,17 @@ export const FieldHeader: React.FC<FieldHeaderProps> = ({
 
   if (!label && !description) return null;
 
-  const mb = marginBottom !== undefined ? marginBottom : (description ? 4 : 4);
+  const hasDescription = Boolean(description);
+  const resolvedMarginBottom = (() => {
+    if (marginBottom !== undefined) return marginBottom;
+    if (!hasDescription && !error) return 0;
+    return 4;
+  })();
 
   return (
-    <View style={{ marginBottom: mb }} testID={testID}>
+    <View style={{ marginBottom: resolvedMarginBottom }} testID={testID}>
       {label && (
-  <Text style={styles.label}>
+        <Text style={styles.label}>
           {label}
           {required && withAsterisk && (
             <Text style={styles.required} accessibilityLabel="required">{' *'}</Text>

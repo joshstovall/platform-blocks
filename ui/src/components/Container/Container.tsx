@@ -3,13 +3,9 @@ import { View, ImageBackground, ViewStyle, ImageStyle, StyleSheet } from 'react-
 import { useTheme } from '../../core/theme';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils/spacing';
 import type { ContainerProps } from './types';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
 
-// Mock LinearGradient for now - in a real app you'd use expo-linear-gradient or react-native-linear-gradient
-const LinearGradient = ({ children, style, ...props }: any) => (
-  <View style={[style, { backgroundColor: props.colors[0] }]}>
-    {children}
-  </View>
-);
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
 
 export function Container(props: ContainerProps) {
   const theme = useTheme();
@@ -58,13 +54,22 @@ export function Container(props: ContainerProps) {
     >
       {backgroundImage.overlay && <View style={overlayStyle} />}
       {backgroundImage.gradient && (
-        <LinearGradient
-          colors={backgroundImage.gradient.colors}
-          locations={backgroundImage.gradient.locations}
-          start={backgroundImage.gradient.start || { x: 0, y: 0 }}
-          end={backgroundImage.gradient.end || { x: 0, y: 1 }}
-          style={StyleSheet.absoluteFillObject}
-        />
+        hasLinearGradient ? (
+          <OptionalLinearGradient
+            colors={backgroundImage.gradient.colors}
+            locations={backgroundImage.gradient.locations}
+            start={backgroundImage.gradient.start || { x: 0, y: 0 }}
+            end={backgroundImage.gradient.end || { x: 0, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        ) : (
+          <View
+            style={[
+              StyleSheet.absoluteFillObject,
+              { backgroundColor: backgroundImage.gradient.colors?.[0] ?? 'transparent' },
+            ]}
+          />
+        )
       )}
       {children}
     </ImageBackground>

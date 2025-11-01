@@ -13,6 +13,7 @@ import { Select } from '../Select';
 import { Button } from '../Button';
 import { Flex } from '../Flex';
 import { Menu, MenuItem, MenuLabel, MenuDivider, MenuDropdown } from '../Menu';
+import { Popover, PopoverTarget, PopoverDropdown } from '../Popover';
 import { Checkbox } from '../Checkbox';
 import { ToggleButton, ToggleGroup } from '../Toggle';
 import { Pagination } from '../Pagination';
@@ -318,7 +319,6 @@ export const DataTable = <T,>({
     } else {
       setInternalSearchValue(value);
     }
-    setForceUpdateCounter(c => c + 1);
   }, [onSearchChange]);
 
   const handleSort = useCallback((columnKey: string) => {
@@ -493,109 +493,127 @@ export const DataTable = <T,>({
       <Flex gap={8}>
         {/* Search & Filter Popover */}
         {(searchable || columns.some(c => c.filterable)) && (
-          <Menu position="bottom-end" offset={4} key={`search-filter-${forceUpdateCounter}`}>
-            <MenuDropdown>
-              <MenuLabel>Search & Filter</MenuLabel>
-              
-              {/* Search Section */}
-              {searchable && (
-                <View style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.gray[2] }}>
-                  <Text variant="caption" weight="semibold" style={{ marginBottom: 8 }}>
-                    Search
-                  </Text>
-                  <Input
-                    key={`search-input-${searchValue}`}
-                    placeholder={searchPlaceholder}
-                    value={searchValue}
-                    onChangeText={handleSearchChange}
-                    leftSection={<Icon name="menu" size={16} />}
-                    size="sm"
-                  />
-                </View>
-              )}
-              
-              {/* Filters Section */}
-              {columns.some(c => c.filterable) && (
-                <View style={{ padding: 12 }}>
-                  <Flex direction="row" justify="space-between" align="center" style={{ marginBottom: 8 }}>
-                    <Text variant="caption" weight="semibold">
-                      Filters
-                    </Text>
+          <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={320} trapFocus>
+            <PopoverTarget>
+              <Button
+                variant="outline"
+                size="sm"
+                startIcon={<Icon name="search" size={14} />}
+              >
+                Search
+                {(searchValue || activeFilters.length > 0) && (
+                  <View style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: theme.colors.primary[5],
+                    marginLeft: 4
+                  }} />
+                )}
+              </Button>
+            </PopoverTarget>
+            <PopoverDropdown>
+              <Flex direction="column" gap={DESIGN_TOKENS.spacing.md} style={{ width: 320 }}>
+                <Text variant="caption" weight="semibold">
+                  Search & Filter
+                </Text>
+
+                {searchable && (
+                  <View
+                    style={{
+                      borderBottomWidth: 1,
+                      borderBottomColor: theme.colors.gray[2],
+                      paddingBottom: DESIGN_TOKENS.spacing.sm,
+                    }}
+                  >
+                    <Flex direction="column" gap={DESIGN_TOKENS.spacing.xs}>
+                      <Text variant="caption" weight="semibold">
+                        Search
+                      </Text>
+                      <Input
+                        placeholder={searchPlaceholder}
+                        value={searchValue}
+                        onChangeText={handleSearchChange}
+                        leftSection={<Icon name="menu" size={16} />}
+                        size="sm"
+                      />
+                    </Flex>
+                  </View>
+                )}
+
+                {columns.some(c => c.filterable) && (
+                  <Flex direction="column" gap={DESIGN_TOKENS.spacing.sm}>
+                    <Flex direction="row" justify="space-between" align="center">
+                      <Text variant="caption" weight="semibold">
+                        Filters
+                      </Text>
+                      {activeFilters.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onPress={() => {
+                            setInternalFilters([]);
+                            setForceUpdateCounter(c => c + 1);
+                          }}
+                        >
+                          Clear all
+                        </Button>
+                      )}
+                    </Flex>
+
                     {activeFilters.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onPress={() => {
-                          setInternalFilters([]);
-                          setForceUpdateCounter(c => c + 1);
-                        }}
+                      <Flex
+                        direction="column"
+                        gap={DESIGN_TOKENS.spacing.xs}
+                        style={{ marginBottom: DESIGN_TOKENS.spacing.sm }}
                       >
-                        Clear all
-                      </Button>
-                    )}
-                  </Flex>
-                  
-                  {activeFilters.length > 0 && (
-                    <View style={{ marginBottom: DESIGN_TOKENS.spacing.md, gap: DESIGN_TOKENS.spacing.xs }}>
-                      {activeFilters.map((filter, idx) => {
-                        const column = columns.find(c => c.key === filter.column);
-                        return (
-                          <View key={idx} style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: theme.colors.primary[1],
-                            paddingHorizontal: DESIGN_TOKENS.spacing.sm,
-                            paddingVertical: DESIGN_TOKENS.spacing.xs,
-                            borderRadius: DESIGN_TOKENS.radius.sm,
-                            gap: DESIGN_TOKENS.spacing.xs
-                          }}>
-                            <Text variant="caption" style={{ color: theme.colors.primary[7] }}>
-                              {column?.header || filter.column}: {filter.operator} "{filter.value}"
-                            </Text>
-                            <Pressable
-                              onPress={() => {
-                                setInternalFilters(filters => filters.filter((_, i) => i !== idx));
-                                setForceUpdateCounter(c => c + 1);
+                        {activeFilters.map((filter, idx) => {
+                          const column = columns.find(c => c.key === filter.column);
+                          return (
+                            <View
+                              key={idx}
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                backgroundColor: theme.colors.primary[1],
+                                paddingHorizontal: DESIGN_TOKENS.spacing.sm,
+                                paddingVertical: DESIGN_TOKENS.spacing.xs,
+                                borderRadius: DESIGN_TOKENS.radius.sm,
+                                gap: DESIGN_TOKENS.spacing.xs
                               }}
                             >
-                              <Icon name="x" size={12} color={theme.colors.primary[6]} />
-                            </Pressable>
+                              <Text variant="caption" style={{ color: theme.colors.primary[7] }}>
+                                {column?.header || filter.column}: {filter.operator} "{filter.value}"
+                              </Text>
+                              <Pressable
+                                onPress={() => {
+                                  setInternalFilters(filters => filters.filter((_, i) => i !== idx));
+                                  setForceUpdateCounter(c => c + 1);
+                                }}
+                              >
+                                <Icon name="x" size={12} color={theme.colors.primary[6]} />
+                              </Pressable>
+                            </View>
+                          );
+                        })}
+                      </Flex>
+                    )}
+
+                    <Flex direction="column" gap={DESIGN_TOKENS.spacing.sm}>
+                      {columns.filter(c => c.filterable).map(column => {
+                        const currentFilter = getColumnFilter(column.key);
+                        return (
+                          <View key={`${column.key}-${currentFilter?.value || 'no-filter'}`}>
+                            {renderFilterControl(column)}
                           </View>
                         );
                       })}
-                    </View>
-                  )}
-                  
-                  <View style={{ gap: DESIGN_TOKENS.spacing.sm }}>
-                    {columns.filter(c => c.filterable).map(column => {
-                      const currentFilter = getColumnFilter(column.key);
-                      return (
-                        <View key={`${column.key}-${currentFilter?.value || 'no-filter'}`}>
-                          {renderFilterControl(column)}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              )}
-            </MenuDropdown>
-            <Button
-              variant="outline"
-              size="sm"
-              startIcon={<Icon name="search" size={14} />}
-            >
-              Search
-              {(searchValue || activeFilters.length > 0) && (
-                <View style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: theme.colors.primary[5],
-                  marginLeft: 4
-                }} />
-              )}
-            </Button>
-          </Menu>
+                    </Flex>
+                  </Flex>
+                )}
+              </Flex>
+            </PopoverDropdown>
+          </Popover>
         )}
         
         {onEditModeChange && (
@@ -608,10 +626,18 @@ export const DataTable = <T,>({
           </Button>
         )}
         {showColumnVisibilityManager && (
-          <Menu position="bottom-end" offset={4} key={`col-vis-${forceUpdateCounter}`}>
-            <MenuDropdown>
-              <MenuLabel>Column Visibility</MenuLabel>
-              <View style={{ padding: 8, maxHeight: 300 }}>
+          <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={280} trapFocus>
+            <PopoverTarget>
+              <Button
+                variant="outline"
+                size="sm"
+                startIcon={<Icon name="eye" size={14} />}
+              >
+                Columns
+              </Button>
+            </PopoverTarget>
+            <PopoverDropdown>
+              <View style={{ padding: 8, maxHeight: 300, width: 260 }}>
                 <ComponentWithDisclaimer
                   disclaimer="Selected view determines the layout style"
                   disclaimerProps={{ colorVariant: 'muted', size: 'sm' }}
@@ -637,14 +663,12 @@ export const DataTable = <T,>({
                     />
                   </Row>
                 </ComponentWithDisclaimer>
-              
+
                 <ScrollView style={{ maxHeight: 200 }}>
                   {columns.map(col => (
                     <Checkbox
                       key={col.key}
                       label={tempHeaderEdits[col.key] || col.header}
-                      // checked={!hiddenColumns.includes(col.key)}
-                      // disabled={col.disableHiding}
                       onChange={() => {
                         if (hiddenColumns.includes(col.key)) {
                           setHiddenColumns(prev => prev.filter(h => h !== col.key));
@@ -657,15 +681,8 @@ export const DataTable = <T,>({
                   ))}
                 </ScrollView>
               </View>
-            </MenuDropdown>
-            <Button
-              variant="outline"
-              size="sm"
-              startIcon={<Icon name="eye" size={14} />}
-            >
-              Columns
-            </Button>
-          </Menu>
+            </PopoverDropdown>
+          </Popover>
         )}
       </Flex>
     </View>

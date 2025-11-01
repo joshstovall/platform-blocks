@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Pressable, Platform } from 'react-native';
 import { Text, Avatar, Flex, Icon, Chip, useTheme, EmojiPicker } from '@platform-blocks/ui';
+import { platformShadow } from '../../../../utils/platformShadow';
 
 import type { Message } from './types';
 import { styles } from './styles';
@@ -36,14 +37,11 @@ export function ChatMessageBubble({ message: msg, getUserColor }: ChatMessageBub
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.15,
-          shadowRadius: 2,
           opacity: pressed ? 0.85 : 1,
           borderWidth: 1,
           borderColor: theme.colorScheme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-      margin:'auto'
+          margin: 'auto',
+          ...platformShadow({ color: '#000', opacity: 0.15, offsetY: 1, radius: 2, elevation: 1 })
         })}
       >
         <Icon name="smile" size="xs"  />
@@ -93,17 +91,12 @@ export function ChatMessageBubble({ message: msg, getUserColor }: ChatMessageBub
         styles.messageBubble,
         {
           backgroundColor: msg.isOwn ? '#DCF8C6' : 'white',
-          // Pointed corner should now be on the bottom side instead of the top.
-          // Own message: point on bottom-right; Other message: point on bottom-left.
           borderTopLeftRadius: 18,
           borderTopRightRadius: 18,
           borderBottomLeftRadius: msg.isOwn ? 18 : 4,
           borderBottomRightRadius: msg.isOwn ? 4 : 18,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
           elevation: 2,
+          ...platformShadow({ color: '#000', opacity: 0.1, offsetY: 1, radius: 2, elevation: 2 })
         }
       ]}>
         {(reaction || msg.reaction) && (

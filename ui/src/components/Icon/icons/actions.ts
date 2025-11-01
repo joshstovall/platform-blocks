@@ -69,6 +69,12 @@ export const actionIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Magnifying glass and highlight circle to represent spotlight search.',
   },
+  highlight: {
+    content: 'm15.728 3.514 4.758 4.758-7.071 7.071-2.474.353a1 1 0 0 1-1.118-1.118l.353-2.474 7.552-7.03Zm-9.95 8.486 3.222 3.222-3 3H3a1 1 0 0 1-1-1v-2.999l3.778-3.223Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Highlighter marker illustrating text emphasis.',
+  },
   minus: {
     content: 'M5 12h14',
     viewBox: '0 0 24 24',

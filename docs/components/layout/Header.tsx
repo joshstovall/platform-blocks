@@ -4,11 +4,14 @@ import { HeaderThemeToggle } from './HeaderThemeToggle';
 import { HeaderDirectionToggle } from './HeaderDirectionToggle';
 import { NavIconButton } from './NavIconButton';
 import { useBreadcrumbs } from '../../hooks/useBreadcrumbs';
+import { useRouter } from 'expo-router';
+import { Pressable } from 'react-native';
 
 export const AppHeader: React.FC = () => {
   const { headerHeight } = useAppShell();
   const breadcrumbs = useBreadcrumbs();
   const [navSidebarOpen, setNavSidebarOpen] = useState(false);
+  const router = useRouter();
 
   // CMD+K shortcut component
   const shortcutComponent = (
@@ -27,18 +30,20 @@ export const AppHeader: React.FC = () => {
             onPress={() => setNavSidebarOpen(!navSidebarOpen)}
             accessibilityLabel="Toggle navigation menu"
           />
-          <Flex direction="row" align="center" gap="sm">
-            <Image
-              source={require('../../assets/favicon.png')}
-              src="app-shell-logo"
-              width={26}
-              height={26}
-              resizeMode="contain"
-            />
-            <Text size="xl" weight="bold">
-              Platform Blocks
-            </Text>
-          </Flex>
+          <Pressable onPress={() => router.push('/')}>
+            <Flex direction="row" align="center" gap="sm" style={{ cursor: 'pointer' }}>
+              <Image
+                source={require('../../assets/favicon.png')}
+                src="app-shell-logo"
+                width={26}
+                height={26}
+                resizeMode="contain"
+              />
+              <Text size="xl" weight="bold">
+                Platform Blocks
+              </Text>
+            </Flex>
+          </Pressable>
           <Breadcrumbs
             items={breadcrumbs}
             size="xs"

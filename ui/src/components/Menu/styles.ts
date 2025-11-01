@@ -4,9 +4,36 @@ import { useTheme } from '../../core/theme';
 export function useMenuStyles() {
   const theme = useTheme();
 
+  const getPaletteColor = (palette: unknown, index: number) => {
+    if (Array.isArray(palette)) {
+      return palette[index] as string | undefined;
+    }
+    return undefined;
+  };
+
+  const surfacePalette = theme.colors?.surface;
+  const grayPalette = theme.colors?.gray;
+
+  const lightSurfaceColor =
+    getPaletteColor(surfacePalette, 4) ??
+    (typeof theme.backgrounds?.surface === 'string' ? theme.backgrounds.surface : undefined) ??
+    (typeof theme.backgrounds?.base === 'string' ? theme.backgrounds.base : undefined) ??
+    getPaletteColor(grayPalette, 0) ??
+    '#ffffff';
+
+  const darkSurfaceColor =
+    getPaletteColor(surfacePalette, 3) ??
+    (typeof theme.backgrounds?.elevated === 'string' ? theme.backgrounds.elevated : undefined) ??
+    lightSurfaceColor;
+
+  const fallbackRadius = theme.radii?.md ?? theme.radii?.sm ?? '8';
+  const parsedRadius = typeof fallbackRadius === 'number'
+    ? fallbackRadius
+    : parseInt(`${fallbackRadius}`, 10) || 8;
+
   const dropdown: ViewStyle = {
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.surface[3] : theme.colors.surface[4],
-    borderRadius: parseInt(theme.radii.md),
+    backgroundColor: theme.colorScheme === 'dark' ? darkSurfaceColor : lightSurfaceColor,
+    borderRadius: parsedRadius,
     // borderWidth: 3, // Temporarily increased for debugging
     // borderColor: '#ff0000', // Temporarily red for debugging
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',

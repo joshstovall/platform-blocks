@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Linking, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, Button, Card, Chip, Flex, Loader, Tabs, Markdown, useI18n, Title, Breadcrumbs, Divider, BrandButton, TableOfContents } from '@platform-blocks/ui';
+import { Text, Button, Card, Chip, Flex, Loader, Tabs, Markdown, useI18n, Title, Breadcrumbs, Divider, BrandButton, TableOfContents, Switch } from '@platform-blocks/ui';
 import { BREAKPOINTS } from '@platform-blocks/ui/core/responsive';
 import { GlobalChartsRoot } from '@platform-blocks/charts';
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
@@ -15,23 +15,97 @@ import {
   loadDemoComponentNew,
   getComponentMeta as getNewComponentMeta,
   getComponentProps
-} from '../utils/newDemosLoader';
+} from '../utils/demosLoader';
 import { GITHUB_REPO } from 'config/urls';
 
 interface ComponentDetailScreenProps { component?: string }
 
+interface DemoSectionProps {
+  demo: any;
+  preview: React.ReactNode;
+  description?: string;
+}
+
+function DemoSection({ demo, preview, description }: DemoSectionProps) {
+  const codeAvailable = Boolean((demo as any).code);
+  const codeEnabled = codeAvailable && demo.showCode !== false;
+  const toggleEnabled = codeEnabled && demo.showCodeToggle !== false;
+  const prefersCode = codeEnabled && demo.codeFirst === true;
+
+  const [mode, setMode] = React.useState<'preview' | 'code'>(prefersCode ? 'code' : 'preview');
+
+  React.useEffect(() => {
+    if (!codeEnabled && mode === 'code') {
+      setMode('preview');
+    }
+  }, [codeEnabled, mode]);
+
+  const effectiveMode: 'preview' | 'code' = toggleEnabled ? mode : (prefersCode ? 'code' : 'preview');
+
+  const sectionChildren: React.ReactNode[] = [
+    (
+      <Title
+        key="title"
+        order={3}
+        size={18}
+        weight="semibold"
+        style={{ marginBottom: 8 }}
+        action={toggleEnabled ? (
+          <Switch
+            checked={mode === 'code'}
+            onChange={(value: boolean) => setMode(value ? 'code' : 'preview')}
+            size="sm"
+            label={<Text variant="caption">View code</Text>}
+            labelPosition="left"
+          />
+        ) : undefined}
+      >
+        {demo.title}
+      </Title>
+    )
+  ];
+
+  if (demo.tags && demo.tags.length > 0) {
+    sectionChildren.push(
+      <Flex key="tags" direction="row" align="center" gap={4} wrap="wrap" style={{ marginBottom: 8 }}>
+        {demo.tags.map((tag: string) => (
+          <Chip key={tag} size="sm" variant="outline">{tag}</Chip>
+        ))}
+      </Flex>
+    );
+  }
+
+  if (description) {
+    sectionChildren.push(
+      <View key="description" style={{ opacity: 0.5, marginBottom: 16 }}>
+        <Markdown>{description}</Markdown>
+      </View>
+    );
+  }
+
+  sectionChildren.push(
+    <DemoRenderer key="demo" demo={demo} preview={preview} mode={effectiveMode} />
+  );
+
+  return (
+    <View>
+      {sectionChildren}
+    </View>
+  );
+}
+
 // Extract content rendering into a separate component for reuse
-function ComponentContent({ 
-  component, 
-  newMeta, 
-  breadcrumbItems, 
-  handleGitHubPress, 
-  effectiveDemos, 
-  hasDemos, 
-  hasProps, 
-  componentProps, 
-  loadedDemoComponents, 
-  getLocalizedDescription 
+function ComponentContent({
+  component,
+  newMeta,
+  breadcrumbItems,
+  handleGitHubPress,
+  effectiveDemos,
+  hasDemos,
+  hasProps,
+  componentProps,
+  loadedDemoComponents,
+  getLocalizedDescription
 }: {
   component: string;
   newMeta: any;
@@ -59,13 +133,13 @@ function ComponentContent({
         weight="bold"
         order={1}
         afterline
-        // action={
-        //   <BrandButton
-        //     brand='github'
-        //     title='View Source'
-        //     onPress={handleGitHubPress}              
-        //   />
-        // }
+      // action={
+      //   <BrandButton
+      //     brand='github'
+      //     title='View Source'
+      //     onPress={handleGitHubPress}              
+      //   />
+      // }
       >
         {newMeta?.title || component}
       </Title>
@@ -77,13 +151,13 @@ function ComponentContent({
           </Markdown>
         )}
       </View>
-      
+
       <Tabs
         variant='chip'
         items={[
           {
             key: 'demos',
-            label:"Examples",
+            label: "Examples",
             subLabel: hasDemos ? `(${effectiveDemos.length})` : undefined,
             content: hasDemos ? (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -145,24 +219,12 @@ function ComponentContent({
                       );
                     }
                     return (
-                      <View key={demo.id}>
-                        <Title order={3} size={18} weight="semibold" style={{ marginBottom: 8 }}>
-                          {demo.title}
-                        </Title>
-                        {demo.tags && demo.tags.length > 0 && (
-                          <Flex direction="row" align="center" gap={4} wrap="wrap" style={{ marginBottom: 8 }}>
-                            {demo.tags.map((tag: string) => (
-                              <Chip key={tag} size="sm" variant="outline">{tag}</Chip>
-                            ))}
-                          </Flex>
-                        )}
-                        <View style={{ opacity: 0.5, marginBottom: 16 }}>
-                          <Markdown>{demo.description}</Markdown>
-                        </View>
-                        <DemoRenderer demo={demo} preview={preview} description={getLocalizedDescription(demo)} showCode={
-                          demo.showCode !== false
-                        } />
-                      </View>
+                      <DemoSection
+                        key={demo.id}
+                        demo={demo}
+                        preview={preview}
+                        description={getLocalizedDescription(demo)}
+                      />
                     );
                   })}
                 </View>
@@ -234,7 +296,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
       setNewDemos(demos);
       // Incremental streaming load: do not block first paint on all demos
       let cancelled = false;
-      demos.forEach(async d => {
+  demos.forEach(async (d: any) => {
         try {
           const mod = await loadDemoComponentNew(component, d.id);
           if (!cancelled && mod) {
@@ -282,7 +344,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
 
   const handleGitHubPress = () => {
     const githubUrl = GITHUB_REPO + `/tree/main/ui/src/components/${component}`;
-  (typeof window !== 'undefined') ? window.open(githubUrl, '_blank') : Linking.openURL(githubUrl);
+    (typeof window !== 'undefined') ? window.open(githubUrl, '_blank') : Linking.openURL(githubUrl);
   };
 
   const breadcrumbItems = [
@@ -297,7 +359,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
         // Desktop layout: Two columns with sticky TOC on the right
         <View style={styles.desktopContainer}>
           <View style={styles.mainContent} id={`main-content-${component}`}>
-            <ComponentContent 
+            <ComponentContent
               component={component}
               newMeta={newMeta}
               breadcrumbItems={breadcrumbItems}
@@ -333,7 +395,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
             />
           )}
           <View style={styles.container} id={`main-content-${component}`}>
-            <ComponentContent 
+            <ComponentContent
               component={component}
               newMeta={newMeta}
               breadcrumbItems={breadcrumbItems}
@@ -353,14 +415,14 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 16 
+  container: {
+    flex: 1,
+    padding: 16
   },
-  content: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    flex: 1 
+  content: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1
   },
   desktopContainer: {
     flex: 1,

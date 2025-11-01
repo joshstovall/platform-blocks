@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ColorValue, LayoutChangeEvent, Platform, StyleSheet, View } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
-import { LinearGradient } from 'expo-linear-gradient';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -22,6 +22,7 @@ type GradientColors = [ColorValue, ColorValue, ...ColorValue[]];
 
 export interface ShimmerTextProps extends Omit<TextProps, 'children' | 'color' | 'onLayout'> {
   children?: React.ReactNode;
+  /** Text to render with shimmer effect */
   text?: string;
   /** Base text color rendered underneath the shimmer */
   color?: string;
@@ -75,6 +76,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 });
+
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
 
 const stripColorFromStyle = (styleValue: any): any => {
   if (!styleValue) {
@@ -170,10 +173,14 @@ export function ShimmerText(props: ShimmerTextProps) {
     ...textProps
   } = otherProps as ShimmerTextProps;
 
+  const isWeb = Platform.OS === 'web';
+  const gradientModuleAvailable = Boolean(OptionalLinearGradient);
+
   const content = children ?? text ?? null;
   const normalizedSpread = Math.max(spread, MIN_SPREAD);
   const shouldRepeat = repeat && !once;
-  const shouldAnimate = once || shouldRepeat;
+  const supportsShimmer = isWeb || gradientModuleAvailable;
+  const shouldAnimate = supportsShimmer && (once || shouldRepeat);
 
   const extraDistance = normalizedSpread - 1;
   const minPosition = -extraDistance;
@@ -186,7 +193,6 @@ export function ShimmerText(props: ShimmerTextProps) {
   const debugFlag = useSharedValue(debug ? 1 : 0);
   const startX = useSharedValue(0);
   const endX = useSharedValue(0);
-  const isWeb = Platform.OS === 'web';
 
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const [gradientWidth, setGradientWidth] = useState(0);
@@ -229,7 +235,7 @@ export function ShimmerText(props: ShimmerTextProps) {
     console.log(`[ShimmerText] ${message}`);
   }, [debug]);
   useEffect(() => {
-    if (isWeb) {
+    if (isWeb || !gradientModuleAvailable) {
       return;
     }
 
@@ -281,7 +287,7 @@ export function ShimmerText(props: ShimmerTextProps) {
       logEvent('cleanup -> cancel animation');
       cancelAnimation(progress);
     };
-  }, [delay, duration, repeat, once, repeatDelay, progress, logEvent, debugFlag, isWeb, shouldAnimate, shouldRepeat]);
+  }, [delay, duration, repeat, once, repeatDelay, progress, logEvent, debugFlag, isWeb, shouldAnimate, shouldRepeat, gradientModuleAvailable]);
 
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -389,6 +395,19 @@ export function ShimmerText(props: ShimmerTextProps) {
   }, [isWeb, shouldAnimate, shouldRepeat, duration, delay, repeatDelay, direction, initialWebPosition, finalWebPosition, maxPosition, positionRange, minPosition]);
 
   const renderNative = () => {
+    if (!gradientModuleAvailable || !OptionalLinearGradient) {
+      return (
+        <Text
+          {...textProps}
+          color={baseColor}
+          onLayout={externalOnLayout}
+          style={style}
+        >
+          {content}
+        </Text>
+      );
+    }
+
     if (layout.width === 0 || layout.height === 0) {
       return (
         <Text
@@ -442,7 +461,7 @@ export function ShimmerText(props: ShimmerTextProps) {
                 gradientAnimatedStyle,
               ]}
             >
-              <LinearGradient
+              <OptionalLinearGradient
                 colors={resolvedColors}
                 locations={gradientLocations as any}
                 start={{ x: direction === 'rtl' ? 1 : 0, y: 0.5 }}
@@ -475,15 +494,6 @@ export function ShimmerText(props: ShimmerTextProps) {
 
     return (
       <>
-        {/* <Text
-          {...textProps}
-          as={(textProps as any)?.as ?? 'span'}
-          color={baseColor}
-          onLayout={handleLayout}
-          style={style}
-        >
-          {content}
-        </Text> */}
         <GradientText
           {...textProps as any}
           as={(textProps as any)?.as ?? 'span'}

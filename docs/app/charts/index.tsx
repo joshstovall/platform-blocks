@@ -7,7 +7,7 @@ import { PageLayout } from '../../components/PageLayout';
 import { Text, Flex, Card, Tabs, Icon, Button, Chip } from '@platform-blocks/ui';
 import type { TabItem } from '@platform-blocks/ui';
 import { CHART_CATEGORIES, CHART_CATEGORY_ORDER, getAllChartDocs, getChartsByCategory, type ChartDocEntry, type ChartCategoryKey } from '../../config/charts';
-import { hasNewDemosArtifacts, getNewDemos } from '../../utils/newDemosLoader';
+import { hasNewDemosArtifacts, getNewDemos } from '../../utils/demosLoader';
 import { useBrowserTitle, formatPageTitle } from '../../hooks/useBrowserTitle';
 
 interface ChartCategorySectionProps {

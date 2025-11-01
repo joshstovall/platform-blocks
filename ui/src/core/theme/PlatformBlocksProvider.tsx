@@ -9,6 +9,7 @@ import { OverlayProvider, OverlayRenderer } from '../providers';
 import { SpotlightController } from '../../components/Spotlight/SpotlightController';
 import { I18nProvider } from '../i18n';
 import { UniversalCSS } from '../utils/UniversalCSS';
+import type { HighlightProps as HighlightComponentProps } from '../../components/Highlight';
 import {
   ThemeModeProvider,
   ThemeModeConfig,
@@ -109,7 +110,7 @@ export interface PlatformBlocksProviderProps extends Omit<PlatformBlocksThemePro
     actions?: any[]; // optional initial actions; apps can still mount their own Spotlight if needed
     placeholder?: string;
     limit?: number;
-    highlightQuery?: boolean;
+    highlightQuery?: boolean | HighlightComponentProps['highlight'];
     /** Render Spotlight even when no actions provided (useful to inject later) */
     alwaysMount?: boolean;
   };

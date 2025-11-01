@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Select, Flex, Text } from '@platform-blocks/ui';
+import { Select, Flex, Text, Block } from '@platform-blocks/ui';
 
 export default function CustomSelectDemo() {
   const [value, setValue] = useState<string | null>(null);
@@ -9,7 +9,7 @@ export default function CustomSelectDemo() {
     { label: '🪐 Planet', value: 'planet' },
     { label: '☀️ Sun', value: 'sun' },
   ];
-  
+
   return (
     <Flex direction="column" gap={12}>
       <Select
@@ -19,18 +19,20 @@ export default function CustomSelectDemo() {
         value={value || undefined}
         onChange={(val) => setValue(val as string)}
         renderOption={(opt, _active, selected) => (
-          <Text
-            key={String(opt.value)}
-            onPress={() => !opt.disabled && setValue(opt.value as string)}
-            style={{
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              backgroundColor: selected ? 'rgba(59,130,246,0.10)' : 'transparent',
-              fontWeight: selected ? '600' : '400'
-            }}
-          >
-            {opt.label} {selected ? '✓' : ''}
-          </Text>
+          <Block>
+            <Text
+              key={String(opt.value)}
+              onPress={() => !opt.disabled && setValue(opt.value as string)}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: selected ? 'rgba(59,130,246,0.10)' : 'transparent',
+                fontWeight: selected ? '600' : '400'
+              }}
+            >
+              {opt.label} {selected ? '✓' : ''}
+            </Text>
+          </Block>
         )}
       />
       {value && <Text size="sm" colorVariant="secondary">Selected: {value}</Text>}

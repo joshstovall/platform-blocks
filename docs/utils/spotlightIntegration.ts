@@ -8,7 +8,7 @@ import {
   getAllNewComponents,
   type NewComponentIndexEntry,
   searchNewDocs
-} from './newDemosLoader';
+} from './demosLoader';
 import { getCoreComponentConfig } from '../config/coreComponents';
 import { GITHUB_REPO } from 'config/urls';
 
@@ -88,7 +88,7 @@ function createSearchActions(): SpotlightAction[] { return []; }
  */
 function createNavigationActions(router: any): SpotlightAction[] {
   const navActions: SpotlightAction[] = [];
-  
+
   // Extract all searchable items from NAV_SECTIONS
   NAV_SECTIONS.forEach(section => {
     section.items.forEach(item => {
@@ -160,7 +160,7 @@ function createNavigationActions(router: any): SpotlightAction[] {
             }
           }
           // Fallback to React Native Linking (also works in web if window.open missing)
-          Linking.openURL(url).catch(() => {});
+          Linking.openURL(url).catch(() => { });
         } catch (e) {
           // Swallow errors silently; optionally could surface toast
         }
@@ -175,25 +175,25 @@ function createNavigationActions(router: any): SpotlightAction[] {
  * Hook for Spotlight integration with unified docs
  */
 export function useSpotlightData(router: any) {
-  
+
   const getSpotlightActions = React.useCallback((query: string = ''): (SpotlightAction | SpotlightActionGroup)[] => {
-    console.log('getSpotlightActions called with query:', query);
-    
+    // console.log('getSpotlightActions called with query:', query);
+
     // Get base navigation actions
     const navActions = createNavigationActions(router);
-    console.log('Created navigation actions:', navActions.length);
-    
+    // console.log('Created navigation actions:', navActions.length);
+
     // Get all components for component actions
-  const allComponents = getAllNewComponents();
+    const allComponents = getAllNewComponents();
     const componentActions = createComponentActions(allComponents, router);
-    console.log('Created component actions:', componentActions.length);
-    
+    // console.log('Created component actions:', componentActions.length);
+
     // If no query, return basic navigation and popular components
     if (!query.trim()) {
       const popularComponents = allComponents
         .filter(comp => ['Button', 'Text', 'Card', 'Input', 'Icon'].includes(comp.name))
         .slice(0, 5);
-      
+
       return [
         ...navActions,
         {
@@ -202,14 +202,14 @@ export function useSpotlightData(router: any) {
         }
       ];
     }
-    
+
     // Search through documentation
     const searchResults = searchNewDocs(query);
     const searchActions: SpotlightAction[] = searchResults.map(r => ({
       id: r.id,
       label: r.title,
       description: r.description,
-  icon: r.type === 'demo' ? 'code' : resolveComponentIcon(r.title.split('.')[0]),
+      icon: r.type === 'demo' ? 'code' : resolveComponentIcon(r.title.split('.')[0]),
       keywords: r.keywords,
       category: r.type === 'demo' ? 'Examples' : 'Components',
       onPress: () => {
@@ -224,7 +224,7 @@ export function useSpotlightData(router: any) {
         }
       }
     }));
-    
+
     // Filter components by query
     const filteredComponents = (allComponents as any[]).filter(comp =>
       comp.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -232,9 +232,9 @@ export function useSpotlightData(router: any) {
       (comp.description || '').toLowerCase().includes(query.toLowerCase()) ||
       (comp.category || '').toLowerCase().includes(query.toLowerCase())
     );
-    
+
     const filteredComponentActions = createComponentActions(filteredComponents, router);
-    
+
     // Filter navigation actions
     const filteredNavActions = navActions.filter(action =>
       action.label.toLowerCase().includes(query.toLowerCase()) ||
@@ -245,10 +245,10 @@ export function useSpotlightData(router: any) {
     // Separate navigation and quick actions
     const navigationActions = filteredNavActions.filter(action => action.category === 'Navigation');
     const quickActions = filteredNavActions.filter(action => action.category === 'Quick Actions');
-    
+
     // Group results
     const results: (SpotlightAction | SpotlightActionGroup)[] = [];
-    
+
     if (navigationActions.length > 0) {
       results.push({
         group: 'Navigation',
@@ -262,24 +262,24 @@ export function useSpotlightData(router: any) {
         actions: quickActions
       });
     }
-    
+
     if (filteredComponentActions.length > 0) {
       results.push({
         group: 'Components',
         actions: filteredComponentActions.slice(0, 8) // Limit to top 8
       });
     }
-    
+
     if (searchActions.length > 0) {
       results.push({
         group: 'Search Results',
         actions: searchActions.slice(0, 10) // Limit to top 10
       });
     }
-    
+
     return results;
   }, [router]);
-  
+
   return {
     getSpotlightActions
   };
@@ -292,11 +292,11 @@ export function getQuickActions(router: any): SpotlightActionGroup[] {
   const popularComponents = (getAllNewComponents() || [])
     .filter((comp: any) => ['Button', 'Text', 'Card', 'Input', 'Icon', 'Flex', 'Dialog'].includes(comp.name))
     .slice(0, 6);
-  
+
   const navActions = createNavigationActions(router);
   const navigationActions = navActions.filter(action => action.category === 'Navigation');
   const quickActionsList = navActions.filter(action => action.category === 'Quick Actions');
-  
+
   return [
     {
       group: 'Navigation',

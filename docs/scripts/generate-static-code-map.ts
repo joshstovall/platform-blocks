@@ -4,7 +4,7 @@
  *
  * It scans docs/data/generated/demo-code-*.json files (produced by the new demos generator)
  * and writes docs/utils/generated/codeJsonLoaders.ts which exports a CODE_JSON_LOADERS map
- * used by newDemosLoader to avoid template string requires (bundler-friendly).
+ * used by demosLoader to avoid template string requires (bundler-friendly).
  */
 import * as fs from 'fs';
 import * as path from 'path';

@@ -1,7 +1,6 @@
 import { Linking } from 'react-native';
-import { Text, Button, Accordion, P, Alert, Row, BrandButton, Flex } from '@platform-blocks/ui';
+import { Text, Accordion, P, Flex, Space } from '@platform-blocks/ui';
 import { Icon } from '@platform-blocks/ui';
-import { router } from 'expo-router';
 import { PageWrapper } from 'components/PageWrapper';
 import { useBrowserTitle, formatPageTitle } from 'hooks/useBrowserTitle';
 import { DocsPageHeader } from '../../components/DocsPageHeader';
@@ -51,45 +50,13 @@ export default function FAQScreen() {
       >
         Frequently Asked Questions
       </DocsPageHeader>
+      <Space h={16} />
       <Accordion
         type="single"
         variant="separated"
         items={FAQ_DATA}
         defaultExpanded={['what-is']}
       />
-      {/* Still have questions? */}
-      <Alert p="lg">
-        <Flex direction="column" gap="md">
-          <Text variant="h3">
-            Still have questions?
-          </Text>
-          <Text variant="body" colorVariant="secondary">
-            Can't find what you're looking for? We're here to help!
-          </Text>
-          <Row>
-            <Button
-              title="Get Support"
-              variant="gradient"
-              onPress={() => router.push('/support')}
-              px="lg"
-            />
-            <BrandButton
-              brand="github"
-              title="View on GitHub"
-              variant="secondary"
-              onPress={() => router.push(GITHUB_REPO)}
-              px="lg"
-            />
-            <BrandButton
-              brand="discord"
-              title="Join us on Discord"
-              variant="secondary"
-              onPress={() => router.push(DISCORD_INVITE)}
-              px="lg"
-            />
-          </Row>
-        </Flex>
-      </Alert>
     </PageWrapper>
   );
 }

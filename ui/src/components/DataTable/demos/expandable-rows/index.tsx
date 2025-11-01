@@ -201,6 +201,7 @@ export default function Demo() {
       header: 'Project Name',
       accessor: 'name',
       sortable: true,
+      width: 4,
       cell: (value: any, row: Project) => (
         <Flex direction="column" gap={4}>
           <Text weight="semibold" style={{ fontSize: 14 }}>{value}</Text>
@@ -210,35 +211,7 @@ export default function Demo() {
         </Flex>
       )
     },
-    {
-      key: 'status',
-      header: 'Status',
-      accessor: 'status',
-      sortable: true,
-      cell: (value: any) => (
-        <Chip
-          size="sm"
-          variant="light"
-          color={getStatusColor(value)}
-        >
-          {value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ')}
-        </Chip>
-      )
-    },
-    {
-      key: 'priority',
-      header: 'Priority',
-      accessor: 'priority',
-      sortable: true,
-      cell: (value: any) => (
-        <Indicator
-          size="sm"
-          color={getPriorityColor(value)}
-        >
-          {value.toUpperCase()}
-        </Indicator>
-      )
-    },
+   
     {
       key: 'progress',
       header: 'Progress',
@@ -257,8 +230,7 @@ export default function Demo() {
               width: `${value}%`,
               height: '100%',
               backgroundColor: value >= 80 ? '#34C759' : value >= 50 ? '#FFB800' : '#FF3B30',
-              borderRadius: 4,
-              transition: 'width 0.3s ease'
+              borderRadius: 4
             }} />
           </Block>
           <Text variant="caption" style={{ fontSize: 12, fontWeight: '600' }}>
@@ -302,7 +274,7 @@ export default function Demo() {
   ];
 
   const renderExpandedRow = (project: Project) => (
-    <Block style={{ padding: '16px 0' }}>
+    <Block style={{ paddingVertical: 16 }}>
       <Flex direction="column" gap={24}>
         {/* Project Description */}
         <Block>
@@ -334,7 +306,7 @@ export default function Demo() {
             <Text weight="semibold" style={{ fontSize: 14, marginBottom: 12, color: '#1D1D1F' }}>
               Team Members
             </Text>
-            <Block style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+            <Flex gap={8} wrap="wrap">
               {project.teamMembers.slice(0, 4).map((member) => (
                 <Avatar
                   key={member.name}
@@ -352,7 +324,7 @@ export default function Demo() {
                   +{project.teamMembers.length - 4} more
                 </Text>
               )}
-            </Block>
+            </Flex>
           </Block>
         </Flex>
 
@@ -361,7 +333,7 @@ export default function Demo() {
           <Text weight="semibold" style={{ fontSize: 14, marginBottom: 12, color: '#1D1D1F' }}>
             Project Milestones
           </Text>
-          <Block style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+          <Flex gap={12} wrap="wrap">
             {project.milestones.map((milestone, index) => (
               <Flex key={index} align="center" gap={8}>
                 <Block style={{
@@ -385,7 +357,7 @@ export default function Demo() {
                 </Block>
               </Flex>
             ))}
-          </Block>
+          </Flex>
         </Block>
 
         {/* Risks */}
@@ -394,29 +366,31 @@ export default function Demo() {
             <Text weight="semibold" style={{ fontSize: 14, marginBottom: 12, color: '#1D1D1F' }}>
               Risk Assessment
             </Text>
-            <Block style={{ display: 'grid', gap: 8 }}>
+            <Flex direction="column" gap={8}>
               {project.risks.map((risk, index) => (
                 <Block key={index} style={{
                   padding: 12,
                   backgroundColor: '#F9F9F9',
                   borderRadius: 8,
-                  borderLeft: `4px solid ${risk.severity === 'high' ? '#FF3B30' :
-                      risk.severity === 'medium' ? '#FFB800' : '#34C759'
-                    }`
+                  borderLeftWidth: 4,
+                  borderLeftColor: risk.severity === 'high' ? '#FF3B30' :
+                    risk.severity === 'medium' ? '#FFB800' : '#34C759'
                 }}>
                   <Flex align="center" gap={8} style={{ marginBottom: 4 }}>
                     <Indicator size="xs" color={
                       risk.severity === 'high' ? 'danger' :
                         risk.severity === 'medium' ? 'warning' : 'success'
                     }>
-                      {risk.severity.toUpperCase()}
+                      <Text variant="caption" weight="bold" style={{ color: '#fff', fontSize: 9 }}>
+                        {risk.severity.toUpperCase()}
+                      </Text>
                     </Indicator>
                     <Text weight="semibold" style={{ fontSize: 12 }}>{risk.title}</Text>
                   </Flex>
                   <Text style={{ fontSize: 11, color: '#6E6E73' }}>{risk.description}</Text>
                 </Block>
               ))}
-            </Block>
+            </Flex>
           </Block>
         )}
       </Flex>
@@ -441,8 +415,10 @@ export default function Demo() {
           {expandedRows.length === sampleData.length ? 'Collapse All' : 'Expand All'}
         </Button>
 
-        <Block style={{ fontSize: 13, color: '#6E6E73' }}>
-          {expandedRows.length} of {sampleData.length} rows expanded
+        <Block>
+          <Text style={{ fontSize: 13, color: '#6E6E73' }}>
+            {expandedRows.length} of {sampleData.length} rows expanded
+          </Text>
         </Block>
       </Block>
 

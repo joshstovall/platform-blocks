@@ -1,15 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import {  View, StyleSheet, Pressable, Platform, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Pressable, Platform, Animated, Easing } from 'react-native';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useRouter } from 'expo-router';
 import { Text, Card, Chip, Icon, useTheme, Input, Row, Grid, GridItem, Title, CodeBlock, CopyButton, Skeleton, TableOfContents, PasswordInput, PinInput } from '@platform-blocks/ui';
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
 import { PageLayout } from '../components';
+import { platformShadow } from '../utils/platformShadow';
 // Using new demos system exclusively
-import { getAllNewComponents, hasNewDemosArtifacts } from '../utils/newDemosLoader';
-import { 
-  CORE_COMPONENTS, 
-  getCoreComponentConfig, 
+import { getAllNewComponents, hasNewDemosArtifacts } from '../utils/demosLoader';
+import {
+  CORE_COMPONENTS,
+  getCoreComponentConfig,
   isCoreComponent,
   getCoreCategories,
   CATEGORY_COLORS,
@@ -41,17 +42,17 @@ export default function ComponentListScreen() {
         const urlParams = new URLSearchParams(window.location.search);
         const categoryParam = urlParams.get('category');
         const componentName = urlParams.get('componentName');
-        
+
         // Also check if the path ends with ComponentDetail (for legacy URLs)
         const isComponentDetailPath = window.location.pathname.includes('ComponentDetail');
-        
+
         // If componentName is in the URL or path indicates ComponentDetail, navigate to ComponentDetail
         if (componentName || isComponentDetailPath) {
           const targetComponentName = componentName || urlParams.get('componentName') || 'Unknown';
           router.push(`/components/${targetComponentName}`);
           return; // Don't set category if we're navigating away
         }
-        
+
         if (categoryParam) {
           setSelectedCategory(categoryParam.toLowerCase());
         }
@@ -69,13 +70,13 @@ export default function ComponentListScreen() {
         const categoryParam = urlParams.get('category');
         if (categoryParam) {
           setSelectedCategory(categoryParam.toLowerCase());
-          } else {
-            setSelectedCategory(null);
-          }
-        } catch (error) {
-          // Silently ignore URL parsing errors
+        } else {
+          setSelectedCategory(null);
         }
+      } catch (error) {
+        // Silently ignore URL parsing errors
       }
+    }
   }, []);
 
   // Update URL when category changes
@@ -110,13 +111,13 @@ export default function ComponentListScreen() {
     return allComponents.filter((component) => {
       const coreConfig = getCoreComponentConfig(component.name);
       if (!coreConfig) return false; // Skip if not a core component
-      
-      const matchesSearch = searchQuery === '' || 
+
+      const matchesSearch = searchQuery === '' ||
         component.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (component.description && component.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
       const matchesCategory = selectedCategory === null || coreConfig.category === selectedCategory;
-      
+
       return matchesSearch && matchesCategory;
     });
   }, [allComponents, searchQuery, selectedCategory]);
@@ -132,127 +133,127 @@ export default function ComponentListScreen() {
 
   // Get categories in the desired order, but only show those that have components
   const categories = getCoreCategories();
-  const orderedCategoriesWithComponents = categories.filter(category => 
+  const orderedCategoriesWithComponents = categories.filter(category =>
     componentsByCategory[category] && componentsByCategory[category].length > 0
   );
 
   return (
-      <PageLayout contentContainerStyle={styles.content}>
-        <Title 
-        afterline 
+    <PageLayout contentContainerStyle={styles.content}>
+      <Title
+        afterline
         variant='h1' weight="bold"
         action={<Input
-            placeholder="Search components..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            leftSection={
-              <Icon name="search" size="sm" color="#a0aec0" />
-            }
-            rightSection={
-              searchQuery.length > 0 ? (
-                <Pressable onPress={() => setSearchQuery('')}>
-                  <Icon name="close" size="sm" color="#a0aec0" />
-                </Pressable>
-              ) : null
-            }
-          />}
-        >Components</Title>
-        <Text variant="body" colorVariant="secondary" mb="lg">
-          Explore all {allComponents.length} components in the PlatformBlocks library
+          placeholder="Search components..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          leftSection={
+            <Icon name="search" size="sm" color="#a0aec0" />
+          }
+          rightSection={
+            searchQuery.length > 0 ? (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <Icon name="close" size="sm" color="#a0aec0" />
+              </Pressable>
+            ) : null
+          }
+        />}
+      >Components</Title>
+      <Text variant="body" colorVariant="secondary" mb="lg">
+        Explore all {allComponents.length} components in the PlatformBlocks library
+      </Text>
+
+
+      {/* Category Filters */}
+      <View style={styles.filtersContainer}>
+        <Row wrap="wrap" gap={8}>
+          {(() => {
+            // Map category -> theme palette key / fallback color index
+            const categoryPaletteMap: Record<string, { key: keyof typeof theme.colors; index?: number }> = {
+              charts: { key: 'indigo' as any },
+              data: { key: 'cyan' as any },
+              input: { key: 'lime' as any },
+              display: { key: 'amber' as any },
+              feedback: { key: 'pink' as any },
+              layout: { key: 'violet' as any },
+              navigation: { key: 'purple' as any },
+              typography: { key: 'sky' as any },
+              form: { key: 'success' as any },
+              media: { key: 'indigo' as any },
+              dates: { key: 'teal' as any },
+              others: { key: 'gray' as any }
+            };
+            const cats = availableCategories;
+            const chips: { label: string; value: string; color: string }[] = [
+              { label: 'All', value: 'all', color: (theme.colors.gray?.[4]) || '#94A3B8' }
+            ];
+            cats.forEach(c => {
+              const entry = categoryPaletteMap[c];
+              const palette = entry && (theme.colors as any)[entry.key];
+              const baseColor = palette ? palette[5] : '#666';
+              chips.push({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c, color: baseColor });
+            });
+            return chips.map(chip => {
+              const active = (!selectedCategory && chip.value === 'all') || selectedCategory === chip.value;
+              return (
+                <Chip
+                  key={chip.value}
+                  size="sm"
+                  variant={active ? 'filled' : 'outline'}
+                  onPress={() => handleCategoryFilter(chip.value === 'all' ? null : chip.value)}
+                  style={{
+                    backgroundColor: active ? chip.color : 'transparent',
+                    borderColor: chip.color,
+                  }}
+                  textStyle={{ color: active ? '#fff' : chip.color, fontWeight: active ? '600' : '400' }}
+                >
+                  {chip.label}
+                </Chip>
+              );
+            });
+          })()}
+        </Row>
+      </View>
+
+      {/* Results Count */}
+      <View style={styles.resultsContainer}>
+        <Text variant="caption" colorVariant="muted">
+          {filteredComponents.length} components
+          {searchQuery && ` matching "${searchQuery}"`}
+          {selectedCategory && ` in ${selectedCategory}`}
         </Text>
+      </View>
 
-       
-        {/* Category Filters */}
-        <View style={styles.filtersContainer}>
-          <Row wrap="wrap" gap={8}>
-            {(() => {
-              // Map category -> theme palette key / fallback color index
-              const categoryPaletteMap: Record<string, { key: keyof typeof theme.colors; index?: number }> = {
-                charts: { key: 'indigo' as any },
-                data: { key: 'cyan' as any },
-                input: { key: 'lime' as any },
-                display: { key: 'amber' as any },
-                feedback: { key: 'pink' as any },
-                layout: { key: 'violet' as any },
-                navigation: { key: 'purple' as any },
-                typography: { key: 'sky' as any },
-                form: { key: 'success' as any },
-                media: { key: 'indigo' as any },
-                dates: { key: 'teal' as any },
-                others: { key: 'gray' as any }
-              };
-              const cats = availableCategories;
-              const chips: { label: string; value: string; color: string }[] = [
-                { label: 'All', value: 'all', color: (theme.colors.gray?.[4]) || '#94A3B8' }
-              ];
-              cats.forEach(c => {
-                const entry = categoryPaletteMap[c];
-                const palette = entry && (theme.colors as any)[entry.key];
-                const baseColor = palette ? palette[5] : '#666';
-                chips.push({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c, color: baseColor });
-              });
-              return chips.map(chip => {
-                const active = (!selectedCategory && chip.value === 'all') || selectedCategory === chip.value;
-                return (
-                  <Chip
-                    key={chip.value}
-                    size="sm"
-                    variant={active ? 'filled' : 'outline'}
-                    onPress={() => handleCategoryFilter(chip.value === 'all' ? null : chip.value)}
-                    style={{
-                      backgroundColor: active ? chip.color : 'transparent',
-                      borderColor: chip.color,
-                    }}
-                    textStyle={{ color: active ? '#fff' : chip.color, fontWeight: active ? '600' : '400' }}
-                  >
-                    {chip.label}
-                  </Chip>
-                );
-              });
-            })()}
-          </Row>
-        </View>
-
-        {/* Results Count */}
-        <View style={styles.resultsContainer}>
-          <Text variant="caption" colorVariant="muted">
-            {filteredComponents.length} components
-            {searchQuery && ` matching "${searchQuery}"`}
-            {selectedCategory && ` in ${selectedCategory}`}
+      {!demosReady && (
+        <Card variant="outline" style={styles.emptyState}>
+          <Text variant="body" colorVariant="muted" align="center" style={{ marginBottom: 8 }}>
+            Component demos haven&apos;t been generated yet for this build.
           </Text>
-        </View>
+          <Text variant="caption" colorVariant="secondary" align="center">
+            Run <Text variant="caption" weight="bold">npm run demos:generate</Text> before building to include metadata and demo modules.
+          </Text>
+        </Card>
+      )}
 
-        {!demosReady && (
-          <Card variant="outline" style={styles.emptyState}>
-            <Text variant="body" colorVariant="muted" align="center" style={{ marginBottom: 8 }}>
-              Component demos haven&apos;t been generated yet for this build.
-            </Text>
-            <Text variant="caption" colorVariant="secondary" align="center">
-              Run <Text variant="caption" weight="bold">npm run demos:generate</Text> before building to include metadata and demo modules.
-            </Text>
-          </Card>
-        )}
-
-        {/* Unified Components Grid */}
-        {filteredComponents.length === 0 ? (
-          <Card variant="outline" style={styles.emptyState}>
-            <Text variant="body" colorVariant="muted" align="center">
-              No components found matching your criteria.
-            </Text>
-          </Card>
-        ) : (
-          <Grid columns={gridColumns} gap={16}>
-            {filteredComponents.map((component) => (
-              <AnimatedComponentCard
-                key={component.name}
-                component={component}
-                onPress={() => handleComponentPress(component.name)}
-                theme={theme}
-              />
-            ))}
-          </Grid>
-        )}
-      </PageLayout>
+      {/* Unified Components Grid */}
+      {filteredComponents.length === 0 ? (
+        <Card variant="outline" style={styles.emptyState}>
+          <Text variant="body" colorVariant="muted" align="center">
+            No components found matching your criteria.
+          </Text>
+        </Card>
+      ) : (
+        <Grid columns={gridColumns} gap={16}>
+          {filteredComponents.map((component) => (
+            <AnimatedComponentCard
+              key={component.name}
+              component={component}
+              onPress={() => handleComponentPress(component.name)}
+              theme={theme}
+            />
+          ))}
+        </Grid>
+      )}
+    </PageLayout>
   );
 }
 
@@ -306,7 +307,7 @@ const AnimatedComponentCard: React.FC<AnimatedComponentCardProps> = ({ component
         <Pressable
           onPress={onPress}
           onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+          onPressOut={handlePressOut}
           style={({ pressed }) => [Platform.OS === 'web' && pressed && styles.cardPressed]}
           accessibilityRole={Platform.OS === 'web' ? 'button' : undefined}
         >
@@ -410,15 +411,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)' }
-      : {
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-          elevation: 2,
-        }),
+    ...platformShadow({ color: '#000', opacity: 0.05, offsetY: 2, radius: 8, elevation: 2 }),
   },
   cardHeader: {
     flexDirection: 'row',

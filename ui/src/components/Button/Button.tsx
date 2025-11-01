@@ -9,11 +9,13 @@ import { Loader } from '../Loader';
 import { Text } from '../Text';
 import { Tooltip } from '../Tooltip';
 import { ButtonProps } from './types';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useHaptics } from '../../hooks/useHaptics';
 import { DESIGN_TOKENS, getUnifiedComponentSize } from '../../core/unified-styles';
 import { useFocus, useReducedMotion, useAnnouncer } from '../../core/accessibility/hooks';
 import { createAccessibilityProps } from '../../core/accessibility/utils';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
+
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
 
 const getButtonStyles = (
   theme: PlatformBlocksTheme,
@@ -181,6 +183,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   } = otherProps;
   // Theme
   const theme = useTheme();
+  const effectiveVariant = variant === 'gradient' && !hasLinearGradient ? 'filled' : variant;
 
   // Accessibility hooks
   const { getDuration } = useReducedMotion();
@@ -259,7 +262,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const radiusStyles = createRadiusStyles(radius, height, 'button');
 
   // Handle shadow prop - use default 'sm' for primary/filled/secondary/gradient variants if no shadow specified
-  const effectiveShadow = shadowProps.shadow ?? ((variant === 'filled' || variant === 'secondary' || variant === 'gradient') ? 'sm' : 'none');
+  const effectiveShadow = shadowProps.shadow ?? ((effectiveVariant === 'filled' || effectiveVariant === 'secondary' || effectiveVariant === 'gradient') ? 'sm' : 'none');
   const shadowStyles = getShadowStyles({ shadow: effectiveShadow }, theme, 'button');
 
   const spacingStyles = getSpacingStyles(spacingProps);
@@ -296,7 +299,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   };
 
   const resolvedCustomColor = resolveTokenColor(colorVariant);
-  const buttonStyles = getButtonStyles(theme, variant, size, disabled, loading, height, radiusStyles, shadowStyles, resolvedCustomColor, isIconButton, layoutProps.fullWidth || false);
+  const buttonStyles = getButtonStyles(theme, effectiveVariant, size, disabled, loading, height, radiusStyles, shadowStyles, resolvedCustomColor, isIconButton, layoutProps.fullWidth || false);
 
   // derive contrasted text color if filled/filled background
   const pickContrast = (bg?: string): string => {
@@ -313,10 +316,10 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const textColor = useMemo(() => {
     if (textColorProp) return resolveTokenColor(textColorProp) || textColorProp;
     if (resolvedCustomColor) {
-      if (variant === 'filled' || variant === 'gradient') return pickContrast(resolvedCustomColor);
-      if (variant === 'outline' || variant === 'ghost' || variant === 'none' || variant === 'secondary') return resolvedCustomColor;
+      if (effectiveVariant === 'filled' || effectiveVariant === 'gradient') return pickContrast(resolvedCustomColor);
+      if (effectiveVariant === 'outline' || effectiveVariant === 'ghost' || effectiveVariant === 'none' || effectiveVariant === 'secondary') return resolvedCustomColor;
     }
-    switch (variant) {
+    switch (effectiveVariant) {
       case 'filled': return '#FFFFFF';
       case 'gradient': return '#FFFFFF';
       case 'secondary': return theme.colors.gray[7];
@@ -326,7 +329,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
       case 'none': return 'currentColor';
       default: return '#FFFFFF';
     }
-  }, [textColorProp, resolvedCustomColor, variant, theme.colors.gray, theme.colors.primary]);
+  }, [textColorProp, resolvedCustomColor, effectiveVariant, theme.colors.gray, theme.colors.primary]);
 
   // Memoize text props
   const textProps = useMemo(() => ({
@@ -344,10 +347,10 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   // Memoize loader color calculation
   const loaderColor = useMemo(() => {
     if (resolvedCustomColor) {
-      if (variant === 'filled') return pickContrast(resolvedCustomColor);
+      if (effectiveVariant === 'filled') return pickContrast(resolvedCustomColor);
       return resolvedCustomColor;
     }
-    switch (variant) {
+    switch (effectiveVariant) {
       case 'filled': return '#FFFFFF';
       case 'secondary': return theme.colors.gray[7];
       case 'outline': return theme.colors.primary[5];
@@ -357,7 +360,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
       case 'none': return 'currentColor';
       default: return '#FFFFFF';
     }
-  }, [resolvedCustomColor, variant, theme.colors.gray, theme.colors.primary]);
+  }, [resolvedCustomColor, effectiveVariant, theme.colors.gray, theme.colors.primary]);
 
   // Helper function to inject color into icon components
   const renderIconWithColor = (iconElement: React.ReactNode) => {
@@ -480,7 +483,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
             },
             // subtle visual feedback beyond scale on supported platforms
             pressed && !isInteractionDisabled ? {
-              opacity: variant === 'ghost' || variant === 'none' ? 0.6 : 0.9,
+              opacity: effectiveVariant === 'ghost' || effectiveVariant === 'none' ? 0.6 : 0.9,
               ...(Platform.OS !== 'web' ? { transform: [{ translateY: 1 }] } : {})
             } : null,
             style,
@@ -496,16 +499,18 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
           disabled={isInteractionDisabled}
         >
 
-          {variant === 'gradient' && <LinearGradient
-            colors={
-              variant === 'gradient'
-                ? (resolvedCustomColor ? [resolvedCustomColor, theme.colors.primary[7]] : [theme.colors.primary[5], theme.colors.primary[7]])
-                : ['transparent', 'transparent']
-            }
-            style={{ position: 'absolute', zIndex: -1, top: 0, left: 0, right: 0, bottom: 0, borderRadius: radiusStyles.borderRadius }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />}
+          {variant === 'gradient' && hasLinearGradient && (
+            <OptionalLinearGradient
+              colors={
+                resolvedCustomColor
+                  ? [resolvedCustomColor, theme.colors.primary[7]]
+                  : [theme.colors.primary[5], theme.colors.primary[7]]
+              }
+              style={{ position: 'absolute', zIndex: -1, top: 0, left: 0, right: 0, bottom: 0, borderRadius: radiusStyles.borderRadius }}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            />
+          )}
 
           {loading ? (
             <>

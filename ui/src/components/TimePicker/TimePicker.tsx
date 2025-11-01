@@ -336,7 +336,6 @@ export const TimePicker: React.FC<TimePickerProps> = ({
                   size="sm"
                   weight="medium"
                   style={{
-                    color: theme.colors.gray[6],
                     marginBottom: 12,
                     textAlign: 'center',
                   }}
@@ -363,7 +362,6 @@ export const TimePicker: React.FC<TimePickerProps> = ({
                   size="sm"
                   weight="medium"
                   style={{
-                    color: theme.colors.gray[6],
                     marginBottom: 12,
                     textAlign: 'center',
                   }}

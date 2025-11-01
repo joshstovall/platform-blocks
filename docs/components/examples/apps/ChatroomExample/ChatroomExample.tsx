@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { SectionList, View, Platform, TextInput, LayoutChangeEvent } from 'react-native';
-import { Text, Card, Button, Input, Flex, Icon, useTheme, Avatar, Container, Chip } from '@platform-blocks/ui';
+import React, { useState, useRef } from 'react';
+import { SectionList, View, TextInput } from 'react-native';
+import { Text, Button, Flex, Icon, useTheme, Container, Chip } from '@platform-blocks/ui';
+import { platformShadow } from '../../../../utils/platformShadow';
 import { ChatroomHeader } from './ChatroomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -62,36 +63,6 @@ export function ChatroomExample() {
   const onContentSizeChange = (e: any) => {
     const next = Math.min(140, Math.max(40, e.nativeEvent.contentSize.height + 8));
     setHeight(next);
-  };
-
-  const getStatusIcon = (status: MessageStatus) => {
-    switch (status) {
-      case 'sending':
-        return 'plus'; // Using available icon
-      case 'sent':
-        return 'check';
-      case 'delivered':
-        return 'check';  // Could use double check if available
-      case 'read':
-        return 'check';
-      default:
-        return 'plus';
-    }
-  };
-
-  const getStatusColor = (status: MessageStatus) => {
-    switch (status) {
-      case 'sending':
-        return theme.colors.gray[4];
-      case 'sent':
-        return theme.colors.gray[5];
-      case 'delivered':
-        return theme.colors.primary[4];
-      case 'read':
-        return theme.colors.success[5];
-      default:
-        return theme.colors.gray[4];
-    }
   };
 
   // Group messages by date for SectionList
@@ -190,12 +161,8 @@ export function ChatroomExample() {
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 12,
-                // Additional shadow styles to ensure visibility
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 4,
                 elevation: 5,
+                ...platformShadow({ color: '#000', opacity: 0.25, offsetY: 2, radius: 4, elevation: 5 })
               }}
             >
               {title}
@@ -235,7 +202,25 @@ export function ChatroomExample() {
                 title=""
                 style={{ width: 36, height: 36, minWidth: 36, borderRadius: 18 }}
               />
-              <View style={{ flex: 1, backgroundColor: inputBg, borderRadius: 20, maxHeight: 160, paddingHorizontal: 14, paddingVertical: 4, borderWidth: 1, borderColor: inputBorder, shadowColor: chipShadow, shadowOffset: { width: 0, height: 1 }, shadowOpacity: isDark ? 0.3 : 0.04, shadowRadius: 2 }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: inputBg,
+                  borderRadius: 20,
+                  maxHeight: 160,
+                  paddingHorizontal: 14,
+                  paddingVertical: 4,
+                  borderWidth: 1,
+                  borderColor: inputBorder,
+                  ...platformShadow({
+                    color: chipShadow,
+                    opacity: isDark ? 0.3 : 0.04,
+                    offsetY: 1,
+                    radius: 2,
+                    elevation: 1
+                  })
+                }}
+              >
                 <TextInput
                   ref={inputRef}
                   multiline

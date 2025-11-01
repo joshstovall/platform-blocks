@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Platform, StyleSheet } from 'react-native';
 import { Text } from '../Text';
 import { GradientTextProps } from './types';
-import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
+
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
 
 /**
  * GradientText Component
@@ -245,6 +247,14 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
     }
 
     // Web-specific gradient implementation with animation
+    if (!hasLinearGradient) {
+      return (
+        <View ref={ref} testID={testID} style={styles.container}>
+          <Text {...textProps}>{children}</Text>
+        </View>
+      );
+    }
+
     if (isWeb) {
       return (
         <View
@@ -287,7 +297,7 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
           </View>
         }
       >
-        <LinearGradient
+            <OptionalLinearGradient
           colors={gradientColors}
           locations={gradientLocations}
           start={gradientStart as [number, number]}
@@ -298,7 +308,7 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
           <Text {...textProps} style={[textProps.style, styles.transparentText]}>
             {children}
           </Text>
-        </LinearGradient>
+            </OptionalLinearGradient>
       </MaskedView>
     );
   }

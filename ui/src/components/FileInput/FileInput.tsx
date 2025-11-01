@@ -9,12 +9,14 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
-import type { DocumentPickerAsset } from 'expo-document-picker';
 import { FileInputProps, FileInputFile } from './types';
+import type { DocumentPickerAssetLike } from './types';
 import { Icon } from '../Icon';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 import { useTheme } from '../../core/theme';
+import { resolveDocumentPicker } from '../../utils/optionalDependencies';
+
+const { DocumentPicker: DocumentPickerModule, hasDocumentPicker } = resolveDocumentPicker();
 
 const FILE_INPUT_VARIANTS = {
   /** Standard file input with browse button */
@@ -25,10 +27,10 @@ const FILE_INPUT_VARIANTS = {
   compact: 'compact',
 } as const;
 
-type NativeSelectableFile = File | DocumentPickerAsset;
+type NativeSelectableFile = File | DocumentPickerAssetLike;
 
-const isDocumentPickerAsset = (file: NativeSelectableFile): file is DocumentPickerAsset =>
-  typeof (file as DocumentPickerAsset)?.uri === 'string';
+const isDocumentPickerAsset = (file: NativeSelectableFile): file is DocumentPickerAssetLike =>
+  typeof (file as DocumentPickerAssetLike)?.uri === 'string';
 
 const getFileMetadata = (file: NativeSelectableFile) => {
   if (isDocumentPickerAsset(file)) {
@@ -215,7 +217,7 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       const metadata = getFileMetadata(file);
 
       if (!previewUrl && Platform.OS !== 'web' && isDocumentPickerAsset(file) && metadata.type?.startsWith('image/')) {
-        previewUrl = metadata.uri;
+        previewUrl = metadata.uri ?? undefined;
       }
 
       const fileInput: FileInputFile = {
@@ -224,7 +226,7 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
         name: metadata.name,
         size: metadata.size,
         type: metadata.type,
-        uri: metadata.uri,
+        uri: metadata.uri ?? undefined,
         previewUrl,
         status: validationError ? 'error' : 'pending',
         error: validationError || undefined,
@@ -294,10 +296,16 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       return;
     }
 
+    const picker = DocumentPickerModule;
+    if (!hasDocumentPicker || !picker?.getDocumentAsync) {
+      console.warn('FileInput: expo-document-picker not installed, native file picker is disabled.');
+      return;
+    }
+
     try {
       const pickerTypes = accept.filter(type => !type.startsWith('.'));
 
-      const result = await DocumentPicker.getDocumentAsync({
+      const result = await picker.getDocumentAsync({
         multiple,
         copyToCacheDirectory: true,
         type: pickerTypes.length > 0 ? pickerTypes : undefined,
@@ -308,7 +316,7 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       }
 
       if (result.assets?.length) {
-        await processFiles(result.assets as DocumentPickerAsset[]);
+        await processFiles(result.assets as DocumentPickerAssetLike[]);
         return;
       }
 

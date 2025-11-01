@@ -22,9 +22,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Getting Started', route: '/getting-started', icon: 'home', bottom: true, searchable: true, description: 'Project overview' },
       { label: 'Installation', route: '/installation', icon: 'download', searchable: true },
       { label: 'Theming', route: '/theming', icon: 'palette', searchable: true, description: 'Customize colors, typography, and design system' },
+      { label: 'Hooks', route: '/hooks', icon: 'hook', searchable: true, description: 'Reference for reusable React hooks in Platform Blocks' },
       // { label: 'Platforms', route: '/platforms', icon: 'grid', searchable: true },
       { label: 'Localization', route: '/localization', icon: 'globe', searchable: true },
-      { label: 'FAQ & Support', route: '/faq', icon: 'info', searchable: true },
+      { label: 'FAQ', route: '/faq', icon: 'support', searchable: true },
+      { label: 'Support', route: '/support', icon: 'support', bottom: true, searchable: true, description: 'Get help and contact information' },
     ]
   },
   {

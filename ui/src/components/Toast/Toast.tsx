@@ -81,6 +81,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
     animationConfig,
     swipeConfig,
     onSwipeDismiss,
+    keepMounted = true,
     ...rest
   } = props;
 
@@ -160,7 +161,15 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
 
   const { finalColor, isThemeColor, colorConfig } = memoizedColors;
 
-  const [shouldRender, setShouldRender] = React.useState(visible);
+  const shouldUnmountOnHide = !keepMounted;
+
+  const [shouldRender, setShouldRender] = React.useState(shouldUnmountOnHide ? visible : true);
+
+  useEffect(() => {
+    if (!shouldUnmountOnHide) {
+      setShouldRender(true);
+    }
+  }, [shouldUnmountOnHide]);
   const transformProperty = React.useMemo(
     () => (position === 'left' || position === 'right' ? 'translateX' : 'translateY'),
     [position]
@@ -211,7 +220,10 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
     };
   }, [transformProperty, screenWidth, finalSwipeConfig, finalAnimationConfig]);
 
-  const { notifySuccess, notifyWarning, notifyError } = useHaptics();
+  const haptics = useHaptics();
+  const notifySuccess = haptics.notifySuccess ?? (() => {});
+  const notifyWarning = haptics.notifyWarning ?? (() => {});
+  const notifyError = haptics.notifyError ?? (() => {});
 
   // Improved haptic feedback with error handling
   const triggerHapticFeedback = React.useCallback((severity?: ToastSeverity) => {
@@ -303,7 +315,9 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
 
   useEffect(() => {
     if (visible) {
-      setShouldRender(true);
+      if (shouldUnmountOnHide) {
+        setShouldRender(true);
+      }
       
       // Reset swipe positions
       swipeX.value = 0;
@@ -352,7 +366,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
         easing: Easing.in(Easing.back(1.1))
       }, (finished) => {
         'worklet';
-        if (finished) {
+        if (finished && shouldUnmountOnHide) {
           runOnJS(handleShouldRenderUpdate)(false);
         }
       });
@@ -367,7 +381,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
         clearTimeout(autoHideTimeoutRef.current);
       }
     };
-  }, [visible, finalAnimationConfig, autoHide, onClose, slideAnimation, fadeAnimation, swipeX, swipeY, position, persistent, triggerHapticFeedback, sev, getHiddenPosition, handleShouldRenderUpdate]);
+  }, [visible, finalAnimationConfig, autoHide, onClose, slideAnimation, fadeAnimation, swipeX, swipeY, position, persistent, triggerHapticFeedback, sev, getHiddenPosition, handleShouldRenderUpdate, shouldUnmountOnHide]);
 
   const getToastStyles = () => {
     const baseStyles: ViewStyle = {
@@ -495,7 +509,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
   const textColor = getTextColor();
   const iconColor = getIconColor();
 
-  if (!shouldRender) {
+  if (shouldUnmountOnHide && !shouldRender) {
     return null;
   }
 

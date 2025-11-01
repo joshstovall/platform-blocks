@@ -35,6 +35,7 @@ import type { ChartAnimation } from '../../types/base';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
 import { colorSchemes, formatPercentage, getColorFromScheme, getPointOnCircle } from '../../utils';
+import { platformShadow } from '../../utils/platformShadow';
 import type {
   PieChartDataPoint,
   PieChartLayer,
@@ -1366,11 +1367,7 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
             borderRadius: tooltipBorderRadius,
             maxWidth: 220,
             alignItems: tooltipInfo.alignment,
-            shadowColor: '#000',
-            shadowOpacity: 0.12,
-            shadowOffset: { width: 0, height: 2 },
-            shadowRadius: 6,
-            elevation: 2,
+            ...platformShadow({ color: '#000', opacity: 0.12, offsetY: 2, radius: 6, elevation: 2 }),
             ...tooltipInfo.position,
           }}
         >

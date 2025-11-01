@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 import { Carousel, Text, Button, Block, Column, Row, Image } from '@platform-blocks/ui';
-import { LinearGradient } from 'expo-linear-gradient';
+import { resolveLinearGradient } from '../../../../utils/optionalDependencies';
+
+const { LinearGradient } = resolveLinearGradient();
 
 const IMAGES = [
   {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Animated, Dimensions } from 'react-native';
+import { platformShadow } from '../utils/platformShadow';
 import { useChartTheme } from '../theme/ChartThemeContext';
 
 interface TooltipData {
@@ -153,11 +154,7 @@ export const ChartTooltip: React.FC<ChartTooltipProps> = ({
           paddingHorizontal: 12,
           paddingVertical: 8,
           maxWidth,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 4,
-          elevation: 5,
+          ...platformShadow({ color: '#000', opacity: 0.25, offsetY: 2, radius: 4, elevation: 5 }),
         }}
       >
         {typeof data.content === 'string' ? (

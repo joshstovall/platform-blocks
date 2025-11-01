@@ -50,7 +50,7 @@ export const DARK_THEME: PlatformBlocksTheme = {
       '#8E8E93',
       '#AEAEB2',
       '#C7C7CC',
-      '#D1D16',
+      '#D1D1D6',
       '#E5E5EA'
     ],
     success: [

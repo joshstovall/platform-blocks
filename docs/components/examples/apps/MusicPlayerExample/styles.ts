@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { PlatformBlocksTheme } from '@platform-blocks/ui';
+import { platformShadow } from '../../../../utils/platformShadow';
 
 export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleSheet.create({
 
@@ -99,11 +100,8 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     height: 232,
     borderRadius: 8,
     backgroundColor: theme.backgrounds.surface,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
     elevation: 8,
+    ...platformShadow({ color: '#000000', opacity: 0.6, offsetY: 8, radius: 24, elevation: 8 }),
     overflow: 'hidden',
   },
   albumArtImage: {
@@ -178,13 +176,9 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     borderRadius: 8,
     paddingVertical: 4,
     minWidth: 160,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  elevation: 12,
-  zIndex: 10000,
-  pointerEvents: 'auto',
+    zIndex: 10000,
+    pointerEvents: 'auto',
+    ...platformShadow({ color: '#000', opacity: 0.3, offsetY: 4, radius: 8, elevation: 12 }),
   },
   moreMenuItem: {
     paddingHorizontal: 12,

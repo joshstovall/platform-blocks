@@ -297,6 +297,22 @@ const convertToWebStyles = (rnStyles: any): React.CSSProperties => {
   return webStyles;
 };
 
+const containsPlatformText = (node: React.ReactNode): boolean => {
+  return React.Children.toArray(node).some(child => {
+    if (React.isValidElement(child)) {
+      const childType: any = child.type;
+      if (childType?.__PLATFORM_BLOCKS_TEXT__ === true) {
+        return true;
+      }
+      const childProps: any = child.props;
+      if (childProps?.children) {
+        return containsPlatformText(childProps.children);
+      }
+    }
+    return false;
+  });
+};
+
 export const Text: React.FC<TextProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
   const {
@@ -363,6 +379,10 @@ export const Text: React.FC<TextProps> = (allProps) => {
       // Switch to div to prevent <h*> inside <p> DOM nesting warning / hydration error
       htmlTag = 'div';
     }
+    if (htmlTag === 'p' && containsPlatformText(children)) {
+      // Avoid nested paragraphs when Text components are nested
+      htmlTag = 'div';
+    }
   }
 
   // Platform-specific rendering
@@ -422,6 +442,8 @@ export const Text: React.FC<TextProps> = (allProps) => {
     </RNText>
   );
 };
+
+(Text as any).__PLATFORM_BLOCKS_TEXT__ = true;
 
 // Helper function to check if variant is a valid HTML tag
 const isHTMLVariant = (variant: any): variant is HTMLTextVariant => {

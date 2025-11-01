@@ -1,10 +1,20 @@
 import React from 'react';
-import type { DocumentPickerAsset } from 'expo-document-picker';
 import { BaseInputProps } from '../Input/types';
+
+export interface DocumentPickerAssetLike {
+  uri?: string | null;
+  name?: string | null;
+  size?: number | null;
+  mimeType?: string | null;
+  type?: string | null;
+  file?: File;
+  fileCopyUri?: string | null;
+  [key: string]: any;
+}
 
 export interface FileInputFile {
   /** File object or document picker asset */
-  file: File | DocumentPickerAsset;
+  file: File | DocumentPickerAssetLike;
   /** Unique identifier */
   id: string;
   /** File name */
@@ -66,7 +76,7 @@ export interface FileInputProps extends BaseInputProps {
   enableDragDrop?: boolean;
   
   /** Custom validation function */
-  validateFile?: (file: File | DocumentPickerAsset) => string | null;
+  validateFile?: (file: File | DocumentPickerAssetLike) => string | null;
   
   /** Image preview settings */
   imagePreview?: {

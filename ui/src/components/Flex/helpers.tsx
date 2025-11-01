@@ -7,7 +7,6 @@ import { Flex, FlexProps } from './Flex';
  * Automatically mirrors to row-reverse in RTL
  */
 export const Row = React.forwardRef<View, Omit<FlexProps, 'direction'>>((props, ref) => {
-  // @ts-expect-error - factory components handle refs differently
   return <Flex {...props} direction="row" ref={ref} />;
 });
 
@@ -18,7 +17,6 @@ Row.displayName = 'Row';
  * Not affected by RTL (columns are vertical)
  */
 export const Column = React.forwardRef<View, Omit<FlexProps, 'direction'>>((props, ref) => {
-  // @ts-expect-error - factory components handle refs differently
   return <Flex {...props} direction="column" ref={ref} />;
 });
 

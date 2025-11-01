@@ -43,6 +43,10 @@ jobs:
           EXPO_NO_TELEMETRY: "1"
           EXPO_PUBLIC_WEB_APP_ROOT: "/"
 
+      - name: Add SPA fallback
+        run: cp dist/index.html dist/404.html
+        working-directory: docs
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:

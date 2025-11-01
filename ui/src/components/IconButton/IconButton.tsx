@@ -9,8 +9,10 @@ import { Loader } from '../Loader';
 import { Icon } from '../Icon';
 import { Tooltip } from '../Tooltip';
 import { IconButtonProps } from './types';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useHaptics } from '../../hooks/useHaptics';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
+
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
 
 const getIconButtonStyles = (
   theme: PlatformBlocksTheme,
@@ -224,6 +226,8 @@ export const IconButton: React.FC<IconButtonProps> = (allProps) => {
   const theme = useTheme();
   const { impactPressIn, impactPressOut } = useHaptics();
 
+  const effectiveVariant = variant === 'gradient' && !hasLinearGradient ? 'filled' : variant;
+
   // Animation values
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isPressed, setIsPressed] = useState(false);
@@ -239,14 +243,14 @@ export const IconButton: React.FC<IconButtonProps> = (allProps) => {
 
   // Get button styles
   const buttonStyles = useMemo(() => 
-    getIconButtonStyles(theme, variant, size, disabled, loading, height, radiusStyles, shadowStyles, colorVariant),
-    [theme, variant, size, disabled, loading, height, radiusStyles, shadowStyles, colorVariant]
+    getIconButtonStyles(theme, effectiveVariant, size, disabled, loading, height, radiusStyles, shadowStyles, colorVariant),
+    [theme, effectiveVariant, size, disabled, loading, height, radiusStyles, shadowStyles, colorVariant]
   );
 
   // Get icon color
   const resolvedIconColor = useMemo(() => 
-    getIconColor(theme, variant, colorVariant, iconColor),
-    [theme, variant, colorVariant, iconColor]
+    getIconColor(theme, effectiveVariant, colorVariant, iconColor),
+    [theme, effectiveVariant, colorVariant, iconColor]
   );
 
   // Get icon size
@@ -311,8 +315,8 @@ export const IconButton: React.FC<IconButtonProps> = (allProps) => {
         style,
       ]}
     >
-      {variant === 'gradient' ? (
-        <LinearGradient
+  {variant === 'gradient' && hasLinearGradient ? (
+        <OptionalLinearGradient
           colors={[theme.colors.primary[4], theme.colors.primary[6]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -341,7 +345,7 @@ export const IconButton: React.FC<IconButtonProps> = (allProps) => {
           >
             {renderContent()}
           </Pressable>
-        </LinearGradient>
+        </OptionalLinearGradient>
       ) : (
         <Pressable
           onPress={handlePress}
@@ -352,9 +356,9 @@ export const IconButton: React.FC<IconButtonProps> = (allProps) => {
           style={[
             buttonStyles,
             isPressed && !disabled && !loading && {
-              backgroundColor: variant === 'filled' 
+              backgroundColor: effectiveVariant === 'filled' 
                 ? theme.colors.primary[6] 
-                : variant === 'secondary'
+                : effectiveVariant === 'secondary'
                 ? theme.colors.gray[2]
                 : buttonStyles.backgroundColor,
             },

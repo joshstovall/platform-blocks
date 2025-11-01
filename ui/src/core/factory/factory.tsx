@@ -9,13 +9,15 @@ export interface FactoryPayload {
 }
 
 // Component with static properties
-export interface ComponentWithProps<Props = {}> {
-  withProps: <T extends Partial<Props>>(fixedProps: T) => React.FC<Omit<Props, keyof T>>;
+export interface ComponentWithProps<Props = {}, RefType = any> {
+  withProps: <T extends Partial<Props>>(fixedProps: T) => any;
 }
 
 export interface PlatformBlocksComponent<Payload extends FactoryPayload>
-  extends React.FC<Payload['props']>,
-    ComponentWithProps<Payload['props']> {
+  extends React.ForwardRefExoticComponent<
+      React.PropsWithoutRef<Payload['props']> & React.RefAttributes<Payload['ref']>
+    >,
+    ComponentWithProps<Payload['props'], Payload['ref']> {
   extend: any;
   displayName?: string;
 }

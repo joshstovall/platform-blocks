@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Dialog } from '../Dialog';
 import { Icon } from '../Icon/Icon';
 import { Text } from '../Text/Text';
-import { Flex } from '../Flex/Flex';
+import { Highlight } from '../Highlight';
 import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions, Platform } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useSpotlightStore, setDefaultSpotlightStore } from './SpotlightStore';
@@ -253,6 +253,7 @@ function SpotlightAction({
   children,
   style,
   innerRef,
+  highlightQuery,
 }: SpotlightActionProps) {
   const theme = useTheme();
   const [isHovered, setIsHovered] = React.useState(false);
@@ -326,9 +327,21 @@ function SpotlightAction({
           </View>
         )}
         <Block direction="column" style={{ flex: 1 }}>
-          <Text weight="500">{label}</Text>
+          <Highlight
+            highlight={highlightQuery}
+            style={styles.actionLabel}
+            highlightProps={{ style: styles.actionLabel }}
+          >
+            {label}
+          </Highlight>
           {truncatedDescription ? (
-            <Text variant="small">{truncatedDescription}</Text>
+            <Highlight
+              highlight={highlightQuery}
+              style={styles.actionDescription}
+              highlightProps={{ style: styles.actionDescription }}
+            >
+              {truncatedDescription}
+            </Highlight>
           ) : null}
           {children}
         </Block>
@@ -393,7 +406,7 @@ function SpotlightEmpty({ children, style }: SpotlightEmptyProps) {
 export function Spotlight({
   actions,
   nothingFound = 'Nothing found...',
-  highlightQuery = false,
+  highlightQuery = true,
   limit,
   scrollable = false,
   maxHeight, // Remove default - let it be calculated dynamically
@@ -433,6 +446,28 @@ export function Spotlight({
   useGlobalHotkeys('spotlight-toggle', ['mod+k', handleToggleHotkey]);
 
   const filteredActions = filterActions(actions, query, limit);
+
+  const highlightValue = React.useMemo(() => {
+    if (!highlightQuery) {
+      return undefined;
+    }
+
+    if (highlightQuery !== true) {
+      return highlightQuery;
+    }
+
+    const trimmed = query.trim();
+    if (!trimmed) {
+      return undefined;
+    }
+
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return undefined;
+    }
+
+    return parts.length === 1 ? parts[0] : parts;
+  }, [highlightQuery, query]);
 
   // Flatten all actions for keyboard navigation
   const flatActions = React.useMemo(() => {
@@ -568,6 +603,7 @@ export function Spotlight({
             selected={isSelected}
             innerRef={(el: any) => { itemRefs.current[flatIndex - 1] = el; }}
             onLayout={(e: any) => { itemLayouts.current[flatIndex - 1] = { y: e.nativeEvent.layout.y, height: e.nativeEvent.layout.height }; setLayoutVersion(v => v + 1); }}
+            highlightQuery={highlightValue}
             leftSection={
               typeof item.icon === 'string' ? (
                 <Icon name={item.icon} size="md"
@@ -602,6 +638,7 @@ export function Spotlight({
                   selected={isSelected}
                   innerRef={(el: any) => { itemRefs.current[flatIndex - 1] = el; }}
                   onLayout={(e: any) => { itemLayouts.current[flatIndex - 1] = { y: e.nativeEvent.layout.y, height: e.nativeEvent.layout.height }; setLayoutVersion(v => v + 1); }}
+                  highlightQuery={highlightValue}
                   leftSection={
                     typeof action.icon === 'string' ? (
                       <Icon name={action.icon} size="md" />

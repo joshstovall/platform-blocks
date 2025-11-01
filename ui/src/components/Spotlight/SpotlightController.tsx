@@ -2,13 +2,14 @@ import React from 'react';
 import { SpotlightProvider, spotlight } from '../../components/Spotlight/SpotlightStore';
 import { Spotlight } from '../../components/Spotlight';
 import { useHotkeys } from '../../hooks/useHotkeys';
+import type { HighlightProps as HighlightComponentProps } from '../Highlight';
 
 interface SpotlightControllerProps {
   config?: {
     shortcut?: string | string[] | null;
     actions?: any[];
     alwaysMount?: boolean;
-    highlightQuery?: boolean;
+    highlightQuery?: boolean | HighlightComponentProps['highlight'];
     limit?: number;
     placeholder?: string;
   };

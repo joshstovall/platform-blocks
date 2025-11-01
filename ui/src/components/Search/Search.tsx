@@ -151,8 +151,7 @@ export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, re
   }
 
   return <Input
-    // @ts-expect-error factory handles ref injection
-    ref={ref as any}
+    ref={ref}
     type="search"
     value={internal.value}
     onChangeText={handleChange}

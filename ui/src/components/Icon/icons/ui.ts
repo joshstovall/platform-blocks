@@ -242,6 +242,12 @@ export const uiIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Tooltip badge with question mark for contextual hints.',
   },
+  popover: {
+    content: 'M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5.17L12 19.17 9.17 16H6a2 2 0 0 1-2-2V6z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Popover surface with speech arrow for contextual overlays.',
+  },
   'layer-mask': {
     content: 'M5 4h4 M4 5v4 M19 4h-4 M20 5v4 M19 20h-4 M20 19v-4 M5 20h4 M4 19v-4 M9 9h12v10H9z M13 13h4v4h-4z',
     viewBox: '0 0 24 24',
@@ -249,10 +255,22 @@ export const uiIcons: IconRegistry = {
     description: 'Layered frame with inset window representing an overlay mask.',
   },
   slider: {
-    content: 'M7 14H5v5h5v-2H7v-3zM5 10h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z',
+    content: 'M12 3a1 1 0 0 1 .993 .883l.007 .117v9.171a3.001 3.001 0 0 1 0 5.658v1.171a1 1 0 0 1 -1.993 .117l-.007 -.117v-1.17a3.002 3.002 0 0 1 -1.995 -2.654l-.005 -.176l.005 -.176a3.002 3.002 0 0 1 1.995 -2.654v-9.17a1 1 0 0 1 1 -1z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
-    description: 'Slider control handles for adjustable inputs.',
+    description: 'Horizontal slider track with centered thumb knob.',
+  },
+  hook: {
+    content: 'M6 3v7a6 6 0 1 0 12 0v-2M6 6h6M10 13c0 2 1.5 3 3 3s3-1 3-3',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Fishing hook silhouette for representing hooks utilities.',
+  },
+  support: {
+    content: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm-4.95-.95 2.12 2.12-1.06 1.06-2.12-2.12 1.06-1.06Zm9.9 0 1.06 1.06-2.12 2.12-1.06-1.06 2.12-2.12ZM7.05 16.95l-1.06-1.06 2.12-2.12 1.06 1.06-2.12 2.12Zm9.9 0-2.12-2.12 1.06-1.06 2.12 2.12-1.06 1.06Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Life preserver style icon to represent support resources.',
   },
   input: {
     content: 'M4 6h16v2H4zM4 12h16v6H4z',

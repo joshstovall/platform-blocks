@@ -1,11 +1,12 @@
 import { ViewStyle } from 'react-native';
 import React from 'react';
 import { SpotlightItem } from './SpotlightTypes';
+import type { HighlightProps as HighlightComponentProps } from '../Highlight';
 
 export interface SpotlightProps {
   actions: SpotlightItem[];
   nothingFound?: string;
-  highlightQuery?: boolean;
+  highlightQuery?: boolean | HighlightComponentProps['highlight'];
   limit?: number;
   scrollable?: boolean;
   maxHeight?: number;
@@ -59,6 +60,7 @@ export interface SpotlightActionProps {
   style?: ViewStyle;
   innerRef?: any; // internal usage for auto-scroll
   onLayout?: (e: any) => void; // layout capture for auto-scroll
+  highlightQuery?: HighlightComponentProps['highlight'];
 }
 
 export interface SpotlightActionsGroupProps {

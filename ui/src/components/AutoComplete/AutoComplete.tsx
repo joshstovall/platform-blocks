@@ -21,69 +21,9 @@ import { Chip } from '../Chip';
 import type { ChipProps } from '../Chip/types';
 import { FlashList } from '@shopify/flash-list';
 import { ClearButton } from '../../core/components/ClearButton';
+import { Highlight } from '../Highlight';
 
 const debounce = require('lodash.debounce');
-
-const HighlightedText: React.FC<{
-  text: string;
-  query: string;
-  highlight?: boolean;
-}> = ({ text, query, highlight = false }) => {
-  const theme = useTheme();
-
-  const baseStyle = {
-    color: theme.text.primary,
-    fontSize: 15,
-    fontFamily: theme.fontFamily,
-  } as const;
-
-  if (!highlight || !query) {
-    return (
-      <Text as="span" variant="span" style={baseStyle}>
-        {text}
-      </Text>
-    );
-  }
-
-  const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${safeQuery})`, 'gi');
-  const parts = text.split(regex);
-  const normalizedQuery = query.toLowerCase();
-
-  return (
-    <Text as="span" variant="span" style={baseStyle}>
-      {parts.map((part, index) => {
-        if (!part) {
-          return null;
-        }
-
-        if (part.toLowerCase() === normalizedQuery) {
-          return (
-            <Text
-              key={`match-${index}`}
-              as="span"
-              variant="span"
-              style={{
-                backgroundColor: theme.states?.highlightBackground || theme.colors.highlight?.[2] || theme.colors.primary[1],
-                fontWeight: '600',
-                color: theme.states?.highlightText || theme.colors.highlight?.[8] || theme.colors.primary[7],
-                fontFamily: theme.fontFamily,
-              }}
-            >
-              {part}
-            </Text>
-          );
-        }
-
-        return (
-          <React.Fragment key={`text-${index}`}>
-            {part}
-          </React.Fragment>
-        );
-      })}
-    </Text>
-  );
-};
 
 const DEFAULT_FALLBACK_PLACEMENTS: PlacementType[] = ['top-start', 'top-end', 'top', 'bottom-start', 'bottom-end', 'bottom'];
 
@@ -542,6 +482,8 @@ export const AutoComplete = factory<{
 
   // Default item renderer - use stable reference to prevent loops
   const defaultRenderItem = useCallback((item: AutoCompleteOption, index: number, isSelected = false) => {
+    const highlightQuery = highlightMatches ? currentQueryRef.current : undefined;
+
     return (
       <MenuItemButton
         onPress={() => handleSelectSuggestion(item)}
@@ -561,11 +503,9 @@ export const AutoComplete = factory<{
           },
         } : {})}
       >
-        <HighlightedText
-          text={item.label}
-          query={currentQueryRef.current}
-          highlight={highlightMatches}
-        />
+        <Highlight highlight={highlightQuery}>
+          {item.label}
+        </Highlight>
       </MenuItemButton>
     );
   }, [handleSelectSuggestion, highlightMatches, suggestionItemStyle]);

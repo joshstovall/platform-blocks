@@ -136,6 +136,7 @@ export { Row, Column } from './components/Layout';
 // Text & Typography
 export { Text, H1, H2, H3, H4, H5, H6, P, Small, Strong, Bold, Italic, Emphasis, Underline, Code, Kbd, Mark, Cite, Sub, Sup } from './components/Text';
 export { ShimmerText } from './components/ShimmerText';
+export { Highlight } from './components/Highlight';
 export { Title, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6 } from './components/Title';
 export { Markdown } from './components/Markdown';
 
@@ -254,6 +255,7 @@ export { Overlay } from './components/Overlay';
 export { LoadingOverlay } from './components/LoadingOverlay';
 export { HoverCard } from './components/HoverCard';
 export { ContextMenu } from './components/ContextMenu';
+export { Popover, PopoverTarget, PopoverDropdown } from './components/Popover';
 export {
   Spotlight,
   SpotlightProvider,
@@ -335,6 +337,7 @@ export type { AppStoreBadgeProps, AppStoreBadgeSize, SupportedLocale, BadgeConfi
 export type { TreeProps, TreeNode } from './components/Tree';
 export type { TextProps } from './components/Text';
 export type { ShimmerTextProps } from './components/ShimmerText';
+export type { HighlightProps } from './components/Highlight';
 export type { OverlayProps } from './components/Overlay';
 export type { TitleProps } from './components/Title/types';
 export type { ContainerProps } from './components/Container';
@@ -395,6 +398,7 @@ export type { DialogProps, DialogConfig, UseSimpleDialogOptions } from './compon
 export type { TooltipProps } from './components/Tooltip';
 export type { HoverCardProps } from './components/HoverCard';
 export type { ContextMenuProps } from './components/ContextMenu';
+export type { PopoverProps, PopoverTargetProps, PopoverDropdownProps } from './components/Popover';
 export type { SpotlightProps } from './components/Spotlight';
 export type {
   Action,

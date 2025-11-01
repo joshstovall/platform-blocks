@@ -22,7 +22,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
   const pathToBreadcrumbMap = {
     "/components": {
-      label: 'All Components',
+      label: 'Components',
       href: '/components',
       onPress: () => {
         router.push('/components');

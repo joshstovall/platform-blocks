@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TimePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { TimePicker, Text, Block } from '@platform-blocks/ui';
 import type { TimePickerValue } from '@platform-blocks/ui';
 
 const withinBusiness = (v: TimePickerValue) => {
@@ -26,23 +26,21 @@ export default function ValidationTimePickerDemo() {
   };
 
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Validation</Text>
-        <TimePicker
-          value={value}
-          onChange={handleChange}
-          label="Meeting Time"
-          error={error}
-          helperText="Business hours only"
-          clearable
-        />
-        {value && (
-          <Text size="sm" colorVariant="secondary">
-            Selected: {value.hours.toString().padStart(2,'0')}:{value.minutes.toString().padStart(2,'0')}
-          </Text>
-        )}
-      </Flex>
-    </Card>
+    <Block w="100%" gap="md">
+      <TimePicker
+        value={value}
+        onChange={handleChange}
+        label="Meeting Time"
+        error={error}
+        helperText="Business hours only"
+        clearable
+        fullWidth
+      />
+      {value && (
+        <Text size="sm" colorVariant="secondary">
+          Selected: {value.hours.toString().padStart(2, '0')}:{value.minutes.toString().padStart(2, '0')}
+        </Text>
+      )}
+    </Block>
   );
 }

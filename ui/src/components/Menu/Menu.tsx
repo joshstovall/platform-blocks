@@ -12,12 +12,13 @@ import React, {
 } from 'react';
 import { View, ScrollView, Pressable, Platform, ViewStyle } from 'react-native';
 import { Text } from '../Text';
-import { ListGroup, ListGroupItem, ListGroupBody, ListGroupDivider } from '../ListGroup';
+import { ListGroup, ListGroupBody, ListGroupDivider } from '../ListGroup';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { useOverlay } from '../../core/providers/OverlayProvider';
 import { measureElement, calculateOverlayPosition } from '../../core/utils/positioning-enhanced';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { MenuItemButton } from '../MenuItemButton';
 import {
   MenuProps,
   MenuItemProps,
@@ -324,7 +325,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
   // Create a callback ref that works better with React Native Web
   const triggerCallbackRef = useCallback((node: any) => {
     triggerRef.current = node;
-    console.log('Trigger ref set to:', node);
+    // console.log('Trigger ref set to:', node);
   }, []);
   
   const enhancedTrigger = isValidElement(triggerElement) 
@@ -355,7 +356,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
     } else if (ref) {
       (ref as any).current = node;
     }
-    console.log('Combined ref set to:', node);
+    // console.log('Combined ref set to:', node);
   }, [ref]);
 
   return (
@@ -379,7 +380,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
         onLayout={() => {
           // Force a re-render to ensure ref is available
           if (containerRef.current) {
-            console.log('Menu container onLayout - container ref available:', containerRef.current);
+            // console.log('Menu container onLayout - container ref available:', containerRef.current);
           }
         }}
       >
@@ -391,6 +392,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
 
 // Menu.Item component
 function MenuItemBase(props: MenuItemProps, ref: React.Ref<View>) {
+  const { spacingProps, otherProps } = extractSpacingProps(props as any);
   const {
     children,
     onPress,
@@ -400,11 +402,10 @@ function MenuItemBase(props: MenuItemProps, ref: React.Ref<View>) {
     color = 'default',
     closeMenuOnClick = true,
     testID,
-    ...spacingProps
-  } = props;
+    ...restProps
+  } = otherProps as MenuItemProps;
 
   const { closeMenu } = useMenuContext();
-  const theme = useTheme();
 
   const handlePress = useCallback(() => {
     if (disabled) return;
@@ -412,21 +413,29 @@ function MenuItemBase(props: MenuItemProps, ref: React.Ref<View>) {
     if (closeMenuOnClick) closeMenu();
   }, [disabled, onPress, closeMenuOnClick, closeMenu]);
 
+  const tone: 'default' | 'danger' | 'success' | 'warning' =
+    color === 'danger'
+      ? 'danger'
+      : color === 'success'
+        ? 'success'
+        : color === 'warning'
+          ? 'warning'
+          : 'default';
+
   return (
-    <ListGroupItem
+    <MenuItemButton
       ref={ref as any}
       onPress={handlePress}
       disabled={disabled}
-      danger={color === 'danger'}
-      leftSection={leftSection}
-      rightSection={rightSection}
-      textStyle={{ color: color === 'danger' ? theme.colors.error[6] : theme.text.primary }}
-      style={{}}
-      {...spacingProps as any}
+      startIcon={leftSection}
+      endIcon={rightSection}
+      tone={tone}
       testID={testID}
+      {...spacingProps}
+      {...restProps}
     >
       {children}
-    </ListGroupItem>
+    </MenuItemButton>
   );
 }
 

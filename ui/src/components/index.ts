@@ -110,10 +110,12 @@ export { Accordion } from './Accordion';
 export { Gauge } from './Gauge';
 export { GradientText } from './GradientText';
 export { ShimmerText } from './ShimmerText';
+export { Highlight } from './Highlight';
 export { Title } from './Title/Title';
 export { TableOfContents } from './TableOfContents/TableOfContents';
 export { HoverCard } from './HoverCard/HoverCard';
 export { ContextMenu } from './ContextMenu';
+export { Popover, PopoverTarget, PopoverDropdown } from './Popover';
 
 // Media Components
 export { Gallery } from './Gallery';
@@ -148,6 +150,7 @@ export type { FlexProps } from './Flex';
 export type { GridProps } from './Grid';
 export type { GradientTextProps } from './GradientText';
 export type { ShimmerTextProps } from './ShimmerText';
+export type { HighlightProps } from './Highlight';
 export type { TreeProps, TreeNode } from './Tree/Tree';
 export type { TimePickerProps, TimePickerValue } from './TimePicker/types';
 export type { IconProps, IconSize, IconVariant, IconDefinition, IconRegistry } from './Icon';
@@ -219,6 +222,7 @@ export type { TableOfContentsProps, TocItem } from './TableOfContents/types';
 export type { StepperProps } from './Stepper';
 export type { HoverCardProps } from './HoverCard/types';
 export type { ContextMenuProps, ContextMenuItem } from './ContextMenu/ContextMenu';
+export type { PopoverProps, PopoverTargetProps, PopoverDropdownProps } from './Popover';
 export type { SegmentedControlProps, SegmentedControlItem, SegmentedControlData } from './SegmentedControl';
 
 

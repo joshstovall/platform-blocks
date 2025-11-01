@@ -28,7 +28,7 @@ const getCardStyles = (
     ...(variant !== 'outline' && {
       ...DESIGN_TOKENS.shadow.sm && { boxShadow: DESIGN_TOKENS.shadow.sm },
       elevation: 1,
-    })
+    }),
   };
 
   const variantStyles = {

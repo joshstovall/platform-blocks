@@ -1,9 +1,9 @@
-import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import { View, Pressable, FlatList, Text, Platform, Modal, StyleSheet } from 'react-native';
-import { ListGroup } from '../ListGroup';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import { View, Pressable, FlatList, Text as RNText, Platform, Modal, LayoutChangeEvent } from 'react-native';
+import { ListGroup, ListGroupDivider } from '../ListGroup';
 import { useTheme } from '../../core/theme';
 import { createRadiusStyles } from '../../core/theme/radius';
-import { getSpacingStyles, extractSpacingProps, extractLayoutProps, getLayoutStyles } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, extractLayoutProps, getLayoutStyles, calculateOverlayPositionEnhanced, measureElement } from '../../core/utils';
 import { factory } from '../../core/factory/factory';
 import { createInputStyles } from '../Input/styles';
 import { FieldHeader } from '../_internal/FieldHeader';
@@ -13,6 +13,8 @@ import { MenuItemButton } from '../MenuItemButton';
 import { Icon } from '../Icon';
 import { ClearButton } from '../../core/components/ClearButton';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { useMenuStyles } from '../Menu/styles';
+import { Text } from '../Text';
 
 import type { SelectOption, SelectProps } from './Select.types';
 
@@ -42,6 +44,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
   } = otherProps as SelectProps;
 
   const theme = useTheme();
+  const menuStyles = useMenuStyles();
   const { isRTL } = useDirection();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<any>(valueProp ?? defaultValue ?? null);
@@ -49,6 +52,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
   const triggerRef = useRef<View | null>(null);
   const { openOverlay, closeOverlay, updateOverlay } = useOverlay();
   const overlayIdRef = useRef<string | null>(null);
+  const menuSignatureRef = useRef<string>('');
+  const menuLayoutRef = useRef<{ width: number; height: number } | null>(null);
 
   // keep controlled
   useEffect(()=>{ if(valueProp !== undefined) setValue(valueProp); },[valueProp]);
@@ -70,6 +75,20 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
   const selectedOption = options.find((o: SelectOption)=>o.value === value) || null;
   const showClearButton = !!(clearable && selectedOption && !disabled);
   const clearLabel = clearButtonLabel || 'Clear selection';
+  const optionRowHeight = useMemo(() => {
+    switch (size) {
+      case 'xs':
+        return 30;
+      case 'sm':
+        return 34;
+      case 'lg':
+        return 44;
+      case 'xl':
+        return 48;
+      default:
+        return 38;
+    }
+  }, [size]);
 
   const close = useCallback(()=>{
     setOpen(false);
@@ -77,25 +96,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       closeOverlay(overlayIdRef.current);
       overlayIdRef.current=null;
     }
+    menuLayoutRef.current = null;
   },[closeOverlay]);
-
-  const computeAnchor = useCallback(()=>{
-    if(Platform.OS !== 'web') return undefined;
-    if(!triggerRef.current) return undefined;
-    try {
-      const node: any = (triggerRef.current as any)._node || (triggerRef.current as any);
-      const rect = node?.getBoundingClientRect?.();
-      if(rect){
-        setTriggerWidth(rect.width);
-        // In RTL, use rect.right instead of rect.left to align the dropdown
-        const xPos = isRTL ? rect.right - rect.width : rect.left;
-        return { x: xPos, y: rect.bottom + 4, width: rect.width, height: rect.height };
-      }
-    } catch(_e) {
-      /* measurement failures are non-fatal on web */
-    }
-    return undefined;
-  },[isRTL]);
 
   const measureTrigger = useCallback(() => {
     if (Platform.OS === 'web') return;
@@ -110,39 +112,99 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     }
   }, []);
 
-  const getMenuContent = useCallback(()=> menu, [/* menu recomputed below */]);
-  const openPortal = useCallback(()=>{
-    if(disabled || Platform.OS !== 'web') return;
-    const anchor = computeAnchor();
-    const id = openOverlay({
-      content: getMenuContent(),
-      anchor,
-      width: anchor?.width,
-      strategy: 'fixed',
-      zIndex: 1300,
-      closeOnClickOutside: true,
-      onClose: ()=>{ setOpen(false); }
-    });
-    overlayIdRef.current = id;
-  },[disabled, computeAnchor, openOverlay, getMenuContent]);
+  const resolveDropdownPosition = useCallback(async (preferredSize?: { width?: number; height?: number }) => {
+    if (Platform.OS !== 'web') return null;
+    if (!triggerRef.current) return null;
 
-  const toggle = useCallback(()=>{
-    if(disabled) return;
-    setOpen(o=>{
-      const next = !o;
-      if(next && Platform.OS === 'web') openPortal();
-      if(next && Platform.OS !== 'web') measureTrigger();
-      if(!next) close();
-      return next;
-    });
-  },[disabled, openPortal, close, measureTrigger]);
+    try {
+      const anchorRect = await measureElement(triggerRef);
+      if (!anchorRect || anchorRect.height === 0) {
+        return null;
+      }
 
-  useLayoutEffect(()=>{
-    if(open && Platform.OS === 'web' && overlayIdRef.current){
-      const anchor = computeAnchor();
-      if(anchor) updateOverlay(overlayIdRef.current,{ anchor });
+      const optionCount = options.length || 1;
+      const estimatedHeight = Math.min(
+        maxHeight,
+        Math.max(optionRowHeight * optionCount, optionRowHeight)
+      );
+
+  const estimatedWidth = (anchorRect.width && anchorRect.width > 0) ? anchorRect.width : (triggerWidth || 200);
+
+      const overlayWidth = preferredSize?.width && preferredSize.width > 0
+        ? preferredSize.width
+        : estimatedWidth;
+      const overlayHeight = preferredSize?.height && preferredSize.height > 0
+        ? Math.min(preferredSize.height, maxHeight)
+        : estimatedHeight;
+      const overlaySize = {
+        width: overlayWidth,
+        height: overlayHeight,
+      };
+
+      const position = calculateOverlayPositionEnhanced(anchorRect, overlaySize, {
+        placement: 'auto',
+        offset: 6,
+        strategy: 'fixed',
+        flip: true,
+        shift: true,
+        boundary: 8,
+      });
+
+      const finalWidth = position.finalWidth || overlaySize.width;
+      const finalHeight = position.finalHeight || overlaySize.height;
+
+      setTriggerWidth(prev => {
+        if (prev !== null && Math.abs(prev - finalWidth) < 1) {
+          return prev;
+        }
+        return finalWidth;
+      });
+
+      return {
+        position,
+        overlaySize: {
+          width: finalWidth,
+          height: finalHeight,
+        },
+      };
+    } catch (error) {
+      console.warn('Select: failed to resolve dropdown position', error);
+      return null;
     }
-  },[open, value, options, computeAnchor, updateOverlay]);
+  }, [options, maxHeight, optionRowHeight, triggerWidth]);
+
+  const handleMenuLayoutChange = useCallback(async (layout: { width: number; height: number }) => {
+    const previous = menuLayoutRef.current;
+    if (previous) {
+      const widthDiff = Math.abs(previous.width - (layout.width || 0));
+      const heightDiff = Math.abs(previous.height - (layout.height || 0));
+      if (widthDiff < 1 && heightDiff < 1) {
+        return;
+      }
+    }
+    menuLayoutRef.current = layout;
+
+    if (!open || Platform.OS !== 'web' || !overlayIdRef.current) return;
+
+    const resolved = await resolveDropdownPosition({ width: layout.width, height: layout.height });
+    if (!resolved) return;
+
+    const { position, overlaySize } = resolved;
+    updateOverlay(overlayIdRef.current, {
+      anchor: {
+        x: position.x,
+        y: position.y,
+        width: overlaySize.width,
+        height: overlaySize.height,
+      },
+    });
+  }, [open, resolveDropdownPosition, updateOverlay]);
+
+  const handleMenuLayoutEvent = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout || {};
+    if (width === undefined || height === undefined) return;
+    handleMenuLayoutChange({ width, height });
+  }, [handleMenuLayoutChange]);
 
   const handleSelect = useCallback((opt: SelectOption)=>{
     if(opt.disabled) return;
@@ -150,6 +212,157 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     onChange?.(opt.value, opt);
     if(closeOnSelect) close();
   },[onChange, valueProp, close, closeOnSelect]);
+
+  const menu = useMemo(() => {
+    const resolvedWidth = triggerWidth && triggerWidth > 0 ? triggerWidth : undefined;
+    return (
+      <View
+        style={resolvedWidth ? { width: resolvedWidth, minWidth: resolvedWidth } : undefined}
+        onLayout={Platform.OS === 'web' ? handleMenuLayoutEvent : undefined}
+      >
+        <ListGroup
+          variant="default"
+          size="sm"
+          style={{
+            ...menuStyles.dropdown,
+            maxHeight,
+            ...(resolvedWidth ? { width: resolvedWidth, minWidth: resolvedWidth } : {}),
+          }}
+        >
+        <FlatList
+          data={options}
+          keyExtractor={o => String(o.value)}
+          renderItem={({ item }) => {
+            const selected = item.value === value;
+
+            if (renderOption) {
+              return <View>{renderOption(item, false, selected)}</View>;
+            }
+
+            const successPalette = theme.colors.success || [];
+            const highlightColor = theme.colorScheme === 'dark'
+              ? successPalette[4] || successPalette[5] || '#30D158'
+              : successPalette[6] || successPalette[5] || '#2f9e44';
+            const baseTextColor = item.disabled ? theme.text.disabled : theme.text.primary;
+            const accentTextColor = item.disabled ? theme.text.disabled : highlightColor;
+
+            return (
+              <MenuItemButton
+                onPress={() => handleSelect(item)}
+                disabled={!!item.disabled}
+                active={selected}
+                tone={selected ? 'success' : 'default'}
+                hoverTone="success"
+                textColor={baseTextColor}
+                hoverTextColor={accentTextColor}
+                activeTextColor={accentTextColor}
+                compact
+                rounded={false}
+                style={{ borderRadius: 0 }}
+              >
+                {item.label}
+              </MenuItemButton>
+            );
+          }}
+          ItemSeparatorComponent={renderOption ? undefined : ListGroupDivider}
+          style={{ maxHeight }}
+          bounces={false}
+        />
+        </ListGroup>
+      </View>
+    );
+  }, [menuStyles.dropdown, maxHeight, triggerWidth, options, value, renderOption, handleSelect, handleMenuLayoutEvent]);
+
+  const getMenuContent = useCallback(() => menu, [menu]);
+  const menuSignature = useMemo(() => {
+    const optionSignature = options
+      .map(opt => `${String(opt.value)}-${opt.label}-${opt.disabled ? '1' : '0'}`)
+      .join('|');
+    const valueSignature = typeof value === 'object' && value !== null
+      ? JSON.stringify(value)
+      : String(value ?? '');
+    const triggerSig = triggerWidth != null ? `tw:${Math.round(triggerWidth)}` : 'tw:auto';
+    return `${optionSignature}|value:${valueSignature}|${triggerSig}|render:${renderOption ? 'custom' : 'default'}`;
+  }, [options, value, triggerWidth, renderOption]);
+  const openPortal = useCallback(async () => {
+    if (disabled || Platform.OS !== 'web') return;
+
+    const resolved = await resolveDropdownPosition();
+    if (!resolved) {
+      close();
+      return;
+    }
+
+    const { position, overlaySize } = resolved;
+
+    const id = openOverlay({
+      content: getMenuContent(),
+      anchor: {
+        x: position.x,
+        y: position.y,
+        width: overlaySize.width,
+        height: overlaySize.height,
+      },
+      strategy: 'fixed',
+      zIndex: 1300,
+      closeOnClickOutside: true,
+      closeOnEscape: true,
+      onClose: () => {
+        setOpen(false);
+      }
+    });
+    overlayIdRef.current = id;
+    menuSignatureRef.current = menuSignature;
+  },[disabled, resolveDropdownPosition, openOverlay, getMenuContent, close, menuSignature]);
+
+  const toggle = useCallback(()=>{
+    if(disabled) return;
+    setOpen(o=>{
+      const next = !o;
+      if(next && Platform.OS === 'web') {
+        openPortal().catch(()=>{
+          close();
+        });
+      }
+      if(next && Platform.OS !== 'web') measureTrigger();
+      if(!next) close();
+      return next;
+    });
+  },[disabled, openPortal, close, measureTrigger]);
+
+  useLayoutEffect(() => {
+    if (!open || Platform.OS !== 'web' || !overlayIdRef.current) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const resolved = await resolveDropdownPosition();
+      if (!resolved || cancelled) return;
+
+      const { position, overlaySize } = resolved;
+      updateOverlay(overlayIdRef.current!, {
+        anchor: {
+          x: position.x,
+          y: position.y,
+          width: overlaySize.width,
+          height: overlaySize.height,
+        },
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, value, options, resolveDropdownPosition, updateOverlay]);
+
+  useEffect(() => {
+    if (!open || Platform.OS !== 'web' || !overlayIdRef.current) return;
+    if (menuSignatureRef.current === menuSignature) return;
+    menuSignatureRef.current = menuSignature;
+    updateOverlay(overlayIdRef.current, {
+      content: getMenuContent(),
+    });
+  }, [open, menuSignature, getMenuContent, updateOverlay]);
 
   const handleClear = useCallback((event?: any) => {
     event?.stopPropagation?.();
@@ -164,60 +377,16 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     close();
   }, [disabled, valueProp, onChange, onClear, close]);
 
-  const menu = (
-    <ListGroup
-      variant="default"
-      size="sm"
-      style={{
-        maxHeight,
-        width: triggerWidth || undefined,
-        minWidth: triggerWidth || undefined,
-      }}
-    >
-      <FlatList
-        data={options}
-        keyExtractor={o=>String(o.value)}
-        renderItem={({item, index})=> {
-          const selected = item.value === value;
-
-          if (renderOption) {
-            return <View>{renderOption(item, false, selected)}</View>;
-          }
-
-          const isLast = index === options.length - 1;
-
-          return (
-            <MenuItemButton
-              onPress={() => handleSelect(item)}
-              disabled={!!item.disabled}
-              active={selected}
-              compact
-              rounded={false}
-              style={{
-                borderRadius: 0,
-                borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
-                borderBottomColor: theme.colorScheme === 'dark' ? theme.colors.gray[4] : theme.colors.gray[2],
-              }}
-            >
-              {item.label}
-            </MenuItemButton>
-          );
-        }}
-        style={{ maxHeight }}
-        bounces={false}
-      />
-    </ListGroup>
-  );
 
   const fieldContent = selectedOption ? (
-    <Text style={{ color: disabled ? theme.text.disabled : theme.text.primary }}>{selectedOption.label}</Text>
+    <RNText style={{ color: disabled ? theme.text.disabled : theme.text.primary }}>{selectedOption.label}</RNText>
   ) : (
-    <Text style={{ color: disabled ? theme.text.disabled : theme.text.muted }}>{placeholder}</Text>
+    <RNText style={{ color: disabled ? theme.text.disabled : theme.text.muted }}>{placeholder}</RNText>
   );
 
   return (
-    <View style={[defaultMinWidthStyle, fullWidthStyle, spacingStyles, layoutStyles,]}>      
-  <FieldHeader label={label} description={description} disabled={disabled} error={!!error} size={size as any} />
+    <View style={[defaultMinWidthStyle, fullWidthStyle, spacingStyles, layoutStyles,]}>
+      <FieldHeader label={label} description={description} disabled={disabled} error={!!error} size={size as any} />
       <Pressable
         ref={(node)=>{ (triggerRef as any).current=node; if(typeof ref==='function') ref(node); else if(ref) (ref as any).current=node; }}
         onPress={toggle}
@@ -252,8 +421,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
           />
         </View>
       </Pressable>
-      {error && <Text style={inputStyles.error}>{error}</Text>}
-      {!error && helperText && <Text style={inputStyles.helperText}>{helperText}</Text>}
+      {error && <RNText style={inputStyles.error}>{error}</RNText>}
+      {!error && helperText && <RNText style={inputStyles.helperText}>{helperText}</RNText>}
 
       {open && Platform.OS !== 'web' && (
         <Modal transparent animationType="fade" visible onRequestClose={close}>

@@ -121,7 +121,7 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         color: props.disabled ? theme.text.disabled : theme.text.primary,
         fontSize: px(theme.fontSizes.sm),
         fontWeight: '600',
-        marginBottom: 4
+        marginBottom: 0
       },
       
       leftSection: {

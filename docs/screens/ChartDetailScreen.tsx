@@ -4,7 +4,7 @@ import { PageLayout } from '../components/PageLayout';
 import { Text, Card, Chip, Flex, Loader, Tabs, H3, Button, Icon, Link } from '@platform-blocks/ui';
 import type { TabItem } from '@platform-blocks/ui';
 import { GlobalChartsRoot } from '@platform-blocks/charts';
-import { hasNewDemosArtifacts, getNewDemos, attachDemoCode, loadDemoComponentNew } from '../utils/newDemosLoader';
+import { hasNewDemosArtifacts, getNewDemos, attachDemoCode, loadDemoComponentNew } from '../utils/demosLoader';
 import { getChartDoc, getRelatedCharts, CHART_CATEGORIES } from '../config/charts';
 import { useRouter } from 'expo-router';
 import { GITHUB_REPO } from 'config/urls';

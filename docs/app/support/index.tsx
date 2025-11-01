@@ -2,7 +2,7 @@ import { ScrollView, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { PageLayout } from '../../components/PageLayout';
 import { DocsPageHeader } from '../../components/DocsPageHeader';
-import { Text, Button, Card, Flex, Icon, BrandIcon, Alert } from '@platform-blocks/ui';
+import { Text, Button, Card, Flex, Icon, BrandIcon, Alert, Block } from '@platform-blocks/ui';
 import { DISCORD_INVITE, GITHUB_REPO } from 'config/urls';
 
 // Support resources
@@ -38,68 +38,64 @@ export default function SupportScreen() {
           </DocsPageHeader>
 
           {/* Support Resources */}
-          <Flex direction="column" gap="md">
+          <Block direction="column" gap="md">
             {SUPPORT_RESOURCES.map((resource, index) => (
               <Card key={index} variant="outline" p="lg">
-                <Flex direction="row" align="flex-start" gap="md">
-                  <Flex pt="xs">
-                    <BrandIcon brand={resource.icon as any} size={24} />
-                  </Flex>
-                  <Flex direction="column" style={{ flex: 1 }} gap="xs">
-                    <Text variant="subtitle" weight="semibold">{resource.title}</Text>
-                    <Text variant="body" colorVariant="secondary" mb="md">
-                      {resource.description}
-                    </Text>
-                    <Button
-                      title={resource.action}
-                      variant="outline"
-                      size="sm"
-                      onPress={() => handleOpenLink(resource.url!)}
-                    />
-                  </Flex>
+                <Flex pt="xs">
+                  <BrandIcon brand={resource.icon as any} size={24} />
+                </Flex>
+                <Flex direction="column" gap="xs">
+                  <Text variant="subtitle" weight="semibold">{resource.title}</Text>
+                  <Text variant="body" colorVariant="secondary" mb="md">
+                    {resource.description}
+                  </Text>
+                  <Button
+                    title={resource.action}
+                    variant="outline"
+                    size="sm"
+                    onPress={() => handleOpenLink(resource.url!)}
+                  />
                 </Flex>
               </Card>
             ))}
-          </Flex>
+          </Block>
 
           {/* Quick Links */}
           <Flex direction="column" gap="md">
             <Text variant="h2" uppercase>Quick Links</Text>
             <Flex direction="row" wrap="wrap" gap="md">
-              <Button 
-                title="Getting Started" 
-                variant="filled" 
-                size="sm" 
-                onPress={() => router.push('/getting-started')} 
+              <Button
+                title="Getting Started"
+                variant="filled"
+                size="sm"
+                onPress={() => router.push('/getting-started')}
               />
-              <Button 
-                title="Installation" 
-                variant="outline" 
-                size="sm" 
-                onPress={() => router.push('/installation')} 
+              <Button
+                title="Installation"
+                variant="outline"
+                size="sm"
+                onPress={() => router.push('/installation')}
               />
-              <Button 
-                title="Theming Guide" 
-                variant="outline" 
-                size="sm" 
-                onPress={() => router.push('/theming')} 
+              <Button
+                title="Theming Guide"
+                variant="outline"
+                size="sm"
+                onPress={() => router.push('/theming')}
               />
-              <Button 
-                title="Components" 
-                variant="outline" 
-                size="sm" 
-                onPress={() => router.push('/components')} 
+              <Button
+                title="Components"
+                variant="outline"
+                size="sm"
+                onPress={() => router.push('/components')}
               />
-              <Button 
-                title="Charts" 
-                variant="outline" 
-                size="sm" 
-                onPress={() => router.push('/charts')} 
+              <Button
+                title="Charts"
+                variant="outline"
+                size="sm"
+                onPress={() => router.push('/charts')}
               />
             </Flex>
           </Flex>
-
-       
 
           {/* Contributing CTA */}
           <Alert p="lg" style={{ borderStyle: 'dashed' }}>
