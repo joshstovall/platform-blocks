@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Text, Column, Card, useToast } from '@platform-blocks/ui';
 
 export default function Demo() {

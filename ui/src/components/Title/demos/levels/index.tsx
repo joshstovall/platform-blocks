@@ -1,4 +1,3 @@
-import React from 'react';
 import { Title, Card, Flex } from '@platform-blocks/ui';
 
 export default function LevelsTitleDemo() {

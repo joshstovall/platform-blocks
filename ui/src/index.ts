@@ -237,6 +237,7 @@ export { Progress } from './components/Progress';
 export { Skeleton } from './components/Skeleton';
 export { Loader } from './components/Loader';
 export { Gauge } from './components/Gauge';
+export { Ring } from './components/Ring';
 export { NavigationProgress, navigationProgress } from './components/NavigationProgress';
 export {
   Toast,
@@ -393,6 +394,7 @@ export type { SkeletonProps } from './components/Skeleton';
 export type { LoaderProps } from './components/Loader';
 export type { LoadingOverlayProps } from './components/LoadingOverlay';
 export type { GaugeProps } from './components/Gauge';
+export type { RingProps, RingColorStop, RingRenderContext } from './components/Ring';
 export type { ToastProps } from './components/Toast';
 export type { DialogProps, DialogConfig, UseSimpleDialogOptions } from './components/Dialog';
 export type { TooltipProps } from './components/Tooltip';

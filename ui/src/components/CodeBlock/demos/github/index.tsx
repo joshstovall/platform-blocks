@@ -7,8 +7,7 @@ export default function CodeBlockWithGitHubDemo() {
         title="Basic Component"
         githubUrl="https://github.com/joshstovall/platform-blocks/blob/main/ui/src/components/Button/Button.tsx"
       >
-        {`import React from 'react';
-import { View, Text } from 'react-native';
+        {`import { View, Text } from 'react-native';
 
 export const HelloWorld = () => {
   return (

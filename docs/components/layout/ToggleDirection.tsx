@@ -2,9 +2,9 @@ import React from 'react';
 import { useDirection } from '@platform-blocks/ui';
 import { NavIconButton, NavIconButtonProps } from './NavIconButton';
 
-type HeaderDirectionToggleProps = Omit<NavIconButtonProps, 'icon' | 'onPress' | 'accessibilityLabel'>;
+type ToggleDirectionProps = Omit<NavIconButtonProps, 'icon' | 'onPress' | 'accessibilityLabel'>;
 
-export const HeaderDirectionToggle: React.FC<HeaderDirectionToggleProps> = (props) => {
+export const ToggleDirection: React.FC<ToggleDirectionProps> = (props) => {
   const { dir, toggleDirection } = useDirection();
   const icon = dir === 'ltr' ? 'arrowLeft' : 'arrowRight';
   const tooltipLabel = dir === 'ltr' ? 'LTR direction' : 'RTL direction';

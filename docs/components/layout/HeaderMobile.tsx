@@ -11,7 +11,7 @@ import {
 } from '@platform-blocks/ui';
 import { useRouter } from 'expo-router';
 
-export interface DocsMobileHeaderProps {
+export interface DocsHeaderMobileProps {
   orientation: 'portrait' | 'landscape';
 }
 
@@ -19,7 +19,7 @@ export interface DocsMobileHeaderProps {
  * Compact header variant tailored for mobile layouts. Shows a menu toggle,
  * brand identity, and theme switcher while keeping the footprint small.
  */
-export const DocsMobileHeader: React.FC<DocsMobileHeaderProps> = ({ orientation }) => {
+export const DocsHeaderMobile: React.FC<DocsHeaderMobileProps> = ({ orientation }) => {
   const { openNavbar } = useAppShellApi();
   const { mode, cycleMode } = useThemeMode();
   const theme = useTheme();

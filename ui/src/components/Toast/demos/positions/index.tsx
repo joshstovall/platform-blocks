@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Text, Column, Card, useToast, Row } from '@platform-blocks/ui';
 
 const toastPositions = [

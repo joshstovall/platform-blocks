@@ -1,4 +1,3 @@
-import React from 'react';
 import { Carousel, Text, Block } from '@platform-blocks/ui';
 
 export default function VerticalCarouselDemo() {

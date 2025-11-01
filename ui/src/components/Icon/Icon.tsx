@@ -44,7 +44,7 @@ export const Icon = factory<{
     size = 'md',
     color,
     stroke = 1.5,
-    variant,
+    variant = 'outlined',
     style,
     label,
     decorative = false,

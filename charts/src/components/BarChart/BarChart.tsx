@@ -188,7 +188,8 @@ const AnimatedBarRect: React.FC<AnimatedBarRectProps> = React.memo(
 
 AnimatedBarRect.displayName = 'AnimatedBarRect';
 
-export function BarChart(props: BarChartProps) {
+export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
+
   const {
     data,
     series,
@@ -1291,7 +1292,7 @@ export function BarChart(props: BarChartProps) {
       )}
     </ChartContainer>
   );
-}
+});
 
 BarChart.displayName = 'BarChart';
 

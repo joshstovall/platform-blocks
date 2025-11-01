@@ -1,4 +1,3 @@
-import React from 'react';
 import { Highlight } from '../..';
 import { Text } from '../../../../components/Text';
 import type { PlatformBlocksTheme } from '../../../../core/theme/types';

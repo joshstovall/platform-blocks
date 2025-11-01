@@ -1,4 +1,3 @@
-import React from 'react';
 import { Grid, GridItem, Card, Text } from '@platform-blocks/ui';
 
 // Example assumes responsive prop shape matches breakpoints used in resolveResponsiveProp (e.g. { base: 4, md: 8, lg: 12 })

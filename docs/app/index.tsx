@@ -43,7 +43,7 @@ export default function HomeScreen() {
           underlineStroke={4}
           // action={<CodeBlock variant='hacker'>npm install @platform-blocks/ui</CodeBlock>}
           subtitle="A modern React Native component library with theme support and consistent design tokens."
-        >PlatformBlocks</Title>
+        >Platform Blocks</Title>
       </Block>
       <Block direction='row' gap="md" wrap>
         {/* <Button title="Get Started" variant="gradient" onPress={() => router.push('/getting-started')} /> */}

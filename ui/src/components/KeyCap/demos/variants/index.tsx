@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, Platform } from 'react-native';
 import { KeyCap, Flex } from '@platform-blocks/ui';
 

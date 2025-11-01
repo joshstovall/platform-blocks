@@ -1,4 +1,3 @@
-import React from 'react';
 import { CodeBlock, Flex, Card, Text } from '@platform-blocks/ui';
 
 const sampleCode = `function hackTheMatrix() {

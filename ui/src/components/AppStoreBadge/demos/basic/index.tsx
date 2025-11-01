@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppStoreBadge, Column, Row } from '@platform-blocks/ui';
 
 export default function BasicUsage() {

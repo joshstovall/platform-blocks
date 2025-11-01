@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { View, ViewStyle, Platform, useWindowDimensions } from 'react-native';
+import { View, ViewStyle, Platform, useWindowDimensions, KeyboardAvoidingView } from 'react-native';
 import Animated, { useSharedValue, withTiming, useAnimatedStyle, interpolate, Easing } from 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 

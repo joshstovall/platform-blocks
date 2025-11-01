@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import { Tooltip, Button, Text, Flex } from '@platform-blocks/ui';
 

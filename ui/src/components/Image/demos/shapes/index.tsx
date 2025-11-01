@@ -1,4 +1,3 @@
-import React from 'react';
 import { Image, Card, Text, Row, Column } from '@platform-blocks/ui';
 
 export default function ImageShapesDemo() {

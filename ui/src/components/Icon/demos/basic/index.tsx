@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '../../Icon';
 import { Text, Card, Flex, Title } from '../../../..';

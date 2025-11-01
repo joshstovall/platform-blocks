@@ -1,4 +1,3 @@
-import React from 'react';
 import { Lottie } from '@platform-blocks/ui';
 import file from '../../../../../../docs/assets/Blocks.lottie';
 

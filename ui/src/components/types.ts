@@ -46,6 +46,7 @@ export type { ProgressProps } from './Progress';
 export type { QRCodeProps } from './QRCode';
 export type { RadioProps, RadioGroupProps } from './Radio';
 export type { RatingProps } from './Rating';
+export type { RingProps, RingColorStop, RingRenderContext } from './Ring';
 export type { SkeletonProps } from './Skeleton';
 export type { LoaderProps } from './Loader';
 export type { SpotlightProps } from './Spotlight';

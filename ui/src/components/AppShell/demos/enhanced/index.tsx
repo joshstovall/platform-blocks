@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, AppShell, Column } from '@platform-blocks/ui';
 
 const sampleTOC = (

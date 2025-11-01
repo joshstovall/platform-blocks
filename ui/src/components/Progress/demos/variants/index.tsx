@@ -1,4 +1,3 @@
-import React from 'react';
 import { Progress, Text, Column, Card, Block } from '@platform-blocks/ui';
 
 export default function Demo() {

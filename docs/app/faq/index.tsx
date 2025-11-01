@@ -52,7 +52,7 @@ export default function FAQScreen() {
       </DocsPageHeader>
       <Space h={16} />
       <Accordion
-        type="single"
+        type="multiple"
         variant="separated"
         items={FAQ_DATA}
         defaultExpanded={['what-is']}

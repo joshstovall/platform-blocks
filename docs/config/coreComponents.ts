@@ -109,6 +109,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'ToastProvider', category: 'feedback', icon: 'bell', description: 'Global notification system with positioning and queuing' },
   { name: 'Toast', category: 'feedback', icon: 'toast' },
   { name: 'Progress', category: 'feedback', icon: 'progress' },
+  { name: 'Ring', category: 'feedback', icon: 'chart-donut', description: 'Circular progress indicator with configurable labels, color stops, and custom center content.' },
   { name: 'Loader', category: 'feedback', icon: 'loader' },
   { name: 'Skeleton', category: 'feedback', icon: 'bone' },
   { name: 'Overlay', category: 'feedback', icon: 'layer-mask', description: 'Dimmed overlay backdrop for modals and popups' },

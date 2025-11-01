@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppStoreButton, Column, Row, Text } from '@platform-blocks/ui';
 
 export default function AppStoreButtonBasicDemo() {

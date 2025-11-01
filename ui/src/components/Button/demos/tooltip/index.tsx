@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Row, Column } from '@platform-blocks/ui';
 
 export default function Demo() {

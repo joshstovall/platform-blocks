@@ -1,4 +1,3 @@
-import React from 'react';
 import { Flex, Text, Avatar, Indicator, useTheme } from '@platform-blocks/ui';
 
 const statuses = [

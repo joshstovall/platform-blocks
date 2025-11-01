@@ -1,4 +1,3 @@
-import React from 'react';
 import { Grid, GridItem, Card, Text } from '@platform-blocks/ui';
 
 export default function BasicGridDemo() {

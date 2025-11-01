@@ -57,6 +57,20 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
         router.push('/localization');
       }
     },
+    "/theming": {
+      label: 'Theming',
+      href: '/theming',
+      onPress: () => {
+        router.push('/theming');
+      }
+    },
+    "/hooks": { 
+      label: 'Hooks',
+      href: '/hooks',
+      onPress: () => {
+        router.push('/hooks');
+      }
+    },
     "/installation": {
       label: 'Installation',
       href: '/installation',
@@ -77,6 +91,20 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
       onPress: () => {
         router.push('/getting-started');
       }
+    },
+    "/faq": {
+      label: 'FAQ',
+      href: '/faq',
+      onPress: () => {
+        router.push('/faq');
+      } 
+    },
+    "/support": {
+      label: 'Support',
+      href: '/support',
+      onPress: () => {
+        router.push('/support');
+      }
     }
   }
 
@@ -84,7 +112,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
   // Always start with home
   const breadcrumbs: BreadcrumbItem[] = [
     {
-      label: 'Home',
+      label: '',
       icon: <Icon name="home" size={16} />,
       href: '/',
       onPress: () => {

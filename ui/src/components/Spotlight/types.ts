@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import type { ViewStyle, TextInput } from 'react-native';
 import React from 'react';
 import { SpotlightItem } from './SpotlightTypes';
 import type { HighlightProps as HighlightComponentProps } from '../Highlight';
@@ -37,6 +37,8 @@ export interface SpotlightSearchProps {
   onNavigateDown?: () => void;
   onSelectAction?: () => void;
   onClose?: () => void;
+  autoFocus?: boolean;
+  inputRef?: React.RefObject<TextInput | null>;
 }
 
 export interface SpotlightActionsListProps {

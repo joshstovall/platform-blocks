@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrandButton, Card, Flex, Text } from '@platform-blocks/ui';
 
 export default function ColorOverrideBrandButtonDemo() {

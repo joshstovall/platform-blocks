@@ -3,7 +3,7 @@ import { Dialog } from '../Dialog';
 import { Icon } from '../Icon/Icon';
 import { Text } from '../Text/Text';
 import { Highlight } from '../Highlight';
-import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions, Platform } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions, Platform, Keyboard } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useSpotlightStore, setDefaultSpotlightStore } from './SpotlightStore';
 import { useGlobalHotkeys } from '../../hooks/useHotkeys';
@@ -99,10 +99,12 @@ function SpotlightSearch({
   onNavigateDown,
   onSelectAction,
   onClose,
+  autoFocus = true,
+  inputRef: forwardedRef,
   ...props
 }: SpotlightSearchProps) {
   const theme = useTheme();
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<TextInput | null>(null);
   const [isFocused, setIsFocused] = React.useState(false);
   const isMobile = Platform.OS !== 'web';
   let effectivePlaceholder = placeholder;
@@ -113,12 +115,22 @@ function SpotlightSearch({
     }
   }
 
-  useEffect(() => {
-    // Auto-focus search input when spotlight opens
-    if (inputRef.current) {
-      inputRef.current.focus();
+  const assignInputRef = React.useCallback((node: TextInput | null) => {
+    inputRef.current = node;
+    if (forwardedRef) {
+      forwardedRef.current = node;
     }
-  }, []);
+  }, [forwardedRef]);
+
+  useEffect(() => {
+    const node = inputRef.current;
+    if (!node) return;
+    if (autoFocus) {
+      node.focus();
+    } else if (typeof node.blur === 'function') {
+      node.blur();
+    }
+  }, [autoFocus]);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -161,7 +173,7 @@ function SpotlightSearch({
       <View style={styles.searchInputWrapper}>
         {leftSection || <Icon name="search" size="md" color={theme.text.secondary} />}
         <TextInput
-          ref={inputRef}
+          ref={assignInputRef}
           value={value}
           onChangeText={onChangeText}
           placeholder={effectivePlaceholder}
@@ -175,7 +187,6 @@ function SpotlightSearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyPress={handleKeyPress}
-          autoFocus={true}
           {...props}
         />
       </View>
@@ -367,15 +378,17 @@ function SpotlightActionsGroup({
       <View style={[
         styles.groupHeader,
         {
+          backgroundColor: theme.colors.surface[1],
           borderBottomColor: theme.colorScheme === 'dark'
             ? 'rgba(255, 255, 255, 0.1)'
             : 'rgba(0, 0, 0, 0.1)'
-        }
+        },
+    
       ]}>
         <Text
           size="xs"
           weight="900"
-          color={theme.text.secondary}
+          colorVariant="info"
           style={styles.groupLabel}
         >
           {label.toUpperCase()}
@@ -482,6 +495,25 @@ export function Spotlight({
     return flat;
   }, [filteredActions]);
 
+    const searchInputRef = React.useRef<TextInput | null>(null);
+
+    const dismissSearchInput = React.useCallback(() => {
+      Keyboard.dismiss();
+      const node = searchInputRef.current;
+      if (node && typeof node.blur === 'function') {
+        node.blur();
+      }
+    }, []);
+
+    const searchPropsSafe = searchProps ?? {};
+    const {
+      autoFocus: providedAutoFocus,
+      inputRef: providedInputRef,
+      ...restSearchProps
+    } = searchPropsSafe;
+    const mergedAutoFocus = providedAutoFocus ?? opened;
+    const mergedInputRef = providedInputRef ?? searchInputRef;
+
   // Reset selection when query changes
   useEffect(() => {
     currentStore.setSelectedIndex(-1);
@@ -535,12 +567,14 @@ export function Spotlight({
     if (index === -1 && flatActions.length > 0) index = 0;
     if (index >= 0 && index < flatActions.length) {
       const selectedAction = flatActions[index];
+      dismissSearchInput();
       selectedAction.onPress?.();
       currentStore.close();
     }
   };
 
   const handleClose = () => {
+    dismissSearchInput();
     currentStore.close();
   };
 
@@ -613,6 +647,7 @@ export function Spotlight({
               )
             }
             onPress={() => {
+              dismissSearchInput();
               item.onPress?.();
               currentStore.close();
             }}
@@ -647,6 +682,7 @@ export function Spotlight({
                     )
                   }
                   onPress={() => {
+                    dismissSearchInput();
                     action.onPress?.();
                     currentStore.close();
                   }}
@@ -677,7 +713,9 @@ export function Spotlight({
         onNavigateDown={handleNavigateDown}
         onSelectAction={handleSelectAction}
         onClose={handleClose}
-        {...searchProps}
+        autoFocus={mergedAutoFocus}
+        inputRef={mergedInputRef}
+        {...restSearchProps}
       />
       <SpotlightActionsList
         scrollable={scrollable}

@@ -17,17 +17,15 @@ export default function Demo() {
   return (
     <Grid gap="2xl">
       <GridItem span={4}>
-        <Text variant="h6" mb="md">Default Variant</Text>
+        <Text variant="h6" mb="md" colorVariant="secondary">Default Variant</Text>
         <Accordion type="single" items={items} />
       </GridItem>
-
       <GridItem span={4}>
-        <Text variant="h6" mb="md">Separated Variant</Text>
+        <Text variant="h6" mb="md" colorVariant="secondary">Separated Variant</Text>
         <Accordion type="single" variant="separated" items={items} />
       </GridItem>
-
       <GridItem span={4}>
-        <Text variant="h6" mb="md">Bordered Variant</Text>
+        <Text variant="h6" mb="md" colorVariant="secondary">Bordered Variant</Text>
         <Accordion type="single" variant="bordered" items={items} />
       </GridItem>
     </Grid>

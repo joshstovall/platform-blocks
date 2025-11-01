@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import { Card, Text, Column, Image } from '@platform-blocks/ui';
 

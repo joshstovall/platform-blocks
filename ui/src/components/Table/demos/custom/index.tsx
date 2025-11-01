@@ -1,4 +1,3 @@
-import React from 'react';
 import { Table, Text, Chip } from '@platform-blocks/ui';
 
 export default function Demo() {

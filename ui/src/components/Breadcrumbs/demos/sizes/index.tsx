@@ -1,4 +1,3 @@
-import React from 'react';
 import { Breadcrumbs, Text, Flex, Card } from '@platform-blocks/ui';
 
 export default function SizesBreadcrumbsDemo() {

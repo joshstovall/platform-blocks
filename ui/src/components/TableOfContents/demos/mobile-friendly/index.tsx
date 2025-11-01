@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { TableOfContents } from '../../TableOfContents';
 import { Text } from '../../../Text';

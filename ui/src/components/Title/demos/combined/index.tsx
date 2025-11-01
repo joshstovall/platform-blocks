@@ -1,4 +1,3 @@
-import React from 'react';
 import { Title, Card, Flex, Text } from '@platform-blocks/ui';
 
 export default function CombinedTitleDemo() {

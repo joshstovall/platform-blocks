@@ -10,7 +10,8 @@ import { MobileBottomBar } from '../components/layout/BottomBar';
 import { GlobalSpotlightLazy, FloatingActionsLazy } from '../components/layout/LazyComponents';
 import { useGlobalHotkeys, useThemeMode } from '@platform-blocks/ui';
 import { Footer } from '../components/layout/FooterApp';
-import { DocsMobileHeader } from '../components/layout/MobileHeader';
+import { DocsHeaderMobile } from '../components/layout/HeaderMobile';
+import { MobileNavbar } from '../components/layout/MobileNavbar';
 
 const coerceBooleanFromQuery = (
   value: string | string[] | undefined
@@ -125,7 +126,7 @@ export const docsLayout = defineAppLayout({
   header: {
     render: (ctx: AppLayoutRuntimeContext) => {
       if (ctx.isMobile) {
-        return <DocsMobileHeader orientation={ctx.orientation} />;
+        return <DocsHeaderMobile orientation={ctx.orientation} />;
       }
       return <AppHeader />;
     },
@@ -133,7 +134,7 @@ export const docsLayout = defineAppLayout({
   },
   navbar: {
     component: AppNavigation,
-    show: (ctx: AppLayoutRuntimeContext) => !isFullscreenExampleRoute(ctx),
+    show: (ctx: AppLayoutRuntimeContext) => !ctx.isMobile && !isFullscreenExampleRoute(ctx),
     props: (ctx: AppLayoutRuntimeContext) => ({
       onNavigate: (route: string) => {
         if (ctx.navigation?.push) {
@@ -155,6 +156,11 @@ export const docsLayout = defineAppLayout({
   },
   overlays: [
     { component: DocsGlobalHotkeys },
+    {
+      component: MobileNavbar,
+      show: (ctx: AppLayoutRuntimeContext) => ctx.isMobile && !isFullscreenExampleRoute(ctx),
+      key: 'docs-mobile-navbar',
+    },
     {
       component: GlobalSpotlightLazy,
       target: 'root',

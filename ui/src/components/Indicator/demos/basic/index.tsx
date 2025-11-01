@@ -1,4 +1,3 @@
-import React from 'react';
 import { Flex, Text, Avatar, Indicator, Card, Block } from '@platform-blocks/ui';
 
 export default function IndicatorBasicDemo() {

@@ -3,7 +3,7 @@ import { Blockquote, Column, Text } from '@platform-blocks/ui';
 export default function BlockquoteVariantsDemo() {
   return (
     <Column gap="xl">
-      <Text variant="h4">Default Variant</Text>
+      <Text variant="h4" colorVariant="secondary">Default Variant</Text>
       <Blockquote 
         author={{ name: 'Anonymous' }}
       >

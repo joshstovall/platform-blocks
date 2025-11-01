@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrandIcon } from '../../BrandIcon';
 import { Text, Card, Column, Row, Title } from '../../../..';
 import type { BrandName } from '../../BrandIcon';

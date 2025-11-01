@@ -1,4 +1,3 @@
-import React from 'react';
 import { Image, Card, Text, Row, Icon, Block } from '@platform-blocks/ui';
 
 export default function ImageFallbackDemo() {

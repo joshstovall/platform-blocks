@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Text, Button } from '@platform-blocks/ui';
 
 export default function BasicCardDemo() {

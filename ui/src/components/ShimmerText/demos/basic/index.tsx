@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ShimmerText } from '../..'; // adjust path
 import { Text } from '../../../../components/Text';

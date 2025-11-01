@@ -9,11 +9,11 @@ export const Footer: React.FC = () => {
   const { t } = useI18n();
   return (
     <Flex direction="row" justify="space-between" align="center" style={{ padding: 4, width: '100%', backgroundColor: theme.colors.surface[4] + '40' }}>
-      <Text size="sm" colorVariant="muted">© {currentYear} Platform Blocks  🧱 Built with React Native.</Text>
+      {/* <Text size="sm" colorVariant="muted">© {currentYear} Platform Blocks</Text> */}
       <Flex direction="row" gap="xs" align="center">
-        <Text size="sm" colorVariant="muted">{t('footer.builtBy')}</Text>
-        <Link href="https://joshuastovall.com" target="_blank" variant="hover-underline" size="sm" color="primary">Joshua Stovall</Link>
-        <Text size="sm" colorVariant="muted">· © {currentYear} Platform Blocks</Text>
+        {/* <Text size="sm" colorVariant="muted">{t('footer.builtBy')}</Text> */}
+        {/* <Link href="https://joshuastovall.com" target="_blank" variant="hover-underline" size="sm" color="primary">Joshua Stovall</Link> */}
+        <Text size="sm" colorVariant="muted">© {currentYear} Platform Blocks</Text>
       </Flex>
       <Flex direction="row" gap="md">
         <Button

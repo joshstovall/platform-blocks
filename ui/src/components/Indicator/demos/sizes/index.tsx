@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import { Flex, Text, Indicator, Card } from '@platform-blocks/ui';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrandButton } from '../..';
 import { useToast } from 'platform-blocks/components/Toast';
 export default function BasicButtonDemo() {

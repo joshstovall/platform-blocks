@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text } from '../../../Text';
 import { Block } from '../../Block';
 
@@ -39,8 +38,7 @@ export default function BlockBasicDemo() {
   );
 }
 
-export const code = `import React from 'react';
-import { Block, Text } from '@platform-blocks/ui';
+export const code = `import { Block, Text } from '@platform-blocks/ui';
 
 export default function BlockBasicDemo() {
   return (

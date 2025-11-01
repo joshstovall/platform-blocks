@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Text, Column } from '@platform-blocks/ui';
 import { Popover, PopoverTarget, PopoverDropdown } from '../..';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { RichTextEditor, Card, Flex, Text } from '@platform-blocks/ui';
 import type { RichTextEditorContent } from '@platform-blocks/ui';
 

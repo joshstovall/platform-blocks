@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Flex, Text, Breadcrumbs, Image, useAppShell, Search, Row, KeyCap } from '@platform-blocks/ui';
-import { HeaderThemeToggle } from './HeaderThemeToggle';
-import { HeaderDirectionToggle } from './HeaderDirectionToggle';
+import { HeaderThemeToggle } from './ToggleTheme';
+import { ToggleDirection } from './ToggleDirection';
 import { NavIconButton } from './NavIconButton';
 import { useBreadcrumbs } from '../../hooks/useBreadcrumbs';
 import { useRouter } from 'expo-router';
@@ -44,7 +44,7 @@ export const AppHeader: React.FC = () => {
               </Text>
             </Flex>
           </Pressable>
-          <Breadcrumbs
+         <Breadcrumbs
             items={breadcrumbs}
             size="xs"
             maxItems={4}
@@ -58,7 +58,7 @@ export const AppHeader: React.FC = () => {
             placeholder="Search"
             rightComponent={shortcutComponent}
           />
-          <HeaderDirectionToggle />
+          <ToggleDirection />
           <HeaderThemeToggle />
         </Flex>
       </Flex>

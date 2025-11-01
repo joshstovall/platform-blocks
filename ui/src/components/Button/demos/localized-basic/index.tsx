@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Flex, Text, useI18n } from '@platform-blocks/ui';
 
 export default function Demo() {

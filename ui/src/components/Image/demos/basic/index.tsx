@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Text, Column } from '@platform-blocks/ui';
 import { Image } from '../../Image';
 

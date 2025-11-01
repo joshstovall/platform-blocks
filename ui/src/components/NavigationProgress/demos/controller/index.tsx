@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Flex } from '@platform-blocks/ui';
 import { NavigationProgress, navigationProgress } from '../..';
 

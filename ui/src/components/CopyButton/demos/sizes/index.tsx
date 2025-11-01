@@ -1,4 +1,3 @@
-import React from 'react';
 import { CopyButton, Card, Flex, Text, Block } from '@platform-blocks/ui';
 
 export default function SizesCopyButtonDemo() {

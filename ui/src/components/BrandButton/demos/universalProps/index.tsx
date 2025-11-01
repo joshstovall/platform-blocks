@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrandButton } from '../../BrandButton';
 import { Card } from '../../../Card';
 import { Flex } from '../../../Flex'; 
