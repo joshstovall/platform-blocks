@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo, ReactNode } from 'react';
 import { Carousel, Text, Button, Block, Column, Row, Image } from '@platform-blocks/ui';
 import { resolveLinearGradient } from '../../../../utils/optionalDependencies';
 
@@ -26,7 +26,7 @@ const IMAGES = [
 ];
 
 // Memoized gradient component to prevent recreating LinearGradient
-const OverlayGradient = memo(({ children }: { children: React.ReactNode }) => (
+const OverlayGradient = memo(({ children }: { children: ReactNode }) => (
   <LinearGradient
     colors={['rgba(0,0,0,0.65)', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.75)']}
     start={{ x: 0, y: 1 }}

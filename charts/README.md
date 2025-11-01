@@ -39,3 +39,11 @@ export function RevenueChart({ data }) {
 	);
 }
 ```
+
+## Testing
+
+- `npm run test` runs the full Jest suite.
+- `npm run test:watch` watches for file updates during development.
+- `npm run test:coverage` reports thresholds across `src/**/*`.
+
+Tests live under `tests/` by layer (`unit`, `integration`, `hooks`). Add fixtures under `tests/fixtures` when chart-specific datasets are needed.

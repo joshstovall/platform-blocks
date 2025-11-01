@@ -5,11 +5,16 @@ import { DARK_THEME } from './darkTheme';
 import { DEFAULT_THEME } from './defaultTheme';
 import { PlatformBlocksThemeProvider, PlatformBlocksThemeProviderProps } from './ThemeProvider';
 import { useColorScheme, ColorScheme } from './useColorScheme';
-import { OverlayProvider, OverlayRenderer } from '../providers';
+import { OverlayProvider, OverlayRenderer, DirectionProvider } from '../providers';
+import type { DirectionProviderProps } from '../providers';
 import { SpotlightController } from '../../components/Spotlight/SpotlightController';
 import { I18nProvider } from '../i18n';
 import { UniversalCSS } from '../utils/UniversalCSS';
 import type { HighlightProps as HighlightComponentProps } from '../../components/Highlight';
+import { HapticsProvider } from '../haptics/HapticsProvider';
+import type { HapticsProviderProps } from '../haptics/HapticsProvider';
+import { PermissionProvider } from '../../components/Can';
+import type { PermissionProviderProps } from '../../components/Can';
 import {
   ThemeModeProvider,
   ThemeModeConfig,
@@ -75,6 +80,12 @@ const I18nBoundary = React.memo<I18nBoundaryProps>(function I18nBoundary({ local
   );
 });
 
+type DirectionProviderConfig = Omit<DirectionProviderProps, 'children'>;
+type HapticsProviderConfig = Omit<HapticsProviderProps, 'children'>;
+type PermissionProviderConfig = Omit<PermissionProviderProps, 'children'>;
+
+const DEFAULT_PERMISSION_RULES = [{ action: '*', subject: '*' }];
+
 export interface PlatformBlocksProviderProps extends Omit<PlatformBlocksThemeProviderProps, 'children'> {
   /** Your application */
   children: React.ReactNode;
@@ -121,6 +132,13 @@ export interface PlatformBlocksProviderProps extends Omit<PlatformBlocksThemePro
   fallbackLocale?: string;
   /** i18n: resources map */
   i18nResources?: Record<string, { translation: Record<string, any> }>;
+
+  /** Direction context configuration (pass false to opt out) */
+  direction?: false | DirectionProviderConfig;
+  /** Haptics context configuration (pass false to opt out) */
+  haptics?: false | HapticsProviderConfig;
+  /** Permission context configuration (pass false to opt out) */
+  permissions?: false | PermissionProviderConfig;
 }
 
 /**
@@ -138,7 +156,7 @@ function PlatformBlocksContent({
   withGlobalCSS = true,
   spotlightConfig,
   themeModeConfig
-}: Omit<PlatformBlocksProviderProps, 'locale' | 'fallbackLocale' | 'i18nResources'>) {
+}: Omit<PlatformBlocksProviderProps, 'locale' | 'fallbackLocale' | 'i18nResources' | 'direction' | 'haptics' | 'permissions'>) {
   const osColorScheme = useColorScheme();
   const optionalThemeModeColorScheme = useOptionalThemeModeColorScheme();
   
@@ -214,7 +232,10 @@ export function PlatformBlocksProvider({
   spotlightConfig,
   locale = 'en',
   fallbackLocale = 'en',
-  i18nResources
+  i18nResources,
+  direction,
+  haptics,
+  permissions
 }: PlatformBlocksProviderProps) {
   const i18nStore = useMemo(
     () => i18nResources || { en: { translation: {} } },
@@ -246,13 +267,49 @@ export function PlatformBlocksProvider({
     content
   );
 
+  const directionConfig: DirectionProviderConfig | null = direction === false ? null : (direction ?? {});
+  const hapticsConfig: HapticsProviderConfig | null = haptics === false ? null : (haptics ?? {});
+  const permissionConfig: PermissionProviderConfig | null = permissions === false ? null : (() => {
+    const base: PermissionProviderConfig = { ...(permissions ?? {}) };
+    if (base.rules === undefined) {
+      base.rules = DEFAULT_PERMISSION_RULES;
+    }
+    return base;
+  })();
+
+  let enhancedTree = themedTree;
+
+  if (permissionConfig) {
+    enhancedTree = (
+      <PermissionProvider {...permissionConfig}>
+        {enhancedTree}
+      </PermissionProvider>
+    );
+  }
+
+  if (hapticsConfig) {
+    enhancedTree = (
+      <HapticsProvider {...hapticsConfig}>
+        {enhancedTree}
+      </HapticsProvider>
+    );
+  }
+
+  if (directionConfig) {
+    enhancedTree = (
+      <DirectionProvider {...directionConfig}>
+        {enhancedTree}
+      </DirectionProvider>
+    );
+  }
+
   return (
     <I18nBoundary
       locale={locale}
       fallbackLocale={fallbackLocale}
       resources={i18nStore}
     >
-      {themedTree}
+      {enhancedTree}
     </I18nBoundary>
   );
 }

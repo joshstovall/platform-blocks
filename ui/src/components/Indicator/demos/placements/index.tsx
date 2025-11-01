@@ -1,8 +1,8 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Flex, Text, Indicator, Card } from '@platform-blocks/ui';
 
-const Box = ({ children }: { children: React.ReactNode }) => (
+const Box = ({ children }: { children: ReactNode }) => (
   <Card style={{ width: 70, height: 70,  borderRadius: 12, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>{children}</Card>
 );
 

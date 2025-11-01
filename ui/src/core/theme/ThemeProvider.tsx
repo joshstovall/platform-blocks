@@ -32,22 +32,22 @@ export function PlatformBlocksThemeProvider({
     
     // If no theme override is provided, return the base theme directly (no new object)
     if (!theme) {
-      debugLog('[PlatformBlocksThemeProvider] No theme override, using base theme directly, colorScheme:', baseTheme.colorScheme);
+      // debugLog('[PlatformBlocksThemeProvider] No theme override, using base theme directly, colorScheme:', baseTheme.colorScheme);
       return baseTheme;
     }
     
     // If the theme is a complete theme object (has colorScheme), use it directly
     if ('colorScheme' in theme && theme.colorScheme) {
-      debugLog('[PlatformBlocksThemeProvider] Complete theme provided, using directly, colorScheme:', theme.colorScheme);
+      // debugLog('[PlatformBlocksThemeProvider] Complete theme provided, using directly, colorScheme:', theme.colorScheme);
       return theme as PlatformBlocksTheme;
     }
     
     // Only create a new object if we actually have a theme override to merge
     const result = mergeTheme(baseTheme, theme);
-    debugLog('[PlatformBlocksThemeProvider] Creating merged theme with override, colorScheme:', result.colorScheme);
+    // debugLog('[PlatformBlocksThemeProvider] Creating merged theme with override, colorScheme:', result.colorScheme);
     return result;
   }, [theme, parentTheme, inherit]);
-  debugLog('[PlatformBlocksThemeProvider] Rendering with theme colorScheme:', mergedTheme.colorScheme);
+  // debugLog('[PlatformBlocksThemeProvider] Rendering with theme colorScheme:', mergedTheme.colorScheme);
 
   return (
     <PlatformBlocksThemeContext.Provider value={mergedTheme}>

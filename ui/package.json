@@ -27,6 +27,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "clean": "rm -rf lib || true",
+    "generate:llms": "tsx ../scripts/generate-llms.ts",
     "prepare": "sh -c 'if [ \"$BUILD_ON_PREPARE\" = \"1\" ]; then npm run build; else echo \"ui: skipping build on prepare (set BUILD_ON_PREPARE=1 to enable)\"; fi'",
     "test": "jest",
     "test:watch": "jest --watch",

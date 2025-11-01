@@ -17,19 +17,6 @@ export function PageLayout({ children, style, contentContainerStyle }: PageLayou
   const scrollRef = React.useRef<any>(null);
   const { onScroll: onPersistScroll } = usePersistentScroll(scrollRef, { delayFrames: 2 });
   const pathname = usePathname();
-  const lastWidthCategoryRef = React.useRef<string | null>(null);
-  const widthCategory = React.useMemo(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const w = window.innerWidth;
-      if (w >= 1200) return 'xl';
-      if (w >= 992) return 'lg';
-      if (w >= 768) return 'md';
-      if (w >= 576) return 'sm';
-      return 'xs';
-    }
-    return 'native';
-  }, [Platform.OS === 'web' ? (typeof window !== 'undefined' ? window.innerWidth : 0) : 0]);
-
   const dynamicStyles = React.useMemo(() => StyleSheet.create({
     container: {
       flex: 1,

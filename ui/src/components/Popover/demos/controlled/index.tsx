@@ -1,10 +1,10 @@
-import React from 'react';
+import { useState } from 'react';
 import { Button, Text, Input, Column } from '@platform-blocks/ui';
 import { Popover, PopoverTarget, PopoverDropdown } from '../..';
 
 export default function PopoverControlledDemo() {
-  const [opened, setOpened] = React.useState(false);
-  const [email, setEmail] = React.useState('team@example.com');
+  const [opened, setOpened] = useState(false);
+  const [email, setEmail] = useState('team@example.com');
 
   return (
     <Column gap="md">
