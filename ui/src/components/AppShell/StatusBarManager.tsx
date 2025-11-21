@@ -1,15 +1,13 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import type { StatusBarConfig } from './types';
 
-// Optional import of StatusBar with fallback
-let StatusBar: any = null;
-try {
-  StatusBar = require('expo-status-bar').StatusBar;
-} catch (e) {
-  // expo-status-bar not available, will use fallback or nothing
-}
+const StatusBar = resolveOptionalModule<any>('expo-status-bar', {
+  accessor: module => module.StatusBar,
+  devWarning: 'expo-status-bar not found, status bar will not render',
+});
 
 interface StatusBarManagerProps extends StatusBarConfig {
   children?: React.ReactNode;

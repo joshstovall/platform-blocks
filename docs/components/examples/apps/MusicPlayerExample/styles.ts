@@ -90,10 +90,14 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
 
   // Album Section
   albumSection: {
-    flexDirection: 'row',
     padding: 32,
     gap: 32,
     alignItems: 'flex-end',
+  },
+  albumSectionMobile: {
+    padding: 16,
+    gap: 16,
+    alignItems: 'stretch',
   },
   albumArt: {
     width: 232,
@@ -104,9 +108,23 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     ...platformShadow({ color: '#000000', opacity: 0.6, offsetY: 8, radius: 24, elevation: 8 }),
     overflow: 'hidden',
   },
+  albumArtMobile: {
+    width: '100%',
+    maxWidth: 320,
+    aspectRatio: 1,
+    alignSelf: 'center',
+  },
   albumArtImage: {
     width: '100%',
     height: '100%',
+  },
+  albumInfo: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  albumInfoMobile: {
+    width: '100%',
+    marginTop: 4,
   },
   albumArtFallback: {
     flex: 1,
@@ -117,15 +135,15 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     color: theme.text.secondary,
     fontSize: 48,
   },
-  albumInfo: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   albumType: {
     color: theme.text.primary,
     fontSize: 12,
     fontWeight: '500',
     marginBottom: 8,
+  },
+  albumTypeMobile: {
+    fontSize: 11,
+    marginBottom: 4,
   },
   trackTitle: {
     color: theme.text.primary,
@@ -134,26 +152,45 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     lineHeight: 52,
     marginBottom: 16,
   },
+  trackTitleMobile: {
+    fontSize: 32,
+    lineHeight: 36,
+    marginBottom: 12,
+  },
   artistInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  artistInfoMobile: {
+    gap: 6,
+    marginTop: 8,
   },
   artistName: {
     color: theme.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
+  artistNameMobile: {
+    fontSize: 14,
+  },
   albumDetails: {
     color: theme.text.secondary,
     fontSize: 14,
+  },
+  albumDetailsMobile: {
+    fontSize: 12,
   },
 
   // Track Controls
   trackControls: {
     paddingHorizontal: 32,
     paddingBottom: 24,
-  position: 'relative',
-  zIndex: 2000,
+    position: 'relative',
+    zIndex: 2000,
+  },
+  trackControlsMobile: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   spotifyPlayButton: {
     width: 56,
@@ -192,6 +229,11 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
   queueSection: {
     flex: 1,
     paddingHorizontal: 32,
+    paddingBottom: 120,
+  },
+  queueSectionMobile: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
   },
   queueItem: {
     flexDirection: 'row',
@@ -201,6 +243,10 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     marginBottom: 1,
     borderRadius: 4,
     gap: 16,
+  },
+  queueItemMobile: {
+    paddingHorizontal: 12,
+    gap: 12,
   },
   activeQueueItem: {
     backgroundColor: theme.backgrounds.surface,
@@ -268,9 +314,20 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     gap: 16,
     zIndex: 20,
   },
+  bottomPlayerMobile: {
+    position: 'relative',
+    height: 'auto',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 20,
+    paddingVertical: 16,
+  },
   currentTrack: {
     flex: 1,
     maxWidth: 360,
+  },
+  currentTrackMobile: {
+    maxWidth: '100%',
   },
   currentTrackThumb: {
     width: 56,
@@ -296,6 +353,10 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     flex: 1,
     marginLeft: 12,
   },
+  currentTrackInfoMobile: {
+    marginLeft: 0,
+    marginTop: 8,
+  },
   currentTrackTitle: {
     color: theme.text.primary,
     fontSize: 14,
@@ -315,6 +376,10 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     flex: 2,
     alignItems: 'center',
   },
+  playerControlsMobile: {
+    flex: 1,
+    width: '100%',
+  },
   bottomPlayButton: {
     width: 32,
     height: 32,
@@ -330,6 +395,10 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     marginTop: 8,
     width: '100%',
   },
+  progressBarMobile: {
+    marginTop: 12,
+    gap: 8,
+  },
   progressTime: {
     color: theme.text.secondary,
     fontSize: 11,
@@ -339,6 +408,9 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
   progressSlider: {
     flex: 1,
   },
+  progressSliderMobile: {
+    minWidth: 0,
+  },
 
   // Volume Controls (Right)
   volumeControls: {
@@ -346,8 +418,18 @@ export const createMusicPlayerStyles = (theme: PlatformBlocksTheme) => StyleShee
     maxWidth: 180,
     justifyContent: 'flex-end',
   },
+  volumeControlsMobile: {
+    maxWidth: '100%',
+    width: '100%',
+    gap: 8,
+    justifyContent: 'space-between',
+  },
   volumeSlider: {
     width: 93,
+  },
+  volumeSliderMobile: {
+    flex: 1,
+    width: '100%',
   },
 
 });

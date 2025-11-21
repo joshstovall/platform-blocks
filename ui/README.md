@@ -35,4 +35,26 @@ export function App() {
 }
 ```
 
-Refer to the documentation site for component examples and API details.
+Refer to the documentation site for component examples and API details. A dedicated “Keyboard Management” guide is available at `/keyboard` within the docs app.
+
+## Keyboard Management
+
+Packages that render focusable inputs can opt into shared keyboard state by wrapping their tree in `KeyboardManagerProvider`. This unlocks the `useKeyboardManager()` hook and ensures components like `AutoComplete` and `Select` dismiss or refocus the keyboard consistently across web and native platforms.
+
+```tsx
+import { KeyboardManagerProvider, KeyboardAwareLayout } from '@platform-blocks/ui';
+
+export function App() {
+	return (
+		<KeyboardManagerProvider>
+			<KeyboardAwareLayout>
+				{/* form inputs */}
+			</KeyboardAwareLayout>
+		</KeyboardManagerProvider>
+	);
+}
+```
+
+`KeyboardAwareLayout` is optional but recommended for screens where the on-screen keyboard could obscure lower inputs. Components expose a `refocusAfterSelect` prop that lets you override the default dismissal behavior when selections complete.
+
+For direct inputs, you can pass `keyboardFocusId` to make a field eligible for deferred refocus requests triggered via `KeyboardManagerProvider` (for example, when an overlay completes a selection and needs to restore focus to a specific input).

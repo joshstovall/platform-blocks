@@ -1,30 +1,15 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef } from 'react';
-import { Platform } from 'react-native';
 import { useAccessibility } from '../accessibility/context';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import type { SoundContextType, SoundAsset, SoundOptions, SoundState, HapticFeedbackOptions } from './types';
 
-// Dynamic imports to handle missing dependencies
-let Audio: any = null;
-let Haptics: any = null;
+const Audio = resolveOptionalModule<any>('expo-audio', {
+  devWarning: 'expo-audio not found, using mock sound implementation',
+});
 
-try {
-  const audioModule = require('expo-audio');
-  Audio = {
-    useAudioPlayer: audioModule.useAudioPlayer,
-    useAudioPlayerStatus: audioModule.useAudioPlayerStatus,
-    setAudioModeAsync: audioModule.setAudioModeAsync,
-    setIsAudioActiveAsync: audioModule.setIsAudioActiveAsync,
-    createAudioPlayer: audioModule.createAudioPlayer,
-  };
-} catch (e) {
-  console.warn('expo-audio not found, using mock sound implementation');
-}
-
-try {
-  Haptics = require('expo-haptics');
-} catch (e) {
-  console.warn('expo-haptics not found, using mock haptic implementation');
-}
+const Haptics = resolveOptionalModule<any>('expo-haptics', {
+  devWarning: 'expo-haptics not found, using mock haptic implementation',
+});
 
 interface SoundProviderState {
   enabled: boolean;

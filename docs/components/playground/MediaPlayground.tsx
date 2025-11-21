@@ -12,7 +12,7 @@ export function MediaPlayground() {
 
   // Generate stable mock peaks once
   const peaks = React.useMemo(() => {
-    const len = 420;
+    const len = 220;
     const arr: number[] = [];
     for (let i = 0; i < len; i++) {
       const sine = Math.sin(i / 18);
@@ -148,41 +148,25 @@ export function MediaPlayground() {
 
   return (
     <Block direction="column" gap="xl">
+            <Title afterline>Waveform</Title>
+
       <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
-        <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12} >
+        <Card p={16} style={{ flexGrow: 1, minWidth: 320 }}>
             <Text weight="semibold">Bars (Rounded) Variant</Text>
             <Waveform
               peaks={peaks}
               fullWidth
               height={80}
               variant="rounded"
-              barWidth={3}
+              // barWidth={30}
               barGap={2}
               color="primary"
               progress={progress}
               progressColor="success"
             />
             <Text size="xs" colorVariant="muted">Rounded bars with animated playback progress.</Text>
-          </Flex>
         </Card>
-        <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12}>
-            <Text weight="semibold">Gradient + Line Variant</Text>
-            <Waveform
-              peaks={peaks}
-              fullWidth
-              height={80}
-              variant="gradient"
-              barWidth={2}
-              barGap={1}
-              gradientColors={[theme.colors.primary[5], theme.colors.secondary[5], theme.colors.warning[5]]}
-              progress={progress}
-              progressColor="error"
-            />
-            <Text size="xs" colorVariant="muted">Gradient bars showcasing multi-color styling.</Text>
-          </Flex>
-        </Card>
+     
         <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
           <Flex direction="column" gap={12}>
             <Text weight="semibold">Line Variant</Text>
@@ -202,9 +186,8 @@ export function MediaPlayground() {
       </Flex>
 
       <Title afterline>Video</Title>
-      <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
+      <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
         <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12}>
             <Text weight="semibold">Inline MP4 Player</Text>
             <Video
               source={{ url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4' }}
@@ -220,10 +203,8 @@ export function MediaPlayground() {
                 ? `Latest chapter marker: ${lastTimelineMarker}`
                 : 'Timeline markers surface product chapters while playback runs.'}
             </Text>
-          </Flex>
         </Card>
         <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12}>
             <Text weight="semibold">YouTube Embed</Text>
             <Video
               source={{ youtube: 'https://www.youtube.com/watch?v=jNQXAC9IVRw' }}
@@ -236,9 +217,8 @@ export function MediaPlayground() {
             <Text size="xs" colorVariant="muted">
               Supports native playback controls plus YouTube quality and speed options.
             </Text>
-          </Flex>
         </Card>
-      </Flex>
+      </Block>
 
       <Title afterline>Gallery</Title>
       <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">

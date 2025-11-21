@@ -65,13 +65,13 @@ export const AppNavigation: React.FC = () => {
             title={showLabels ? 'GitHub' : ''}
             onPress={() => Linking.openURL(GITHUB_REPO)}
           />
-          {/* <Button
+          <Button
             size="xs"
             variant="ghost"
             startIcon={<BrandIcon brand="npm" size={16} />}
             title={showLabels ? 'NPM' : ''}
             onPress={() => Linking.openURL(NPM_PACKAGE)}
-          /> */}
+          />
         </Flex>
         {/* {showLabels && (
           <Text size="xs" colorVariant="muted">

@@ -15,6 +15,7 @@ export default function Demo() {
           value={value}
           onChange={setValue}
           label="PIN Code"
+          keyboardFocusId="pin-demo-basic"
         />
         {value && (
           <Text variant="caption" colorVariant="secondary">

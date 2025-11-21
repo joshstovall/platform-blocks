@@ -82,6 +82,7 @@ const getNodeRange = (visibleIds: string[], startId: string, endId: string): str
 export const Tree: React.FC<TreeProps> = ({
   data,
   onNavigate,
+  onNodePress,
   collapsible = true,
   indent = 14,
   accordion = false,
@@ -105,12 +106,14 @@ export const Tree: React.FC<TreeProps> = ({
   hideFiltered = true,
   noResultsFallback = <Text size="sm" color="gray">No results</Text>,
   highlight,
+  striped = false,
 }) => {
   const theme = useTheme?.() as any;
   const isDark = theme?.colorScheme === 'dark';
   const selectionBg = isDark ? `${theme.colors?.primary?.[5] || '#2684FF'}33` : `${theme.colors?.primary?.[5] || '#2684FF'}22`;
   const selectionBgStrong = isDark ? `${theme.colors?.primary?.[5] || '#2684FF'}66` : `${theme.colors?.primary?.[5] || '#2684FF'}44`;
   const selectionBorder = isDark ? `${theme.colors?.primary?.[5] || '#2684FF'}AA` : `${theme.colors?.primary?.[5] || '#2684FF'}66`;
+  const stripeColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.035)';
   const [uncontrolledOpen, setUncontrolledOpen] = useState<InternalNodeState>(() => buildInitialState(data, expandAll));
   const controlledOpen = useMemo(() => {
     if (!expandedIds) return null;
@@ -137,18 +140,24 @@ export const Tree: React.FC<TreeProps> = ({
 
   const toggle = useCallback((node: TreeNode) => {
     if (!collapsible || !node.children?.length) return;
-  setOpen((prev: InternalNodeState) => {
+
+    if (expandedIds) {
+      const willOpen = !open[node.id];
+      onToggle?.(node, willOpen);
+      return;
+    }
+
+    setOpen((prev: InternalNodeState) => {
       const next = { ...prev };
       const willOpen = !next[node.id];
       if (accordion) {
-        // close siblings at same depth -> need parent context (simplified: close all except this path)
         Object.keys(next).forEach(k => { if (k !== node.id) next[k] = false; });
       }
       next[node.id] = willOpen;
       onToggle?.(node, willOpen);
       return next;
     });
-  }, [collapsible, accordion, onToggle]);
+  }, [collapsible, accordion, onToggle, expandedIds, open]);
 
   const setSelected = (ids: string[], node: TreeNode) => {
     if (selectedIds === undefined) setInternalSelected(ids);
@@ -165,6 +174,9 @@ export const Tree: React.FC<TreeProps> = ({
 
   const handleRowPress = (node: TreeNode, isBranch: boolean, event?: any) => {
     if (node.disabled) return;
+
+    const intercept = onNodePress?.(node, { isBranch, event });
+    if (intercept === false) return;
 
     // expansion
     if (isBranch && expandOnClick) {
@@ -300,16 +312,20 @@ export const Tree: React.FC<TreeProps> = ({
   const filteredData = hideFiltered ? filterTree(data) : data;
   const hasResults = filteredData.length > 0;
 
+  let rowCounter = -1;
+
   const renderNode = (node: TreeNode, depth: number) => {
     const isBranch = !!node.children?.length;
     const isOpen = !!open[node.id];
-  const leftPad = depth * indent;
-  const selected = effectiveSelected.includes(node.id);
-  const aggregate = isBranch ? getAggregateState(node) : (effectiveChecked.includes(node.id) ? 'checked' : 'unchecked');
-  const checked = aggregate === 'checked';
-  const indeterminate = aggregate === 'indeterminate';
+    const leftPad = depth * indent;
+    const selected = effectiveSelected.includes(node.id);
+    const aggregate = isBranch ? getAggregateState(node) : (effectiveChecked.includes(node.id) ? 'checked' : 'unchecked');
+    const checked = aggregate === 'checked';
+    const indeterminate = aggregate === 'indeterminate';
     const disabled = !!node.disabled;
     const showCheckbox = checkboxes && (node.selectable ?? true);
+    const rowNumber = ++rowCounter;
+    const stripedBg = striped && !selected ? (rowNumber % 2 === 1 ? stripeColor : 'transparent') : 'transparent';
 
     const labelContent = (() => {
       const base = node.label;
@@ -325,7 +341,7 @@ export const Tree: React.FC<TreeProps> = ({
       paddingRight: 8,
       paddingLeft: 6 + leftPad,
       borderRadius: 6,
-      backgroundColor: selected ? selectionBgStrong : pressed ? selectionBg : 'transparent',
+  backgroundColor: selected ? selectionBgStrong : pressed ? selectionBg : stripedBg,
       borderWidth: selected ? 1 : 0,
       borderColor: selected ? selectionBorder : 'transparent',
             flexDirection: 'row',

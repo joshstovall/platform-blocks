@@ -1,5 +1,13 @@
 import { ReactNode } from 'react';
 import { ViewProps } from 'react-native';
+import { type ComponentSizeValue } from '../../core/theme/componentSize';
+
+export interface TimelineSizeMetrics {
+  bulletSize: number;
+  lineWidth: number;
+  fontSize: number;
+  spacing: number;
+}
 
 export interface TimelineItemProps extends Omit<ViewProps, 'children'> {
   /** Item content */
@@ -38,7 +46,7 @@ export interface TimelineProps extends Omit<ViewProps, 'children'> {
   /** Reverse active highlighting */
   reverseActive?: boolean;
   /** Component size */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: ComponentSizeValue;
   /** Center mode renders a single central spine allowing items on both sides via itemAlign prop */
   centerMode?: boolean;
 }
@@ -50,7 +58,8 @@ export interface TimelineContextValue {
   bulletSize: number;
   align: 'left' | 'right';
   reverseActive: boolean;
-  size: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size: ComponentSizeValue;
+  metrics: TimelineSizeMetrics;
   /** Whether layout is split with centered vertical line */
   centerMode?: boolean;
 }

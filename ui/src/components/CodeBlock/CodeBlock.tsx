@@ -10,6 +10,7 @@ import { CopyButton } from '../CopyButton/CopyButton';
 import type { CodeBlockProps } from './types';
 import { Column } from '../Layout';
 import { Spoiler } from '../Spoiler';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import { normalizeLanguage, parseHighlightLines, createNativeHighlighter } from './utils';
 
 // Prism light build for JSX/TSX (react-syntax-highlighter)
@@ -17,26 +18,34 @@ let PrismSyntaxHighlighter: any = null;
 let prismLightTheme: any = null;
 let prismDarkTheme: any = null;
 if (Platform.OS === 'web') {
-  try {
-    PrismSyntaxHighlighter = require('react-syntax-highlighter').PrismLight;
-    const jsx = require('react-syntax-highlighter/dist/esm/languages/prism/jsx').default;
-    const tsx = require('react-syntax-highlighter/dist/esm/languages/prism/tsx').default;
-    const typescript = require('react-syntax-highlighter/dist/esm/languages/prism/typescript').default;
-    const javascript = require('react-syntax-highlighter/dist/esm/languages/prism/javascript').default;
-    const json = require('react-syntax-highlighter/dist/esm/languages/prism/json').default;
-    const bash = require('react-syntax-highlighter/dist/esm/languages/prism/bash').default;
-    PrismSyntaxHighlighter.registerLanguage('jsx', jsx);
-    PrismSyntaxHighlighter.registerLanguage('tsx', tsx);
-    PrismSyntaxHighlighter.registerLanguage('typescript', typescript);
-    PrismSyntaxHighlighter.registerLanguage('javascript', javascript);
-    PrismSyntaxHighlighter.registerLanguage('json', json);
-    PrismSyntaxHighlighter.registerLanguage('bash', bash);
-    prismLightTheme = require('react-syntax-highlighter/dist/esm/styles/prism/prism').default;
-    try { prismDarkTheme = require('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus').default; } catch {
-      console.warn('Failed to load prism vsc-dark-plus theme, falling back to prism');
-    }
-  } catch {
-    console.warn('react-syntax-highlighter not found, CodeBlock will use basic formatting');
+  PrismSyntaxHighlighter = resolveOptionalModule<any>('react-syntax-highlighter', {
+    accessor: module => module.PrismLight,
+    devWarning: 'react-syntax-highlighter not found, CodeBlock will use basic formatting',
+  });
+
+  if (PrismSyntaxHighlighter) {
+    const registerLanguage = (moduleId: string, name: string) => {
+      const languageModule = resolveOptionalModule<any>(moduleId, { accessor: mod => mod.default });
+      if (languageModule) {
+        PrismSyntaxHighlighter.registerLanguage(name, languageModule);
+      }
+    };
+
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/jsx', 'jsx');
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/tsx', 'tsx');
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/typescript', 'typescript');
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/javascript', 'javascript');
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/json', 'json');
+    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/bash', 'bash');
+
+    prismLightTheme = resolveOptionalModule<any>('react-syntax-highlighter/dist/esm/styles/prism/prism', {
+      accessor: mod => mod.default,
+    });
+
+    prismDarkTheme = resolveOptionalModule<any>('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus', {
+      accessor: mod => mod.default,
+      devWarning: 'Failed to load prism vsc-dark-plus theme, falling back to prism',
+    });
   }
 }
 

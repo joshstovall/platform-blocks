@@ -9,21 +9,16 @@ import Animated, {
   interpolate,
   runOnJS
 } from 'react-native-reanimated';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 
-// Try to import gesture handler, but gracefully fallback if not available
-let GestureDetector: any;
-let Gesture: any;
-let GestureHandlerRootView: any;
+// Optional gesture handler support with graceful fallback
+const gestureHandler = resolveOptionalModule<any>('react-native-gesture-handler', {
+  devWarning: 'react-native-gesture-handler not found. Swipe gestures will be disabled for Toast component.',
+});
 
-try {
-  const gestureHandler = require('react-native-gesture-handler');
-  GestureDetector = gestureHandler.GestureDetector;
-  Gesture = gestureHandler.Gesture;
-  GestureHandlerRootView = gestureHandler.GestureHandlerRootView;
-} catch (error) {
-  // Gesture handler not available - swipe gestures will be disabled
-  console.warn('react-native-gesture-handler not found. Swipe gestures will be disabled for Toast component.');
-}
+const GestureDetector = gestureHandler?.GestureDetector;
+const Gesture = gestureHandler?.Gesture;
+const GestureHandlerRootView = gestureHandler?.GestureHandlerRootView;
 
 import { factory } from '../../core/factory';
 import { getSpacing } from '../../core/theme/sizes';

@@ -2,10 +2,10 @@
 // Inspired by Mantine's size system
 
 import { DESIGN_TOKENS } from '../design-tokens';
+import type { ComponentSize } from './componentSize';
+import { DEFAULT_COMPONENT_SIZE, ComponentSizeValue } from './componentSize';
 
-export type SizeValue =
-  | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
-  | number;
+export type SizeValue = ComponentSizeValue;
 
 export interface SizeScale {
   xs: number;
@@ -91,14 +91,14 @@ export function resolveSize(
   unit: 'px' | 'rem' | 'em' | '' = ''
 ): number | string {
   if (value === undefined) {
-    return SIZE_SCALES[scale].md;
+    return SIZE_SCALES[scale][DEFAULT_COMPONENT_SIZE];
   }
 
   if (typeof value === 'number') {
     return unit ? `${value}${unit}` : value;
   }
 
-  const resolvedValue = SIZE_SCALES[scale][value];
+  const resolvedValue = SIZE_SCALES[scale][value as ComponentSize];
   return unit ? `${resolvedValue}${unit}` : resolvedValue;
 }
 

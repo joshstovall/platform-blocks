@@ -1,4 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import { CheckboxStyleProps } from './types';
 import { PlatformBlocksTheme } from '../../core/theme/types';
 
@@ -6,7 +7,7 @@ export const useCheckboxStyles = (props: CheckboxStyleProps & { theme: PlatformB
   const { checked, indeterminate, disabled, error, size, color, colorVariant, labelPosition = 'right', theme } = props;
 
   // Define size mappings
-  const sizeMap = {
+  const sizeMap: Partial<Record<ComponentSize, number>> = {
     xs: 16,
     sm: 20,
     md: 24,
@@ -16,7 +17,7 @@ export const useCheckboxStyles = (props: CheckboxStyleProps & { theme: PlatformB
     '3xl': 40
   };
 
-  const radiusMap = {
+  const radiusMap: Partial<Record<ComponentSize, number>> = {
     xs: 2,
     sm: 3,
     md: 4,
@@ -26,8 +27,8 @@ export const useCheckboxStyles = (props: CheckboxStyleProps & { theme: PlatformB
     '3xl': 8
   };
 
-  const checkboxSize = sizeMap[size] || sizeMap.md;
-  const borderRadius = radiusMap[size] || radiusMap.md;
+  const checkboxSize = resolveComponentSize(size, sizeMap, { fallback: 'md' }) as number;
+  const borderRadius = resolveComponentSize(size, radiusMap, { fallback: 'md' }) as number;
 
   // Get checkbox colors - use resolved color passed from component
   const activeColor = color || theme.colors.primary[5];

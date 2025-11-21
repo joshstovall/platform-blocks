@@ -1,15 +1,15 @@
 import { Button, Text, Column } from '@platform-blocks/ui';
-import { Popover, PopoverTarget, PopoverDropdown } from '../..';
+import { Popover } from '../..';
 
 export default function PopoverBasicDemo() {
   return (
     <Popover>
-      <PopoverTarget>
+      <Popover.Target>
         <Button size="sm" variant="outline">
           Toggle popover
         </Button>
-      </PopoverTarget>
-      <PopoverDropdown>
+      </Popover.Target>
+      <Popover.Dropdown>
         <Column gap="xs" style={{ padding: 16, maxWidth: 240 }}>
           <Text weight="semibold">Quick actions</Text>
           <Text variant="caption" colorVariant="secondary">
@@ -22,7 +22,7 @@ export default function PopoverBasicDemo() {
             View documentation
           </Button>
         </Column>
-      </PopoverDropdown>
+      </Popover.Dropdown>
     </Popover>
   );
 }

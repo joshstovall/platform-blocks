@@ -78,6 +78,8 @@ export interface PopoverProps extends SpacingProps {
   hideDetached?: boolean;
   /** Override viewport padding */
   viewport?: PositioningOptions['viewport'];
+  /** Whether positioning should avoid the on-screen keyboard */
+  keyboardAvoidance?: boolean;
   /** Override fallback placements */
   fallbackPlacements?: PlacementType[];
   /** Override boundary padding */

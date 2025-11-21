@@ -23,16 +23,16 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Installation', route: '/installation', icon: 'download', searchable: true },
       { label: 'Theming', route: '/theming', icon: 'palette', searchable: true, description: 'Customize colors, typography, and design system' },
       { label: 'Hooks', route: '/hooks', icon: 'hook', searchable: true, description: 'Reference for reusable React hooks in Platform Blocks' },
-      // { label: 'Platforms', route: '/platforms', icon: 'grid', searchable: true },
       { label: 'Localization', route: '/localization', icon: 'globe', searchable: true },
-      { label: 'FAQ', route: '/faq', icon: 'support', searchable: true },
+    // { label: 'Keyboard Management', route: '/keyboard', icon: 'keyboard', searchable: true, description: 'Set up shared keyboard dismissal, avoidance, and refocus patterns' },
+      { label: 'FAQ', route: '/faq', icon: 'question', searchable: true },
       { label: 'Support', route: '/support', icon: 'support', bottom: true, searchable: true, description: 'Get help and contact information' },
     ]
   },
   {
     section: 'Components',
     items: [
-      { label: 'All Components', route: '/components', icon: 'grid', bottom: true, searchable: true },
+      { label: 'Components', route: '/components', icon: 'grid', bottom: true, searchable: true },
       { label: 'Examples', route: '/examples', icon: 'code', bottom: true, searchable: true },
       { label: 'Charts', route: '/charts', icon: 'linechart', bottom: true, searchable: true },
       { label: 'Icons', route: '/icons', icon: 'star', searchable: true, description: 'Test custom icons package integration' },

@@ -6,6 +6,11 @@ import { useClipboard } from '../../hooks';
 import { useToast } from '../Toast/ToastProvider';
 import type { CopyButtonProps } from './types';
 import { Tooltip } from '../Tooltip';
+import { DEFAULT_COMPONENT_SIZE, clampComponentSize, type ComponentSize } from '../../core/theme/componentSize';
+import { getHeight, getIconSize } from '../../core/theme/sizes';
+import { useTheme } from '../../core/theme';
+
+const COPY_BUTTON_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
 
 /**
  * Reusable copy control that uses useClipboard & toast toast.
@@ -27,19 +32,29 @@ export function CopyButton({
   buttonVariant = 'secondary',
   iconName = 'copy',
   copiedIconName = 'check',
-  iconColor = '#202020ff',
-  copiedIconColor = '#22c55e',
+  iconColor,
+  copiedIconColor,
 }: CopyButtonProps) {
   const { copy, copied } = useClipboard();
 
   const toast = useToast();
+  const theme = useTheme();
+  const resolvedSize = clampComponentSize(size, COPY_BUTTON_ALLOWED_SIZES, DEFAULT_COMPONENT_SIZE);
 
-  const SIZE_MAP = useMemo(() => ({
-    sm: { box: 28, icon: 18, font: 12 },
-    md: { box: 32, icon: 22, font: 14 },
-    lg: { box: 36, icon: 24, font: 16 },
-  }), []);
-  const dims = SIZE_MAP[size as keyof typeof SIZE_MAP] || SIZE_MAP.md;
+  const dims = useMemo(() => {
+    if (typeof resolvedSize === 'number') {
+      const box = resolvedSize;
+      return {
+        box,
+        icon: Math.max(12, Math.round(box * 0.6)),
+      } as const;
+    }
+
+    return {
+      box: getHeight(resolvedSize),
+      icon: getIconSize(resolvedSize),
+    } as const;
+  }, [resolvedSize]);
 
   const truncate = useCallback((val: string, max = 60) => (
     val.length > max ? val.slice(0, max - 1) + '…' : val
@@ -49,7 +64,11 @@ export function CopyButton({
   const accLabel = copied ? 'Copied' : label;
   const tooltipLabel = tooltip || accLabel;
   const iconGlyph = copied ? copiedIconName : iconName;
-  const iconTint = copied ? copiedIconColor : iconColor;
+  const baseIconColor = iconColor ?? theme.text.primary;
+  const successPalette = theme.colors.success ?? [];
+  const fallbackSuccess = theme.colorScheme === 'dark' ? '#34d399' : '#22c55e';
+  const copiedTint = copiedIconColor ?? successPalette[5] ?? successPalette[4] ?? fallbackSuccess;
+  const iconTint = copied ? copiedTint : baseIconColor;
   const isIconMode = mode === 'icon';
 
   const handleCopy = useCallback(async () => {
@@ -93,7 +112,7 @@ export function CopyButton({
     <View style={style}>
       <IconButton
         onPress={handleCopy}
-        size={size}
+        size={typeof resolvedSize === 'number' ? DEFAULT_COMPONENT_SIZE : resolvedSize}
         variant={buttonVariant}
         icon={iconGlyph}
         iconColor={iconTint}

@@ -1,16 +1,16 @@
 import React from 'react';
 import { ViewStyle, TextStyle } from 'react-native';
-import { SizeValue } from '../../core/theme/sizes';
+import { type ComponentSizeValue } from '../../core/theme/componentSize';
 import { SpacingProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 import { ShadowProps } from '../../core/theme/shadow';
 
 export interface BadgeProps extends SpacingProps, BorderRadiusProps, ShadowProps {
   children: React.ReactNode;
-  size?: SizeValue;
-  variant?: 'filled' | 'outline' | 'light' | 'subtle';
+  size?: ComponentSizeValue;
+  variant?: 'filled' | 'outline' | 'light' | 'subtle' | 'gradient';
   /** Alias for variant */
-  v?: 'filled' | 'outline' | 'light' | 'subtle';
+  v?: 'filled' | 'outline' | 'light' | 'subtle' | 'gradient';
   color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string;
   /** Alias for color */
   c?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string;

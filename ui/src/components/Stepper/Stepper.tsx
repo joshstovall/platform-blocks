@@ -1,8 +1,10 @@
-import React, { createContext, useContext, forwardRef } from 'react';
+import React, { createContext, useContext, forwardRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
-import { StepperProps, StepperStepProps, StepperCompletedProps, StepperContextValue } from './types';
+import { StepperProps, StepperStepProps, StepperCompletedProps, StepperContextValue, type StepperMetrics } from './types';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { Loader } from '../Loader';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
+import { getComponentSize } from '../../core/theme/unified-sizing';
 
 // Create Stepper Context
 const StepperContext = createContext<StepperContextValue | null>(null);
@@ -15,14 +17,74 @@ const useStepperContext = () => {
   return context;
 };
 
-// Size configurations
-const STEPPER_SIZES = {
-  xs: { iconSize: 24, fontSize: 12, spacing: 8 },
-  sm: { iconSize: 28, fontSize: 14, spacing: 12 },
-  md: { iconSize: 32, fontSize: 16, spacing: 16 },
-  lg: { iconSize: 36, fontSize: 18, spacing: 20 },
-  xl: { iconSize: 40, fontSize: 20, spacing: 24 },
-};
+const STEPPER_ALLOWED_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+const STEPPER_ALLOWED_SIZES_ARRAY: ComponentSize[] = [...STEPPER_ALLOWED_SIZES];
+
+const MIN_STEPPER_METRICS = {
+  iconSize: 20,
+  fontSize: 12,
+  descriptionFontSize: 10,
+  spacing: 8,
+} as const;
+
+const STEPPER_SIZE_SCALE: Partial<Record<ComponentSize, StepperMetrics>> = STEPPER_ALLOWED_SIZES_ARRAY.reduce(
+  (acc, token) => {
+    acc[token] = createMetricsForToken(token);
+    return acc;
+  },
+  {} as Partial<Record<ComponentSize, StepperMetrics>>
+);
+
+const BASE_STEPPER_METRICS = STEPPER_SIZE_SCALE.md ?? createMetricsForToken('md');
+const BASE_STEPPER_HEIGHT = getComponentSize('md').height;
+
+function createMetricsForToken(size: ComponentSize): StepperMetrics {
+  const config = getComponentSize(size);
+
+  const fontSize = Math.max(MIN_STEPPER_METRICS.fontSize, config.fontSize);
+  const descriptionFontSize = Math.max(
+    MIN_STEPPER_METRICS.descriptionFontSize,
+    Math.min(fontSize - 1, Math.round(config.fontSize * 0.9))
+  );
+
+  return {
+    iconSize: Math.max(MIN_STEPPER_METRICS.iconSize, Math.round(config.height * 0.8)),
+    fontSize,
+    descriptionFontSize,
+    spacing: Math.max(MIN_STEPPER_METRICS.spacing, Math.round(config.padding * 1.25) + 1),
+  };
+}
+
+function resolveStepperMetrics(value: ComponentSizeValue | undefined): StepperMetrics {
+  const resolved = resolveComponentSize(value, STEPPER_SIZE_SCALE, {
+    allowedSizes: STEPPER_ALLOWED_SIZES_ARRAY,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return calculateNumericMetrics(resolved);
+  }
+
+  return resolved;
+}
+
+function calculateNumericMetrics(height: number): StepperMetrics {
+  const normalizedHeight = Math.max(MIN_STEPPER_METRICS.iconSize + 4, Math.round(height));
+  const scale = normalizedHeight / BASE_STEPPER_HEIGHT;
+
+  const fontSize = Math.max(MIN_STEPPER_METRICS.fontSize, Math.round(BASE_STEPPER_METRICS.fontSize * scale));
+  const descriptionFontSize = Math.max(
+    MIN_STEPPER_METRICS.descriptionFontSize,
+    Math.min(fontSize - 1, Math.round(BASE_STEPPER_METRICS.descriptionFontSize * scale))
+  );
+
+  return {
+    iconSize: Math.max(MIN_STEPPER_METRICS.iconSize, Math.round(normalizedHeight * 0.8)),
+    fontSize,
+    descriptionFontSize,
+    spacing: Math.max(MIN_STEPPER_METRICS.spacing, Math.round(BASE_STEPPER_METRICS.spacing * scale)),
+  };
+}
 
 // Step Component
 const StepperStep = forwardRef<View, StepperStepProps>((
@@ -49,14 +111,13 @@ const StepperStep = forwardRef<View, StepperStepProps>((
     orientation,
     iconPosition,
     iconSize: contextIconSize,
-    size,
     color: contextColor,
     completedIcon: contextCompletedIcon,
     allowNextStepsSelect,
+    metrics,
   } = useStepperContext();
 
-  const sizeConfig = STEPPER_SIZES[size];
-  const finalIconSize = contextIconSize || sizeConfig.iconSize;
+  const finalIconSize = contextIconSize || metrics.iconSize;
   const stepColor = color || contextColor || theme.colors.primary[5];
   const isCompleted = stepIndex < active;
   const isActive = stepIndex === active;
@@ -74,45 +135,22 @@ const StepperStep = forwardRef<View, StepperStepProps>((
   });
 
   const getStepNumberStyles = (): TextStyle => ({
-    fontSize: sizeConfig.fontSize,
+    fontSize: metrics.fontSize,
     fontWeight: '600',
     color: isCompleted || isActive ? '#FFFFFF' : theme.colors.gray[6],
   });
 
   const getStepLabelStyles = (): TextStyle => ({
-    fontSize: sizeConfig.fontSize,
+    fontSize: metrics.fontSize,
     fontWeight: isActive ? '600' : '500',
     color: isActive ? stepColor : theme.text.primary,
     marginBottom: description ? 4 : 0,
   });
 
   const getStepDescriptionStyles = (): TextStyle => ({
-    fontSize: sizeConfig.fontSize - 2,
+    fontSize: metrics.descriptionFontSize,
     color: theme.text.secondary,
   });
-
-  const getSeparatorStyles = (): ViewStyle => {
-    const isLastStep = false; // We'll need to determine this from parent
-    if (isLastStep) return { display: 'none' };
-
-    if (orientation === 'vertical') {
-      return {
-        width: 2,
-        height: sizeConfig.spacing * 2,
-        backgroundColor: isCompleted ? stepColor : theme.colors.gray[3],
-        marginLeft: finalIconSize / 2 - 1,
-        marginVertical: 8,
-      };
-    }
-
-    return {
-      flex: 1,
-      height: 2,
-      backgroundColor: isCompleted ? stepColor : theme.colors.gray[3],
-      marginHorizontal: sizeConfig.spacing,
-      alignSelf: 'center',
-    };
-  };
 
   const renderStepIcon = () => {
     if (loading) {
@@ -138,7 +176,12 @@ const StepperStep = forwardRef<View, StepperStepProps>((
     if (!label && !description) return null;
 
     return (
-      <View style={{ marginLeft: iconPosition === 'left' ? sizeConfig.spacing : 0, marginRight: iconPosition === 'right' ? sizeConfig.spacing : 0 }}>
+      <View
+        style={{
+          marginLeft: iconPosition === 'left' ? metrics.spacing : 0,
+          marginRight: iconPosition === 'right' ? metrics.spacing : 0,
+        }}
+      >
         {label && <Text style={getStepLabelStyles()}>{label}</Text>}
         {description && <Text style={getStepDescriptionStyles()}>{description}</Text>}
       </View>
@@ -210,15 +253,19 @@ const Stepper = forwardRef<View, StepperProps>((
   ref
 ) => {
   const theme = useTheme();
+  const metrics = useMemo(() => resolveStepperMetrics(size), [size]);
+  const resolvedIconSize = iconSize ?? metrics.iconSize;
+  const resolvedColor = color ?? theme.colors.primary[5];
 
   const contextValue: StepperContextValue = {
     active,
     onStepClick,
     orientation,
     iconPosition,
-    iconSize: iconSize || STEPPER_SIZES[size].iconSize,
+    iconSize: resolvedIconSize,
     size,
-    color: color || theme.colors.primary[5],
+    metrics,
+    color: resolvedColor,
     completedIcon,
     allowNextStepsSelect,
   };
@@ -229,8 +276,8 @@ const Stepper = forwardRef<View, StepperProps>((
   });
 
   const getContentStyles = (): ViewStyle => ({
-    marginTop: orientation === 'horizontal' ? STEPPER_SIZES[size].spacing * 2 : 0,
-    marginLeft: orientation === 'vertical' ? STEPPER_SIZES[size].spacing * 2 : 0,
+    marginTop: orientation === 'horizontal' ? metrics.spacing * 2 : 0,
+    marginLeft: orientation === 'vertical' ? metrics.spacing * 2 : 0,
   });
 
   // Process children to add step indices and separate content
@@ -266,12 +313,12 @@ const Stepper = forwardRef<View, StepperProps>((
           {!isLastStep && (
             <View style={{
               flex: orientation === 'horizontal' ? 1 : undefined,
-              height: orientation === 'vertical' ? STEPPER_SIZES[size].spacing * 2 : 2,
+              height: orientation === 'vertical' ? metrics.spacing * 2 : 2,
               width: orientation === 'horizontal' ? undefined : 2,
-              backgroundColor: index < active ? (color || theme.colors.primary[5]) : theme.colors.gray[3],
-              marginHorizontal: orientation === 'horizontal' ? STEPPER_SIZES[size].spacing : 0,
+              backgroundColor: index < active ? resolvedColor : theme.colors.gray[3],
+              marginHorizontal: orientation === 'horizontal' ? metrics.spacing : 0,
               marginVertical: orientation === 'vertical' ? 8 : 0,
-              marginLeft: orientation === 'vertical' ? (iconSize || STEPPER_SIZES[size].iconSize) / 2 - 1 : 0,
+              marginLeft: orientation === 'vertical' ? resolvedIconSize / 2 - 1 : 0,
             }} />
           )}
         </View>

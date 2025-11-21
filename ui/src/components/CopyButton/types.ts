@@ -1,4 +1,5 @@
 import { ViewStyle } from 'react-native';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface CopyButtonProps {
   /** The text to copy to clipboard */
@@ -13,8 +14,8 @@ export interface CopyButtonProps {
   toastTitle?: string;
   /** Detailed message for the toast */
   toastMessage?: string;
-  /** Size of the button */
-  size?: 'xs' | 'sm' | 'md';
+  /** Visual size token */
+  size?: ComponentSizeValue;
   /** Style overrides for the button container */
   style?: ViewStyle;
   /** Disable the "copied to clipboard" toast */

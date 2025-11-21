@@ -137,6 +137,9 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
 
   /** Additional props applied to the default Chip renderer for selected values */
   selectedValueChipProps?: Partial<ChipProps>;
+
+  /** Controls whether the input regains focus after selecting an option */
+  refocusAfterSelect?: boolean;
   
   /** Whether to allow free-form input (can add custom values) */
   freeSolo?: boolean;

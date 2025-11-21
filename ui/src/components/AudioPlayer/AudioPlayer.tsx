@@ -5,6 +5,7 @@ import { useSound } from '../../core/sound/context';
 import { useTheme } from '../../core/theme';
 import { DESIGN_TOKENS } from '../../core';
 import { Icon } from '../Icon';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import type { 
   AudioPlayerProps, 
   AudioPlayerRef, 
@@ -14,13 +15,10 @@ import type {
   AudioError 
 } from './types';
 
-// Dynamic import for audio functionality
-let Audio: any = null;
-try {
-  Audio = require('expo-audio').Audio;
-} catch (e) {
-  console.warn('expo-audio not found, using mock audio implementation');
-}
+const Audio = resolveOptionalModule<any>('expo-audio', {
+  accessor: module => module.Audio,
+  devWarning: 'expo-audio not found, using mock audio implementation',
+});
 
 export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   source,

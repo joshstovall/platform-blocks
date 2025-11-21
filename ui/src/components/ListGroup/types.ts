@@ -1,9 +1,18 @@
 import type { ViewStyle, TextStyle } from 'react-native';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
+
+export interface ListGroupMetrics {
+  paddingVertical: number;
+  paddingHorizontal: number;
+  gap: number;
+  dividerInset: number;
+  textSize: ComponentSizeValue;
+}
 
 export interface ListGroupProps {
   children: React.ReactNode;
   variant?: 'default' | 'bordered' | 'flush';
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ComponentSizeValue;
   radius?: 'sm' | 'md' | 'lg' | number;
   dividers?: boolean;
   insetDividers?: boolean;
@@ -23,7 +32,8 @@ export interface ListGroupItemProps {
 }
 
 export interface ListGroupContextValue {
-  size: NonNullable<ListGroupProps['size']>;
+  size: ComponentSizeValue;
+  metrics: ListGroupMetrics;
   dividers: boolean;
   insetDividers: boolean;
 }

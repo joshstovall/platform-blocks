@@ -1,5 +1,5 @@
 import { Button, Text, Flex } from '@platform-blocks/ui';
-import { Popover, PopoverTarget, PopoverDropdown } from '../..';
+import { Popover } from '../..';
 
 type PlacementOption = {
   label: string;
@@ -26,14 +26,14 @@ export default function PopoverPlacementsDemo() {
     <Flex wrap="wrap" gap="md" style={{ maxWidth: 520 }}>
       {OPTIONS.map(({ label, position }) => (
         <Popover key={position} position={position} withArrow>
-          <PopoverTarget>
+          <Popover.Target>
             <Button size="xs" variant="outline">
               {label}
             </Button>
-          </PopoverTarget>
-          <PopoverDropdown>
+          </Popover.Target>
+          <Popover.Dropdown>
             <Text style={{ padding: 12 }}>Placement: {position}</Text>
-          </PopoverDropdown>
+          </Popover.Dropdown>
         </Popover>
       ))}
     </Flex>

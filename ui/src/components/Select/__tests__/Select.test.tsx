@@ -72,13 +72,20 @@ jest.mock('../../../core/providers/DirectionProvider', () => ({
 }));
 
 // Mock OverlayProvider
-jest.mock('../../../core/providers/OverlayProvider', () => ({
-  useOverlay: () => ({
+jest.mock('../../../core/providers/OverlayProvider', () => {
+  const overlayApi = {
     openOverlay: jest.fn(() => 'overlay-id'),
     closeOverlay: jest.fn(),
+    closeAllOverlays: jest.fn(),
     updateOverlay: jest.fn(),
-  }),
-}));
+  };
+
+  return {
+    useOverlay: () => ({ overlays: [], ...overlayApi }),
+    useOverlayApi: () => overlayApi,
+    useOverlays: () => [],
+  };
+});
 
 // Mock Icon component
 jest.mock('../../Icon', () => ({

@@ -5,6 +5,7 @@ import {
   DataTable,
   Row,
   Tooltip,
+  CopyButton,
   useTheme
 } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTableSort } from '@platform-blocks/ui';
@@ -18,6 +19,7 @@ const TextAny: any = Text;
 const DataTableAny: any = DataTable;
 const RowAny: any = Row;
 const TooltipAny: any = Tooltip;
+const CopyButtonAny: any = CopyButton;
 
 export interface PropMetadata {
   name: string;
@@ -52,29 +54,20 @@ export function PropTable({ props }: PropTableProps) {
   const showDefault = filtered.some(p => p.defaultValue != null && p.defaultValue !== '');
   // Extracted component to safely use hooks per cell instance
   const PropNameCell = ({ value, row }: { value: string; row: PropMetadata }) => {
-    const [copied, setCopied] = useState(false);
-    const handleCopy = async () => {
-      try {
-        await navigator.clipboard.writeText(value);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1200);
-      } catch {
-        console.warn('Failed to copy to clipboard');
-      }
-    };
     return (
       <RowAny gap={4} align="center">
         <TextAny variant="body" weight="semibold" style={{ fontFamily: 'monospace' }}>
           {value}
         </TextAny>
-        <TooltipAny label={copied ? 'Copied!' : 'Copy prop name'}>
-          <TextAny
-            variant="sup"
-            style={{ cursor: 'pointer', color: copied ? theme.colors.primary[5] : theme.colors.gray[6], marginLeft: 4 }}
-            onPress={handleCopy}
-            aria-label="Copy prop name"
-          >📋</TextAny>
-        </TooltipAny>
+        <CopyButtonAny
+          value={value}
+          mode="icon"
+          size="xs"
+          tooltip="Copy prop name"
+          tooltipPosition="top"
+          disableToast
+          style={{ marginLeft: 4 }}
+        />
         {row.required && (
           <TooltipAny label="This prop is required"><TextAny variant="sup" color='red'>*</TextAny></TooltipAny>
         )}

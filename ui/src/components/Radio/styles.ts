@@ -1,4 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
+import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
 import { RadioStyleProps } from './types';
 import { PlatformBlocksTheme } from '../../core/theme/types';
 
@@ -6,7 +7,7 @@ export const useRadioStyles = (props: RadioStyleProps & { theme: PlatformBlocksT
   const { checked, disabled, error, size, color, theme } = props;
 
   // Define size mappings
-  const sizeMap = {
+  const sizeMap: Partial<Record<ComponentSize, number>> = {
     xs: 16,
     sm: 20,
     md: 24,
@@ -16,7 +17,7 @@ export const useRadioStyles = (props: RadioStyleProps & { theme: PlatformBlocksT
     '3xl': 40
   };
 
-  const radioSize = sizeMap[size] || sizeMap.md;
+  const radioSize = resolveComponentSize(size, sizeMap, { fallback: 'md' }) as number;
   const innerSize = Math.round(radioSize * 0.5);
 
   // Get radio colors

@@ -7,11 +7,52 @@ import { dateUtils } from '../Calendar/utils';
 import { useTheme } from '../../core/theme';
 import { DESIGN_TOKENS } from '../../core';
 import { resolveResponsiveProp, type ResponsiveProp } from '../../core/theme/breakpoints';
+import { clampComponentSize, resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import type { MonthPickerProps } from './types';
 
 const DEFAULT_GRID: ResponsiveProp<number> = { 
   base: 3 //, md: 4
  };
+
+type MonthPickerSizeConfig = {
+  textSize: ComponentSizeValue;
+  columns: number;
+};
+
+const MONTH_PICKER_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
+
+const MONTH_PICKER_SIZE_SCALE: Record<ComponentSize, MonthPickerSizeConfig> = {
+  xs: { textSize: 'sm', columns: 3 },
+  sm: { textSize: 'md', columns: 3 },
+  md: { textSize: 'lg', columns: 4 },
+  lg: { textSize: 'xl', columns: 4 },
+  xl: { textSize: '2xl', columns: 5 },
+  '2xl': { textSize: '3xl', columns: 6 },
+  '3xl': { textSize: 26, columns: 6 },
+};
+
+const resolveMonthPickerSize = (value: ComponentSizeValue): MonthPickerSizeConfig => {
+  if (typeof value === 'number') {
+    if (value <= 14) {
+      return { textSize: value, columns: 3 };
+    }
+    if (value <= 18) {
+      return { textSize: value, columns: 4 };
+    }
+    return { textSize: value, columns: 5 };
+  }
+
+  const resolved = resolveComponentSize(value, MONTH_PICKER_SIZE_SCALE, {
+    allowedSizes: MONTH_PICKER_ALLOWED_SIZES,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return resolveMonthPickerSize(resolved);
+  }
+
+  return resolved;
+};
 
 export const MonthPicker: React.FC<MonthPickerProps> = ({
   value,
@@ -41,12 +82,15 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
     return Array.from({ length: 12 }, (_, i) => formatter.format(new Date(2000, i, 1)));
   }, [locale, monthLabelFormat]);
 
+  const clampedSize = clampComponentSize(size, MONTH_PICKER_ALLOWED_SIZES);
+  const sizeConfig = resolveMonthPickerSize(clampedSize);
+
   const resolvedMonthsPerRow = useMemo(() => {
-    const fallback = size === 'xs' || size === 'sm' ? 3 : 4;
+    const fallback = sizeConfig.columns;
     const resolved = resolveResponsiveProp<number>(monthsPerRow ?? DEFAULT_GRID, width);
     const candidate = resolved ?? (width < 640 ? 3 : fallback);
     return Math.max(1, Math.floor(candidate));
-  }, [monthsPerRow, size, width]);
+  }, [monthsPerRow, sizeConfig.columns, width]);
 
   const handleYearChange = useCallback(
     (newYear: number) => {
@@ -206,7 +250,7 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
                   ]}
                 >
                   <Text
-                    size={size === 'xs' ? 'sm' : size === 'sm' ? 'md' : 'lg'}
+                    size={sizeConfig.textSize}
                     weight={isSelected ? 'semibold' : 'medium'}
                     style={{
                       color: isSelected

@@ -4,8 +4,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Platform, View, Pressable, Linking, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { Icon } from '../Icon';
-import { useColorScheme } from '../../core/theme/useColorScheme';
+// import { useColorScheme } from '../../core/theme/useColorScheme';
 import { directSpotlight } from '../Spotlight';
+import { useThemeMode } from 'platform-blocks/core/theme/ThemeModeProvider';
 
 export interface FloatingActionItem {
   key: string;
@@ -48,7 +49,9 @@ export const FloatingActions: React.FC<FloatingActionsProps> = React.memo(
     githubUrl = DEFAULT_GITHUB_URL,
   }) => {
     const theme = useTheme();
-    const scheme = useColorScheme();
+    // const scheme = useColorScheme();
+      const { mode, cycleMode } = useThemeMode();
+
     const containerRef = useRef<View>(null);
     const mainButtonRef = useRef<any>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -90,13 +93,13 @@ export const FloatingActions: React.FC<FloatingActionsProps> = React.memo(
         { key: 'spotlight', icon: 'search', onPress: () => directSpotlight.open(), accessibilityLabel: 'Open spotlight' },
         {
           key: 'theme',
-          getIcon: () => (scheme === 'light' ? 'sun' : scheme === 'dark' ? 'moon' : 'brightness-auto'),
+          getIcon: () => (mode === 'light' ? 'sun' : mode === 'dark' ? 'moon' : 'contrast'),
           onPress: () => onToggleTheme?.(),
           accessibilityLabel: 'Toggle theme',
         },
         { key: 'github', icon: 'info', onPress: () => Linking.openURL(githubUrl), accessibilityLabel: 'Open GitHub' },
       ];
-    }, [scheme, onToggleTheme, githubUrl]);
+    }, [mode, onToggleTheme, githubUrl]);
 
     const resolvedActions = actions && actions.length > 0 ? actions : defaultActions;
 

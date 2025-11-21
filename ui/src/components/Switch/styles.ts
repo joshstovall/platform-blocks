@@ -1,4 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
+import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
 import { SwitchStyleProps } from './types';
 import { PlatformBlocksTheme } from '../../core/theme/types';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
@@ -7,7 +8,7 @@ export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlock
   const { checked, disabled, error, size, color, theme } = props;
 
   // Define size mappings using design tokens
-  const sizeMap = {
+  const sizeMap: Partial<Record<ComponentSize, { width: number; height: number; thumb: number }>> = {
     xs: { width: 24, height: 14, thumb: 10 },
     sm: { width: 32, height: 18, thumb: 14 },
     md: { width: 40, height: 22, thumb: 18 },
@@ -17,7 +18,13 @@ export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlock
     '3xl': { width: 72, height: 38, thumb: 34 }
   };
 
-  const switchDimensions = sizeMap[size] || sizeMap.md;
+  const resolvedDimensions = resolveComponentSize(size, sizeMap, {
+    fallback: 'md',
+    allowedSizes: ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'],
+  });
+  const switchDimensions = typeof resolvedDimensions === 'number'
+    ? { width: resolvedDimensions * 2.2, height: resolvedDimensions, thumb: resolvedDimensions * 0.75 }
+    : (resolvedDimensions ?? sizeMap.md!);
   const { width, height, thumb } = switchDimensions;
 
   // Get switch colors

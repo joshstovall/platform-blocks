@@ -211,17 +211,18 @@ export const EverythingPlayground = () => {
             </Column>
           </Card>
         ),
-      }, {
-        id: "loader",
-        content: (
-          <Row gap="md" align="center">
-            <Loader size="sm" />
-            <Text size="sm" colorVariant="secondary">
-              Background sync in progress…
-            </Text>
-          </Row>
-        )
       },
+      // {
+      //   id: "loader",
+      //   content: (
+      //     <Row gap="md" align="center">
+      //       <Loader size="sm" />
+      //       <Text size="sm" colorVariant="secondary">
+      //         Background sync in progress…
+      //       </Text>
+      //     </Row>
+      //   )
+      // },
       {id: "dates",
         content: (
           <Row gap="sm" align="center" wrap="wrap">

@@ -1,7 +1,22 @@
 import { ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../core/theme';
 
-export function useColorPickerStyles() {
+export interface ColorPickerSizeMetrics {
+  inputHeight: number;
+  paddingHorizontal: number;
+  paddingVertical: number;
+  previewSize: number;
+  previewBorderRadius: number;
+  previewMarginRight: number;
+  textFontSize: number;
+  textInputHeight: number;
+  dropdownIconSize: number;
+  dropdownIconMarginLeft: number;
+  swatchSize: number;
+  swatchGap: number;
+}
+
+export function useColorPickerStyles(metrics: ColorPickerSizeMetrics) {
   const theme = useTheme();
 
   const container: ViewStyle = {
@@ -26,9 +41,9 @@ export function useColorPickerStyles() {
     borderColor: theme.colors.gray[3],
     borderRadius: parseInt(theme.radii.md),
     backgroundColor: theme.backgrounds.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minHeight: 36,
+    paddingHorizontal: metrics.paddingHorizontal,
+    paddingVertical: metrics.paddingVertical,
+    minHeight: metrics.inputHeight,
   };
 
   const inputFocused: ViewStyle = {
@@ -47,31 +62,33 @@ export function useColorPickerStyles() {
   };
 
   const preview: ViewStyle = {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
+    width: metrics.previewSize,
+    height: metrics.previewSize,
+    borderRadius: metrics.previewBorderRadius,
     borderWidth: 1,
     borderColor: theme.colors.gray[3],
-    marginRight: 8,
+    marginRight: metrics.previewMarginRight,
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
   const textInput: TextStyle = {
     flex: 1,
-    fontSize: parseInt(theme.fontSizes.sm),
+    fontSize: metrics.textFontSize,
     color: theme.text.primary,
     fontFamily: 'monospace',
-    height: 20,
+    height: metrics.textInputHeight,
   };
 
   const dropdownIcon: TextStyle = {
-    fontSize: parseInt(theme.fontSizes.md),
+    fontSize: metrics.dropdownIconSize,
     color: theme.text.secondary,
-    marginLeft: 8,
+    marginLeft: metrics.dropdownIconMarginLeft,
   };
 
   const clearButton: ViewStyle = {
-    padding: 4,
-    borderRadius: 6,
+    padding: Math.max(4, Math.round(metrics.paddingVertical * 0.6)),
+    borderRadius: Math.max(6, Math.round(metrics.previewBorderRadius + 2)),
   };
 
   const clearButtonPressed: ViewStyle = {
@@ -79,7 +96,7 @@ export function useColorPickerStyles() {
   };
 
   const dropdownTrigger: ViewStyle = {
-    padding: 4,
+    padding: Math.max(4, Math.round(metrics.paddingVertical * 0.75)),
     borderRadius: parseInt(theme.radii.sm),
   };
 
@@ -96,14 +113,9 @@ export function useColorPickerStyles() {
     elevation: 8,
     padding: 16,
     minWidth: 320,
-    // Removed positioning styles - now handled by useDropdownPositioning
   };
 
-  const colorPalette: ViewStyle = {
-    // marginBottom: 16,
-    // width:400,
-    // height:300,
-  };
+  const colorPalette: ViewStyle = {};
 
   const paletteTitle: TextStyle = {
     fontSize: parseInt(theme.fontSizes.sm),
@@ -115,13 +127,13 @@ export function useColorPickerStyles() {
   const swatchGrid: ViewStyle = {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: metrics.swatchGap,
   };
 
   const swatch: ViewStyle = {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+    width: metrics.swatchSize,
+    height: metrics.swatchSize,
+    borderRadius: Math.max(4, Math.round(metrics.previewBorderRadius)),
     borderWidth: 2,
     borderColor: 'transparent',
   };
@@ -167,7 +179,7 @@ export function useColorPickerStyles() {
   const buttonRow: ViewStyle = {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 8,
+    gap: Math.max(8, metrics.swatchGap),
     marginTop: 16,
   };
 

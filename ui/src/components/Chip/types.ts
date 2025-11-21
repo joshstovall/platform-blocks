@@ -8,7 +8,7 @@ import { ShadowProps } from '../../core/theme/shadow';
 export interface ChipProps extends SpacingProps, BorderRadiusProps, ShadowProps {
   children: React.ReactNode;
   size?: SizeValue;
-  variant?: 'filled' | 'outline' | 'light' | 'subtle';
+  variant?: 'filled' | 'outline' | 'light' | 'subtle' | 'gradient';
   color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string;
   onPress?: () => void;
   startIcon?: React.ReactNode;

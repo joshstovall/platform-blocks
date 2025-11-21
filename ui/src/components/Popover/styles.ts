@@ -26,6 +26,7 @@ export const createPopoverStyles = (theme: PlatformBlocksTheme) => (params: Crea
       backgroundColor: theme.backgrounds.surface,
       borderColor: theme.backgrounds.border,
       borderWidth: 1,
+      color: theme.text.primary,
       ...radiusStyles,
       overflow: 'hidden',
       minWidth: 0,

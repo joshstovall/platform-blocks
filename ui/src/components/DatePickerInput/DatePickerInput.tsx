@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, forwardRef } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Keyboard } from 'react-native';
 import { Text } from '../Text';
 import { Input } from '../Input';
 import { Flex } from '../Flex';
@@ -11,6 +11,7 @@ import { useTheme } from '../../core/theme';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 import { useFocusTrap } from '../../core/accessibility/advancedHooks';
 import { DatePicker } from '../DatePicker/DatePicker';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import type { DatePickerInputProps, CalendarLevel, CalendarValue } from './types';
 
 export const DatePickerInput = forwardRef(function DatePickerInputInner(
@@ -39,6 +40,7 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
   ref: React.ForwardedRef<View>
 ) {
   const theme = useTheme();
+  const keyboardManager = useKeyboardManagerOptional();
   const {
     label,
     error,
@@ -151,6 +153,11 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
 
   const handleInputPress = () => {
     if (disabled) return;
+    if (keyboardManager) {
+      keyboardManager.dismissKeyboard();
+    } else {
+      Keyboard.dismiss();
+    }
     syncViewDateToValue(currentValue);
     if (!calendarLevelProp && calendarDefaultLevelProp) {
       setViewLevel(calendarDefaultLevelProp as CalendarLevel);

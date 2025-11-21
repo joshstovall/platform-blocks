@@ -1,6 +1,7 @@
 import React from 'react';
 import { TextInputProps } from 'react-native';
 import { BaseInputProps } from '../Input/types';
+import { SizeValue } from '../../core/theme/types';
 
 export interface TextAreaProps extends BaseInputProps {
   /** Default value for uncontrolled mode */
@@ -35,7 +36,7 @@ export interface TextAreaProps extends BaseInputProps {
 }
 
 export interface TextAreaStyleProps {
-  size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  size: SizeValue;
   focused?: boolean;
   disabled?: boolean;
   error?: boolean;

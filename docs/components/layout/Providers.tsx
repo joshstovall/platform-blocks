@@ -12,6 +12,7 @@ import {
   onToastsRequested, 
   useTheme,
   AccessibilityProvider,
+  KeyboardManagerProvider,
   SoundProvider,
   getAllSounds,
   DirectionProvider,
@@ -80,6 +81,13 @@ export const AppProviders: React.FC<Props> = React.memo(({ children }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(isDev);
   const browserStorage = useMemo(() => getSafeBrowserStorage(), []);
   const directionMemoryRef = useRef<Record<string, string>>({});
+  const keyboardManagerEnabled = useMemo(() => {
+    const flag = process.env.EXPO_PUBLIC_ENABLE_KEYBOARD_MANAGER;
+    if (flag === 'false') {
+      return false;
+    }
+    return true;
+  }, []);
 
   useEffect(() => {
     const detachDialog = onDialogsRequested(() => setDialogsEnabled(true));
@@ -215,7 +223,9 @@ export const AppProviders: React.FC<Props> = React.memo(({ children }) => {
           >
             <ThemeModeHydrator />
             <ChartThemeBridge>
-              {content}
+              <KeyboardManagerProvider disabled={!keyboardManagerEnabled}>
+                {content}
+              </KeyboardManagerProvider>
             </ChartThemeBridge>
           </PlatformBlocksProvider>
         </DirectionProvider>

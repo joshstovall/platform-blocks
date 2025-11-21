@@ -8,7 +8,6 @@ import { useRouter } from 'expo-router';
 import { ChatroomExample } from '../components/examples/apps/ChatroomExample/ChatroomExample';
 import { TodoExample } from '../components/examples/apps/TodoExample/TodoExample';
 import { DashboardExample } from '../components/examples/apps/DashboardExample/DashboardExample';
-import { SettingsExample } from '../components/examples/apps/SettingsExample/SettingsExample';
 import { MusicPlayerExample } from '../components/examples/apps/MusicPlayerExample/MusicPlayerExample';
 import { EcommerceExample } from '../components/examples/apps/EcommerceExample/EcommerceExample';
 import { FinderExample } from '../components/examples/apps/FinderExample/FinderExample';
@@ -56,8 +55,6 @@ export default function ExampleDetailScreen({ category = 'unknown' }: ExampleDet
         return <TodoExample />;
       case 'dashboard':
         return <DashboardExample />;
-      case 'settings':
-        return <SettingsExample />;
       case 'music-player':
         return <MusicPlayerExample />;
       case 'social-feed':
@@ -101,12 +98,12 @@ export default function ExampleDetailScreen({ category = 'unknown' }: ExampleDet
           description: 'Business dashboard with stats, charts, and project tracking functionality.',
           components: ['Card', 'Button', 'Icon', 'Text', 'Flex', 'Grid', 'Progress'],
         };
-      case 'settings':
-        return {
-          title: 'Settings Page',
-          description: 'Comprehensive settings interface with profile management, preferences, and account controls.',
-          components: ['Card', 'Input', 'Button', 'Icon', 'Text', 'Flex', 'Switch'],
-        };
+      // case 'settings':
+      //   return {
+      //     title: 'Settings Page',
+      //     description: 'Comprehensive settings interface with profile management, preferences, and account controls.',
+      //     components: ['Card', 'Input', 'Button', 'Icon', 'Text', 'Flex', 'Switch'],
+      //   };
       case 'music-player':
         return {
           title: 'Music Player',

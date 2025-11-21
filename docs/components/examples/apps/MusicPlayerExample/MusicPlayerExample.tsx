@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Pressable } from 'react-native';
-import { Text, Flex, Slider, useTheme, ToggleButton, Button, CopyButton, Grid, GridItem, Menu, MenuItem, MenuDropdown, Card, Image } from '@platform-blocks/ui';
+import { View, Pressable, StyleSheet } from 'react-native';
+import { Text, Flex, Slider, useTheme, ToggleButton, Button, CopyButton, Menu, MenuItem, MenuDropdown, Card, Image } from '@platform-blocks/ui';
 import { Icon } from '@platform-blocks/ui';
 import { PageWrapper } from '../../../../components/PageWrapper';
 import { Track, RepeatMode } from './types';
 import { tracks } from './mockData';
 import { createMusicPlayerStyles } from './styles';
+import { useResponsive } from '../../../../hooks/useResponsive';
 
 // Generate mock waveform data
 const generateWaveform = (duration: number) => {
@@ -26,6 +27,7 @@ export function MusicPlayerExample() {
 
   const theme = useTheme();
   const styles = createMusicPlayerStyles(theme);
+  const { isMobile } = useResponsive();
   const currentTrackData = tracks[currentTrack];
 
   // Generate waveform for current track
@@ -119,17 +121,17 @@ export function MusicPlayerExample() {
   return (
     <PageWrapper>
       {/* Album/Track Details */}
-      <Flex direction="row" p={32} gap={32} align="flex-end">
+      <Flex
+        direction={isMobile ? 'column' : 'row'}
+        align={isMobile ? 'stretch' : 'flex-end'}
+        gap={isMobile ? 16 : 32}
+        style={StyleSheet.flatten([styles.albumSection, isMobile && styles.albumSectionMobile])}
+      >
         <Card
           shadow="lg"
           radius="md"
           p={0}
-          style={{
-            width: 232,
-            height: 232,
-            overflow: 'hidden',
-            backgroundColor: theme.backgrounds.surface
-          }}
+          style={StyleSheet.flatten([styles.albumArt, isMobile && styles.albumArtMobile])}
         >
           {imageErrors[currentTrackData.id] ? (
             <Flex align="center" justify="center" style={{ flex: 1 }}>
@@ -138,32 +140,36 @@ export function MusicPlayerExample() {
           ) : (
               <Image
                 src={currentTrackData.cover}
-              style={{ width: '100%', height: '100%' }}
-              imageStyle={{ width: '100%', height: '100%' }}
-              onError={() => handleImageError(currentTrackData.id)}
-              resizeMode="cover"
-            />
+                style={styles.albumArtImage}
+                imageStyle={styles.albumArtImage}
+                onError={() => handleImageError(currentTrackData.id)}
+                resizeMode="cover"
+              />
           )}
         </Card>
 
-        <Flex direction="column" justify="flex-end" style={{ flex: 1 }}>
-          <Text size="xs" weight="medium" mb={8} color={theme.text.primary}>SONG</Text>
+        <Flex
+          direction="column"
+          justify="flex-end"
+          style={StyleSheet.flatten([styles.albumInfo, isMobile && styles.albumInfoMobile])}
+        >
+          <Text style={StyleSheet.flatten([styles.albumType, isMobile && styles.albumTypeMobile])}>SONG</Text>
           <Text
-            style={{
-              fontSize: 48,
-              fontWeight: 'bold',
-              lineHeight: 52,
-              color: theme.text.primary
-            }}
-            mb={16}
+            style={StyleSheet.flatten([styles.trackTitle, isMobile && styles.trackTitleMobile])}
           >
             {currentTrackData.title}
           </Text>
-          <Flex direction="row" align="center">
-            <Text size="md" weight="medium" color={theme.text.primary}>
+          <Flex
+            direction="row"
+            align="center"
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            gap={isMobile ? 6 : 12}
+            style={StyleSheet.flatten([styles.artistInfo, isMobile && styles.artistInfoMobile])}
+          >
+            <Text style={StyleSheet.flatten([styles.artistName, isMobile && styles.artistNameMobile])}>
               {currentTrackData.artist}
             </Text>
-            <Text size="md" color={theme.text.secondary}>
+            <Text style={StyleSheet.flatten([styles.albumDetails, isMobile && styles.albumDetailsMobile])}>
               • 2024 • {formatTime(currentTrackData.duration)}
             </Text>
           </Flex>
@@ -171,7 +177,13 @@ export function MusicPlayerExample() {
       </Flex>
 
       {/* Track Controls */}
-      <Flex direction="row" align="center" gap={24} px={32} pb={24}>
+      <Flex
+        direction="row"
+        align="center"
+        gap={isMobile ? 16 : 24}
+        wrap={isMobile ? 'wrap' : 'nowrap'}
+        style={StyleSheet.flatten([styles.trackControls, isMobile && styles.trackControlsMobile])}
+      >
         <Button
           onPress={togglePlayPause}
           variant="gradient"
@@ -241,14 +253,15 @@ export function MusicPlayerExample() {
       </Flex>
 
       {/* Queue */}
-      <View style={styles.queueSection}>
+      <View style={StyleSheet.flatten([styles.queueSection, isMobile && styles.queueSectionMobile])}>
         {tracks.map((track, index) => (
           <Pressable
             key={track.id}
-            style={[
+            style={StyleSheet.flatten([
               styles.queueItem,
-              index === currentTrack && styles.activeQueueItem
-            ]}
+              index === currentTrack && styles.activeQueueItem,
+              isMobile && styles.queueItemMobile
+            ])}
             onPress={() => selectTrack(index)}
           >
             <View style={styles.queueNumber}>
@@ -288,9 +301,15 @@ export function MusicPlayerExample() {
       </View>
 
       {/* Bottom Player Bar */}
-      <View style={styles.bottomPlayer}>
+      <View style={StyleSheet.flatten([styles.bottomPlayer, isMobile && styles.bottomPlayerMobile])}>
         {/* Left: Current Track */}
-        <Flex direction="row" align="center" gap={12} style={styles.currentTrack}>
+        <Flex
+          direction="row"
+          align={isMobile ? 'flex-start' : 'center'}
+          gap={12}
+          wrap={isMobile ? 'wrap' : 'nowrap'}
+          style={StyleSheet.flatten([styles.currentTrack, isMobile && styles.currentTrackMobile])}
+        >
           <View style={styles.currentTrackThumb}>
             {imageErrors[currentTrackData.id] ? (
               <View style={styles.currentTrackThumbFallback}>
@@ -305,7 +324,7 @@ export function MusicPlayerExample() {
               />
             )}
           </View>
-          <View style={styles.currentTrackInfo}>
+          <View style={StyleSheet.flatten([styles.currentTrackInfo, isMobile && styles.currentTrackInfoMobile])}>
             <Text size="sm" weight="medium" style={styles.currentTrackTitle}>
               {currentTrackData.title}
             </Text>
@@ -336,8 +355,8 @@ export function MusicPlayerExample() {
         </Flex>
 
         {/* Center: Player Controls */}
-        <View style={styles.playerControls}>
-          <Flex direction="row" align="center" justify="center" gap={16}>
+        <View style={StyleSheet.flatten([styles.playerControls, isMobile && styles.playerControlsMobile])}>
+          <Flex direction="row" align="center" justify="center" gap={isMobile ? 12 : 16}>
             <ToggleButton
               value="shuffle"
               size="sm"
@@ -367,7 +386,7 @@ export function MusicPlayerExample() {
             </ToggleButton>
           </Flex>
 
-          <View style={styles.progressBar}>
+          <View style={StyleSheet.flatten([styles.progressBar, isMobile && styles.progressBarMobile])}>
             <Text size="xs" style={styles.progressTime}>
               {formatTime(currentTime)}
             </Text>
@@ -376,7 +395,7 @@ export function MusicPlayerExample() {
               min={0}
               max={currentTrackData.duration}
               onChange={handleSliderChange}
-              style={styles.progressSlider}
+              style={StyleSheet.flatten([styles.progressSlider, isMobile && styles.progressSliderMobile])}
             />
             <Text size="xs" style={styles.progressTime}>
               {formatTime(currentTrackData.duration)}
@@ -385,7 +404,14 @@ export function MusicPlayerExample() {
         </View>
 
         {/* Right: Volume & Controls */}
-        <Flex direction="row" align="center" gap={12} style={styles.volumeControls}>
+        <Flex
+          direction="row"
+          align="center"
+          gap={12}
+          wrap={isMobile ? 'wrap' : 'nowrap'}
+          justify={isMobile ? 'space-between' : 'flex-end'}
+          style={StyleSheet.flatten([styles.volumeControls, isMobile && styles.volumeControlsMobile])}
+        >
           <ToggleButton value="like-bar" size="sm" variant="ghost" selected={false} onPress={() => { }}>
             <Icon name="heart" size="sm" color={theme.text.secondary} />
           </ToggleButton>
@@ -398,7 +424,7 @@ export function MusicPlayerExample() {
             min={0}
             max={100}
             onChange={setVolume}
-            style={styles.volumeSlider}
+            style={StyleSheet.flatten([styles.volumeSlider, isMobile && styles.volumeSliderMobile])}
           />
         </Flex>
       </View>

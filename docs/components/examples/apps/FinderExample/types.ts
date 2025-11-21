@@ -12,4 +12,7 @@ export interface FinderFile {
   uri?: string;
   // Hint for renderer if needed
   mime?: string;
+
+  /** Optional color tags for filtering (matches sidebar tag ids) */
+  tags?: string[];
 }

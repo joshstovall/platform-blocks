@@ -6,7 +6,7 @@ import { ShadowProps } from '../../core/theme/shadow';
 
 export interface CardProps extends SpacingProps, LayoutProps, BorderRadiusProps, ShadowProps {
   children?: React.ReactNode; // children optional to reduce noisy TS errors during composition
-  variant?: 'outline' | 'filled';
+  variant?: 'outline' | 'filled' | 'elevated' | 'subtle' | 'ghost' | 'gradient';
   padding?: number;
   style?: any;
   // Interactive props

@@ -1,8 +1,9 @@
 import React from 'react';
 import { ViewStyle } from 'react-native';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface AvatarProps {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+  size?: ComponentSizeValue;
   src?: string;
   fallback?: string;
   backgroundColor?: string;
@@ -26,7 +27,7 @@ export interface AvatarGroupProps {
   limit?: number;
   spacing?: number;
   style?: ViewStyle;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+  size?: ComponentSizeValue;
   /** Whether to add borders around avatars for separation */
   bordered?: boolean;
 }

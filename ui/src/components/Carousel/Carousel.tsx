@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useRef, useState, useEffect, memo } from 'react';
-import { View, Pressable, ViewStyle, Text as RNText, Platform } from 'react-native';
+import { View, Pressable, ViewStyle, Text as RNText, Platform, Dimensions } from 'react-native';
 import ReanimatedCarousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import Animated, { useSharedValue, useAnimatedStyle, interpolateColor, useDerivedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { useTheme } from '../../core/theme/ThemeProvider';
@@ -8,6 +8,8 @@ import type { CarouselProps } from './types';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
+import { getComponentSize } from '../../core/theme/unified-sizing';
 
 // Wrapper implementation using react-native-reanimated-carousel as the engine
 // Keeps PlatformBlocks Carousel API (subset) while delegating gesture/scroll physics.
@@ -25,11 +27,150 @@ const resolveResponsive = (config: any, breakpoint: string) => {
   return undefined;
 };
 
+const CAROUSEL_ALLOWED_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+const CAROUSEL_ALLOWED_SIZES_ARRAY: ComponentSize[] = [...CAROUSEL_ALLOWED_SIZES];
+
+interface CarouselArrowMetrics {
+  buttonSizeToken: ComponentSize;
+  buttonHeight: number;
+  buttonRadius: number;
+  iconSize: number;
+  edgeOffset: number;
+  translate: number;
+}
+
+interface CarouselDotMetrics {
+  baseSize: number;
+  margin: number;
+  trackOffset: number;
+}
+
+const MIN_ARROW_METRICS = {
+  height: 28,
+  iconSize: 12,
+  edgeOffset: 6,
+} as const;
+
+const MIN_DOT_METRICS = {
+  baseSize: 4,
+  margin: 2,
+  trackOffset: 8,
+} as const;
+
+function createArrowMetricsForToken(size: ComponentSize): CarouselArrowMetrics {
+  const config = getComponentSize(size);
+  const buttonHeight = Math.max(MIN_ARROW_METRICS.height, config.height);
+
+  return {
+    buttonSizeToken: size,
+    buttonHeight,
+    buttonRadius: Math.round(buttonHeight / 2),
+    iconSize: Math.max(MIN_ARROW_METRICS.iconSize, Math.round(config.iconSize * 0.9)),
+    edgeOffset: Math.max(MIN_ARROW_METRICS.edgeOffset, Math.round(config.padding * 0.66)),
+    translate: Math.round(buttonHeight / 2),
+  };
+}
+
+function createDotMetricsForToken(size: ComponentSize): CarouselDotMetrics {
+  const config = getComponentSize(size);
+
+  return {
+    baseSize: Math.max(MIN_DOT_METRICS.baseSize, Math.round(config.iconSize * 0.5)),
+    margin: Math.max(MIN_DOT_METRICS.margin, Math.round(config.padding * 0.25)),
+    trackOffset: Math.max(MIN_DOT_METRICS.trackOffset, Math.round(config.padding)),
+  };
+}
+
+const CAROUSEL_ARROW_SCALE: Partial<Record<ComponentSize, CarouselArrowMetrics>> = CAROUSEL_ALLOWED_SIZES_ARRAY.reduce(
+  (acc, token) => {
+    acc[token] = createArrowMetricsForToken(token);
+    return acc;
+  },
+  {} as Partial<Record<ComponentSize, CarouselArrowMetrics>>
+);
+
+const CAROUSEL_DOT_SCALE: Partial<Record<ComponentSize, CarouselDotMetrics>> = CAROUSEL_ALLOWED_SIZES_ARRAY.reduce(
+  (acc, token) => {
+    acc[token] = createDotMetricsForToken(token);
+    return acc;
+  },
+  {} as Partial<Record<ComponentSize, CarouselDotMetrics>>
+);
+
+const BASE_ARROW_METRICS = CAROUSEL_ARROW_SCALE.md ?? createArrowMetricsForToken('md');
+const BASE_DOT_METRICS = CAROUSEL_DOT_SCALE.md ?? createDotMetricsForToken('md');
+
+function findClosestCarouselSize(height: number): ComponentSize {
+  let closest = CAROUSEL_ALLOWED_SIZES_ARRAY[0];
+  let smallestDiff = Number.POSITIVE_INFINITY;
+
+  for (const token of CAROUSEL_ALLOWED_SIZES_ARRAY) {
+    const diff = Math.abs(getComponentSize(token).height - height);
+    if (diff < smallestDiff) {
+      smallestDiff = diff;
+      closest = token;
+    }
+  }
+
+  return closest;
+}
+
+function resolveCarouselArrowMetrics(value: ComponentSizeValue | undefined): CarouselArrowMetrics {
+  const resolved = resolveComponentSize(value, CAROUSEL_ARROW_SCALE, {
+    allowedSizes: CAROUSEL_ALLOWED_SIZES_ARRAY,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return calculateNumericArrowMetrics(resolved);
+  }
+
+  return resolved;
+}
+
+function resolveCarouselDotMetrics(value: ComponentSizeValue | undefined): CarouselDotMetrics {
+  const resolved = resolveComponentSize(value, CAROUSEL_DOT_SCALE, {
+    allowedSizes: CAROUSEL_ALLOWED_SIZES_ARRAY,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return calculateNumericDotMetrics(resolved);
+  }
+
+  return resolved;
+}
+
+function calculateNumericArrowMetrics(height: number): CarouselArrowMetrics {
+  const normalizedHeight = Math.max(MIN_ARROW_METRICS.height, Math.round(height));
+  const scale = normalizedHeight / BASE_ARROW_METRICS.buttonHeight;
+
+  return {
+    buttonSizeToken: findClosestCarouselSize(normalizedHeight),
+    buttonHeight: normalizedHeight,
+    buttonRadius: Math.round(normalizedHeight / 2),
+    iconSize: Math.max(MIN_ARROW_METRICS.iconSize, Math.round(BASE_ARROW_METRICS.iconSize * scale)),
+    edgeOffset: Math.max(MIN_ARROW_METRICS.edgeOffset, Math.round(BASE_ARROW_METRICS.edgeOffset * scale)),
+    translate: Math.round(normalizedHeight / 2),
+  };
+}
+
+function calculateNumericDotMetrics(size: number): CarouselDotMetrics {
+  const normalizedSize = Math.max(MIN_DOT_METRICS.baseSize, Math.round(size));
+  const scale = normalizedSize / BASE_DOT_METRICS.baseSize;
+
+  return {
+    baseSize: normalizedSize,
+    margin: Math.max(MIN_DOT_METRICS.margin, Math.round(BASE_DOT_METRICS.margin * scale)),
+    trackOffset: Math.max(MIN_DOT_METRICS.trackOffset, Math.round(BASE_DOT_METRICS.trackOffset * scale)),
+  };
+}
+
 // Optimized Dot component with memo to prevent unnecessary re-renders
 const CarouselDot = memo(({
   index,
   pageProgress,
-  baseDotSize,
+  metrics,
   totalPages,
   loop,
   theme,
@@ -38,13 +179,14 @@ const CarouselDot = memo(({
 }: {
   index: number;
   pageProgress: SharedValue<number>;
-  baseDotSize: number;
+  metrics: CarouselDotMetrics;
   totalPages: number;
   loop: boolean;
   theme: any;
   onPress: (index: number) => void;
   isVertical?: boolean;
 }) => {
+  const baseDotSize = metrics.baseSize;
   const animatedStyle = useAnimatedStyle(() => {
     let current = pageProgress.value;
     // Normalize for loop jitter: map absolute progress to logical page index space
@@ -66,15 +208,15 @@ const CarouselDot = memo(({
       opacity,
       backgroundColor
     } as any;
-  }, [isVertical]);
+  }, [baseDotSize, isVertical, loop, theme]);
 
   const handlePress = useCallback(() => {
     onPress(index);
   }, [index, onPress]);
 
   const containerStyle = isVertical
-    ? { marginVertical: 4, width: baseDotSize, justifyContent: 'center' as const }
-    : { marginHorizontal: 4, height: baseDotSize, justifyContent: 'center' as const };
+    ? { marginVertical: metrics.margin, width: baseDotSize, justifyContent: 'center' as const }
+    : { marginHorizontal: metrics.margin, height: baseDotSize, justifyContent: 'center' as const };
 
   return (
     <Pressable
@@ -98,7 +240,7 @@ const useOptimizedBreakpoint = () => {
     const compute = () => {
       const w = Platform.OS === 'web'
         ? (window as any).innerWidth
-        : require('react-native').Dimensions.get('window').width;
+        : Dimensions.get('window').width;
 
       let newBreakpoint = 'sm';
       if (w >= 1200) newBreakpoint = 'xl';
@@ -251,24 +393,19 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
     return progress.value;
   }, []);
 
-  const baseDotSize = useMemo(() => {
-    switch (dotSize) {
-      case 'sm': return 6;
-      case 'lg': return 10;
-      default: return 8;
-    }
-  }, [dotSize]);
+  const arrowMetrics = useMemo(() => resolveCarouselArrowMetrics(arrowSize), [arrowSize]);
+  const dotMetrics = useMemo(() => resolveCarouselDotMetrics(dotSize), [dotSize]);
 
   // Memoized render functions to prevent unnecessary re-renders
   const renderDots = useMemo(() => {
     if (!showDots || totalPages <= 1) return null;
 
     const dotsStyle = isVertical
-      ? { flexDirection: 'column' as const, alignItems: 'center' as const, marginLeft: 12 }
+      ? { flexDirection: 'column' as const, alignItems: 'center' as const, marginLeft: dotMetrics.trackOffset }
       : {
         flexDirection: (isRTL ? 'row-reverse' : 'row') as 'row' | 'row-reverse',
         justifyContent: 'center' as const,
-        marginTop: 12
+        marginTop: dotMetrics.trackOffset
       };
 
     return (
@@ -278,7 +415,7 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
             key={i}
             index={i}
             pageProgress={pageProgress}
-            baseDotSize={baseDotSize}
+            metrics={dotMetrics}
             totalPages={totalPages}
             loop={loop}
             theme={theme}
@@ -288,29 +425,50 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
         ))}
       </View>
     );
-  }, [showDots, totalPages, pageProgress, baseDotSize, loop, theme, goTo, isVertical, isRTL]);
+  }, [showDots, totalPages, pageProgress, dotMetrics, loop, theme, goTo, isVertical, isRTL]);
 
   // Arrows
   const renderArrows = () => {
     if (!showArrows || totalItems <= 1) return null;
 
+    const buttonSize = arrowMetrics.buttonSizeToken;
+    const iconSize = arrowMetrics.iconSize;
+    const edgeOffset = arrowMetrics.edgeOffset;
+    const translateValue = arrowMetrics.translate;
+
     if (isVertical) {
       return (
         <>
-          <View style={{ position: 'absolute', top: 8, left: '50%', transform: [{ translateX: -20 }], zIndex: 10 }}>
+          <View
+            style={{
+              position: 'absolute',
+              top: edgeOffset,
+              left: '50%',
+              transform: [{ translateX: -translateValue }],
+              zIndex: 10,
+            }}
+          >
             <Button
-              size={arrowSize}
+              size={buttonSize}
               variant="secondary"
-              icon={<Icon name="chevron-up" size={arrowSize} />}
+              icon={<Icon name="chevron-up" size={iconSize} />}
               onPress={goPrev}
               radius="full"
             />
           </View>
-          <View style={{ position: 'absolute', bottom: 8, left: '50%', transform: [{ translateX: -20 }], zIndex: 10 }}>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: edgeOffset,
+              left: '50%',
+              transform: [{ translateX: -translateValue }],
+              zIndex: 10,
+            }}
+          >
             <Button
-              size={arrowSize}
+              size={buttonSize}
               variant="secondary"
-              icon={<Icon name="chevron-down" size={arrowSize} />}
+              icon={<Icon name="chevron-down" size={iconSize} />}
               onPress={goNext}
               radius="full"
             />
@@ -322,20 +480,36 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
     // Horizontal arrows - swap positions and icons in RTL
     return (
       <>
-        <View style={{ position: 'absolute', top: '50%', ...(isRTL ? { right: 8 } : { left: 8 }), transform: [{ translateY: -20 }], zIndex: 10 }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: '50%',
+            ...(isRTL ? { right: edgeOffset } : { left: edgeOffset }),
+            transform: [{ translateY: -translateValue }],
+            zIndex: 10,
+          }}
+        >
           <Button
-            size={arrowSize}
+            size={buttonSize}
             variant="secondary"
-            icon={<Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={arrowSize} />}
+            icon={<Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={iconSize} />}
             onPress={goPrev}
             radius="full"
           />
         </View>
-        <View style={{ position: 'absolute', top: '50%', ...(isRTL ? { left: 8 } : { right: 8 }), transform: [{ translateY: -20 }], zIndex: 10 }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: '50%',
+            ...(isRTL ? { left: edgeOffset } : { right: edgeOffset }),
+            transform: [{ translateY: -translateValue }],
+            zIndex: 10,
+          }}
+        >
           <Button
-            size={arrowSize}
+            size={buttonSize}
             variant="secondary"
-            icon={<Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={arrowSize} />}
+            icon={<Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={iconSize} />}
             onPress={goNext}
             radius="full"
           />

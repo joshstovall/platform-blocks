@@ -44,6 +44,34 @@ export default function Demo() {
           ]}
         />
       </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="600">Outline variant</Text>
+        <SegmentedControl
+          defaultValue="weekly"
+          variant="outline"
+          color="secondary"
+          data={[
+            { label: 'Daily', value: 'daily' },
+            { label: 'Weekly', value: 'weekly' },
+            { label: 'Monthly', value: 'monthly' },
+          ]}
+        />
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="600">Ghost variant</Text>
+        <SegmentedControl
+          defaultValue="published"
+          variant="ghost"
+          color="success"
+          data={[
+            { label: 'Draft', value: 'draft' },
+            { label: 'Pending', value: 'pending' },
+            { label: 'Published', value: 'published' },
+          ]}
+        />
+      </Column>
     </Column>
   )
 }

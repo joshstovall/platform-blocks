@@ -16,6 +16,7 @@ import { SwitchProps } from './types';
 import { useSwitchStyles } from './styles';
 import { Row, Column } from '../Layout';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
+import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
 
 export const Switch = factory<{
   props: SwitchProps;
@@ -78,7 +79,7 @@ export const Switch = factory<{
   }, [effectiveChecked, animationProgress]);
 
   // Get size dimensions for animation
-  const sizeMap = {
+  const sizeMap: Partial<Record<ComponentSize, { width: number; height: number; thumb: number }>> = {
     xs: { width: 24, height: 14, thumb: 10 },
     sm: { width: 32, height: 18, thumb: 14 },
     md: { width: 40, height: 22, thumb: 18 },
@@ -87,7 +88,21 @@ export const Switch = factory<{
     '2xl': { width: 64, height: 34, thumb: 30 },
     '3xl': { width: 72, height: 38, thumb: 34 }
   };
-  const switchDimensions = sizeMap[size] || sizeMap.md;
+  const resolvedDimensions = resolveComponentSize(size, sizeMap, {
+    fallback: 'md',
+    allowedSizes: ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'],
+  });
+  const baseDimensions = sizeMap.md!;
+  const baseWidthRatio = baseDimensions.width / baseDimensions.height;
+  const baseThumbRatio = baseDimensions.thumb / baseDimensions.height;
+
+  const switchDimensions = typeof resolvedDimensions === 'number'
+    ? {
+        width: resolvedDimensions * baseWidthRatio,
+        height: resolvedDimensions,
+        thumb: resolvedDimensions * baseThumbRatio,
+      }
+    : (resolvedDimensions ?? baseDimensions);
   const { width, height, thumb } = switchDimensions;
 
   // Calculate thumb positions with visual centering

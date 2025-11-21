@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { View, Pressable, ViewStyle, Platform } from 'react-native';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { View, Platform, PanResponder, GestureResponderHandlers } from 'react-native';
 
 import { factory } from '../../core/factory';
 import { SizeValue, getIconSize } from '../../core/theme/sizes';
@@ -51,6 +51,8 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
   // State for uncontrolled component
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [hoverValue, setHoverValue] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const containerMetricsRef = useRef<{ width: number; left: number }>({ width: 0, left: 0 });
 
   // Determine if controlled or uncontrolled
   const isControlled = controlledValue !== undefined;
@@ -243,22 +245,52 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
   // Web-only: container ref to compute clientX-relative position
   const containerRef = useRef<any>(null);
   const getOffsetXFromEventWeb = useCallback((e: any) => {
-    try {
-      const rect = containerRef.current?.getBoundingClientRect?.();
-      const clientX = e?.clientX ?? e?.nativeEvent?.clientX ?? 0;
-      if (rect && typeof clientX === 'number') {
-        return clientX - rect.left;
+    const nativeEvent = e?.nativeEvent ?? e;
+    const rect = containerRef.current?.getBoundingClientRect?.();
+
+    const clientXCandidate = e?.clientX
+      ?? nativeEvent?.clientX
+      ?? nativeEvent?.pageX
+      ?? nativeEvent?.changedTouches?.[0]?.clientX
+      ?? nativeEvent?.touches?.[0]?.clientX;
+
+    if (rect && typeof clientXCandidate === 'number' && !Number.isNaN(clientXCandidate)) {
+      const relative = clientXCandidate - rect.left;
+      if (__DEV__) {
+        console.log('[Rating] getOffsetXFromEventWeb:clientX', { clientXCandidate, rectLeft: rect.left, relative });
       }
-    } catch {
-      console.warn('getOffsetXFromEventWeb failed, event or ref may be invalid');
+      return relative;
     }
-    return e?.nativeEvent?.locationX ?? 0;
+
+    const offsetX = nativeEvent?.offsetX;
+    if (typeof offsetX === 'number' && !Number.isNaN(offsetX)) {
+      if (__DEV__) {
+        console.log('[Rating] getOffsetXFromEventWeb:offsetX', { offsetX });
+      }
+      return offsetX;
+    }
+
+    const locationX = nativeEvent?.locationX;
+    if (typeof locationX === 'number' && !Number.isNaN(locationX)) {
+      if (__DEV__) {
+        console.log('[Rating] getOffsetXFromEventWeb:locationX', { locationX });
+      }
+      return locationX;
+    }
+
+    if (__DEV__) {
+      console.log('[Rating] getOffsetXFromEventWeb:fallback-zero');
+    }
+    return 0;
   }, []);
 
   const valueFromOffsetX = useCallback((x: number, containerWidth?: number) => {
     const width = containerWidth && containerWidth > 0 ? containerWidth : totalWidth;
     const clampedX = Math.max(0, Math.min(width, x));
     const rawUnits = (clampedX / width) * count; // 0..count
+    if (__DEV__) {
+      console.log('[Rating] valueFromOffsetX', { x, containerWidth, resolvedWidth: width, clampedX, rawUnits, count, fractionalEnabled });
+    }
     if (fractionalEnabled) {
       return roundToPrecision(rawUnits);
     }
@@ -280,6 +312,98 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
     if (!isControlled) setInternalValue(newVal);
     onChange?.(newVal);
   }, [readOnly, valueFromOffsetX, isControlled, onChange]);
+
+  const resolveRelativePosition = useCallback((evt: any) => {
+    if (Platform.OS === 'web') {
+      const measuredWidth = containerRef.current?.getBoundingClientRect?.().width;
+      const width = (typeof measuredWidth === 'number' && measuredWidth > 0)
+        ? measuredWidth
+        : (containerWidth ?? containerMetricsRef.current.width ?? totalWidth);
+      const x = getOffsetXFromEventWeb(evt);
+      if (__DEV__) {
+        console.log('[Rating] resolveRelativePosition:web', { measuredWidth, storedWidth: containerMetricsRef.current.width, containerWidth, totalWidth, x });
+      }
+      return { x, width };
+    }
+
+    const { pageX, locationX } = evt?.nativeEvent ?? {};
+    const { left, width } = containerMetricsRef.current;
+    if (typeof pageX === 'number' && width > 0) {
+      if (__DEV__) {
+        console.log('[Rating] resolveRelativePosition:native-page', { pageX, left, width, relative: pageX - left });
+      }
+      return { x: pageX - left, width };
+    }
+    const fallbackWidth = width || containerWidth || totalWidth;
+    const relativeX = typeof locationX === 'number' ? locationX : 0;
+    if (__DEV__) {
+      console.log('[Rating] resolveRelativePosition:native-location', { pageX, locationX, width, containerWidth, totalWidth, fallbackWidth, relativeX });
+    }
+    return {
+      x: relativeX,
+      width: fallbackWidth,
+    };
+  }, [containerWidth, getOffsetXFromEventWeb, totalWidth]);
+
+  useEffect(() => {
+    return () => {
+      if (Platform.OS === 'web' && typeof document !== 'undefined') {
+        (document.body.style as any).userSelect = '';
+      }
+    };
+  }, []);
+
+  const panHandlers: GestureResponderHandlers = useMemo(() => {
+    const responder = PanResponder.create({
+      onStartShouldSetPanResponder: () => !readOnly,
+      onMoveShouldSetPanResponder: () => !readOnly,
+      onPanResponderGrant: (evt) => {
+        if (readOnly) return;
+        if (Platform.OS === 'web') {
+          (evt as any).preventDefault?.();
+          if (typeof document !== 'undefined') {
+            document.body.style.userSelect = 'none';
+          }
+        }
+        const { x, width } = resolveRelativePosition(evt);
+        if (__DEV__) {
+          console.log('[Rating] panResponderGrant', { x, width });
+        }
+        handlePointerMove(x, width);
+      },
+      onPanResponderMove: (evt) => {
+        if (readOnly) return;
+        if (Platform.OS === 'web') {
+          (evt as any).preventDefault?.();
+        }
+        const { x, width } = resolveRelativePosition(evt);
+        if (__DEV__) {
+          console.log('[Rating] panResponderMove', { x, width });
+        }
+        handlePointerMove(x, width);
+      },
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderRelease: (evt) => {
+        if (readOnly) return;
+        if (Platform.OS === 'web' && typeof document !== 'undefined') {
+          document.body.style.userSelect = '';
+        }
+        const { x, width } = resolveRelativePosition(evt);
+        if (__DEV__) {
+          console.log('[Rating] panResponderRelease', { x, width });
+        }
+        commitAtOffsetX(x, width);
+        setHoverValue(null);
+      },
+      onPanResponderTerminate: () => {
+        if (Platform.OS === 'web' && typeof document !== 'undefined') {
+          document.body.style.userSelect = '';
+        }
+        setHoverValue(null);
+      },
+    });
+    return responder.panHandlers;
+  }, [readOnly, resolveRelativePosition, handlePointerMove, commitAtOffsetX]);
 
   return (
     <View
@@ -303,21 +427,46 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
       <View
         ref={containerRef}
         style={{ flexDirection: 'row', position: 'relative' }}
-        // Touch/gesture handling (mobile + web)
-        onStartShouldSetResponder={() => !readOnly}
-        onResponderGrant={(e: any) => {
-          const x = e.nativeEvent?.locationX ?? 0;
-          handlePointerMove(x);
+        onLayout={(event) => {
+          const layoutWidth = event.nativeEvent.layout?.width;
+          if (typeof layoutWidth === 'number' && layoutWidth > 0) {
+            setContainerWidth(layoutWidth);
+          }
+
+          if (Platform.OS === 'web') {
+            const rect = containerRef.current?.getBoundingClientRect?.();
+            if (rect) {
+              containerMetricsRef.current = {
+                width: rect.width,
+                left: rect.left,
+              };
+              if (rect.width > 0) {
+                setContainerWidth(rect.width);
+              }
+            }
+            return;
+          }
+
+          if (containerRef.current?.measure) {
+            containerRef.current.measure((
+              _x: number,
+              _y: number,
+              width: number,
+              _height: number,
+              pageX: number,
+              _pageY: number,
+            ) => {
+              if (typeof width === 'number' && width > 0) {
+                setContainerWidth(width);
+                containerMetricsRef.current = {
+                  width,
+                  left: typeof pageX === 'number' ? pageX : containerMetricsRef.current.left,
+                };
+              }
+            });
+          }
         }}
-        onResponderMove={(e: any) => {
-          const x = e.nativeEvent?.locationX ?? 0;
-          handlePointerMove(x);
-        }}
-        onResponderRelease={(e: any) => {
-          const x = e.nativeEvent?.locationX ?? 0;
-          commitAtOffsetX(x);
-          setHoverValue(null);
-        }}
+        {...panHandlers}
         {...(Platform.OS === 'web' && {
           onMouseMove: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),
           onMouseDown: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),

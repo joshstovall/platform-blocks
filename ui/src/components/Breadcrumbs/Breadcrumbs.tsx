@@ -7,6 +7,51 @@ import { useTheme } from '../../core/theme';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { Icon } from '../Icon';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { clampComponentSize, resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
+
+type BreadcrumbSizeMetrics = {
+  fontSize: number;
+  iconSize: number;
+  height: number;
+  separatorSpacing: number;
+};
+
+const BREADCRUMB_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
+
+const BREADCRUMB_SIZE_SCALE: Record<ComponentSize, BreadcrumbSizeMetrics> = {
+  xs: { fontSize: 12, iconSize: 12, height: 20, separatorSpacing: 6 },
+  sm: { fontSize: 14, iconSize: 14, height: 24, separatorSpacing: 8 },
+  md: { fontSize: 16, iconSize: 16, height: 28, separatorSpacing: 8 },
+  lg: { fontSize: 18, iconSize: 18, height: 32, separatorSpacing: 10 },
+  xl: { fontSize: 20, iconSize: 20, height: 36, separatorSpacing: 12 },
+  '2xl': { fontSize: 22, iconSize: 22, height: 40, separatorSpacing: 14 },
+  '3xl': { fontSize: 24, iconSize: 24, height: 44, separatorSpacing: 16 },
+};
+
+const BASE_BREADCRUMB_METRICS = BREADCRUMB_SIZE_SCALE.md;
+
+const resolveBreadcrumbSize = (value: ComponentSizeValue): BreadcrumbSizeMetrics => {
+  if (typeof value === 'number') {
+    const ratio = value / BASE_BREADCRUMB_METRICS.fontSize;
+    return {
+      fontSize: value,
+      iconSize: Math.max(8, Math.round(BASE_BREADCRUMB_METRICS.iconSize * ratio)),
+      height: Math.max(16, Math.round(BASE_BREADCRUMB_METRICS.height * ratio)),
+      separatorSpacing: Math.max(4, Math.round(BASE_BREADCRUMB_METRICS.separatorSpacing * ratio)),
+    };
+  }
+
+  const resolved = resolveComponentSize(value, BREADCRUMB_SIZE_SCALE, {
+    allowedSizes: BREADCRUMB_ALLOWED_SIZES,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return resolveBreadcrumbSize(resolved);
+  }
+
+  return resolved;
+};
 
 export const Breadcrumbs = factory<{
   props: BreadcrumbsProps;
@@ -16,7 +61,7 @@ export const Breadcrumbs = factory<{
     items,
     separator = '/',
     maxItems,
-    size = 'md',
+  size = 'md',
     showIcons = true,
     style,
     textStyle,
@@ -55,18 +100,9 @@ export const Breadcrumbs = factory<{
   // Reverse items in RTL to read right-to-left
   const orderedItems = isRTL ? [...displayItems].reverse() : displayItems;
 
-  // Size-based styles
-  const getSizeStyles = () => {
-    const sizeMap = {
-      xs: { fontSize: 12, height: 8, iconSize: 12 },
-      sm: { fontSize: 14, height: 24, iconSize: 14 },
-      md: { fontSize: 16, height: 28, iconSize: 16 },
-      lg: { fontSize: 18, height: 32, iconSize: 18 },
-    };
-    return sizeMap[size];
-  };
-
-  const sizeStyles = getSizeStyles();
+  const clampedSize = clampComponentSize(size, BREADCRUMB_ALLOWED_SIZES);
+  const sizeMetrics = resolveBreadcrumbSize(clampedSize);
+  const iconGap = Math.max(4, Math.round(sizeMetrics.separatorSpacing / 2));
 
   const renderBreadcrumbItem = (item: BreadcrumbItem, index: number, isLast: boolean) => {
     const isClickable = !item.disabled && (item.href || item.onPress);
@@ -74,7 +110,7 @@ export const Breadcrumbs = factory<{
     const itemStyle = {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
-      minHeight: sizeStyles.height,
+      minHeight: sizeMetrics.height,
       opacity: item.disabled ? 0.5 : 1,
     };
 
@@ -83,18 +119,18 @@ export const Breadcrumbs = factory<{
     const content = (
       <View style={itemStyle}>
         {showIcons && item.icon && (
-          <View style={isRTL ? { marginLeft: 6 } : { marginRight: 6 }}>
-              <Icon name={
-                item.icon ? (item.icon as any).props.name : 'chevron-right'
-              } size={sizeStyles.iconSize} color={textColor} />
-           
+          <View style={isRTL ? { marginLeft: iconGap } : { marginRight: iconGap }}>
+            <Icon
+              name={item.icon ? (item.icon as any).props.name : 'chevron-right'}
+              size={sizeMetrics.iconSize}
+              color={textColor}
+            />
           </View>
         )}
         <Text
-        size={sizeStyles.fontSize}
-        colorVariant={isLast ? 'primary' : 'muted'}
-        weight={isLast ? '600' : '200'}
-        
+          size={sizeMetrics.fontSize}
+          colorVariant={isLast ? 'primary' : 'muted'}
+          weight={isLast ? '600' : '200'}
         >
           {item.label}
         </Text>
@@ -131,7 +167,7 @@ export const Breadcrumbs = factory<{
         key={`separator-${index}`}
         style={[
           {
-            marginHorizontal: 8,
+            marginHorizontal: sizeMetrics.separatorSpacing,
             alignItems: 'center' as const,
             justifyContent: 'center' as const,
           },
@@ -141,7 +177,7 @@ export const Breadcrumbs = factory<{
         {typeof separator === 'string' ? (
           <Text
             style={{
-              fontSize: sizeStyles.fontSize - 2,
+              fontSize: Math.max(10, sizeMetrics.fontSize - 2),
               color: theme.text.muted,
             }}
           >

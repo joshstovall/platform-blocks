@@ -26,6 +26,7 @@ import type {
   RegisteredDropdown,
   ArrowPosition,
 } from './types';
+import { PlatformBlocksThemeProvider } from '../../core/theme/ThemeProvider';
 
 interface PopoverContextValue {
   opened: boolean;
@@ -90,6 +91,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     preventPositionChangeWhenVisible = false,
     hideDetached = true,
     viewport,
+  keyboardAvoidance = true,
     fallbackPlacements,
     boundary,
     withRoles = true,
@@ -150,6 +152,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     flip: resolvedFlip,
     shift: resolvedShift,
     boundary,
+    keyboardAvoidance,
     fallbackPlacements,
     viewport,
     onClose: () => handleOverlayClose('dismiss'),
@@ -314,7 +317,18 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     if (typeof minWidth === 'number') sizeStyles.minWidth = minWidth;
     if (typeof minHeight === 'number') sizeStyles.minHeight = minHeight;
     if (typeof maxWidth === 'number') sizeStyles.maxWidth = maxWidth;
-    const resolvedMaxHeight = typeof maxHeight === 'number' ? maxHeight : positioningResult.maxHeight ?? maxHeight;
+
+    const computedMaxHeight = positioningResult.maxHeight;
+    const resolvedMaxHeight = (() => {
+      if (typeof maxHeight === 'number') {
+        if (typeof computedMaxHeight === 'number') {
+          return Math.min(maxHeight, computedMaxHeight);
+        }
+        return maxHeight;
+      }
+      return typeof computedMaxHeight === 'number' ? computedMaxHeight : maxHeight;
+    })();
+
     if (typeof resolvedMaxHeight === 'number') sizeStyles.maxHeight = resolvedMaxHeight;
 
     const dropdownStyle = [popoverStyles.dropdown, dropdownState.style, sizeStyles];
@@ -500,15 +514,20 @@ const PopoverTargetBase = (props: PopoverTargetProps, ref: React.Ref<any>) => {
 const PopoverDropdownBase = (props: PopoverDropdownProps, _ref: React.Ref<View>) => {
   const { children, trapFocus = false, keepMounted, style, testID, ...rest } = props;
   const context = usePopoverContext('Popover.Dropdown');
+  const theme = useTheme();
 
   const dropdownValue = useMemo<RegisteredDropdown>(() => ({
-    content: children,
+    content: (
+      <PlatformBlocksThemeProvider theme={theme} inherit>
+        {children}
+      </PlatformBlocksThemeProvider>
+    ),
     style,
     trapFocus,
     keepMounted,
     testID,
     containerProps: rest,
-  }), [children, rest, style, trapFocus, keepMounted, testID]);
+  }), [children, rest, style, trapFocus, keepMounted, testID, theme]);
 
   useEffect(() => {
     context.registerDropdown(dropdownValue);
@@ -604,13 +623,21 @@ function getArrowStyle(
   }
 }
 
-export const Popover = factory<{ props: PopoverProps; ref: View }>(PopoverBase);
-export const PopoverTarget = factory<{ props: PopoverTargetProps; ref: View }>(PopoverTargetBase);
-export const PopoverDropdown = factory<{ props: PopoverDropdownProps; ref: View }>(PopoverDropdownBase);
+const PopoverComponent = factory<{ props: PopoverProps; ref: View }>(PopoverBase);
+const PopoverTarget = factory<{ props: PopoverTargetProps; ref: View }>(PopoverTargetBase);
+const PopoverDropdown = factory<{ props: PopoverDropdownProps; ref: View }>(PopoverDropdownBase);
 
-(Popover as any).Target = PopoverTarget;
-(Popover as any).Dropdown = PopoverDropdown;
+type PopoverCompoundComponent = typeof PopoverComponent & {
+  Target: typeof PopoverTarget;
+  Dropdown: typeof PopoverDropdown;
+};
+
+const Popover = PopoverComponent as PopoverCompoundComponent;
+Popover.Target = PopoverTarget;
+Popover.Dropdown = PopoverDropdown;
 
 Popover.displayName = 'Popover';
-PopoverTarget.displayName = 'Popover.Target';
-PopoverDropdown.displayName = 'Popover.Dropdown';
+Popover.Target.displayName = 'Popover.Target';
+Popover.Dropdown.displayName = 'Popover.Dropdown';
+
+export { Popover };

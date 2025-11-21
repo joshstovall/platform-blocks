@@ -45,15 +45,15 @@ export const miniApps: MiniApp[] = [
     tags: ['Analytics', 'Charts', 'Business', 'Dashboard'],
     components: ['Card', 'Button', 'Icon', 'Text', 'Flex', 'Grid', 'Progress']
   },
-  {
-    id: 'settings',
-    title: 'Settings Page',
-    description: 'Comprehensive settings interface with profile management, preferences, and account controls.',
-    category: 'Utility',
-    difficulty: 'Intermediate',
-    tags: ['Settings', 'Profile', 'Preferences', 'Account'],
-    components: ['Card', 'Input', 'Button', 'Icon', 'Text', 'Flex', 'Switch']
-  },
+  // {
+  //   id: 'settings',
+  //   title: 'Settings Page',
+  //   description: 'Comprehensive settings interface with profile management, preferences, and account controls.',
+  //   category: 'Utility',
+  //   difficulty: 'Intermediate',
+  //   tags: ['Settings', 'Profile', 'Preferences', 'Account'],
+  //   components: ['Card', 'Input', 'Button', 'Icon', 'Text', 'Flex', 'Switch']
+  // },
   {
     id: 'music-player',
     title: 'Music Player',

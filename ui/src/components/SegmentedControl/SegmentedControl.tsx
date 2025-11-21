@@ -21,6 +21,8 @@ import {
   getSpacingStyles,
 } from '../../core/utils';
 import { Text } from '../Text';
+import { FieldHeader } from '../_internal/FieldHeader';
+import { Row, Column } from '../Layout';
 import type { SegmentedControlProps } from './types';
 
 interface NormalizedItem {
@@ -173,6 +175,9 @@ export const SegmentedControl = factory<{
     radius,
     testID,
     accessibilityLabel,
+    label,
+    description,
+    labelPosition = 'top',
     ...rest
   } = otherProps;
 
@@ -183,6 +188,7 @@ export const SegmentedControl = factory<{
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const { isRTL } = useDirection();
+  const isDarkMode = theme.colorScheme === 'dark';
 
   const items = useMemo(() => normalizeData(data), [data]);
   const initialFallback = useMemo(() => {
@@ -220,11 +226,14 @@ export const SegmentedControl = factory<{
 
   const indicatorColor = useMemo(() => resolveColor(theme, color), [color, theme]);
   const activeTextColor = useMemo(() => {
-    if (variant === 'filled') {
+    if (variant === 'filled' || variant === 'outline') {
       if (autoContrast) {
         return pickContrast(indicatorColor, '#FFFFFF', '#1C1C1E');
       }
       return theme.text?.onPrimary ?? '#FFFFFF';
+    }
+    if (variant === 'ghost') {
+      return indicatorColor;
     }
     return theme.text?.primary ?? '#1C1C1E';
   }, [autoContrast, indicatorColor, theme.text, variant]);
@@ -336,20 +345,70 @@ export const SegmentedControl = factory<{
       ? 'row-reverse'
       : 'row';
 
-  const containerBackground = useMemo(() => {
-    if (variant === 'filled') {
-      return toRgba(indicatorColor, 0.12);
-    }
-    return theme.colors?.gray?.[0] ?? '#F2F2F7';
-  }, [indicatorColor, theme.colors, variant]);
+  const defaultContainerBackground = theme.colors?.gray?.[0] ?? '#F2F2F7';
+  const defaultContainerBorder = theme.colors?.gray?.[3] ?? '#C7C7CC';
+  const defaultIndicatorBackground = theme.colors?.surface?.[0] ?? '#FFFFFF';
 
-  const containerBorderColor = theme.colors?.gray?.[3] ?? '#C7C7CC';
+  const variantPresentation = useMemo(() => {
+    const base = {
+      containerBackground: defaultContainerBackground,
+      containerBorderColor: defaultContainerBorder,
+      containerBorderWidth: hairlineWidth,
+      indicatorBackground: defaultIndicatorBackground,
+      indicatorBorderColor: 'transparent',
+      indicatorBorderWidth: 0,
+    } as const;
+
+    switch (variant) {
+      case 'filled':
+        return {
+          ...base,
+          containerBackground: toRgba(indicatorColor, 0.12),
+          containerBorderColor: 'transparent',
+          containerBorderWidth: 0,
+          indicatorBackground: indicatorColor,
+        };
+      case 'outline': {
+        const outlineBorder = toRgba(indicatorColor, isDarkMode ? 0.55 : 0.35);
+        return {
+          ...base,
+          containerBackground: 'transparent',
+          containerBorderColor: outlineBorder,
+          containerBorderWidth: hairlineWidth,
+          indicatorBackground: indicatorColor,
+        };
+      }
+      case 'ghost': {
+        const indicatorAlpha = isDarkMode ? 0.32 : 0.16;
+        const borderAlpha = isDarkMode ? 0.5 : 0.25;
+        return {
+          ...base,
+          containerBackground: 'transparent',
+          containerBorderColor: 'transparent',
+          containerBorderWidth: 0,
+          indicatorBackground: toRgba(indicatorColor, indicatorAlpha),
+          indicatorBorderColor: toRgba(indicatorColor, borderAlpha),
+          indicatorBorderWidth: hairlineWidth,
+        };
+      }
+      default:
+        return base;
+    }
+  }, [defaultContainerBackground, defaultContainerBorder, defaultIndicatorBackground, indicatorColor, isDarkMode, variant]);
 
   if (!items.length) {
     return null;
   }
 
-  return (
+  const hasLabelContent = label != null || description != null;
+  const effectiveLabelPosition = (() => {
+    if (labelPosition === 'left') return isRTL ? 'right' : 'left';
+    if (labelPosition === 'right') return isRTL ? 'left' : 'right';
+    return labelPosition;
+  })();
+  const isVerticalLabel = effectiveLabelPosition === 'top' || effectiveLabelPosition === 'bottom';
+
+  const controlElement = (
     <View
       ref={ref}
       accessibilityRole="radiogroup"
@@ -361,14 +420,13 @@ export const SegmentedControl = factory<{
           alignItems: 'stretch',
           position: 'relative',
           overflow: 'hidden',
-          backgroundColor: containerBackground,
-          borderWidth: variant === 'filled' ? 0 : hairlineWidth,
-          borderColor: variant === 'filled' ? 'transparent' : containerBorderColor,
+          backgroundColor: variantPresentation.containerBackground,
+          borderWidth: variantPresentation.containerBorderWidth,
+          borderColor: variantPresentation.containerBorderColor,
           opacity: disabled ? 0.6 : 1,
         },
         radiusStyles,
-        layoutStyles,
-        spacingStyles,
+        ...(hasLabelContent ? [{ alignSelf: 'stretch' }, ...(isVerticalLabel ? [] : [{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }])] : [layoutStyles, spacingStyles]),
         style,
       ]}
       testID={testID}
@@ -379,10 +437,10 @@ export const SegmentedControl = factory<{
         style={[
           {
             position: 'absolute',
-            backgroundColor: variant === 'filled'
-              ? indicatorColor
-              : theme.colors?.surface?.[0] ?? '#FFFFFF',
+            backgroundColor: variantPresentation.indicatorBackground,
             borderRadius: radiusStyles.borderRadius,
+            borderWidth: variantPresentation.indicatorBorderWidth,
+            borderColor: variantPresentation.indicatorBorderColor,
             zIndex: 0,
           },
           animatedIndicatorStyle,
@@ -402,7 +460,7 @@ export const SegmentedControl = factory<{
         const nextItemIsSelected = items[index + 1]?.value === currentValue;
         const isLast = index === items.length - 1;
         const dividerColor = withItemsBorders && !isLast && !selected && !nextItemIsSelected
-          ? containerBorderColor
+          ? variantPresentation.containerBorderColor
           : 'transparent';
 
         const dividerStyles = (() => {
@@ -484,6 +542,38 @@ export const SegmentedControl = factory<{
         );
       })}
     </View>
+  );
+
+  if (!hasLabelContent) {
+    return controlElement;
+  }
+
+  const labelNode = (
+    <FieldHeader
+      label={label}
+      description={description}
+      size={size as any}
+      marginBottom={isVerticalLabel ? undefined : 0}
+    />
+  );
+
+  const LayoutComponent = isVerticalLabel ? Column : Row;
+  const layoutGap = isVerticalLabel ? 'xs' : 'sm';
+  const layoutAlign = isVerticalLabel ? 'stretch' : 'center';
+
+  return (
+    <LayoutComponent
+      gap={layoutGap}
+      align={layoutAlign}
+      {...spacingProps}
+      {...layoutProps}
+    >
+      {effectiveLabelPosition === 'top' && labelNode}
+      {effectiveLabelPosition === 'left' && labelNode}
+      {controlElement}
+      {effectiveLabelPosition === 'right' && labelNode}
+      {effectiveLabelPosition === 'bottom' && labelNode}
+    </LayoutComponent>
   );
 });
 

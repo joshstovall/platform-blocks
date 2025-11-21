@@ -30,7 +30,6 @@ const handleOpenLink = (url: string) => {
 export default function SupportScreen() {
   return (
     <PageLayout>
-      <ScrollView showsVerticalScrollIndicator={false}>
         <Flex direction="column" p="lg" gap="2xl">
           {/* Header */}
           <DocsPageHeader subtitle="Get help, report issues, and connect with the Platform Blocks community.">
@@ -117,7 +116,6 @@ export default function SupportScreen() {
           </Alert>
 
         </Flex>
-      </ScrollView>
     </PageLayout>
   );
 }

@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState, forwardRef } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Keyboard } from 'react-native';
 import { Input } from '../Input';
 import { Icon } from '../Icon';
 import { Dialog } from '../Dialog';
 import { YearPicker } from '../YearPicker';
 import { DESIGN_TOKENS } from '../../core';
 import type { YearPickerInputProps } from './types';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 
 const defaultFormat = (date: Date) => date.getFullYear().toString();
 
@@ -33,6 +34,7 @@ export const YearPickerInput = forwardRef<View, YearPickerInputProps>(function Y
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState<Date | null>(defaultValue ?? null);
   const currentValue = (isControlled ? value : internalValue) ?? null;
+  const keyboardManager = useKeyboardManagerOptional();
 
   const {
     required = false,
@@ -60,10 +62,15 @@ export const YearPickerInput = forwardRef<View, YearPickerInputProps>(function Y
 
   const handleOpen = useCallback(() => {
     if (disabled) return;
+    if (keyboardManager) {
+      keyboardManager.dismissKeyboard();
+    } else {
+      Keyboard.dismiss();
+    }
     setOpened(true);
     onFocus?.();
     onOpen?.();
-  }, [disabled, onFocus, onOpen]);
+  }, [disabled, onFocus, onOpen, keyboardManager]);
 
   const handleClose = useCallback(() => {
     setOpened(false);

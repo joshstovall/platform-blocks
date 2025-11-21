@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, ViewProps } from 'react-native';
-import { ChartInteractionProvider, InteractionConfig } from './interaction/ChartInteractionContext';
+import { ChartInteractionProvider, InteractionConfig, useChartInteractionContext } from './interaction/ChartInteractionContext';
 import { ChartPopover } from './interaction/ChartPopover';
 
 export interface ChartsProviderProps extends ViewProps {
@@ -39,7 +39,6 @@ export const GlobalChartsRoot = ChartsProvider;
 // Internal wrapper to capture the absolute page offset once so shared popover can position correctly.
 const RootOffsetCapture: React.FC<ViewProps> = ({ children, style, ...rest }) => {
   const ref = useRef<View>(null);
-  const { useChartInteractionContext } = require('./interaction/ChartInteractionContext');
   let ctx: any = null; try { ctx = useChartInteractionContext(); } catch {
     console.warn('ChartsProvider: RootOffsetCapture must be used inside a ChartInteractionProvider context');
   }

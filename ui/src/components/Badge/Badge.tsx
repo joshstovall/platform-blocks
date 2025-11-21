@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text as RNText, Pressable } from 'react-native';
+import { View, Text as RNText, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
-import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
+import { getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
+import { clampComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import { createRadiusStyles } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
 import { getSpacingStyles, extractSpacingProps, extractShadowProps, getShadowStyles } from '../../core/utils';
@@ -9,17 +10,72 @@ import type { BadgeProps } from './types';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { DESIGN_TOKENS } from '../../core/unified-styles';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
 
+const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLinearGradient();
+
+const normalizeHex = (input: string): string | null => {
+  if (!input) return null;
+  let hex = input.trim();
+  if (hex.startsWith('#')) hex = hex.slice(1);
+  if (hex.length === 3) {
+    hex = hex.split('').map(ch => ch + ch).join('');
+  }
+  if (hex.length !== 6 || /[^0-9a-fA-F]/.test(hex)) {
+    return null;
+  }
+  return `#${hex.toLowerCase()}`;
+};
+
+const adjustHexColor = (input: string, amount: number): string => {
+  const normalized = normalizeHex(input);
+  if (!normalized) return input;
+  const hex = normalized.slice(1);
+  const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount));
+  const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount));
+  const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount));
+  const toHex = (value: number) => value.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const buildGradientStops = (
+  theme: PlatformBlocksTheme,
+  color: BadgeProps['color'],
+  isCustomColor: boolean
+): [string, string] => {
+  if (isCustomColor && typeof color === 'string') {
+    const normalized = normalizeHex(color);
+    if (normalized) {
+      return [normalized, adjustHexColor(normalized, -30)];
+    }
+    return [color, color];
+  }
+
+  const palette = color ? (theme.colors as any)[color as string] : undefined;
+  if (palette && Array.isArray(palette)) {
+    const start = palette[Math.min(5, palette.length - 1)] ?? palette[0];
+    const end = palette[Math.min(7, palette.length - 1)] ?? palette[palette.length - 1] ?? start;
+    return [start, end];
+  }
+
+  const primary = theme.colors.primary;
+  const start = primary[5] ?? primary[4] ?? primary[0];
+  const end = primary[7] ?? primary[6] ?? primary[5] ?? start;
+  return [start, end];
+};
+
+
+const BADGE_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
 
 const getBadgeStyles = (
   theme: PlatformBlocksTheme,
   variant: BadgeProps['variant'] = 'filled',
   color: BadgeProps['color'] = 'primary',
-  size: SizeValue = 'md',
   disabled: boolean = false,
   height: number,
   radiusStyles: any,
-  shadowStyles: any
+  shadowStyles: any,
+  gradientStops?: [string, string]
 ) => {
   // Use design tokens for consistent badge sizing
   const badgeHeight = Math.max(DESIGN_TOKENS.component.badge.height, height * 0.7);
@@ -34,6 +90,7 @@ const getBadgeStyles = (
     paddingHorizontal: horizontalPadding,
     borderWidth: 1,
     opacity: disabled ? 0.5 : 1,
+    position: 'relative' as const,
     ...radiusStyles
   };
 
@@ -58,12 +115,20 @@ const getBadgeStyles = (
       subtle: {
         backgroundColor: customColor + '10', // Even lighter transparency
         borderColor: 'transparent'
+      },
+      gradient: {
+        backgroundColor: gradientStops?.[0] ?? customColor,
+        borderColor: gradientStops?.[1] ?? customColor
       }
     };
-    return {
+    const styleForVariant = {
       ...baseStyles,
-      ...variantStyles[variant]
+      ...variantStyles[variant],
+      ...(variant === 'gradient' ? { overflow: 'hidden' as const } : {})
     };
+    return variant === 'gradient'
+      ? { ...styleForVariant, ...shadowStyles }
+      : styleForVariant;
   }
 
   // Use theme colors
@@ -91,12 +156,17 @@ const getBadgeStyles = (
     subtle: {
       backgroundColor: colorPalette[0] || (colorPalette[1] + '40'),
       borderColor: 'transparent'
+    },
+    gradient: {
+      backgroundColor: gradientStops?.[0] ?? colorPalette[5],
+      borderColor: gradientStops?.[1] ?? colorPalette[6] ?? colorPalette[5]
     }
   };
 
   return {
     ...baseStyles,
     ...variantStyles[variant],
+    ...(variant === 'gradient' ? { overflow: 'hidden' as const } : {}),
     ...shadowStyles
   };
 };
@@ -105,7 +175,7 @@ const getBadgeTextStyles = (
   theme: PlatformBlocksTheme,
   variant: BadgeProps['variant'] = 'filled',
   color: BadgeProps['color'] = 'primary',
-  size: SizeValue = 'md'
+  size: ComponentSizeValue = 'md'
 ) => {
   const fontSize = getFontSize(size);
 
@@ -132,6 +202,9 @@ const getBadgeTextStyles = (
       },
       subtle: {
         color: customColor
+      },
+      gradient: {
+        color: '#FFFFFF'
       }
     };
     return {
@@ -157,6 +230,9 @@ const getBadgeTextStyles = (
     },
     subtle: {
       color: colorPalette[6] || colorPalette[7]
+    },
+    gradient: {
+      color: '#FFFFFF'
     }
   };
 
@@ -187,9 +263,13 @@ export const Badge: React.FC<BadgeProps> = (props) => {
     ...rest
   } = props;
 
-  // Use aliases if provided, otherwise fall back to full prop names or defaults
-  const resolvedVariant = v || variant || 'subtle';
+  const requestedVariant = v || variant || 'subtle';
   const resolvedColor = c || color || 'primary';
+  const isCustomColor = typeof resolvedColor === 'string' && !['primary', 'secondary', 'success', 'warning', 'error', 'gray'].includes(resolvedColor as string);
+  const shouldUseGradient = requestedVariant === 'gradient' && hasLinearGradient;
+  const effectiveVariant = shouldUseGradient ? 'gradient' : (requestedVariant === 'gradient' ? 'filled' : requestedVariant);
+
+  const clampedSize = clampComponentSize(size, BADGE_ALLOWED_SIZES);
 
   const { spacingProps, otherProps } = extractSpacingProps(rest);
   const { shadowProps } = extractShadowProps({ shadow });
@@ -199,15 +279,20 @@ export const Badge: React.FC<BadgeProps> = (props) => {
 
   // Handle radius prop with 'chip' as default
   const radiusStyles = createRadiusStyles(radius || 'badge');
-  
-  // Handle shadow prop - use default 'sm' for filled variant if no shadow specified
-  const effectiveShadow = shadowProps.shadow ?? (resolvedVariant === 'filled' ? 'sm' : 'none');
+
+  // Handle shadow prop - use default 'sm' for filled/gradient variant if no shadow specified
+  const effectiveShadow = shadowProps.shadow ?? ((effectiveVariant === 'filled' || effectiveVariant === 'gradient') ? 'sm' : 'none');
   const shadowStyles = getShadowStyles({ shadow: effectiveShadow }, theme, 'badge');
 
-  const height = getHeight(size);
-  const badgeStyles = getBadgeStyles(theme, resolvedVariant, resolvedColor, size, disabled, height-10, radiusStyles, shadowStyles);
-  const badgeTextStyles = getBadgeTextStyles(theme, resolvedVariant, resolvedColor, size);
-  const iconSpacing = getSpacing(size) / 2;
+  const height = getHeight(clampedSize);
+
+  const gradientStops = React.useMemo(() => (
+    shouldUseGradient ? buildGradientStops(theme, resolvedColor, isCustomColor) : undefined
+  ), [shouldUseGradient, theme, resolvedColor, isCustomColor]);
+
+  const badgeStyles = getBadgeStyles(theme, effectiveVariant, resolvedColor, disabled, height - 10, radiusStyles, shadowStyles, gradientStops);
+  const badgeTextStyles = getBadgeTextStyles(theme, effectiveVariant, resolvedColor, clampedSize);
+  const iconSpacing = getSpacing(clampedSize) / 2;
 
   const Component = onPress ? Pressable : View;
 
@@ -221,6 +306,16 @@ export const Badge: React.FC<BadgeProps> = (props) => {
     />
   ) : null;
 
+  const gradientOverlay = shouldUseGradient && gradientStops ? (
+    <OptionalLinearGradient
+      pointerEvents="none"
+      colors={gradientStops}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[StyleSheet.absoluteFillObject, radiusStyles]}
+    />
+  ) : null;
+
   return (
     <Component
       style={[badgeStyles, spacingStyles, style]}
@@ -228,6 +323,7 @@ export const Badge: React.FC<BadgeProps> = (props) => {
       disabled={disabled}
       {...otherProps}
     >
+      {gradientOverlay}
       {removePosition === 'left' && removeButton && (
         <View style={{ marginRight: iconSpacing }}>
           {removeButton}

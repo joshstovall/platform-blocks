@@ -22,8 +22,66 @@ import type { ChipProps } from '../Chip/types';
 import { FlashList } from '@shopify/flash-list';
 import { ClearButton } from '../../core/components/ClearButton';
 import { Highlight } from '../Highlight';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
+import { handleSelectionComplete } from '../../core/keyboard/selection';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 
-const debounce = require('lodash.debounce');
+type SimpleDebounced<F extends (...args: any[]) => void> = ((...args: Parameters<F>) => void) & {
+  cancel: () => void;
+  flush: () => void;
+  pending?: () => boolean;
+};
+
+type DebounceFn = <F extends (...args: any[]) => void>(func: F, wait?: number) => SimpleDebounced<F>;
+
+const createFallbackDebounce = (): DebounceFn => {
+  return <F extends (...args: any[]) => void>(func: F, wait = 0) => {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let lastArgs: Parameters<F> | null = null;
+
+    const invoke = () => {
+      const args = lastArgs;
+      timeout = null;
+      lastArgs = null;
+      if (args) {
+        func(...args);
+      }
+    };
+
+    const debounced = ((...args: Parameters<F>) => {
+      lastArgs = args;
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(invoke, wait);
+    }) as SimpleDebounced<F>;
+
+    debounced.cancel = () => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      lastArgs = null;
+    };
+
+    debounced.flush = () => {
+      if (timeout) {
+        clearTimeout(timeout);
+        invoke();
+      }
+    };
+
+    debounced.pending = () => timeout != null;
+
+    return debounced;
+  };
+};
+
+const debounce = resolveOptionalModule<DebounceFn>('lodash.debounce', {
+  devWarning: 'lodash.debounce not found, using basic debounce implementation',
+}) ?? createFallbackDebounce();
 
 const DEFAULT_FALLBACK_PLACEMENTS: PlacementType[] = ['top-start', 'top-end', 'top', 'bottom-start', 'bottom-end', 'bottom'];
 
@@ -73,6 +131,7 @@ export const AutoComplete = factory<{
   renderSelectedValue,
   selectedValuesContainerStyle,
   selectedValueChipProps,
+  refocusAfterSelect,
     freeSolo = false,
     displayProperty = 'value',
     // Use modal on mobile native, portal on web
@@ -114,10 +173,23 @@ export const AutoComplete = factory<{
     autoFocus: autoFocusProp ?? true,
   }), [restInputProps, autoFocusProp]);
 
+  const resolvedRefocusAfterSelect = useMemo(() => {
+    if (useModal) {
+      return false;
+    }
+
+    if (typeof refocusAfterSelect === 'boolean') {
+      return refocusAfterSelect;
+    }
+
+    return Platform.OS === 'web';
+  }, [refocusAfterSelect, useModal]);
+
   const theme = useTheme();
   const radiusStyles = useMemo(() => createRadiusStyles(radius, undefined, 'input'), [radius]);
   const inputStyleFactory = useMemo(() => createInputStyles(theme), [theme]);
   const { openOverlay, closeOverlay, updateOverlay } = useOverlay();
+  const keyboardManager = useKeyboardManagerOptional();
   const [suggestions, setSuggestions] = useState<AutoCompleteOption[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -129,6 +201,15 @@ export const AutoComplete = factory<{
   const overlayIdRef = useRef<string | null>(null);
   const containerRef = useRef<View>(null);
   const prevPushedPositionRef = useRef<null | { x: number; y: number; w: number; h: number; mw?: number; mh?: number }>(null);
+
+  const dismissKeyboardFn = keyboardManager?.dismissKeyboard;
+  const dismissKeyboard = useCallback(() => {
+    if (dismissKeyboardFn) {
+      dismissKeyboardFn();
+      return;
+    }
+    Keyboard.dismiss();
+  }, [dismissKeyboardFn]);
 
   // Enhanced positioning system - only use when usePortal is true
   const {
@@ -178,6 +259,7 @@ export const AutoComplete = factory<{
 
   const currentQueryRef = useRef(query);
   const currentSelectedValuesRef = useRef(selectedValues);
+  const suppressNextFocusOpenRef = useRef(false);
 
   currentQueryRef.current = query;
   currentSelectedValuesRef.current = selectedValues;
@@ -320,7 +402,7 @@ export const AutoComplete = factory<{
       setShowSuggestions(true);
     } else {
       setSuggestions([]);
-      setShowSuggestions(false);
+  setShowSuggestions(false);
     }
 
     if (overlayIdRef.current) {
@@ -329,11 +411,13 @@ export const AutoComplete = factory<{
     }
 
     requestAnimationFrame(() => {
-      if (useModal && showSuggestions) {
+      if (useModal) {
         modalInputRef.current?.focus?.();
-      } else {
-        inputRef.current?.focus?.();
+        inputRef.current?.blur?.();
+        return;
       }
+
+      inputRef.current?.focus?.();
     });
   }, [disabled, onChangeText, onClear, debouncedSearch, showSuggestionsOnFocus, data, maxSuggestions, closeOverlay, useModal, showSuggestions]);
 
@@ -368,11 +452,13 @@ export const AutoComplete = factory<{
     onSelect?.(item);
 
     requestAnimationFrame(() => {
-      if (useModal && showSuggestions) {
+      if (useModal) {
         modalInputRef.current?.focus?.();
-      } else {
-        inputRef.current?.focus?.();
+        inputRef.current?.blur?.();
+        return;
       }
+
+      inputRef.current?.focus?.();
     });
   }, [disabled, onSelect, useModal, showSuggestions]);
 
@@ -416,6 +502,20 @@ export const AutoComplete = factory<{
   const handleFocus = useCallback(() => {
     setFocused(true);
     // Show suggestions on focus if enabled and there's data available
+    if (useModal) {
+      setShowSuggestions(true);
+      requestAnimationFrame(() => {
+        inputRef.current?.blur?.();
+        modalInputRef.current?.focus?.();
+      });
+      return;
+    }
+
+    if (suppressNextFocusOpenRef.current) {
+      suppressNextFocusOpenRef.current = false;
+      return;
+    }
+
     if (showSuggestionsOnFocus && data.length > 0) {
       // If query is empty, show all options (like a select dropdown)
       if (!query || query.length < minSearchLength) {
@@ -426,35 +526,53 @@ export const AutoComplete = factory<{
       setShowSuggestions(true);
       debouncedSearch(query);
     }
-  }, [showSuggestionsOnFocus, data, query, maxSuggestions, minSearchLength, debouncedSearch]);
+
+  }, [showSuggestionsOnFocus, data, query, maxSuggestions, minSearchLength, debouncedSearch, useModal, suppressNextFocusOpenRef]);
 
   // Handle input blur
   const handleBlur = useCallback(() => {
-    setFocused(false);
-    // Delay hiding to allow selection
-    setTimeout(() => {
-      setShowSuggestions(false);
-      Keyboard.dismiss();
-      if (overlayIdRef.current) {
-        closeOverlay(overlayIdRef.current);
-        overlayIdRef.current = null;
-      }
-    }, 150);
-  }, [closeOverlay]);
+    if (!useModal) {
+      setFocused(false);
+
+      setTimeout(() => {
+        setShowSuggestions(false);
+        dismissKeyboard();
+        if (overlayIdRef.current) {
+          closeOverlay(overlayIdRef.current);
+          overlayIdRef.current = null;
+        }
+      }, 150);
+    }
+  }, [closeOverlay, dismissKeyboard, useModal]);
 
   // Handle suggestion selection
   const handleSelectSuggestion = useCallback((item: AutoCompleteOption) => {
     if (multiSelect) {
       onSelect?.(item);
 
-      requestAnimationFrame(() => {
-        if (useModal) {
-          modalInputRef.current?.focus?.();
-        } else {
-          inputRef.current?.focus?.();
-        }
+      const result = handleSelectionComplete({
+        mode: 'multiple',
+        preferRefocus: resolvedRefocusAfterSelect,
+        useModal,
+        keyboardManager,
+        focusCallbacks: {
+          focusPrimary: () => inputRef.current?.focus?.(),
+          focusModal: () => modalInputRef.current?.focus?.(),
+          blurPrimary: () => inputRef.current?.blur?.(),
+          blurModal: () => modalInputRef.current?.blur?.(),
+        },
+        onRefocus: () => setFocused(true),
+        onBlur: () => setFocused(false),
       });
 
+      setShowSuggestions(result.refocused);
+
+      if (useModal) {
+        setFocused(false);
+        modalInputRef.current?.blur?.();
+        inputRef.current?.blur?.();
+        dismissKeyboard();
+      }
       return;
     }
 
@@ -462,23 +580,36 @@ export const AutoComplete = factory<{
     setQuery(displayValue);
     onChangeText?.(displayValue);
     onSelect?.(item);
+    suppressNextFocusOpenRef.current = true;
     setShowSuggestions(false);
 
+    const result = handleSelectionComplete({
+      mode: 'single',
+      preferRefocus: resolvedRefocusAfterSelect,
+      useModal,
+      keyboardManager,
+      focusCallbacks: {
+        focusPrimary: () => inputRef.current?.focus?.(),
+        focusModal: () => modalInputRef.current?.focus?.(),
+        blurPrimary: () => inputRef.current?.blur?.(),
+        blurModal: () => modalInputRef.current?.blur?.(),
+      },
+      onRefocus: () => setFocused(true),
+      onBlur: () => setFocused(false),
+      interactionScheduler: (cb) => InteractionManager.runAfterInteractions(cb),
+    });
+
     if (useModal) {
-      InteractionManager.runAfterInteractions(() => {
-        modalInputRef.current?.blur?.();
-        inputRef.current?.blur?.();
-        Keyboard.dismiss();
-        setFocused(false);
-      });
-    } else {
-      InteractionManager.runAfterInteractions(() => {
-        inputRef.current?.blur?.();
-        Keyboard.dismiss();
-        setFocused(false);
-      });
+      setFocused(false);
+      modalInputRef.current?.blur?.();
+      inputRef.current?.blur?.();
+      dismissKeyboard();
     }
-  }, [multiSelect, onSelect, useModal, displayProperty, onChangeText]);
+
+    if (!result.refocused) {
+      suppressNextFocusOpenRef.current = false;
+    }
+  }, [multiSelect, onSelect, resolvedRefocusAfterSelect, useModal, keyboardManager, displayProperty, onChangeText, dismissKeyboard, suppressNextFocusOpenRef]);
 
   // Default item renderer - use stable reference to prevent loops
   const defaultRenderItem = useCallback((item: AutoCompleteOption, index: number, isSelected = false) => {
@@ -523,7 +654,7 @@ export const AutoComplete = factory<{
         isSelected,
       });
     }
-    console.log('renderSuggestionItem with defaultRenderItem', item, index, isSelected);
+    // console.log('renderSuggestionItem with defaultRenderItem', item, index, isSelected);
     return defaultRenderItem(item, index, isSelected);
   }, [renderItem, handleSelectSuggestion, multiSelect, defaultRenderItem]);
 
@@ -780,7 +911,7 @@ export const AutoComplete = factory<{
       const dismiss = () => {
         modalInputRef.current?.blur?.();
         inputRef.current?.blur?.();
-        Keyboard.dismiss();
+        dismissKeyboard();
       };
 
       if (useModal) {
@@ -791,7 +922,7 @@ export const AutoComplete = factory<{
     });
 
     return () => handle.cancel();
-  }, [showSuggestions, useModal]);
+  }, [showSuggestions, useModal, dismissKeyboard]);
 
   useEffect(() => {
     // If width changed, update the overlay width immediately
@@ -900,9 +1031,9 @@ export const AutoComplete = factory<{
 
     modalInputRef.current?.blur();
     inputRef.current?.blur();
-    Keyboard.dismiss();
+    dismissKeyboard();
     setFocused(false);
-  }, [useModal, showSuggestions]);
+  }, [useModal, showSuggestions, dismissKeyboard]);
 
   // Update overlay position when positioning changes (for real-time repositioning)
   // Deduplicate overlay updates: only push changes when something actually changed
@@ -1055,14 +1186,14 @@ export const AutoComplete = factory<{
             InteractionManager.runAfterInteractions(() => {
               modalInputRef.current?.blur?.();
               inputRef.current?.blur?.();
-              Keyboard.dismiss();
+              dismissKeyboard();
             });
           }}
           onDismiss={() => {
             InteractionManager.runAfterInteractions(() => {
               modalInputRef.current?.blur?.();
               inputRef.current?.blur?.();
-              Keyboard.dismiss();
+              dismissKeyboard();
             });
           }}
         >
@@ -1080,7 +1211,7 @@ export const AutoComplete = factory<{
               InteractionManager.runAfterInteractions(() => {
                 modalInputRef.current?.blur?.();
                 inputRef.current?.blur?.();
-                Keyboard.dismiss();
+                dismissKeyboard();
               });
             }}
           >

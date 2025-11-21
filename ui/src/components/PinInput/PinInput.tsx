@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { View, TextInput, Platform } from 'react-native';
 import { Text } from '../Text';
 import { PinInputProps } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 
 export const PinInput = factory<{
   props: PinInputProps;
@@ -29,17 +30,34 @@ export const PinInput = factory<{
     label,
     helperText,
     style,
+    keyboardFocusId,
+    name,
+    testID,
     ...spacingProps
   } = props;
 
   const theme = useTheme();
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const keyboardManager = useKeyboardManagerOptional();
+
+  const fallbackFocusIdRef = useRef(`pin-${Math.random().toString(36).slice(2, 10)}`);
+  const focusTargetId = useMemo(() => {
+    if (typeof keyboardFocusId === 'string' && keyboardFocusId.trim().length > 0) {
+      return keyboardFocusId.trim();
+    }
+    if (typeof name === 'string' && name.trim().length > 0) {
+      return name.trim();
+    }
+    if (typeof testID === 'string' && testID.trim().length > 0) {
+      return testID.trim();
+    }
+    return fallbackFocusIdRef.current;
+  }, [keyboardFocusId, name, testID]);
   
   // Initialize refs array
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, length);
-      const enforceOrderInitialOnly = true;
     for (let i = inputRefs.current.length; i < length; i++) {
       inputRefs.current[i] = null;
     }
@@ -163,6 +181,40 @@ export const PinInput = factory<{
     setFocusedIndex(-1);
   }, []);
 
+  const focusPreferredCell = useCallback(() => {
+    const digitsArray = value.split('').slice(0, length);
+    const firstEmptyIndex = digitsArray.findIndex(digit => digit === '');
+    let targetIndex = 0;
+
+    if (manageFocus) {
+      if (firstEmptyIndex !== -1) {
+        targetIndex = firstEmptyIndex;
+      } else if (digitsArray.length > 0) {
+        targetIndex = Math.min(digitsArray.length, length - 1);
+      }
+    }
+
+    const node = inputRefs.current[targetIndex] ?? inputRefs.current[0];
+    node?.focus?.();
+    setFocusedIndex(targetIndex);
+  }, [value, length, manageFocus]);
+
+  useEffect(() => {
+    if (!keyboardManager) {
+      return;
+    }
+
+    if (keyboardManager.pendingFocusTarget !== focusTargetId) {
+      return;
+    }
+
+    if (keyboardManager.consumeFocusTarget(focusTargetId)) {
+      requestAnimationFrame(() => {
+        focusPreferredCell();
+      });
+    }
+  }, [keyboardManager, focusTargetId, focusPreferredCell]);
+
   // Input styles
   const getInputStyle = useCallback((index: number) => {
     const baseFontSize = size === 'xs' ? 14 : size === 'sm' ? 16 : size === 'lg' ? 20 : size === 'xl' ? 24 : 18;
@@ -190,7 +242,11 @@ export const PinInput = factory<{
   }, [size, error, focusedIndex, length, spacing, disabled, theme, mask]);
 
   return (
-    <View style={[style, spacingProps]}>
+    <View
+      ref={ref}
+      style={[style, spacingProps]}
+      testID={testID}
+    >
       {label && (
         <Text 
           style={{ 
@@ -204,7 +260,6 @@ export const PinInput = factory<{
       )}
       
       <View 
-        ref={ref}
         style={{ 
           flexDirection: 'row', 
           alignItems: 'center',

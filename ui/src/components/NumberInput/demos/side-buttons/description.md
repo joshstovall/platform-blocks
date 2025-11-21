@@ -1,0 +1,1 @@
+Demonstrates the optional side buttons on `NumberInput` alongside the existing spinner controls. Holding shift (or shift-clicking) multiplies the configured step for coarse adjustments, while press-and-hold repeats the action for rapid changes.

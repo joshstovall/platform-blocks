@@ -86,6 +86,12 @@ export const uiIcons: IconRegistry = {
     variant: 'filled' as const,
     description: 'Solid information icon for inline tips or help.',
   },
+  question: {
+    content: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 17a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1.78-10.22-.9.92c-.46.47-.74.88-.74 2.2h-1.5v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.94 2.28Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Question mark inside circle for help and FAQ links.',
+  },
   calendar: {
     content: 'M19 3h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h1V1h2v2h10V1h2v2ZM4 9v10h16V9H4Zm2-4v2h2V5H6Zm10 0v2h2V5h-2Z',
     viewBox: '0 0 24 24',
@@ -175,6 +181,12 @@ export const uiIcons: IconRegistry = {
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
     description: 'Keyboard keycap for shortcuts or hotkeys.',
+  },
+  keyboard: {
+    content: 'M20 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 12H4V7h16v10Zm-11-7h2v2h-2v-2Zm0-3h2v2h-2V7Zm-3 3h2v2H6v-2Zm0-3h2v2H6V7Zm-3 3h2v2H3v-2Zm0-3h2v2H3V7Zm0 6h14v2H3v-2Zm12-3h2v2h-2v-2Zm0-3h2v2h-2V7Zm-3 0h2v2h-2V7Zm0 3h2v2h-2v-2Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Full keyboard layout glyph for typing or hardware references.',
   },
   sheild: {
     content: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',

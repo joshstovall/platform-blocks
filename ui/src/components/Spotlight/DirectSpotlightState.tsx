@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { SpotlightState } from './SpotlightStore';
+import type { SpotlightState } from './SpotlightStore';
 
 // Global spotlight state manager (reuse the same pattern as accordion)
 interface GlobalSpotlightState {

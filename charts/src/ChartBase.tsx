@@ -2,7 +2,7 @@ import React, { createContext, useContext, useRef, useEffect } from 'react';
 import { View, Text, Pressable, I18nManager } from 'react-native';
 import { useChartTheme } from './theme/ChartThemeContext';
 import { BaseChartProps } from './types';
-import { ChartInteractionProvider } from './interaction/ChartInteractionContext';
+import { ChartInteractionProvider, useChartInteractionContext } from './interaction/ChartInteractionContext';
 import { ChartPopover } from './interaction/ChartPopover';
 import { calculateChartDimensions } from './utils';
 import { isWeb } from './utils/platform';
@@ -149,9 +149,12 @@ export const ChartContainer: React.FC<BaseChartProps & {
 // Internal component to capture root offset once.
 const RootOffsetCapture: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const ref = useRef<View>(null);
-  // dynamic import to avoid circular
-  const { useChartInteractionContext } = require('./interaction/ChartInteractionContext');
-  let ctx: any = null; try { ctx = useChartInteractionContext(); } catch { }
+  let ctx: any = null;
+  try {
+    ctx = useChartInteractionContext();
+  } catch {
+    // Provider not mounted yet; ctx stays null
+  }
   useEffect(() => {
     if (!ref.current || !ctx?.setRootOffset) return;
     // Only run DOM measurement logic on web

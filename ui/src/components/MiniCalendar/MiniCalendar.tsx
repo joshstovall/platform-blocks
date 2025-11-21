@@ -1,9 +1,8 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import { Text } from '../Text';
 import { Flex } from '../Flex';
 import { Icon } from '../Icon';
-import { Day } from '../Calendar/Day';
 import { dateUtils } from '../Calendar/utils';
 import { useTheme } from '../../core/theme';
 import type { MiniCalendarProps } from '../Calendar/types';
@@ -11,6 +10,7 @@ import type { MiniCalendarProps } from '../Calendar/types';
 export const MiniCalendar: React.FC<MiniCalendarProps> = ({
   value,
   onChange,
+  defaultValue,
   numberOfDays = 7,
   defaultDate,
   minDate,
@@ -23,49 +23,75 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
   size = 'md',
 }) => {
   const theme = useTheme();
-  
-  const [currentDate, setCurrentDate] = useState(defaultDate || new Date());
-  
-  // Calculate the start date for the range
-  const startDate = useMemo(() => {
-    if (value) {
-      // Center around selected date
-      const offset = Math.floor(numberOfDays / 2);
-      return dateUtils.addDays(value, -offset);
-    }
-    // Start from current date or default
-    return currentDate;
-  }, [value, numberOfDays, currentDate]);
 
-  const days = useMemo(() => 
-    dateUtils.getDaysInRange(startDate, numberOfDays),
-    [startDate, numberOfDays]
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState<Date | null>(() => defaultValue ?? null);
+  const selectedDate = isControlled ? (value ?? null) : internalValue;
+  const previousSelectedRef = useRef<Date | null>(selectedDate ?? null);
+
+  const centerOffset = useMemo(() => Math.floor(numberOfDays / 2), [numberOfDays]);
+
+  const [viewStartDate, setViewStartDate] = useState<Date>(() => {
+    const base = defaultDate ?? selectedDate ?? new Date();
+    return selectedDate ? dateUtils.addDays(base, -centerOffset) : base;
+  });
+
+  useEffect(() => {
+    if (selectedDate) return;
+    if (!defaultDate) return;
+
+    setViewStartDate((prev) => (dateUtils.isSameDay(prev, defaultDate) ? prev : defaultDate));
+  }, [defaultDate, selectedDate]);
+
+  useEffect(() => {
+    if (!selectedDate) {
+      previousSelectedRef.current = null;
+      return;
+    }
+
+    if (previousSelectedRef.current && dateUtils.isSameDay(previousSelectedRef.current, selectedDate)) {
+      return;
+    }
+
+    previousSelectedRef.current = selectedDate;
+    const centered = dateUtils.addDays(selectedDate, -centerOffset);
+    setViewStartDate((prev) => (dateUtils.isSameDay(prev, centered) ? prev : centered));
+  }, [selectedDate, centerOffset]);
+
+  const days = useMemo(
+    () => dateUtils.getDaysInRange(viewStartDate, numberOfDays),
+    [viewStartDate, numberOfDays],
   );
 
-  const weekdayNames = useMemo(() => {
-    return dateUtils.getWeekdayNames(locale, 'short');
-  }, [locale]);
+  const weekdayNames = useMemo(() => dateUtils.getWeekdayNames(locale, 'short'), [locale]);
 
   const handlePrevious = useCallback(() => {
-    setCurrentDate(dateUtils.addDays(currentDate, -numberOfDays));
-  }, [currentDate, numberOfDays]);
+    setViewStartDate((prev) => dateUtils.addDays(prev, -numberOfDays));
+  }, [numberOfDays]);
 
   const handleNext = useCallback(() => {
-    setCurrentDate(dateUtils.addDays(currentDate, numberOfDays));
-  }, [currentDate, numberOfDays]);
+    setViewStartDate((prev) => dateUtils.addDays(prev, numberOfDays));
+  }, [numberOfDays]);
 
-  const handleDayPress = useCallback((date: Date) => {
-    if (dateUtils.isDateDisabled(date, minDate, maxDate)) return;
-    onChange?.(date);
-  }, [onChange, minDate, maxDate]);
+  const handleDayPress = useCallback(
+    (date: Date) => {
+      if (dateUtils.isDateDisabled(date, minDate, maxDate)) return;
+
+      if (!isControlled) {
+        setInternalValue(date);
+      }
+
+      onChange?.(date);
+    },
+    [isControlled, maxDate, minDate, onChange],
+  );
 
   return (
     <View>
-      {/* Navigation Header */}
-      <Flex 
-        direction="row" 
-        justify="space-between" 
-        align="center" 
+      <Flex
+        direction="row"
+        justify="space-between"
+        align="center"
         style={{ marginBottom: 16 }}
       >
         <Pressable
@@ -83,7 +109,7 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
         </Pressable>
 
         <Text size="md" weight="semibold" style={{ color: theme.colors.gray[8] }}>
-          {dateUtils.formatDate(startDate, 'MMM yyyy', locale)}
+          {dateUtils.formatDate(viewStartDate, 'MMM yyyy', locale)}
         </Text>
 
         <Pressable
@@ -101,25 +127,24 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
         </Pressable>
       </Flex>
 
-      {/* Days Container */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <Flex direction="row" gap={4}>
-          {days.map((date, index) => {
-            const isSelected = value && dateUtils.isSameDay(date, value);
+          {days.map((date) => {
+            const isSelected = selectedDate ? dateUtils.isSameDay(date, selectedDate) : false;
             const isToday = dateUtils.isToday(date);
             const isWeekend = dateUtils.isWeekend(date);
             const isDisabled = dateUtils.isDateDisabled(date, minDate, maxDate);
-            
+
             const dayProps = getDayProps ? getDayProps(date) : {};
             const weekdayName = weekdayNames[date.getDay()];
 
             if (renderDay) {
               return (
                 <View key={date.toISOString()} style={{ alignItems: 'center' }}>
-                  <Text 
-                    size="xs" 
-                    style={{ 
-                      marginBottom: 4, 
+                  <Text
+                    size="xs"
+                    style={{
+                      marginBottom: 4,
                       color: theme.colors.gray[5],
                       textTransform: 'uppercase',
                       fontWeight: '500',
@@ -134,11 +159,10 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
 
             return (
               <View key={date.toISOString()} style={{ alignItems: 'center' }}>
-                {/* Weekday label */}
-                <Text 
-                  size="xs" 
-                  style={{ 
-                    marginBottom: 8, 
+                <Text
+                  size="xs"
+                  style={{
+                    marginBottom: 8,
                     color: theme.colors.gray[5],
                     textTransform: 'uppercase',
                     fontWeight: '500',
@@ -148,7 +172,6 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
                   {weekdayName}
                 </Text>
 
-                {/* Day button */}
                 <Pressable
                   onPress={() => handleDayPress(date)}
                   disabled={isDisabled}
@@ -159,12 +182,12 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
                       borderRadius: size === 'xs' ? 16 : size === 'sm' ? 18 : size === 'md' ? 20 : 22,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: isSelected 
-                        ? theme.colors.primary[5] 
-                        : isToday && !isSelected 
-                        ? theme.colors.gray[2] 
-                        : pressed && !isDisabled 
-                        ? theme.colors.gray[1] 
+                      backgroundColor: isSelected
+                        ? theme.colors.primary[5]
+                        : isToday && !isSelected
+                        ? theme.colors.gray[2]
+                        : pressed && !isDisabled
+                        ? theme.colors.gray[1]
                         : 'transparent',
                       borderWidth: isToday && !isSelected ? 1 : 0,
                       borderColor: theme.colors.primary[4],
@@ -182,14 +205,14 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
                     size={size === 'xs' ? 'xs' : 'sm'}
                     weight={isSelected || isToday ? 'semibold' : 'medium'}
                     style={{
-                      color: isSelected 
-                        ? 'white' 
-                        : isDisabled 
-                        ? theme.colors.gray[4] 
-                        : isWeekend && !isSelected 
-                        ? theme.colors.gray[6] 
-                        : isToday 
-                        ? theme.colors.primary[6] 
+                      color: isSelected
+                        ? 'white'
+                        : isDisabled
+                        ? theme.colors.gray[4]
+                        : isWeekend && !isSelected
+                        ? theme.colors.gray[6]
+                        : isToday
+                        ? theme.colors.primary[6]
                         : theme.colors.gray[9],
                     }}
                   >

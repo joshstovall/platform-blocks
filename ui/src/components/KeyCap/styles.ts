@@ -9,45 +9,9 @@ export const useKeyCapStyles = (props: KeyCapStyleProps) => {
 };
 
 export const getKeyCapStyles = (theme: PlatformBlocksTheme, props: KeyCapStyleProps) => {
-  const { size, variant, color, pressed } = props;
+  const { metrics, variant, color, pressed } = props;
+  const { height, paddingHorizontal, fontSize, minWidth } = metrics;
 
-  // Size mappings
-  const sizeMap = {
-    xs: {
-      height: 20,
-      paddingHorizontal: 6,
-      fontSize: 10,
-      minWidth: 20,
-    },
-    sm: {
-      height: 24,
-      paddingHorizontal: 8,
-      fontSize: 11,
-      minWidth: 24,
-    },
-    md: {
-      height: 28,
-      paddingHorizontal: 10,
-      fontSize: 12,
-      minWidth: 28,
-    },
-    lg: {
-      height: 32,
-      paddingHorizontal: 12,
-      fontSize: 13,
-      minWidth: 32,
-    },
-    xl: {
-      height: 36,
-      paddingHorizontal: 14,
-      fontSize: 14,
-      minWidth: 36,
-    },
-  };
-
-  const sizeStyle = sizeMap[size];
-
-  // Color mappings
   const getColorScheme = () => {
     const colorMap = {
       primary: theme.colors.primary,
@@ -57,16 +21,15 @@ export const getKeyCapStyles = (theme: PlatformBlocksTheme, props: KeyCapStylePr
       error: theme.colors.error,
       gray: theme.colors.gray,
     };
-    
+
     return colorMap[color] || colorMap.gray;
   };
 
   const colorScheme = getColorScheme();
 
-  // Variant styles
   const getVariantStyles = (): { container: ViewStyle; text: TextStyle } => {
     const isDark = theme.colorScheme === 'dark';
-    
+
     switch (variant) {
       case 'minimal':
         return {
@@ -114,9 +77,8 @@ export const getKeyCapStyles = (theme: PlatformBlocksTheme, props: KeyCapStylePr
             borderColor: theme.colors.surface[3],
             borderBottomWidth: 2,
             borderBottomColor: theme.colors.surface[4],
-            // Enhanced keycap shadow for 3D effect
-            boxShadow: isDark 
-              ? '0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 1px 3px rgba(0, 0, 0, 0.2)' 
+            boxShadow: isDark
+              ? '0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 1px 3px rgba(0, 0, 0, 0.2)'
               : '0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(0, 0, 0, 0.1)',
             elevation: 3,
           },
@@ -129,43 +91,46 @@ export const getKeyCapStyles = (theme: PlatformBlocksTheme, props: KeyCapStylePr
 
   const variantStyles = getVariantStyles();
 
-  // Pressed state modifications
-  const pressedModifications = pressed ? {
-    container: {
-      transform: [{ translateY: 1 }],
-      borderBottomWidth: 1,
-      boxShadow: variant === 'default' 
-        ? 'inset 0 1px 2px rgba(0, 0, 0, 0.1)' 
-        : 'none',
-      backgroundColor: variant === 'default' 
-        ? theme.colors.surface[3]
-        : variantStyles.container.backgroundColor,
-    },
-    text: {},
-  } : {
-    container: {},
-    text: {},
-  };
+  const pressedModifications = pressed
+    ? {
+        container: {
+          transform: [{ translateY: 1 }],
+          borderBottomWidth: 1,
+          boxShadow: variant === 'default'
+            ? 'inset 0 1px 2px rgba(0, 0, 0, 0.1)'
+            : 'none',
+          backgroundColor: variant === 'default'
+            ? theme.colors.surface[3]
+            : variantStyles.container.backgroundColor,
+        },
+        text: {},
+      }
+    : {
+        container: {},
+        text: {},
+      };
 
   const containerStyle: ViewStyle = {
-    ...sizeStyle,
+    minWidth,
+    height,
+    paddingHorizontal,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6, // Slightly more rounded for modern keycap look
+    borderRadius: 6,
     ...variantStyles.container,
     ...pressedModifications.container,
   };
 
   const textStyle: TextStyle = {
-    fontSize: sizeStyle.fontSize,
-    fontFamily: Platform.OS === 'web' 
+    fontSize,
+    fontFamily: Platform.OS === 'web'
       ? 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
-      : Platform.OS === 'ios' 
-        ? 'Menlo-Regular' 
+      : Platform.OS === 'ios'
+        ? 'Menlo-Regular'
         : 'monospace',
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: sizeStyle.fontSize * 1.2, // Better line height for centering
+    lineHeight: fontSize * 1.2,
     ...variantStyles.text,
     ...pressedModifications.text,
   };

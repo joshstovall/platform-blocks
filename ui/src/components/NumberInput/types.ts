@@ -37,6 +37,9 @@ export interface NumberInputProps extends Omit<BaseInputProps, 'value' | 'onChan
   
   /** Step increment */
   step?: number;
+
+  /** Multiplier applied to the step when using modifier keys */
+  shiftMultiplier?: number;
   
   /** Number of decimal places */
   precision?: number;
@@ -76,9 +79,27 @@ export interface NumberInputProps extends Omit<BaseInputProps, 'value' | 'onChan
   
   /** Show increment/decrement buttons */
   withControls?: boolean;
+
+  /** Render horizontal decrement/increment buttons flanking the input */
+  withSideButtons?: boolean;
   
   /** Whether to hide step controls on mobile */
   hideControlsOnMobile?: boolean;
+
+  /** Enable press-drag gesture to adjust value */
+  withDragGesture?: boolean;
+
+  /** Axis that determines how drag gestures adjust the value */
+  dragAxis?: 'horizontal' | 'vertical';
+
+  /** Pixel distance required to trigger a single step while dragging */
+  dragStepDistance?: number;
+
+  /** Multiplier applied to the configured step while dragging */
+  dragStepMultiplier?: number;
+
+  /** Callback fired when the drag gesture activation state changes */
+  onDragStateChange?: (isDragging: boolean) => void;
   
   /** Custom formatter function */
   formatter?: (value: number) => string;

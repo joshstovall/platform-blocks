@@ -1,15 +1,19 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { View, Pressable, Platform } from 'react-native';
+import { View, Pressable, Platform, PanResponder } from 'react-native';
+import type { PanResponderGestureState, PanResponderInstance } from 'react-native';
 import { Input } from '../Input';
 import { Icon } from '../Icon';
 import { NumberInputProps } from './types';
 import { ExtendedTextInputProps } from '../Input/types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 
 const DEFAULT_DECIMAL_SEPARATOR = '.';
 const DEFAULT_STEP_DELAY = 500;
 const DEFAULT_STEP_INTERVAL = 100;
+const DEFAULT_DRAG_STEP_DISTANCE = 16;
+const MIN_DRAG_ACTIVATION_DISTANCE = 4;
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -285,8 +289,15 @@ export const NumberInput = factory<{
     precision,
     format = 'decimal',
     currency = 'USD',
+    shiftMultiplier = 10,
     withControls = false,
+    withSideButtons = false,
     hideControlsOnMobile = true,
+    withDragGesture = false,
+    dragAxis = 'horizontal',
+    dragStepDistance = DEFAULT_DRAG_STEP_DISTANCE,
+    dragStepMultiplier = 1,
+    onDragStateChange,
     formatter,
     parser,
     clampBehavior = 'blur',
@@ -314,19 +325,70 @@ export const NumberInput = factory<{
   } = props;
 
   const theme = useTheme();
+  const keyboardManager = useKeyboardManagerOptional();
   const [internalValue, setInternalValue] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<any>(null);
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stepCountRef = useRef(0);
+  const dragStateRef = useRef({
+    active: false,
+    dragStartValue: typeof value === 'number' ? value : startValue,
+    lastValue: typeof value === 'number' ? value : undefined,
+    lastComputedValue: typeof value === 'number' ? value : undefined,
+    wasFocused: false,
+  });
+  const controlledValueRef = useRef<number | undefined>(
+    typeof value === 'number' ? value : undefined
+  );
+
+  useEffect(() => {
+    controlledValueRef.current = typeof value === 'number' ? value : undefined;
+  }, [value]);
 
   const {
     rightSection: userRightSection,
+    leftSection: userLeftSection,
     onFocus: userInputOnFocus,
     onBlur: userInputOnBlur,
     ...restInputProps
   } = inputProps;
+
+  const identityProps = restInputProps as {
+    keyboardFocusId?: string;
+    name?: string;
+    testID?: string;
+  };
+
+  const explicitFocusId = identityProps.keyboardFocusId;
+  const inputName = identityProps.name;
+  const inputTestId = identityProps.testID;
+
+  const fallbackFocusIdRef = useRef(`number-${Math.random().toString(36).slice(2, 10)}`);
+  const focusTargetId = useMemo(() => {
+    if (typeof explicitFocusId === 'string' && explicitFocusId.trim().length > 0) {
+      return explicitFocusId.trim();
+    }
+
+    if (typeof inputName === 'string' && inputName.trim().length > 0) {
+      return inputName.trim();
+    }
+
+    if (typeof inputTestId === 'string' && inputTestId.trim().length > 0) {
+      return inputTestId.trim();
+    }
+
+    return fallbackFocusIdRef.current;
+  }, [explicitFocusId, inputName, inputTestId]);
+
+  const requestFocusRestore = useCallback(() => {
+    if (!keyboardManager) {
+      return;
+    }
+
+    keyboardManager.refocus(focusTargetId);
+  }, [keyboardManager, focusTargetId]);
 
   const allowDecimal = allowDecimalProp ?? (format !== 'integer');
 
@@ -357,6 +419,17 @@ export const NumberInput = factory<{
   const effectivePrefix = prefix ?? (format === 'currency' ? currencySymbol : undefined);
   const effectiveSuffix = suffix ?? (format === 'percentage' ? '%' : undefined);
 
+  const resolvedShiftMultiplier = useMemo(() => {
+    if (typeof shiftMultiplier !== 'number' || Number.isNaN(shiftMultiplier)) {
+      return 10;
+    }
+    if (!Number.isFinite(shiftMultiplier)) {
+      return 10;
+    }
+    const absolute = Math.abs(shiftMultiplier);
+    return absolute >= 1 ? absolute : 1;
+  }, [shiftMultiplier]);
+
   const formatOptions = useMemo<FormatOptions>(() => ({
     format,
     currency,
@@ -373,6 +446,37 @@ export const NumberInput = factory<{
   }), [format, currency, decimalSeparator, resolvedThousandSeparator, thousandsGroupStyle, resolvedDecimalScale, precision, fixedDecimalScale, effectivePrefix, effectiveSuffix, formatter, allowDecimal]);
 
   const formatValue = useCallback((val: number) => formatDisplayValue(val, formatOptions), [formatOptions]);
+
+  const getModifierMultiplier = useCallback((event?: { nativeEvent?: any } | any) => {
+    const native = event?.nativeEvent ?? event;
+    if (!native) return 1;
+
+    if (typeof native.getModifierState === 'function') {
+      try {
+        if (native.getModifierState('Shift')) {
+          return resolvedShiftMultiplier;
+        }
+      } catch {
+        // ignore modifier lookup failures
+      }
+    }
+
+    if (native.shiftKey) {
+      return resolvedShiftMultiplier;
+    }
+
+    const modifiers = native.modifiers ?? native.modifierFlags;
+    if (Array.isArray(modifiers)) {
+      for (let index = 0; index < modifiers.length; index += 1) {
+        const mod = modifiers[index];
+        if (typeof mod === 'string' && mod.toLowerCase() === 'shift') {
+          return resolvedShiftMultiplier;
+        }
+      }
+    }
+
+    return 1;
+  }, [resolvedShiftMultiplier]);
 
   const normalizationOptions = useMemo<NormalizeOptions>(() => ({
     allowDecimal,
@@ -522,16 +626,20 @@ export const NumberInput = factory<{
   }, [clampBehavior, clampValue, value, onChange, allowedChecker, userInputOnBlur]);
 
   // Handle increment/decrement
-  const handleStep = useCallback((direction: 'up' | 'down') => {
+  const handleStep = useCallback((direction: 'up' | 'down', shouldRestoreFocus = false, multiplier = 1) => {
     if (disabled) return;
-    const hasValue = value !== undefined && value !== null;
+    const normalizedMultiplier = Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1;
+    const stepSize = step * normalizedMultiplier;
+    const effectiveStep = Number.isFinite(stepSize) && stepSize !== 0 ? stepSize : step;
+    const currentValue = controlledValueRef.current;
+    const hasValue = currentValue !== undefined && currentValue !== null;
     let nextValue: number;
 
     if (!hasValue) {
       nextValue = startValue;
     } else {
-      const delta = direction === 'up' ? step : -step;
-      nextValue = (value as number) + delta;
+      const delta = direction === 'up' ? effectiveStep : -effectiveStep;
+      nextValue = (currentValue as number) + delta;
     }
 
     if (!allowDecimal) {
@@ -544,12 +652,16 @@ export const NumberInput = factory<{
       return;
     }
 
+    controlledValueRef.current = clamped;
     onChange?.(clamped);
 
     if (focused) {
       setInternalValue(formatEditableValue(clamped));
     }
-  }, [disabled, value, startValue, step, allowDecimal, clampValue, allowedChecker, onChange, focused, formatEditableValue]);
+    if (shouldRestoreFocus) {
+      requestFocusRestore();
+    }
+  }, [disabled, startValue, step, allowDecimal, clampValue, allowedChecker, onChange, focused, formatEditableValue, requestFocusRestore]);
 
   const clearHoldTimers = useCallback(() => {
     if (holdTimeoutRef.current) {
@@ -562,7 +674,8 @@ export const NumberInput = factory<{
     }
   }, []);
 
-  const scheduleNextStep = useCallback((direction: 'up' | 'down') => {
+  const scheduleNextStep = useCallback((direction: 'up' | 'down', multiplier: number) => {
+    const normalizedMultiplier = Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1;
     const interval = typeof stepHoldInterval === 'function'
       ? stepHoldInterval(stepCountRef.current)
       : stepHoldInterval;
@@ -571,22 +684,23 @@ export const NumberInput = factory<{
 
     holdIntervalRef.current = setTimeout(() => {
       stepCountRef.current += 1;
-      handleStep(direction);
-      scheduleNextStep(direction);
+      handleStep(direction, true, normalizedMultiplier);
+      scheduleNextStep(direction, normalizedMultiplier);
     }, delay);
   }, [handleStep, stepHoldInterval]);
 
-  const startHold = useCallback((direction: 'up' | 'down') => {
+  const startHold = useCallback((direction: 'up' | 'down', multiplier = 1) => {
     if (disabled) return;
     clearHoldTimers();
     stepCountRef.current = 0;
-    handleStep(direction);
+    const normalizedMultiplier = Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1;
+    handleStep(direction, true, normalizedMultiplier);
 
     const delay = Math.max(stepHoldDelay ?? DEFAULT_STEP_DELAY, 0);
 
     holdTimeoutRef.current = setTimeout(() => {
       stepCountRef.current = 1;
-      scheduleNextStep(direction);
+      scheduleNextStep(direction, normalizedMultiplier);
     }, delay);
   }, [disabled, clearHoldTimers, handleStep, stepHoldDelay, scheduleNextStep]);
 
@@ -599,6 +713,201 @@ export const NumberInput = factory<{
     clearHoldTimers();
   }, [clearHoldTimers]);
 
+  useEffect(() => {
+    const state = dragStateRef.current;
+    if (state.active) return;
+    state.dragStartValue = typeof value === 'number' ? value : startValue;
+    state.lastValue = typeof value === 'number' ? value : undefined;
+    state.lastComputedValue = typeof value === 'number' ? value : undefined;
+  }, [value, startValue]);
+
+  const effectiveDragStepDistance = useMemo(() => {
+    if (!Number.isFinite(dragStepDistance) || dragStepDistance <= 0) {
+      return DEFAULT_DRAG_STEP_DISTANCE;
+    }
+    return dragStepDistance;
+  }, [dragStepDistance]);
+
+  const dragActivationDistance = useMemo(
+    () => Math.max(MIN_DRAG_ACTIVATION_DISTANCE, effectiveDragStepDistance * 0.35),
+    [effectiveDragStepDistance]
+  );
+
+  const getDragAxisDelta = useCallback((gestureState: PanResponderGestureState) => (
+    dragAxis === 'horizontal' ? gestureState.dx : -gestureState.dy
+  ), [dragAxis]);
+
+  const beginDrag = useCallback(() => {
+    const state = dragStateRef.current;
+    if (state.active || !withDragGesture || disabled) {
+      return;
+    }
+
+    const baseValue = typeof value === 'number' ? value : startValue;
+    state.active = true;
+    state.dragStartValue = baseValue;
+    state.lastValue = typeof value === 'number' ? value : undefined;
+    state.lastComputedValue = typeof value === 'number' ? value : undefined;
+    state.wasFocused = focused;
+    onDragStateChange?.(true);
+  }, [withDragGesture, disabled, value, startValue, focused, onDragStateChange]);
+
+  const handleDragMove = useCallback((gestureState: PanResponderGestureState) => {
+    if (!withDragGesture || disabled) {
+      return;
+    }
+
+    const state = dragStateRef.current;
+
+    if (!state.active) {
+      beginDrag();
+    }
+
+    if (!state.active) {
+      return;
+    }
+
+    const delta = getDragAxisDelta(gestureState);
+    if (!Number.isFinite(delta)) {
+      return;
+    }
+
+    const distance = effectiveDragStepDistance;
+    if (!Number.isFinite(distance) || distance <= 0) {
+      return;
+    }
+
+    const multiplier = dragStepMultiplier || 1;
+    const stepSize = step * multiplier;
+
+    if (!Number.isFinite(stepSize) || stepSize === 0) {
+      return;
+    }
+
+    const rawDelta = (delta / distance) * stepSize;
+    let nextValue = state.dragStartValue + rawDelta;
+
+    if (Number.isFinite(stepSize) && stepSize !== 0) {
+      const relativeSteps = (nextValue - state.dragStartValue) / stepSize;
+      const roundedSteps = allowDecimal ? Math.round(relativeSteps * 1e6) / 1e6 : Math.round(relativeSteps);
+      nextValue = state.dragStartValue + roundedSteps * stepSize;
+    }
+
+    if (!Number.isFinite(nextValue)) {
+      return;
+    }
+
+    if (!allowDecimal) {
+      nextValue = Math.round(nextValue);
+    }
+
+    const clamped = clampValue(nextValue);
+
+    if (!allowedChecker(clamped, clamped.toString())) {
+      return;
+    }
+
+    if (state.lastComputedValue === clamped) {
+      return;
+    }
+
+    state.lastValue = clamped;
+    state.lastComputedValue = clamped;
+
+    onChange?.(clamped);
+
+    if (focused) {
+      setInternalValue(formatEditableValue(clamped));
+    }
+  }, [withDragGesture, disabled, beginDrag, getDragAxisDelta, effectiveDragStepDistance, dragStepMultiplier, step, allowDecimal, clampValue, allowedChecker, onChange, focused, formatEditableValue]);
+
+  const endDrag = useCallback(() => {
+    const state = dragStateRef.current;
+    if (!state.active) {
+      return;
+    }
+
+    const shouldRestoreFocus = state.wasFocused && !disabled;
+
+    state.active = false;
+    state.wasFocused = false;
+    state.lastComputedValue = undefined;
+
+    onDragStateChange?.(false);
+
+    if (shouldRestoreFocus) {
+      requestFocusRestore();
+    }
+  }, [onDragStateChange, requestFocusRestore, disabled]);
+
+  useEffect(() => {
+    if (!withDragGesture) {
+      endDrag();
+    }
+  }, [withDragGesture, endDrag]);
+
+  useEffect(() => {
+    if (disabled) {
+      endDrag();
+    }
+  }, [disabled, endDrag]);
+
+  useEffect(() => () => {
+    if (dragStateRef.current.active) {
+      dragStateRef.current.active = false;
+      dragStateRef.current.wasFocused = false;
+      dragStateRef.current.lastComputedValue = undefined;
+      onDragStateChange?.(false);
+    }
+  }, [onDragStateChange]);
+
+  const panResponder = useMemo<PanResponderInstance | null>(() => {
+    if (!withDragGesture || disabled) {
+      return null;
+    }
+
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const primaryDelta = dragAxis === 'horizontal' ? Math.abs(gestureState.dx) : Math.abs(gestureState.dy);
+        const crossDelta = dragAxis === 'horizontal' ? Math.abs(gestureState.dy) : Math.abs(gestureState.dx);
+
+        if (primaryDelta < dragActivationDistance) {
+          return false;
+        }
+
+        return primaryDelta >= crossDelta;
+      },
+      onMoveShouldSetPanResponderCapture: () => false,
+      onPanResponderGrant: () => {
+        beginDrag();
+      },
+      onPanResponderMove: (_, gestureState) => {
+        handleDragMove(gestureState);
+      },
+      onPanResponderRelease: () => {
+        endDrag();
+      },
+      onPanResponderTerminate: () => {
+        endDrag();
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => false,
+    });
+  }, [withDragGesture, disabled, dragAxis, dragActivationDistance, beginDrag, handleDragMove, endDrag]);
+
+  const inputPropsWithGestures = useMemo(() => {
+    if (!panResponder) {
+      return restInputProps;
+    }
+
+    return {
+      ...restInputProps,
+      ...panResponder.panHandlers,
+    };
+  }, [restInputProps, panResponder]);
+
   // Controls visibility
   const showControls = useMemo(() => {
     if (!withControls) return false;
@@ -606,54 +915,145 @@ export const NumberInput = factory<{
     return true;
   }, [withControls, hideControlsOnMobile]);
 
-  // Right section with controls
-  const rightSection = useMemo(() => {
-  if (!showControls) return userRightSection;
-    const comparisonValue = value ?? startValue;
-    const disableIncrement = disabled || (max !== undefined && comparisonValue >= max);
-    const disableDecrement = disabled || (resolvedMin !== undefined && comparisonValue <= resolvedMin);
+  const comparisonValue = value ?? startValue;
+  const disableIncrement = disabled || (max !== undefined && comparisonValue >= max);
+  const disableDecrement = disabled || (resolvedMin !== undefined && comparisonValue <= resolvedMin);
+
+  const leftSection = useMemo(() => {
+    if (!withSideButtons) {
+      return userLeftSection;
+    }
+
+    const button = (
+      <Pressable
+        key="side-decrement"
+        onPressIn={(event) => startHold('down', getModifierMultiplier(event))}
+        onPressOut={stopHold}
+        onTouchEnd={stopHold}
+        disabled={disableDecrement}
+        accessibilityRole="button"
+        accessibilityLabel="Decrease value"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        style={{
+          paddingHorizontal: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: disableDecrement ? 0.4 : 1,
+        }}
+      >
+        <Icon name="minus" size={14} color={theme.text.secondary} />
+      </Pressable>
+    );
+
+    if (!userLeftSection) {
+      return button;
+    }
 
     return (
-      <View style={{ flexDirection: 'column' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {button}
+        <View style={{ marginLeft: 8 }}>{userLeftSection}</View>
+      </View>
+    );
+  }, [withSideButtons, userLeftSection, startHold, stopHold, getModifierMultiplier, disableDecrement, theme]);
+
+  // Right section with controls and side button
+  const rightSection = useMemo(() => {
+    if (!withSideButtons && !showControls) {
+      return userRightSection ?? null;
+    }
+
+    const sections: React.ReactNode[] = [];
+
+    if (withSideButtons) {
+      sections.push(
         <Pressable
-          onPressIn={() => startHold('up')}
+          key="side-increment"
+          onPressIn={(event) => startHold('up', getModifierMultiplier(event))}
           onPressOut={stopHold}
           onTouchEnd={stopHold}
           disabled={disableIncrement}
           accessibilityRole="button"
+          accessibilityLabel="Increase value"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={{
-            padding: 4,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.colors.gray[3],
+            paddingHorizontal: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: disableIncrement ? 0.4 : 1,
           }}
         >
-          <Icon name="chevron-up" size={12} color={theme.text.secondary} />
+          <Icon name="plus" size={14} color={theme.text.secondary} />
         </Pressable>
-        
-        <Pressable
-          onPressIn={() => startHold('down')}
-          onPressOut={stopHold}
-          onTouchEnd={stopHold}
-          disabled={disableDecrement}
-          accessibilityRole="button"
-          style={{
-            padding: 4,
-          }}
-        >
-          <Icon name="chevron-down" size={12} color={theme.text.secondary} />
-        </Pressable>
+      );
+    }
+
+    if (showControls) {
+      const marginStyle = sections.length > 0 ? { marginLeft: 4 } : null;
+      sections.push(
+        <View key="spinner" style={[{ flexDirection: 'column' }, marginStyle]}>
+          <Pressable
+            onPressIn={(event) => startHold('up', getModifierMultiplier(event))}
+            onPressOut={stopHold}
+            onTouchEnd={stopHold}
+            disabled={disableIncrement}
+            accessibilityRole="button"
+            style={{
+              padding: 4,
+              borderBottomWidth: 1,
+              borderBottomColor: theme.colors.gray[3],
+            }}
+          >
+            <Icon name="chevron-up" size={12} color={theme.text.secondary} />
+          </Pressable>
+
+          <Pressable
+            onPressIn={(event) => startHold('down', getModifierMultiplier(event))}
+            onPressOut={stopHold}
+            onTouchEnd={stopHold}
+            disabled={disableDecrement}
+            accessibilityRole="button"
+            style={{
+              padding: 4,
+            }}
+          >
+            <Icon name="chevron-down" size={12} color={theme.text.secondary} />
+          </Pressable>
+        </View>
+      );
+    }
+
+    if (userRightSection) {
+      const marginStyle = sections.length > 0 ? { marginLeft: 4 } : null;
+      sections.push(
+        <View key="user" style={marginStyle ?? undefined}>
+          {userRightSection}
+        </View>
+      );
+    }
+
+    if (sections.length === 0) {
+      return null;
+    }
+
+    if (sections.length === 1) {
+      return sections[0];
+    }
+
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'stretch' }}>
+        {sections}
       </View>
     );
   }, [
+    withSideButtons,
     showControls,
     userRightSection,
-    disabled,
-    max,
-    startValue,
-    resolvedMin,
-    value,
     startHold,
     stopHold,
+    getModifierMultiplier,
+    disableIncrement,
+    disableDecrement,
     theme
   ]);
 
@@ -668,9 +1068,10 @@ export const NumberInput = factory<{
     if (key === 'ArrowUp' || key === 'ArrowDown') {
       event.preventDefault?.();
       event.stopPropagation?.();
-      handleStep(key === 'ArrowUp' ? 'up' : 'down');
+      const multiplier = getModifierMultiplier(event);
+      handleStep(key === 'ArrowUp' ? 'up' : 'down', false, multiplier);
     }
-  }, [userOnKeyDown, withKeyboardEvents, handleStep]);
+  }, [userOnKeyDown, withKeyboardEvents, handleStep, getModifierMultiplier]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || !withKeyboardEvents) return;
@@ -719,12 +1120,13 @@ export const NumberInput = factory<{
 
   return (
     <Input
-      {...restInputProps}
+      {...inputPropsWithGestures}
       value={displayValue}
       onChangeText={handleChangeText}
       onBlur={handleBlur}
       onFocus={handleFocus}
       keyboardType={keyboardType}
+      leftSection={leftSection}
       rightSection={rightSection}
       disabled={disabled}
       error={error}

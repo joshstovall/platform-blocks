@@ -2,6 +2,7 @@ import React from 'react';
 import { ViewStyle } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import type { ResponsiveSize } from '../AppShell/types';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface CarouselProps extends SpacingProps {
   children: React.ReactNode[];
@@ -37,8 +38,8 @@ export interface CarouselProps extends SpacingProps {
   itemStyle?: ViewStyle;
   snapToItem?: boolean;
   arrowPosition?: 'inside' | 'outside';
-  arrowSize?: 'sm' | 'md' | 'lg';
-  dotSize?: 'sm' | 'md' | 'lg';
+  arrowSize?: ComponentSizeValue;
+  dotSize?: ComponentSizeValue;
   scrollEnabled?: boolean;
   reducedMotion?: boolean; // disable animated width/color transitions for dots & snapping
   windowSize?: number; // number of logical pages to render (virtualization)

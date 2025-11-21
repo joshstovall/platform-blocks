@@ -1,9 +1,8 @@
-import React from 'react';
 import { ViewStyle, TextStyle } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import { LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
-import { SizeValue, ColorValue } from '../../core/theme/types';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
 import type { PlacementType } from '../../core/utils/positioning-enhanced';
 
 export interface ColorPickerProps extends SpacingProps, LayoutProps, BorderRadiusProps {
@@ -35,7 +34,7 @@ export interface ColorPickerProps extends SpacingProps, LayoutProps, BorderRadiu
   description?: string;
   
   /** Size of the picker */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: ComponentSizeValue;
   
   /** Variant of the picker */
   variant?: 'default' | 'filled' | 'unstyled';
@@ -82,6 +81,9 @@ export interface ColorPickerProps extends SpacingProps, LayoutProps, BorderRadiu
   
   /** Fallback placements to try */
   fallbackPlacements?: PlacementType[];
+
+  /** Whether dropdown should avoid the on-screen keyboard when visible */
+  keyboardAvoidance?: boolean;
   
   /** Custom style for the container */
   style?: ViewStyle;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { View, PanResponder, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
+import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
 import { factory } from '../../core/factory';
 import type { SliderProps, RangeSliderProps, SliderTick } from './types';
 import {
@@ -16,6 +17,16 @@ import {
   SliderLabel,
   SliderValueLabel,
 } from './SliderCore';
+
+const SLIDER_SIZE_SCALE: Partial<Record<ComponentSize, 'sm' | 'md' | 'lg'>> = {
+  xs: 'sm',
+  sm: 'sm',
+  md: 'md',
+  lg: 'lg',
+  xl: 'lg',
+  '2xl': 'lg',
+  '3xl': 'lg',
+};
 
 // Optimized Single Slider Component
 export const Slider = factory<{
@@ -62,7 +73,17 @@ export const Slider = factory<{
   const [actualContainerSize, setActualContainerSize] = useState<{ width: number, height: number } | null>(null);
 
   // Orientation and sizing (restrict size to supported values)
-  const sliderSize: 'sm' | 'md' | 'lg' = ['sm', 'md', 'lg'].includes(size) ? size as 'sm' | 'md' | 'lg' : 'md';
+  const resolvedSliderSize = resolveComponentSize(size, SLIDER_SIZE_SCALE, {
+    fallback: 'md',
+    allowedSizes: ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'],
+  });
+  const sliderSize: 'sm' | 'md' | 'lg' = typeof resolvedSliderSize === 'number'
+    ? resolvedSliderSize <= 36
+      ? 'sm'
+      : resolvedSliderSize >= 52
+        ? 'lg'
+        : 'md'
+    : (resolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
   const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
   const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
@@ -347,7 +368,17 @@ export const RangeSlider = factory<{
   const [actualRangeContainerSize, setActualRangeContainerSize] = useState<{ width: number, height: number } | null>(null);
 
   // Orientation and sizing (restrict size to supported values)
-  const sliderSize: 'sm' | 'md' | 'lg' = ['sm', 'md', 'lg'].includes(size) ? size as 'sm' | 'md' | 'lg' : 'md';
+  const rangeResolvedSliderSize = resolveComponentSize(size, SLIDER_SIZE_SCALE, {
+    fallback: 'md',
+    allowedSizes: ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'],
+  });
+  const sliderSize: 'sm' | 'md' | 'lg' = typeof rangeResolvedSliderSize === 'number'
+    ? rangeResolvedSliderSize <= 36
+      ? 'sm'
+      : rangeResolvedSliderSize >= 52
+        ? 'lg'
+        : 'md'
+    : (rangeResolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
   const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
   const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];

@@ -53,6 +53,7 @@ export interface MiniCalendarProps {
   // Value
   value?: Date | null;
   onChange?: (date: Date | null) => void;
+  defaultValue?: Date | null;
   
   // Display
   numberOfDays?: number; // default 7

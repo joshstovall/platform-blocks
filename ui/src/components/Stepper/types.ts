@@ -1,4 +1,12 @@
 import { ReactNode } from 'react';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
+
+export interface StepperMetrics {
+  iconSize: number;
+  fontSize: number;
+  spacing: number;
+  descriptionFontSize: number;
+}
 
 export interface StepperStepProps {
   /** Step content */
@@ -39,7 +47,7 @@ export interface StepperProps {
   /** Icon size */
   iconSize?: number;
   /** Component size */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: ComponentSizeValue;
   /** Component color */
   color?: string;
   /** Icon to display when step is completed */
@@ -65,7 +73,8 @@ export interface StepperContextValue {
   orientation: 'horizontal' | 'vertical';
   iconPosition: 'left' | 'right';
   iconSize: number;
-  size: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size: ComponentSizeValue;
+  metrics: StepperMetrics;
   color: string;
   completedIcon?: ReactNode;
   allowNextStepsSelect: boolean;

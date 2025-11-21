@@ -14,6 +14,8 @@ export interface TreeProps {
   data: TreeNode[];
   /** Called when a leaf (no children) or any node with href is pressed */
   onNavigate?: (node: TreeNode) => void;
+  /** Called when a node row is pressed. Return false to prevent default handling (selection, expand). */
+  onNodePress?: (node: TreeNode, context: { isBranch: boolean; event?: any }) => boolean | void;
   /** Allow collapsing/expanding */
   collapsible?: boolean;
   /** Indent size in px for each depth level */
@@ -59,4 +61,6 @@ export interface TreeProps {
   noResultsFallback?: React.ReactNode;
   /** Custom highlight function for labels (return ReactNode) */
   highlight?: (label: string, query: string) => React.ReactNode;
+  /** Apply alternating background stripes to rows */
+  striped?: boolean;
 }

@@ -2,6 +2,14 @@ import type { ReactNode } from 'react';
 import type { SpacingProps } from '../../core/theme/types';
 import type { LayoutProps } from '../../core/utils';
 import type { BorderRadiusProps } from '../../core/theme/radius';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
+
+export interface KeyCapMetrics {
+  height: number;
+  minWidth: number;
+  paddingHorizontal: number;
+  fontSize: number;
+}
 
 export interface KeyCapProps extends SpacingProps, LayoutProps, BorderRadiusProps {
   /**
@@ -12,7 +20,7 @@ export interface KeyCapProps extends SpacingProps, LayoutProps, BorderRadiusProp
   /**
    * Size variant of the key cap
    */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: ComponentSizeValue;
   
   /**
    * Visual variant of the key cap
@@ -58,7 +66,7 @@ export interface KeyCapProps extends SpacingProps, LayoutProps, BorderRadiusProp
 }
 
 export interface KeyCapStyleProps {
-  size: NonNullable<KeyCapProps['size']>;
+  metrics: KeyCapMetrics;
   variant: NonNullable<KeyCapProps['variant']>;
   color: NonNullable<KeyCapProps['color']>;
   pressed: boolean;

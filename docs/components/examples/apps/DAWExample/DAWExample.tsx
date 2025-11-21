@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
-import { Text, Flex, Button, Slider, Icon, useTheme, ToggleButton, Chip } from '@platform-blocks/ui';
+import { View, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Text, Flex, Button, Slider, Icon, useTheme, ToggleButton, Chip, Block } from '@platform-blocks/ui';
 import { tracksMock } from './mockData';
 import { createDAWStyles } from './styles';
 import type { DAWTransportState } from './types';
+import { useResponsive } from '../../../../hooks/useResponsive';
 
 const TOTAL_MEASURES = 32; // 4 bars * 8 groups example
 const SECONDS_PER_MEASURE = 2; // simplified
@@ -11,9 +12,15 @@ const SECONDS_PER_MEASURE = 2; // simplified
 export function DAWExample() {
   const theme = useTheme();
   const styles = createDAWStyles(theme);
+  const { isMobile, isTablet } = useResponsive();
   const [transport, setTransport] = useState<DAWTransportState>({ playing: false, position: 0, loop: false, bpm: 120, timeSig: '4/4' });
   const [zoom, setZoom] = useState(1);
+  const [showTrackList, setShowTrackList] = useState(() => !isMobile);
   const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setShowTrackList(!isMobile);
+  }, [isMobile]);
 
   // Playback loop
   useEffect(() => {
@@ -47,6 +54,12 @@ export function DAWExample() {
   const stop = () => setTransport(t => ({ ...t, playing: false, position: 0 }));
   const toggleLoop = () => setTransport(t => ({ ...t, loop: !t.loop }));
 
+  const baseMeasureWidth = useMemo(() => {
+    if (isMobile) return 56;
+    if (isTablet) return 72;
+    return 80;
+  }, [isMobile, isTablet]);
+
   const formattedTime = useMemo(() => {
     const totalSecs = transport.position;
     const measure = Math.floor(totalSecs / SECONDS_PER_MEASURE) + 1;
@@ -56,14 +69,24 @@ export function DAWExample() {
     return `${measure}:${beat}:${sub.toString().padStart(3, '0')}`;
   }, [transport.position]);
 
-  const measureWidth = 80 * zoom;
+  const measureWidth = baseMeasureWidth * zoom;
   const playheadLeft = (transport.position / SECONDS_PER_MEASURE) * measureWidth;
 
   return (
-    <Flex direction="column" style={styles.root} gap={4}>
+    <Flex
+      direction="column"
+      style={StyleSheet.flatten([styles.root, isMobile && styles.rootMobile])}
+      gap={isMobile ? 3 : 4}
+    >
       {/* Transport */}
-      <View style={styles.transportBar}>
-        <Flex direction="row" align="center" gap={8}>
+      <View style={[styles.transportBar, isMobile && styles.transportBarMobile]}>
+        <Flex
+          direction="row"
+          align="center"
+          gap={isMobile ? 6 : 8}
+          wrap={isMobile ? 'wrap' : 'nowrap'}
+          style={isMobile ? styles.transportControlsMobile : undefined}
+        >
           <Button size="sm" variant="ghost" title="Play" onPress={togglePlay} startIcon={<Icon name={transport.playing ? 'pause' : 'play'} size="sm" />} />
           <Button size="sm" variant="ghost" title="Stop" onPress={stop} startIcon={<Icon name="stop" size="sm" />} />
           <ToggleButton value="loop" selected={transport.loop} onPress={toggleLoop} variant="ghost">
@@ -72,43 +95,78 @@ export function DAWExample() {
           <Chip size="sm" variant="outline">{transport.bpm} BPM</Chip>
           <Chip size="sm" variant="outline">{transport.timeSig}</Chip>
         </Flex>
-        <Flex direction="row" align="center" gap={8}>
+        <Block
+          direction="row"
+          align="center"
+          gap={isMobile ? 6 : 8}
+          wrap={isMobile ? 'wrap' : 'nowrap'}
+          style={isMobile ? styles.transportControlsMobile : undefined}
+        >
           <Text size="xs" color="muted">Zoom</Text>
-          <Slider value={zoom * 50} onChange={(v: number) => setZoom(Math.max(0.5, Math.min(2, v / 50)))} style={{ width: 120 }} />
+          <Slider
+            value={zoom * 50}
+            onChange={(v: number) => setZoom(Math.max(0.5, Math.min(2, v / 50)))}
+            style={StyleSheet.flatten([styles.slider, isMobile && styles.sliderMobile])}
+            w={70}
+          />
           <Text size="sm" weight="semibold" style={styles.timeDisplay}>{formattedTime}</Text>
-
-        </Flex>
+        </Block>
       </View>
 
-      {/* Tracks area */}
-      <View style={styles.tracksContainer}>
-        {/* Track list */}
-        <ScrollView style={styles.trackList}>
-          {tracksMock.map(track => (
-            <Flex key={track.id} direction="row" align="center" gap={6} style={styles.trackRow}>
-              <View style={[styles.trackColorSwatch, { backgroundColor: track.color }]} />
-              <Text size="sm" style={{ flex: 1 }}>{track.name}</Text>
-              <ToggleButton value="m" size="xs" variant="ghost" selected={track.muted}>
-                <Icon name="volumeOff" size="sm" />
-              </ToggleButton>
-              <ToggleButton
-                value="favorite"
-                variant="ghost"
-                selected={track.solo}
-              // onPress={() => setFavorite(!favorite)}
-              >
-                <Icon name="headphones" size={24} color={track.solo ? 'red' : 'gray'} variant={track.solo ? 'filled' : 'outlined'} />
-              </ToggleButton>
+      {isMobile && (
+        <Flex direction="row" align="center" justify="space-between" style={styles.mobileToggleRow}>
+          <Text size="sm" color="muted">Track Controls</Text>
+          <Button size="sm" variant="ghost" onPress={() => setShowTrackList(prev => !prev)}>
+            {showTrackList ? 'Hide tracks' : 'Show tracks'}
+          </Button>
+        </Flex>
+      )}
 
-              <ToggleButton value="r" size="xs" variant="ghost" selected={track.armed}>
-                <Icon name="circle" size="sm" color={track.armed ? 'error' : undefined} />
-              </ToggleButton>
-            </Flex>
-          ))}
-        </ScrollView>
+      {/* Tracks area */}
+      <View style={[styles.tracksContainer, isMobile && styles.tracksContainerMobile]}>
+        {/* Track list */}
+        {(!isMobile || showTrackList) && (
+          <ScrollView
+            style={[styles.trackList, isTablet && styles.trackListTablet, isMobile && styles.trackListMobile]}
+            contentContainerStyle={isMobile ? styles.trackListContentMobile : undefined}
+            showsVerticalScrollIndicator={!isMobile}
+          >
+            {tracksMock.map(track => (
+              <Flex
+                key={track.id}
+                direction="row"
+                align="center"
+                gap={6}
+                style={StyleSheet.flatten([styles.trackRow, isMobile && styles.trackRowMobile])}
+              >
+                <View style={[styles.trackColorSwatch, { backgroundColor: track.color }]} />
+                <Text size="sm" style={{ flex: 1 }}>{track.name}</Text>
+                <ToggleButton value="m" size="xs" variant="ghost" selected={track.muted}>
+                  <Icon name="volumeOff" size="sm" />
+                </ToggleButton>
+                <ToggleButton
+                  value="favorite"
+                  variant="ghost"
+                  selected={track.solo}
+                >
+                  <Icon name="headphones" size={isMobile ? 20 : 24} color={track.solo ? 'red' : 'gray'} variant={track.solo ? 'filled' : 'outlined'} />
+                </ToggleButton>
+
+                <ToggleButton value="r" size="xs" variant="ghost" selected={track.armed}>
+                  <Icon name="circle" size="sm" color={track.armed ? 'error' : undefined} />
+                </ToggleButton>
+              </Flex>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Timeline */}
-        <ScrollView horizontal style={styles.timeline} contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView
+          horizontal
+          style={[styles.timeline, isMobile && styles.timelineMobile]}
+          contentContainerStyle={{ paddingBottom: isMobile ? 24 : 40 }}
+          showsHorizontalScrollIndicator={false}
+        >
           <View style={{ width: TOTAL_MEASURES * measureWidth }}>
             {/* Ruler */}
             <View style={styles.ruler}>

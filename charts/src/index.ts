@@ -25,6 +25,8 @@ export { ViolinChart } from './components/ViolinChart';
 export { SankeyChart } from './components/SankeyChart';
 export { DonutChart } from './components/DonutChart';
 export { NetworkChart } from './components/NetworkChart';
+export { ParetoChart } from './components/ParetoChart';
+export { MarimekkoChart } from './components/MarimekkoChart';
 
 // Core chart building blocks and context
 export { ChartRoot } from './core/ChartContext';

@@ -1,36 +1,37 @@
 import { useState } from 'react';
-import { Button, Text, Input, Column } from '@platform-blocks/ui';
-import { Popover, PopoverTarget, PopoverDropdown } from '../..';
+import { Button, Text, Input, Column, Block } from '@platform-blocks/ui';
+import { Popover } from '../..';
 
 export default function PopoverControlledDemo() {
   const [opened, setOpened] = useState(false);
   const [email, setEmail] = useState('team@example.com');
 
   return (
-    <Column gap="md">
-  <Button size="xs" variant="ghost" onPress={() => setOpened((value) => !value)}>
+    <Block gap="md">
+      <Button size="xs" variant="ghost" onPress={() => setOpened((value) => !value)}>
         {opened ? 'Close popover' : 'Open popover'}
       </Button>
       <Popover opened={opened} onChange={setOpened} trapFocus>
-        <PopoverTarget>
+        <Popover.Target>
           <Button size="sm" variant="outline">
             Invite teammate
           </Button>
-        </PopoverTarget>
-        <PopoverDropdown>
-          <Column gap="sm" style={{ padding: 16, width: 260 }}>
-            <Text weight="semibold">Invite by email</Text>
+        </Popover.Target>
+        <Popover.Dropdown>
+          <Block gap={0}>
             <Input
               value={email}
               onChangeText={setEmail}
               placeholder="name@example.com"
+              label="Email address"
+              fullWidth
             />
             <Button size="xs" onPress={() => setOpened(false)}>
               Send invite
             </Button>
-          </Column>
-        </PopoverDropdown>
+          </Block>
+        </Popover.Dropdown>
       </Popover>
-    </Column>
+    </Block>
   );
 }

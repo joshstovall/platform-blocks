@@ -1,4 +1,5 @@
 // Enhanced shadow system for Platform Blocks
+import { Platform } from 'react-native';
 import { SizeValue } from './sizes';
 import { PlatformBlocksTheme } from './types';
 
@@ -75,9 +76,6 @@ export function createShadowStyles(
   theme: PlatformBlocksTheme,
   componentType?: keyof typeof COMPONENT_SHADOW_DEFAULTS
 ) {
-  // Import Platform at the top if not already imported
-  const Platform = require('react-native').Platform;
-  
   // Use component default if no shadow specified
   const effectiveShadow = shadow ?? (componentType ? getComponentDefaultShadow(componentType) : undefined);
   

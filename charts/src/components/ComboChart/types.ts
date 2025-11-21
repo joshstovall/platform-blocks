@@ -13,6 +13,8 @@ export interface ComboChartXYPoint {
   y: number;
   /** Optional color override for the point */
   color?: string;
+  /** Optional metadata forwarded through interaction callbacks and tooltips */
+  meta?: Record<string, any>;
 }
 
 export type ComboChartLayer =

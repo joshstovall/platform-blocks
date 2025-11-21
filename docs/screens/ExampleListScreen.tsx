@@ -24,14 +24,14 @@ const exampleApps: ExampleApp[] = [
     difficulty: 'Intermediate',
     tags: ['Chat', 'Real-time', 'Messages', 'Social']
   },
-  {
-    id: 'ecommerce',
-    title: 'E-commerce Store',
-    description: 'Product catalog with cards, filters, shopping cart, and checkout flow.',
-    category: 'Commerce',
-    icon: 'shop',
-    difficulty: 'Advanced',
-    tags: ['Shopping', 'Products', 'Cart', 'E-commerce']
+  , {
+    id: 'photo-gallery',
+    title: 'Photo Gallery',
+    description: 'Masonry layout with endless scrolling and fullscreen lightbox.',
+    category: 'Media',
+    icon: 'gallery',
+    difficulty: 'Intermediate',
+    tags: ['Photos', 'Masonry', 'Gallery', 'Infinite Scroll']
   },
   {
     id: 'social-feed',
@@ -41,16 +41,34 @@ const exampleApps: ExampleApp[] = [
     icon: 'heart',
     difficulty: 'Intermediate',
     tags: ['Social', 'Feed', 'Posts', 'Likes']
+  }
+  , {
+    id: 'daw',
+    title: 'Digital Audio Workstation',
+    description: 'Multi-track sequencer with transport, loop, zoom and clip lane visualization.',
+    category: 'Entertainment',
+    icon: 'music',
+    difficulty: 'Advanced',
+    tags: ['Audio', 'Tracks', 'Sequencer', 'Music']
   },
   {
-    id: 'todo-app',
-    title: 'Todo & Task Manager',
-    description: 'Task management with lists, priorities, due dates, and completion tracking.',
-    category: 'Productivity',
-    icon: 'check',
-    difficulty: 'Beginner',
-    tags: ['Tasks', 'Productivity', 'Lists', 'Organization']
+    id: 'ecommerce',
+    title: 'E-commerce Store',
+    description: 'Product catalog with cards, filters, shopping cart, and checkout flow.',
+    category: 'Commerce',
+    icon: 'shop',
+    difficulty: 'Advanced',
+    tags: ['Shopping', 'Products', 'Cart', 'E-commerce']
   },
+  // {
+  //   id: 'todo-app',
+  //   title: 'Todo & Task Manager',
+  //   description: 'Task management with lists, priorities, due dates, and completion tracking.',
+  //   category: 'Productivity',
+  //   icon: 'check',
+  //   difficulty: 'Beginner',
+  //   tags: ['Tasks', 'Productivity', 'Lists', 'Organization']
+  // },
   {
     id: 'music-player',
     title: 'Music Player',
@@ -69,50 +87,33 @@ const exampleApps: ExampleApp[] = [
     difficulty: 'Advanced',
     tags: ['Analytics', 'Charts', 'Business', 'Dashboard']
   },
+  // {
+  //   id: 'settings',
+  //   title: 'Settings Page',
+  //   description: 'User settings interface with profile management, preferences, and account controls.',
+  //   category: 'Utility',
+  //   icon: 'settings',
+  //   difficulty: 'Intermediate',
+  //   tags: ['Settings', 'Profile', 'Preferences', 'Account']
+  // }, 
   {
-    id: 'settings',
-    title: 'Settings Page',
-    description: 'User settings interface with profile management, preferences, and account controls.',
-    category: 'Utility',
-    icon: 'settings',
-    difficulty: 'Intermediate',
-    tags: ['Settings', 'Profile', 'Preferences', 'Account']
-  }, {
     id: 'finder',
     title: 'Finder (File Browser)',
-    description: 'MacOS Finder style file browser with sidebar, breadcrumb navigation, file list and preview pane.',
+    description: 'MacOS style file browser with sidebar, breadcrumbs, file list, and preview pane.',
     category: 'Utility',
     icon: 'folder',
     difficulty: 'Advanced',
     tags: ['Files', 'Browser', 'Navigation', 'Finder']
   },
-  {
-    id: 'chromatic-tuner',
-    title: 'Chromatic Tuner',
-    description: 'A musical instrument tuner that detects pitch and displays note information in real-time.',
-    category: 'Entertainment',
-    icon: 'music-note',
-    difficulty: 'Advanced',
-    tags: ['Music', 'Tuner', 'Pitch Detection', 'Audio']
-  }
-  , {
-    id: 'daw',
-    title: 'Digital Audio Workstation',
-    description: 'Multi-track sequencer with transport, loop, zoom and clip lane visualization.',
-    category: 'Entertainment',
-    icon: 'music',
-    difficulty: 'Advanced',
-    tags: ['Audio', 'Tracks', 'Sequencer', 'Music']
-  }
-  , {
-    id: 'photo-gallery',
-    title: 'Photo Gallery',
-    description: 'Masonry layout with endless scrolling and fullscreen lightbox.',
-    category: 'Media',
-    icon: 'gallery',
-    difficulty: 'Intermediate',
-    tags: ['Photos', 'Masonry', 'Gallery', 'Infinite Scroll']
-  }
+  // {
+  //   id: 'chromatic-tuner',
+  //   title: 'Chromatic Tuner',
+  //   description: 'A musical instrument tuner that detects pitch and displays note information in real-time.',
+  //   category: 'Entertainment',
+  //   icon: 'music-note',
+  //   difficulty: 'Advanced',
+  //   tags: ['Music', 'Tuner', 'Pitch Detection', 'Audio']
+  // }
 ];
 
 const getDifficultyColor = (difficulty: ExampleApp['difficulty']) => {

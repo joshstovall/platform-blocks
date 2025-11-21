@@ -1,14 +1,10 @@
 import { useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import { useOptionalHapticsSettings } from '../core/haptics/HapticsProvider';
+import { resolveOptionalModule } from '../utils/optionalModule';
 
 // Lazy load expo-haptics (optional dependency) so library works without it.
-let Haptics: any = null;
-try { // eslint-disable-next-line @typescript-eslint/no-var-requires
-  Haptics = require('expo-haptics');
-} catch {
-  // Module not installed; no-op fallbacks.
-}
+const Haptics = resolveOptionalModule<any>('expo-haptics');
 
 export interface UseHapticsOptions {
   /** Whether haptics are disabled */

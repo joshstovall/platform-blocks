@@ -13,7 +13,7 @@ import { Select } from '../Select';
 import { Button } from '../Button';
 import { Flex } from '../Flex';
 import { Menu, MenuItem, MenuLabel, MenuDivider, MenuDropdown } from '../Menu';
-import { Popover, PopoverTarget, PopoverDropdown } from '../Popover';
+import { Popover } from '../Popover';
 import { Checkbox } from '../Checkbox';
 import { ToggleButton, ToggleGroup } from '../Toggle';
 import { Pagination } from '../Pagination';
@@ -494,7 +494,7 @@ export const DataTable = <T,>({
         {/* Search & Filter Popover */}
         {(searchable || columns.some(c => c.filterable)) && (
           <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={320} trapFocus>
-            <PopoverTarget>
+            <Popover.Target>
               <Button
                 variant="outline"
                 size="sm"
@@ -511,8 +511,8 @@ export const DataTable = <T,>({
                   }} />
                 )}
               </Button>
-            </PopoverTarget>
-            <PopoverDropdown>
+            </Popover.Target>
+            <Popover.Dropdown>
               <Flex direction="column" gap={DESIGN_TOKENS.spacing.md} style={{ width: 320 }}>
                 <Text variant="caption" weight="semibold">
                   Search & Filter
@@ -612,7 +612,7 @@ export const DataTable = <T,>({
                   </Flex>
                 )}
               </Flex>
-            </PopoverDropdown>
+            </Popover.Dropdown>
           </Popover>
         )}
         
@@ -627,7 +627,7 @@ export const DataTable = <T,>({
         )}
         {showColumnVisibilityManager && (
           <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={280} trapFocus>
-            <PopoverTarget>
+            <Popover.Target>
               <Button
                 variant="outline"
                 size="sm"
@@ -635,8 +635,8 @@ export const DataTable = <T,>({
               >
                 Columns
               </Button>
-            </PopoverTarget>
-            <PopoverDropdown>
+            </Popover.Target>
+            <Popover.Dropdown>
               <View style={{ padding: 8, maxHeight: 300, width: 260 }}>
                 <ComponentWithDisclaimer
                   disclaimer="Selected view determines the layout style"
@@ -681,7 +681,7 @@ export const DataTable = <T,>({
                   ))}
                 </ScrollView>
               </View>
-            </PopoverDropdown>
+            </Popover.Dropdown>
           </Popover>
         )}
       </Flex>

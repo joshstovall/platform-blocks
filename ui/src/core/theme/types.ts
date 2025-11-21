@@ -1,10 +1,12 @@
+import type { ComponentSize, ComponentSizeValue } from './componentSize';
 
 // Common type aliases
-export type SizeValue = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+export type SizeToken = ComponentSize;
+export type SizeValue = ComponentSizeValue;
 export type ColorValue = string;
 
 // Enhanced spacing value that supports CSS values like 'auto'
-export type SpacingValue = SizeValue | 'auto' | '0' | number;
+export type SpacingValue = SizeToken | 'auto' | '0' | number;
 
 // Import design tokens type
 import type { DESIGN_TOKENS } from '../design-tokens';

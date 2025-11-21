@@ -1,6 +1,16 @@
 import { ReactNode } from 'react';
 import { ViewStyle, TextStyle } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
+
+export interface PaginationMetrics {
+  height: number;
+  minWidth: number;
+  paddingHorizontal: number;
+  fontSize: number;
+  iconSize: number;
+  borderRadius: number;
+}
 
 export interface PaginationProps extends SpacingProps {
   /** Current page number (1-indexed) */
@@ -19,7 +29,7 @@ export interface PaginationProps extends SpacingProps {
   onChange: (page: number) => void;
   
   /** Size of pagination controls */
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ComponentSizeValue;
   
   /** Variant style */
   variant?: 'default' | 'outline' | 'subtle';

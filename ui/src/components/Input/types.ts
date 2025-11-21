@@ -97,6 +97,9 @@ export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusP
 
   /** Callback when the clear button is pressed */
   onClear?: () => void;
+
+  /** Identifier used with KeyboardManagerProvider to request refocus */
+  keyboardFocusId?: string;
 }
 
 export type ExtendedTextInputProps = Omit<TextInputProps, keyof BaseInputProps> & {

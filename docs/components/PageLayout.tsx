@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, Platform, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, StyleSheet, Platform, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { usePathname } from 'expo-router';
 import { usePersistentScroll, getSavedScroll } from '../utils/usePersistentScroll';
-import { useTheme } from '@platform-blocks/ui';
+import { KeyboardAwareLayout, useTheme } from '@platform-blocks/ui';
 import { FooterContent } from './layout/FooterPage';
 
 interface PageLayoutProps {
@@ -28,9 +28,6 @@ export function PageLayout({ children, style, contentContainerStyle }: PageLayou
       //     ? 'linear-gradient(rgba(0,0,0,0.8), #000000 140px)'
       //     : 'linear-gradient(rgba(250,250,250,0.8), #eaeaeaff 140px)',
       // } as any),
-    },
-    scrollView: {
-      flex: 1,
     },
     contentContainer: {
       flexGrow: 1,
@@ -65,22 +62,23 @@ export function PageLayout({ children, style, contentContainerStyle }: PageLayou
   }, [theme.colorScheme, pathname]);
 
   return (
-    <>
-    <View style={dynamicStyles.container}>
-      <ScrollView
-        ref={scrollRef}
-        style={dynamicStyles.scrollView}
-        contentContainerStyle={[dynamicStyles.contentContainer, contentContainerStyle]}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <View style={style}>
-          {children}
-        </View>
+    <KeyboardAwareLayout
+      style={dynamicStyles.container}
+      contentContainerStyle={[dynamicStyles.contentContainer, contentContainerStyle]}
+      keyboardShouldPersistTaps="handled"
+      scrollRef={scrollRef}
+      scrollViewProps={{
+        showsVerticalScrollIndicator: false,
+        onScroll: handleScroll,
+        scrollEventThrottle: 16,
+      }}
+    >
+      <View style={style}>
+        {children}
+      </View>
+      <View style={dynamicStyles.footerWrapper}>
         <FooterContent />
-      </ScrollView>
-       </View>
-    </>
-);
+      </View>
+    </KeyboardAwareLayout>
+  );
 }

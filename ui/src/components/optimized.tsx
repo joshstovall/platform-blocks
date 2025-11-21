@@ -19,6 +19,7 @@ export type { SwitchProps } from './Switch/types';
 export type { NumberInputProps } from './NumberInput/types';
 export type { PinInputProps } from './PinInput/types';
 export type { SliderProps, RangeSliderProps } from './Slider/types';
+export type { KnobProps, KnobMark } from './Knob/types';
 
 // Lazy-loaded components for better performance
 export const LazyPasswordInput = React.lazy(() => import('./Input/PasswordInput').then(m => ({ default: m.PasswordInput })));
@@ -26,6 +27,7 @@ export const LazyNumberInput = React.lazy(() => import('./NumberInput/NumberInpu
 export const LazyPinInput = React.lazy(() => import('./PinInput/PinInput').then(m => ({ default: m.PinInput })));
 export const LazySlider = React.lazy(() => import('./Slider/Slider').then(m => ({ default: m.Slider })));
 export const LazyRangeSlider = React.lazy(() => import('./Slider/Slider').then(m => ({ default: m.RangeSlider })));
+export const LazyKnob = React.lazy(() => import('./Knob/Knob').then(m => ({ default: m.Knob })));
 export const LazyCheckbox = React.lazy(() => import('./Checkbox/Checkbox').then(m => ({ default: m.Checkbox })));
 export const LazyRadio = React.lazy(() => import('./Radio/Radio').then(m => ({ default: m.Radio })));
 export const LazyRadioGroup = React.lazy(() => import('./Radio/Radio').then(m => ({ default: m.RadioGroup })));
@@ -134,6 +136,11 @@ export class ComponentLoader {
       case 'Slider': {
         const module = await import('./Slider/Slider');
         component = module.Slider;
+        break;
+      }
+      case 'Knob': {
+        const module = await import('./Knob/Knob');
+        component = module.Knob;
         break;
       }
       case 'Checkbox': {

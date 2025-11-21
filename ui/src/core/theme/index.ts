@@ -12,5 +12,6 @@ export { useColorScheme } from './useColorScheme';
 export type { ColorScheme } from './useColorScheme';
 export type { PlatformBlocksThemeProviderProps } from './ThemeProvider';
 export * from './sizes';
+export * from './componentSize';
 export * from './radius';
 export * from './shadow';

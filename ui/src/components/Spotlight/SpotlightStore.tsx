@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useCallback, useState, ReactNode, useEffect, useMemo } from 'react';
+import { directSpotlightStateManager } from './DirectSpotlightState';
 
 // Debug flag for spotlight logs
 const DEBUG = typeof __DEV__ !== 'undefined' && __DEV__ && !!process.env.EXPO_PUBLIC_DEBUG;
@@ -115,29 +116,20 @@ class SpotlightStateManager {
 // Create singleton instance
 const globalSpotlightState = new SpotlightStateManager();
 
-function getDirectSpotlightManager() {
-  try {
-    const { directSpotlightStateManager } = require('./DirectSpotlightState');
-    return directSpotlightStateManager;
-  } catch {
-    return null;
-  }
-}
-
 function openGlobalSpotlight() {
   globalSpotlightState.setState({ opened: true });
-  getDirectSpotlightManager()?.open?.();
+  directSpotlightStateManager.open?.();
 }
 
 function closeGlobalSpotlight() {
   globalSpotlightState.setState({ opened: false, query: '', selectedIndex: -1 });
-  getDirectSpotlightManager()?.close?.();
+  directSpotlightStateManager.close?.();
 }
 
 function toggleGlobalSpotlight() {
   const currentState = globalSpotlightState.getState();
   globalSpotlightState.setState({ opened: !currentState.opened });
-  getDirectSpotlightManager()?.toggle?.();
+  directSpotlightStateManager.toggle?.();
 }
 
 export function SpotlightProvider({ children }: SpotlightProviderProps) {

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { ViewStyle, TextStyle } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
+import { type ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface BreadcrumbItem {
   /** The label text for the breadcrumb */
@@ -30,7 +31,7 @@ export interface BreadcrumbsProps extends SpacingProps {
   maxItems?: number;
   
   /** Size of the breadcrumbs */
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ComponentSizeValue;
   
   /** Whether to show icons */
   showIcons?: boolean;

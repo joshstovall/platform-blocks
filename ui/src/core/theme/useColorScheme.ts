@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 
 export type ColorScheme = 'light' | 'dark';
 
@@ -15,13 +16,14 @@ function getInitialColorScheme(): ColorScheme {
     }
   } else {
     // For React Native, try to get the current scheme synchronously
-    try {
-      const { Appearance } = require('react-native');
-      const currentScheme = Appearance.getColorScheme();
-      return currentScheme || 'light';
-    } catch (error) {
-      // Appearance API not available, fall back to light mode
-      console.warn('Appearance API not available');
+    const Appearance = resolveOptionalModule<any>('react-native', {
+      accessor: mod => mod.Appearance,
+      devWarning: 'Appearance API not available',
+    });
+
+    const currentScheme = Appearance?.getColorScheme?.();
+    if (currentScheme) {
+      return currentScheme;
     }
   }
   // Default to light mode
@@ -54,23 +56,23 @@ export function useColorScheme(): ColorScheme {
 
     // For React Native, you would use Appearance API
     if (Platform.OS !== 'web') {
-      try {
-        const { Appearance } = require('react-native');
+      const Appearance = resolveOptionalModule<any>('react-native', {
+        accessor: mod => mod.Appearance,
+        devWarning: 'Appearance API not available',
+      });
 
+      if (Appearance?.addChangeListener) {
         const subscription = Appearance.addChangeListener(({ colorScheme: newColorScheme }: { colorScheme: ColorScheme | null }) => {
           setColorScheme(newColorScheme || 'light');
         });
 
         // Set initial value
-        const currentScheme = Appearance.getColorScheme();
+        const currentScheme = Appearance.getColorScheme?.();
         if (currentScheme) {
           setColorScheme(currentScheme);
         }
 
-        return () => subscription?.remove();
-      } catch (error) {
-        // Appearance API not available, fall back to light mode
-        console.warn('Appearance API not available');
+        return () => subscription?.remove?.();
       }
     }
   }, []);

@@ -7,6 +7,7 @@ import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useSpotlightStore, setDefaultSpotlightStore } from './SpotlightStore';
 import { useGlobalHotkeys } from '../../hooks/useHotkeys';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import {
   SpotlightActionData,
   SpotlightActionGroupData,
@@ -496,14 +497,20 @@ export function Spotlight({
   }, [filteredActions]);
 
     const searchInputRef = React.useRef<TextInput | null>(null);
+    const keyboardManager = useKeyboardManagerOptional();
 
     const dismissSearchInput = React.useCallback(() => {
-      Keyboard.dismiss();
+      if (keyboardManager) {
+        keyboardManager.dismissKeyboard();
+      } else {
+        Keyboard.dismiss();
+      }
+
       const node = searchInputRef.current;
       if (node && typeof node.blur === 'function') {
         node.blur();
       }
-    }, []);
+    }, [keyboardManager]);
 
     const searchPropsSafe = searchProps ?? {};
     const {

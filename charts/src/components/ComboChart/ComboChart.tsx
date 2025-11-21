@@ -384,7 +384,13 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
         case 'bar':
         case 'line':
         case 'area':
-          points = layer.data.map((point) => ({ x: point.x, y: point.y, meta: { color: point.color } }));
+          points = layer.data.map((point) => {
+            const meta = point.meta ? { ...point.meta } : {};
+            if (meta.color == null && point.color != null) {
+              meta.color = point.color;
+            }
+            return { x: point.x, y: point.y, meta };
+          });
           break;
         case 'histogram':
           points = computeHistogramPoints(layer);

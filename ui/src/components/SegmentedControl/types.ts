@@ -43,7 +43,7 @@ export interface SegmentedControlProps
   disabled?: boolean;
   /** Prevent user interaction but keep visual state */
   readOnly?: boolean;
-  /** Adjust text color automatically for filled variant */
+  /** Adjust text color automatically for filled/outline variants */
   autoContrast?: boolean;
   /** Render dividers between items */
   withItemsBorders?: boolean;
@@ -54,7 +54,7 @@ export interface SegmentedControlProps
   /** Optional radio group name hint */
   name?: string;
   /** Visual style variant */
-  variant?: 'default' | 'filled';
+  variant?: 'default' | 'filled' | 'outline' | 'ghost';
   /** Custom style for indicator */
   indicatorStyle?: ViewStyle;
   /** Custom style applied to every item */
@@ -65,4 +65,10 @@ export interface SegmentedControlProps
   testID?: string;
   /** Accessibility label for the entire control */
   accessibilityLabel?: string;
+  /** Optional label rendered alongside the control */
+  label?: ReactNode;
+  /** Supplementary description text rendered with the label */
+  description?: ReactNode;
+  /** Placement of the label relative to the control */
+  labelPosition?: 'left' | 'right' | 'top' | 'bottom';
 }

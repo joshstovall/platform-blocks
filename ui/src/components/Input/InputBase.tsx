@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { TextInput, View, Text, TextInputProps as RNTextInputProps, StyleSheet, Pressable, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { createRadiusStyles } from '../../core/theme/radius';
@@ -9,9 +9,10 @@ import { FieldHeader } from '../_internal/FieldHeader';
 import { BaseInputProps, InputStyleProps, ExtendedTextInputProps } from './types';
 import { Icon } from '../Icon';
 import { ClearButton } from '../../core/components/ClearButton';
-import { useFocus, useAnnouncer } from '../../core/accessibility/hooks';
+import { useAnnouncer } from '../../core/accessibility/hooks';
 import { createAccessibilityProps } from '../../core/accessibility/utils';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 
 interface InputLabelProps {
   required?: boolean;
@@ -81,6 +82,8 @@ export const TextInputBase = factory<{
     clearButtonLabel,
     onClear,
     inputRef,
+    name,
+    keyboardFocusId,
     ...rest
   } = otherProps;
 
@@ -91,7 +94,24 @@ export const TextInputBase = factory<{
 
   // Accessibility hooks
   const { announce } = useAnnouncer();
-  const inputId = `input-${label || 'input'}-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedInputIdRef = useRef(`input-${(typeof label === 'string' && label) || 'field'}-${Math.random().toString(36).substr(2, 9)}`);
+  const inputId = generatedInputIdRef.current;
+
+  const fallbackFocusIdRef = useRef(`focus-${Math.random().toString(36).substr(2, 8)}`);
+  const focusTargetId = useMemo(() => {
+    if (typeof keyboardFocusId === 'string' && keyboardFocusId.trim().length > 0) {
+      return keyboardFocusId.trim();
+    }
+    if (typeof name === 'string' && name.trim().length > 0) {
+      return name.trim();
+    }
+    if (typeof testID === 'string' && testID.trim().length > 0) {
+      return testID.trim();
+    }
+    return fallbackFocusIdRef.current;
+  }, [keyboardFocusId, name, testID]);
+
+  const keyboardManager = useKeyboardManagerOptional();
 
   // Handle radius prop with 'md' as default for inputs
   const radiusStyles = createRadiusStyles(radius || 'md');
@@ -249,6 +269,24 @@ export const TextInputBase = factory<{
   }, [disabled, textInputOnChange, onChangeText, onClear]);
 
   const clearButtonLabelText = clearButtonLabel || 'Clear input';
+
+  const pendingFocusTarget = keyboardManager?.pendingFocusTarget;
+
+  useEffect(() => {
+    if (!keyboardManager || !pendingFocusTarget) {
+      return;
+    }
+
+    if (pendingFocusTarget !== focusTargetId) {
+      return;
+    }
+
+    if (keyboardManager.consumeFocusTarget(focusTargetId)) {
+      requestAnimationFrame(() => {
+        internalInputRef.current?.focus?.();
+      });
+    }
+  }, [keyboardManager, pendingFocusTarget, focusTargetId]);
 
   return (
     <View style={[styles.container, spacingStyles, layoutStyles, style]} {...rest}>

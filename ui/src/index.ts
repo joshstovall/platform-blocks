@@ -23,6 +23,8 @@ export { I18nProvider, useI18n } from './core/i18n';
 export { OverlayProvider, useOverlay, useOverlayApi, useOverlays } from './core/providers/OverlayProvider';
 export { DirectionProvider, useDirection, useDirectionSafe } from './core/providers/DirectionProvider';
 export type { Direction, DirectionContextValue, DirectionProviderProps, StorageController } from './core/providers/DirectionProvider';
+export { KeyboardManagerProvider, useKeyboardManager, useKeyboardManagerOptional } from './core/providers/KeyboardManagerProvider';
+export type { KeyboardManagerProviderProps, KeyboardManagerContextValue } from './core/providers/KeyboardManagerProvider';
 export { AccessibilityProvider, useAccessibility } from './core/accessibility/context';
 export { SoundProvider, useSound, useHaptics, getAllSounds, getSoundsByCategory, createSound, DEFAULT_SOUND_IDS } from './core/sound';
 export type { SoundAsset, SoundOptions, HapticFeedbackOptions } from './core/sound';
@@ -106,6 +108,7 @@ export {
 
 // Layout Components
 export { Container } from './components/Container';
+export { KeyboardAwareLayout } from './components/KeyboardAwareLayout';
 export { Flex } from './components/Flex';
 export { Grid, GridItem } from './components/Grid';
 export { Masonry } from './components/Masonry';
@@ -187,6 +190,7 @@ export { ToggleButton, ToggleGroup } from './components/Toggle';
 export { ToggleBar } from './components/Toggle';
 export { SegmentedControl } from './components/SegmentedControl';
 export { Slider, RangeSlider } from './components/Slider';
+export { Knob } from './components/Knob';
 export { Search } from './components/Search';
 export { Select } from './components/Select';
 export { AutoComplete } from './components/AutoComplete';
@@ -256,7 +260,7 @@ export { Overlay } from './components/Overlay';
 export { LoadingOverlay } from './components/LoadingOverlay';
 export { HoverCard } from './components/HoverCard';
 export { ContextMenu } from './components/ContextMenu';
-export { Popover, PopoverTarget, PopoverDropdown } from './components/Popover';
+export { Popover } from './components/Popover';
 export {
   Spotlight,
   SpotlightProvider,
@@ -327,6 +331,17 @@ export type { PlatformBlocksTheme, PlatformBlocksThemeOverride } from './core/th
 export type { PlatformBlocksProviderProps } from './core/theme/PlatformBlocksProvider';
 export type { ColorScheme } from './core/theme/useColorScheme';
 export type { SizeValue } from './core/theme/sizes';
+export {
+  COMPONENT_SIZE_ORDER,
+  DEFAULT_COMPONENT_SIZE,
+  clampComponentSize,
+  resolveComponentSize,
+} from './core/theme/componentSize';
+export type {
+  ComponentSize,
+  ComponentSizeValue,
+} from './core/theme/componentSize';
+export type { SizeToken } from './core/theme/types';
 export type { ResponsiveProp } from './core/theme/breakpoints';
 export type { HotkeyItem, KeyboardModifiers } from './hooks';
 
@@ -342,6 +357,7 @@ export type { HighlightProps } from './components/Highlight';
 export type { OverlayProps } from './components/Overlay';
 export type { TitleProps } from './components/Title/types';
 export type { ContainerProps } from './components/Container';
+export type { KeyboardAwareLayoutProps } from './components/KeyboardAwareLayout';
 export type { FlexProps } from './components/Flex';
 export type { GridProps, GridItemProps } from './components/Grid';
 export type { MasonryProps, MasonryItem } from './components/Masonry';
@@ -355,6 +371,7 @@ export type { ToggleButtonProps, ToggleGroupProps } from './components/Toggle';
 export type { ToggleBarProps, ToggleBarOption } from './components/Toggle/ToggleBar';
 export type { SegmentedControlProps, SegmentedControlItem, SegmentedControlData } from './components/SegmentedControl';
 export type { SliderProps, RangeSliderProps } from './components/Slider';
+export type { KnobProps, KnobMark } from './components/Knob';
 export type { SearchProps } from './components/Search';
 export type { SelectProps } from './components/Select';
 export type { AutoCompleteProps } from './components/AutoComplete';

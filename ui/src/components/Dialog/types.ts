@@ -14,6 +14,8 @@ export interface DialogProps {
   width?: number;
   height?: number;
   style?: object;
+  /** Controls which part of the bottom sheet responds to swipe-to-dismiss gestures */
+  bottomSheetSwipeZone?: 'container' | 'handle' | 'none';
 }
 
 // Internal configuration object stored in context for stacked dialogs
@@ -27,6 +29,7 @@ export interface DialogConfig {
   backdrop?: boolean;
   backdropClosable?: boolean;
   isClosing?: boolean; // Flag used to animate out before removal
+  bottomSheetSwipeZone?: 'container' | 'handle' | 'none';
 }
 
 // Value shape provided by DialogContext

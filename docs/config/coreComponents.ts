@@ -37,20 +37,21 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'TimePickerInput', category: 'dates', icon: 'clock', description: 'Time selection input with dropdown clock interface' },
 
   { name: 'FileInput', category: 'input', icon: 'file', description: 'File input with drag-and-drop support' },
-  { name: 'Input', category: 'input', icon: 'input' },
-  { name: 'NumberInput', category: 'input', icon: 'number' },
+  { name: 'Input', category: 'input', icon: 'input', description: 'Base text field surface with keyboard-manager integration' },
+  { name: 'NumberInput', category: 'input', icon: 'number', description: 'Numeric text input with step controls and formatting options' },
   { name: 'PhoneInput', category: 'input', icon: 'phone', description: 'Masked phone number input with international support' },
   { name: 'PinInput', category: 'input', icon: 'pin' },
   { name: 'Radio', category: 'input', icon: 'radio' },
   { name: 'Search', category: 'input', icon: 'search', description: 'Search input with debouncing and customizable features' },
-  { name: 'Select', category: 'input', icon: 'select', description: 'Dropdown selection input' },
+  { name: 'Select', category: 'input', icon: 'select', description: 'Dropdown selection input with keyboard-aware dismissal defaults' },
   { name: 'Slider', category: 'input', icon: 'slider' },
+  { name: 'Knob', category: 'input', icon: 'dial', description: 'Rotary knob input for selecting values within a range' },
   { name: 'Switch', category: 'input', icon: 'toggle' },
   { name: 'TextArea', category: 'input', icon: 'textarea', description: 'Multi-line text input with auto-resize and character counter' },
   { name: 'Toggle', category: 'input', icon: 'toggle', description: 'Toggle button group for single or multiple selection' },
   { name: 'BrandButton', category: 'input', icon: 'bolt', description: 'Branded action button variant supporting themes & states' },
   { name: 'AppStoreBadge', category: 'input', icon: 'badge', description: 'Badge for App Store with customizable text and icon' },
-  { name: 'AutoComplete', category: 'input', icon: 'autocomplete', description: 'Predictive text input with suggestions and async loading' },
+  { name: 'AutoComplete', category: 'input', icon: 'autocomplete', description: 'Predictive text input with keyboard-aware suggestions and async loading' },
   { name: 'RichTextEditor', category: 'input', icon: 'richtext', description: 'Rich text editing surface with formatting toolbar' },
   { name: 'EmojiPicker', category: 'input', icon: 'emoji', description: 'Emoji selection panel with categories, search, and skin tone support' },
 
@@ -89,6 +90,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
 
   // Layout Components
   { name: 'Block', category: 'layout', icon: 'block' },
+  { name: 'KeyboardAwareLayout', category: 'layout', icon: 'keyboard', description: 'Layout wrapper that pads or scrolls content based on keyboard height using KeyboardManagerProvider' },
   { name: 'Card', category: 'display', icon: 'card' },
   { name: 'HoverCard', category: 'display', icon: 'tooltip', description: 'Contextual popup card on hover or focus' },
   { name: 'Flex', category: 'layout', icon: 'flex' },
@@ -158,6 +160,8 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'StackedAreaChart', category: 'charts', icon: 'chart-area' },
   { name: 'StackedBarChart', category: 'charts', icon: 'chart-bar' },
   { name: 'ViolinChart', category: 'charts', icon: 'chart-area' },
+  { name: 'ParetoChart', category: 'charts', icon: 'chart-line' },
+  { name: 'MarimekkoChart', category: 'charts', icon: 'chart-bar' },
 
   // Media Components
   { name: 'Image', category: 'media', icon: 'image', description: 'Basic image component with optional caption and overlay' },

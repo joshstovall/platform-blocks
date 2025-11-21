@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useOverlay } from '../providers/OverlayProvider';
+import { useOverlayApi } from '../providers/OverlayProvider';
 import { usePopoverPositioning, UsePopoverPositioningOptions } from './usePopoverPositioning';
 
 export interface UseDropdownPositioningOptions extends UsePopoverPositioningOptions {
@@ -77,7 +77,7 @@ export function useDropdownPositioning(
     ...positioningOptions
   } = options;
 
-  const { openOverlay, closeOverlay, updateOverlay } = useOverlay();
+  const { openOverlay, closeOverlay, updateOverlay } = useOverlayApi();
   const overlayIdRef = useRef<string | null>(null);
 
   // Use the existing positioning hook

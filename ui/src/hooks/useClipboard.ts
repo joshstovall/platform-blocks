@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { resolveOptionalModule } from '../utils/optionalModule';
+
 export interface UseClipboardOptions {
   /** Time in ms after which the copied state will reset, 2000 by default */
   timeout?: number;
@@ -28,12 +30,9 @@ export interface UseClipboardReturnValue {
  * and falls back to a manual execCommand copying strategy on web. No-op on native without polyfill.
  */
 // Lazy optional expo-clipboard (only present in native envs if installed)
-let ExpoClipboard: any = null;
-try { // eslint-disable-next-line @typescript-eslint/no-var-requires
-  ExpoClipboard = require('expo-clipboard');
-} catch {
-  console.warn('expo-clipboard not found, clipboard support will be limited on native platforms');
-}
+const ExpoClipboard = resolveOptionalModule<any>('expo-clipboard', {
+  devWarning: 'expo-clipboard not found, clipboard support will be limited on native platforms',
+});
 
 export function useClipboard(options: UseClipboardOptions = {}): UseClipboardReturnValue {
   const { timeout = 2000 } = options;

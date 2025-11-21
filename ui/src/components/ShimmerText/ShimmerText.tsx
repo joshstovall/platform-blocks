@@ -202,6 +202,10 @@ export function ShimmerText(props: ShimmerTextProps) {
     () => createGradientStops(colors, shimmerColor),
     [colors, shimmerColor],
   );
+  const resolvedLinearColors = useMemo(
+    () => resolvedColors.map((color) => (typeof color === 'string' ? color : String(color))),
+    [resolvedColors],
+  );
   const gradientLocations = useMemo(() => createLocations(resolvedColors), [resolvedColors]);
 
   const [webPosition, setWebPosition] = useState(initialWebPosition);
@@ -462,7 +466,7 @@ export function ShimmerText(props: ShimmerTextProps) {
               ]}
             >
               <OptionalLinearGradient
-                colors={resolvedColors}
+                colors={resolvedLinearColors}
                 locations={gradientLocations as any}
                 start={{ x: direction === 'rtl' ? 1 : 0, y: 0.5 }}
                 end={{ x: direction === 'rtl' ? 0 : 1, y: 0.5 }}
@@ -476,7 +480,7 @@ export function ShimmerText(props: ShimmerTextProps) {
   };
 
   const renderWeb = () => {
-    const gradientColors = resolvedColors.map((color) => String(color));
+    const gradientColors = resolvedLinearColors;
     const overlayStyle = [
       overlayBaseStyle,
       {

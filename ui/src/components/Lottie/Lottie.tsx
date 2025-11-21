@@ -1,27 +1,20 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { Platform, ViewStyle, View, UIManager, NativeModules } from 'react-native';
 import { Text } from '../Text';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 
-// Dynamic imports for web compatibility
-let LottieReact: any = null;
-let DotLottieReact: any = null;
+// Optional imports for web compatibility
+const LottieReact = Platform.OS === 'web'
+  ? resolveOptionalModule<any>('lottie-react', {
+      accessor: mod => mod.default ?? mod,
+    })
+  : null;
 
-if (Platform.OS === 'web') {
-  try {
-    // For standard Lottie JSON
-    const Lottie = require('lottie-react');
-    LottieReact = Lottie.default || Lottie;
-  } catch (e) {
-    // lottie-react not available
-  }
-
-  try {
-    // For .lottie files
-    DotLottieReact = require('@lottiefiles/dotlottie-react').DotLottieReact;
-  } catch (e) {
-    // dotlottie-react not available
-  }
-}
+const DotLottieReact = Platform.OS === 'web'
+  ? resolveOptionalModule<any>('@lottiefiles/dotlottie-react', {
+      accessor: mod => mod.DotLottieReact,
+    })
+  : null;
 
 type NativeLottieStatus = {
   component: any | null;
@@ -38,16 +31,16 @@ const loadNativeLottieComponent = () => {
     return nativeLottieComponent;
   }
 
-  try {
-    const mod = require('lottie-react-native');
-    nativeLottieComponent = mod?.default ?? mod;
-  } catch (error) {
-    nativeLottieComponent = null;
-    if (!nativeModuleLoadWarningLogged && __DEV__) {
-      console.warn('[Lottie] Failed to load lottie-react-native module. Rendering fallback instead.', error);
-      nativeModuleLoadWarningLogged = true;
-    }
+  const module = resolveOptionalModule<any>('lottie-react-native', {
+    accessor: mod => mod?.default ?? mod,
+  });
+
+  if (!module && !nativeModuleLoadWarningLogged && __DEV__) {
+    console.warn('[Lottie] Failed to load lottie-react-native module. Rendering fallback instead.');
+    nativeModuleLoadWarningLogged = true;
   }
+
+  nativeLottieComponent = module ?? null;
 
   return nativeLottieComponent;
 };

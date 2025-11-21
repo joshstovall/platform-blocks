@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
 
 interface StyleConfig {
   variant: 'default' | 'testimonial' | 'featured' | 'minimal';
-  size: string;
+  size: ComponentSizeValue;
   alignment: 'left' | 'center' | 'right';
   border: boolean;
   shadow: boolean;
@@ -14,7 +15,7 @@ export const createBlockquoteStyles = (theme: PlatformBlocksTheme, config: Style
   const { variant, size, alignment, border, shadow, color } = config;
   
   // Size mappings
-  const sizeMap = {
+  const sizeMap: Partial<Record<ComponentSize, { fontSize: number; lineHeight: number; iconSize: number }>> = {
     xs: { fontSize: 14, lineHeight: 20, iconSize: 20 },
     sm: { fontSize: 16, lineHeight: 22, iconSize: 24 },
     md: { fontSize: 18, lineHeight: 26, iconSize: 28 },
@@ -22,7 +23,13 @@ export const createBlockquoteStyles = (theme: PlatformBlocksTheme, config: Style
     xl: { fontSize: 28, lineHeight: 38, iconSize: 44 },
   };
   
-  const currentSize = sizeMap[size as keyof typeof sizeMap] || sizeMap.md;
+  const currentSize = resolveComponentSize(size, sizeMap, {
+    fallback: 'md',
+    allowedSizes: ['xs', 'sm', 'md', 'lg', 'xl'],
+  });
+  const sizeTokens = typeof currentSize === 'number'
+    ? { fontSize: currentSize, lineHeight: currentSize * 1.4, iconSize: currentSize * 1.6 }
+    : currentSize ?? sizeMap.md!;
   
   // Variant-specific styles
   const variantStyles = {
@@ -89,7 +96,7 @@ export const createBlockquoteStyles = (theme: PlatformBlocksTheme, config: Style
       alignSelf: 'center',
       left: '50%',
       top: -12,
-      transform: [{ translateX: -currentSize.iconSize / 2 }],
+      transform: [{ translateX: -sizeTokens.iconSize / 2 }],
     },
     
     quoteIconTopLeft: {
@@ -99,9 +106,9 @@ export const createBlockquoteStyles = (theme: PlatformBlocksTheme, config: Style
     
     quoteText: {
       color: color || theme.text.primary,
-      fontSize: currentSize.fontSize,
+      fontSize: sizeTokens.fontSize,
       fontStyle: variant === 'featured' ? 'italic' : 'normal',
-      lineHeight: currentSize.lineHeight,
+      lineHeight: sizeTokens.lineHeight,
       textAlign: alignment,
       ...(variant === 'featured' && {
         fontWeight: '600',

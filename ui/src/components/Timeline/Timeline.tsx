@@ -1,7 +1,8 @@
 import React, { createContext, useContext, forwardRef, useState, useCallback } from 'react';
 import { View, Text, ViewStyle, TextStyle, LayoutChangeEvent } from 'react-native';
-import { TimelineProps, TimelineItemProps, TimelineContextValue } from './types';
+import { TimelineProps, TimelineItemProps, TimelineContextValue, TimelineSizeMetrics } from './types';
 import { useTheme } from '../../core/theme/ThemeProvider';
+import { clampComponentSize, resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 
 // Context
 const TimelineContext = createContext<TimelineContextValue | null>(null);
@@ -11,13 +12,41 @@ const useTimelineContext = () => {
   return ctx;
 };
 
-// Sizes
-const TIMELINE_SIZES: Record<string, { bulletSize: number; lineWidth: number; fontSize: number; spacing: number; }> = {
+const TIMELINE_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
+
+const TIMELINE_SIZE_SCALE: Record<ComponentSize, TimelineSizeMetrics> = {
   xs: { bulletSize: 16, lineWidth: 1, fontSize: 12, spacing: 8 },
   sm: { bulletSize: 20, lineWidth: 2, fontSize: 14, spacing: 12 },
   md: { bulletSize: 24, lineWidth: 2, fontSize: 16, spacing: 16 },
   lg: { bulletSize: 28, lineWidth: 3, fontSize: 18, spacing: 20 },
   xl: { bulletSize: 32, lineWidth: 3, fontSize: 20, spacing: 24 },
+  '2xl': { bulletSize: 36, lineWidth: 4, fontSize: 22, spacing: 28 },
+  '3xl': { bulletSize: 40, lineWidth: 4, fontSize: 24, spacing: 32 },
+};
+
+const BASE_TIMELINE_METRICS = TIMELINE_SIZE_SCALE.md;
+
+const resolveTimelineMetrics = (value: ComponentSizeValue): TimelineSizeMetrics => {
+  if (typeof value === 'number') {
+    const ratio = value / BASE_TIMELINE_METRICS.fontSize;
+    return {
+      fontSize: value,
+      bulletSize: Math.max(12, Math.round(BASE_TIMELINE_METRICS.bulletSize * ratio)),
+      lineWidth: Math.max(1, Math.round(BASE_TIMELINE_METRICS.lineWidth * ratio)),
+      spacing: Math.max(8, Math.round(BASE_TIMELINE_METRICS.spacing * ratio)),
+    };
+  }
+
+  const resolved = resolveComponentSize(value, TIMELINE_SIZE_SCALE, {
+    allowedSizes: TIMELINE_ALLOWED_SIZES,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return resolveTimelineMetrics(resolved);
+  }
+
+  return resolved;
 };
 
 // Token resolver (palette.shade or palette)
@@ -62,9 +91,10 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
     reverseActive,
     size,
     centerMode,
+    metrics,
   } = useTimelineContext();
 
-  const sizeConfig = TIMELINE_SIZES[size];
+  const sizeConfig = metrics;
   const finalBulletSize = contextBulletSize || sizeConfig.bulletSize;
   const showAllColored = timelineActive === undefined;
   const [patternHeight, setPatternHeight] = useState(0);
@@ -191,9 +221,9 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
 
   const getContentStyle = (): ViewStyle => ({
     flex: 1,
-    marginLeft: effectiveAlign === 'right' ? 0 : sizeConfig.spacing,
-    marginRight: effectiveAlign === 'right' ? sizeConfig.spacing : 0,
-    paddingBottom: sizeConfig.spacing * 2,
+  marginLeft: effectiveAlign === 'right' ? 0 : sizeConfig.spacing,
+  marginRight: effectiveAlign === 'right' ? sizeConfig.spacing : 0,
+  paddingBottom: sizeConfig.spacing * 2,
     alignItems: effectiveAlign === 'right' ? 'flex-end' : 'flex-start',
   });
 
@@ -211,7 +241,7 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
         flexDirection: 'row',
         position: 'relative',
         alignItems: 'stretch',
-        width: '100%',
+      width: '100%',
       } as ViewStyle;
     }
     return {
@@ -247,7 +277,7 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
     return (
       <View ref={ref} style={getItemWrapperStyle()} {...rest}>
         {/* Left content placeholder */}
-        <View style={{ flex: 1, paddingRight: sizeConfig.spacing, alignItems: 'flex-end' }}>
+  <View style={{ flex: 1, paddingRight: sizeConfig.spacing, alignItems: 'flex-end' }}>
           {leftContent && (
             <View style={{ width: '100%', alignItems: 'flex-end' }}>
               {title && <Text style={[getTitleStyle(), { textAlign: 'right' }]}>{title}</Text>}
@@ -256,12 +286,12 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
           )}
         </View>
         {/* Bullet & line column */}
-        <View style={{ width: finalBulletSize, alignItems: 'center', position: 'relative' }}>
+  <View style={{ width: finalBulletSize, alignItems: 'center', position: 'relative' }}>
           {getLine()}
           <View style={getBulletStyle()}>{bullet}</View>
         </View>
         {/* Right content placeholder */}
-        <View style={{ flex: 1, paddingLeft: sizeConfig.spacing, alignItems: 'flex-start' }}>
+  <View style={{ flex: 1, paddingLeft: sizeConfig.spacing, alignItems: 'flex-start' }}>
           {rightContent && (
             <View style={{ width: '100%', alignItems: 'flex-start' }}>
               {title && <Text style={[getTitleStyle(), { textAlign: 'left' }]}>{title}</Text>}
@@ -302,18 +332,28 @@ const Timeline = forwardRef<View, TimelineProps>(({
   ...rest
 }, ref) => {
   const theme = useTheme();
-  const sizeConfig = TIMELINE_SIZES[size];
+  const clampedSize = clampComponentSize(size, TIMELINE_ALLOWED_SIZES);
+  const baseMetrics = resolveTimelineMetrics(clampedSize);
 
   const resolvedTimelineColor = color || resolveTokenColor(colorVariant, theme) || theme.colors.primary[5];
+
+  const effectiveLineWidth = lineWidth ?? baseMetrics.lineWidth;
+  const effectiveBulletSize = bulletSize ?? baseMetrics.bulletSize;
+  const metrics: TimelineSizeMetrics = {
+    ...baseMetrics,
+    lineWidth: effectiveLineWidth,
+    bulletSize: effectiveBulletSize,
+  };
 
   const contextValue: TimelineContextValue = {
     active,
     color: resolvedTimelineColor,
-    lineWidth: lineWidth || sizeConfig.lineWidth,
-    bulletSize: bulletSize || sizeConfig.bulletSize,
+    lineWidth: effectiveLineWidth,
+    bulletSize: effectiveBulletSize,
     align,
     reverseActive,
-    size,
+    size: clampedSize,
+    metrics,
     centerMode,
   };
 

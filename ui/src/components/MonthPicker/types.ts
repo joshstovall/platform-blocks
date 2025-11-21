@@ -1,4 +1,4 @@
-import type { SizeValue } from '../../core/theme/types';
+import type { ComponentSizeValue } from '../../core/theme/componentSize';
 import type { ResponsiveProp } from '../../core/theme/breakpoints';
 
 export interface MonthPickerProps {
@@ -17,7 +17,7 @@ export interface MonthPickerProps {
   /** Locale used for month labels */
   locale?: string;
   /** Size token that influences typography weight */
-  size?: SizeValue;
+  size?: ComponentSizeValue;
   /** Format of month labels */
   monthLabelFormat?: 'short' | 'long';
   /** Hide navigation header (used when embedded in Calendar) */

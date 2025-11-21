@@ -88,6 +88,14 @@ const radioOptions = [
   { label: 'Large', value: 'large', description: 'Maximum size' },
 ];
 
+const focusIds = {
+  basicInput: 'playground-basic-input',
+  password: 'playground-password-input',
+  number: 'playground-number-input',
+  pin: 'playground-pin-input',
+  phone: 'playground-phone-input',
+};
+
 export function InputPlayground() {
   const [state, setState] = React.useState<FormState>(initialState);
   const [showValues, setShowValues] = React.useState(false);
@@ -139,6 +147,7 @@ export function InputPlayground() {
                 description="Standard text input field"
                 fullWidth
                 clearable
+                keyboardFocusId={focusIds.basicInput}
               />
 
               <PasswordInput
@@ -149,6 +158,7 @@ export function InputPlayground() {
                 description="Secure password input with toggle visibility"
                 clearable
                 fullWidth
+                keyboardFocusId={focusIds.password}
               />
 
               <NumberInput
@@ -161,6 +171,7 @@ export function InputPlayground() {
                 step={10}
                 description="Numeric input with validation"
                 fullWidth
+                keyboardFocusId={focusIds.number}
               />
 
               <PinInput
@@ -169,6 +180,7 @@ export function InputPlayground() {
                 value={state.pin}
                 onChange={(value) => updateState('pin', value)}
                 description="Secure PIN entry with individual digits"
+                keyboardFocusId={focusIds.pin}
               />
 
               <PhoneInput
@@ -181,6 +193,7 @@ export function InputPlayground() {
                 mask="(000) 000-0000"
                 clearable
                 description="Custom mask formatting - try typing a phone number!"
+                keyboardFocusId={focusIds.phone}
               />
 
               {showValues && (

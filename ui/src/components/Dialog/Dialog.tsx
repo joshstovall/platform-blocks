@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, ReactNode } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Modal,
   StyleSheet,
   Pressable,
   PanResponder,
-  Dimensions,
   Platform,
   BackHandler,
   useWindowDimensions,
@@ -17,6 +16,7 @@ import Animated, {
   withSpring,
   Easing,
   interpolate,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../Text/Text';
@@ -25,7 +25,6 @@ import { Icon } from '../Icon';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useDirection } from '../../core/providers/DirectionProvider';
 import { DialogProps } from './types';
-import { Flex } from '../Flex/Flex';
 import { useEscapeKey } from '../../hooks/useHotkeys';
 
 // Safe wrapper for useSafeAreaInsets that handles cases where SafeAreaProvider is not available
@@ -50,7 +49,8 @@ export function Dialog({
   onClose,
   width,
   height,
-  style
+  style,
+  bottomSheetSwipeZone = 'container',
 }: DialogProps) {
   const theme = useTheme();
   const { isRTL } = useDirection();
@@ -66,6 +66,10 @@ export function Dialog({
     width ? width : (isNativePlatform ? 720 : Math.min(600, screenWidth - horizontalMargin)),
     screenWidth,
   );
+
+  const invokeOnClose = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
   
   // Reanimated shared values
   const backdropOpacity = useSharedValue(0);
@@ -83,23 +87,23 @@ export function Dialog({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => {
-        // Always allow the bottom sheet to become responder on touch start (native needs this)
-        return variant === 'bottomsheet';
+        // Only allow responder when swipe gestures are enabled for bottom sheet
+        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
       },
       onStartShouldSetPanResponderCapture: () => {
         // Capture immediately for bottom sheet to ensure gesture responsiveness on native
-        return variant === 'bottomsheet';
+        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
       },
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // Allow movement in any direction but prioritize downward movement
-        return variant === 'bottomsheet' && (
+        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none' && (
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && 
           Math.abs(gestureState.dy) > 2
         );
       },
       onMoveShouldSetPanResponderCapture: () => {
         // Already captured on start; keep returning true for consistency
-        return variant === 'bottomsheet';
+        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
       },
       onPanResponderGrant: (evt) => {
         // Prevent default browser behavior (text selection, etc.) on web
@@ -119,7 +123,7 @@ export function Dialog({
         }
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (variant === 'bottomsheet') {
+        if (variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none') {
           // Prevent text selection during fast movements on web
           if (Platform.OS === 'web') {
             const event = evt.nativeEvent as any;
@@ -145,7 +149,7 @@ export function Dialog({
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (variant === 'bottomsheet') {
+        if (variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none') {
           const dragDistance = gestureState.dy;
           const velocity = gestureState.vy;
           
@@ -167,7 +171,7 @@ export function Dialog({
             }, (finished) => {
               'worklet';
               if (finished) {
-                onClose?.();
+                runOnJS(invokeOnClose)();
               }
             });
             
@@ -189,7 +193,7 @@ export function Dialog({
       },
       onPanResponderTerminate: () => {
         // If gesture is interrupted, snap back with enhanced spring
-        if (variant === 'bottomsheet') {
+        if (variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none') {
           slideAnim.value = withSpring(0, {
             damping: 25,
             stiffness: 280,
@@ -218,7 +222,7 @@ export function Dialog({
       }, (finished) => {
         'worklet';
         if (finished) {
-          onClose?.();
+          runOnJS(invokeOnClose)();
         }
       });
     } else if (variant === 'bottomsheet') {
@@ -230,14 +234,12 @@ export function Dialog({
       }, (finished) => {
         'worklet';
         if (finished) {
-          onClose?.();
+          runOnJS(invokeOnClose)();
         }
       });
     } else {
       // For fullscreen, just call onClose after backdrop animation
-      setTimeout(() => {
-        onClose?.();
-      }, 250);
+      setTimeout(invokeOnClose, 250);
     }
   };
 
@@ -453,6 +455,8 @@ export function Dialog({
   const renderContent = () => {
     let animatedStyle: any = {};
     
+    const panHandlers = bottomSheetSwipeZone !== 'none' ? panResponder.panHandlers : undefined;
+
     if (variant === 'modal') {
       animatedStyle = modalAnimatedStyle;
     } else if (variant === 'bottomsheet') {
@@ -462,10 +466,13 @@ export function Dialog({
     return (
       <Animated.View
         style={[dynamicStyles.modalContainer, animatedStyle]}
-        {...(variant === 'bottomsheet' ? panResponder.panHandlers : {})}
+        {...(variant === 'bottomsheet' && bottomSheetSwipeZone === 'container' && panHandlers ? panHandlers : {})}
       >
         {variant === 'bottomsheet' && (
-          <View style={dynamicStyles.dragHandleContainer}>
+          <View
+            style={dynamicStyles.dragHandleContainer}
+            {...(bottomSheetSwipeZone === 'handle' && panHandlers ? panHandlers : {})}
+          >
             <View style={dynamicStyles.dragHandle} />
           </View>
         )}

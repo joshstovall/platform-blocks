@@ -2,17 +2,16 @@ import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState, us
 import { View, StyleSheet, ViewStyle, ImageStyle, Platform } from 'react-native';
 import { Image } from '../Image';
 import { Text } from '../Text';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import type { VideoSource, VideoPlaybackRate, VideoQuality } from './types';
 
 // Platform-specific imports
-let WebView: any = null;
-try {
-  // Try to import WebView for React Native
-  WebView = require('react-native-webview').WebView;
-} catch (error) {
-  // WebView not available
-  console.warn('react-native-webview not found. YouTube videos will only work on web platform.');
-}
+const WebView = Platform.OS !== 'web'
+  ? resolveOptionalModule<any>('react-native-webview', {
+      accessor: module => module.WebView,
+      devWarning: 'react-native-webview not found. YouTube videos will only work on web platform.',
+    })
+  : null;
 
 interface YouTubePlayerProps {
   source: VideoSource;

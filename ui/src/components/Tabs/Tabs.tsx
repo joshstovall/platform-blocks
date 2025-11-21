@@ -801,7 +801,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
                     </View>
                   )}
 
-                  <Flex gap={6} align="center">
+                  <Flex gap={6} align="center" direction={isVertical ? 'column' : 'row'}>
                     <Text
                       style={[
                         styles.tabText,

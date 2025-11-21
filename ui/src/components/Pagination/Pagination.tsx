@@ -1,12 +1,79 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Text } from '../Text';
 import { Icon } from '../Icon';
-import { PaginationProps } from './types';
+import { PaginationProps, type PaginationMetrics } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
+import { getComponentSize } from '../../core/theme/unified-sizing';
+
+const PAGINATION_ALLOWED_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+const PAGINATION_ALLOWED_SIZES_ARRAY: ComponentSize[] = [...PAGINATION_ALLOWED_SIZES];
+
+const MIN_PAGINATION_METRICS = {
+  height: 24,
+  minWidth: 20,
+  paddingHorizontal: 4,
+  fontSize: 10,
+  iconSize: 10,
+  borderRadius: 4,
+} as const;
+
+function createMetricsForToken(size: ComponentSize): PaginationMetrics {
+  const config = getComponentSize(size);
+
+  return {
+    height: config.height,
+    minWidth: Math.max(MIN_PAGINATION_METRICS.minWidth, Math.round(config.height * 0.9)),
+    paddingHorizontal: Math.max(MIN_PAGINATION_METRICS.paddingHorizontal, Math.round(config.padding * 0.8)),
+    fontSize: Math.max(MIN_PAGINATION_METRICS.fontSize, config.fontSize),
+    iconSize: Math.max(MIN_PAGINATION_METRICS.iconSize, config.iconSize),
+    borderRadius: Math.max(MIN_PAGINATION_METRICS.borderRadius, config.borderRadius),
+  };
+}
+
+const PAGINATION_SIZE_SCALE: Partial<Record<ComponentSize, PaginationMetrics>> = {
+  xs: createMetricsForToken('xs'),
+  sm: createMetricsForToken('sm'),
+  md: createMetricsForToken('md'),
+  lg: createMetricsForToken('lg'),
+  xl: createMetricsForToken('xl'),
+  '2xl': createMetricsForToken('2xl'),
+  '3xl': createMetricsForToken('3xl'),
+};
+
+const BASE_PAGINATION_METRICS: PaginationMetrics = PAGINATION_SIZE_SCALE.md ?? createMetricsForToken('md');
+
+function resolvePaginationMetrics(value: ComponentSizeValue | undefined): PaginationMetrics {
+  const resolved = resolveComponentSize(value, PAGINATION_SIZE_SCALE, {
+    allowedSizes: PAGINATION_ALLOWED_SIZES_ARRAY,
+    fallback: 'md',
+  });
+
+  if (typeof resolved === 'number') {
+    return calculateNumericMetrics(resolved);
+  }
+
+  return resolved;
+}
+
+function calculateNumericMetrics(height: number): PaginationMetrics {
+  const normalizedHeight = Math.max(MIN_PAGINATION_METRICS.height, Math.round(height));
+  const scale = normalizedHeight / BASE_PAGINATION_METRICS.height;
+  const scaleMetric = (base: number, minimum: number) => Math.max(minimum, Math.round(base * scale));
+
+  return {
+    height: normalizedHeight,
+    minWidth: scaleMetric(BASE_PAGINATION_METRICS.minWidth, MIN_PAGINATION_METRICS.minWidth),
+    paddingHorizontal: scaleMetric(BASE_PAGINATION_METRICS.paddingHorizontal, MIN_PAGINATION_METRICS.paddingHorizontal),
+    fontSize: scaleMetric(BASE_PAGINATION_METRICS.fontSize, MIN_PAGINATION_METRICS.fontSize),
+    iconSize: scaleMetric(BASE_PAGINATION_METRICS.iconSize, MIN_PAGINATION_METRICS.iconSize),
+    borderRadius: scaleMetric(BASE_PAGINATION_METRICS.borderRadius, MIN_PAGINATION_METRICS.borderRadius),
+  };
+}
 
 export const Pagination = factory<{
   props: PaginationProps;
@@ -44,6 +111,7 @@ export const Pagination = factory<{
   const { isRTL } = useDirection();
   const { spacingProps, otherProps } = extractSpacingProps(rest);
   const spacingStyle = getSpacingStyles(spacingProps);
+  const sizeMetrics = useMemo(() => resolvePaginationMetrics(size), [size]);
 
   if (hideOnSinglePage && total <= 1) {
     return null;
@@ -91,28 +159,15 @@ export const Pagination = factory<{
 
   const pages = generatePageNumbers();
 
-  // Size-based styles
-  const getSizeStyles = () => {
-    const sizeMap = {
-      xs: { fontSize: 12, height: 28, minWidth: 28, padding: 6, iconSize: 12 },
-      sm: { fontSize: 14, height: 32, minWidth: 32, padding: 8, iconSize: 14 },
-      md: { fontSize: 16, height: 36, minWidth: 36, padding: 10, iconSize: 16 },
-      lg: { fontSize: 18, height: 40, minWidth: 40, padding: 12, iconSize: 18 },
-    };
-    return sizeMap[size];
-  };
-
-  const sizeStyles = getSizeStyles();
-
   // Get button styles based on variant and state
   const getButtonStyles = (isActive: boolean, isDisabled: boolean) => {
     const baseStyle = {
-      height: sizeStyles.height,
-      minWidth: sizeStyles.minWidth,
-      paddingHorizontal: sizeStyles.padding,
+      height: sizeMetrics.height,
+      minWidth: sizeMetrics.minWidth,
+      paddingHorizontal: sizeMetrics.paddingHorizontal,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      borderRadius: 6,
+      borderRadius: sizeMetrics.borderRadius,
       marginHorizontal: 2,
     };
 
@@ -213,7 +268,7 @@ export const Pagination = factory<{
           <Text
             style={[
               {
-                fontSize: sizeStyles.fontSize,
+                fontSize: sizeMetrics.fontSize,
                 color: textColor,
                 fontWeight: isActive ? '600' : '400',
               },
@@ -236,8 +291,8 @@ export const Pagination = factory<{
         <View
           key={`ellipsis-${index}`}
           style={{
-            height: sizeStyles.height,
-            minWidth: sizeStyles.minWidth,
+            height: sizeMetrics.height,
+            minWidth: sizeMetrics.minWidth,
             justifyContent: 'center',
             alignItems: 'center',
             marginHorizontal: 2,
@@ -245,7 +300,7 @@ export const Pagination = factory<{
         >
           <Text
             style={{
-              fontSize: sizeStyles.fontSize,
+              fontSize: sizeMetrics.fontSize,
               color: theme.text.muted,
             }}
           >
@@ -282,7 +337,7 @@ export const Pagination = factory<{
       <View style={isRTL ? { marginLeft: 16 } : { marginRight: 16 }}>
         <Text
           style={{
-            fontSize: sizeStyles.fontSize,
+            fontSize: sizeMetrics.fontSize,
             color: theme.text.secondary,
           }}
         >
@@ -309,7 +364,7 @@ export const Pagination = factory<{
       {renderTotal()}
       
       {showFirst && renderButton(
-        labels.first || <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={sizeStyles.iconSize} />,
+        labels.first || <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={sizeMetrics.iconSize} />,
         () => onChange(1),
         false,
         current === 1,
@@ -317,7 +372,7 @@ export const Pagination = factory<{
       )}
 
       {showPrevNext && renderButton(
-        labels.previous || <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={sizeStyles.iconSize} />,
+        labels.previous || <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={sizeMetrics.iconSize} />,
         () => onChange(current - 1),
         false,
         current === 1,
@@ -327,7 +382,7 @@ export const Pagination = factory<{
       {pages.map((page, index) => renderPageButton(page, index))}
 
       {showPrevNext && renderButton(
-        labels.next || <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={sizeStyles.iconSize} />,
+        labels.next || <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={sizeMetrics.iconSize} />,
         () => onChange(current + 1),
         false,
         current === total,
@@ -335,7 +390,7 @@ export const Pagination = factory<{
       )}
 
       {showFirst && renderButton(
-        labels.last || <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={sizeStyles.iconSize} />,
+        labels.last || <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={sizeMetrics.iconSize} />,
         () => onChange(total),
         false,
         current === total,

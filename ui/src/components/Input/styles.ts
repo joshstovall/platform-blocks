@@ -1,11 +1,11 @@
 import { StyleSheet } from 'react-native';
-import { PlatformBlocksTheme, SizeValue } from '../../core/theme/types';
+import { PlatformBlocksTheme, SizeToken, SizeValue } from '../../core/theme/types';
 import { InputStyleProps } from './types';
 import { px } from '../../core/utils';
 
 export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = false) => {
   const getSizeStyles = (size: SizeValue) => {
-    const sizeMap = {
+    const sizeMap: Record<SizeToken, { fontSize: number; padding: number; minHeight: number }> = {
       xs: {
         fontSize: px(theme.fontSizes.xs),
         padding: px(theme.spacing.xs),
@@ -42,6 +42,14 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         minHeight: 56
       }
     };
+    if (typeof size === 'number') {
+      const base = Math.max(24, size);
+      return {
+        fontSize: base,
+        padding: Math.max(8, Math.round(base * 0.4)),
+        minHeight: Math.max(base + 8, 32),
+      };
+    }
     return sizeMap[size] || sizeMap.md;
   };
 

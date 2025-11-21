@@ -169,7 +169,12 @@ const RAW_CHART_DOCS: RawChartDoc[] = [
     category: 'comparison',
     tags: ['categorical', 'grouped', 'multi-series'],
     packageName: '@platform-blocks/charts',
-    demoIds: ['GroupedBarChart.basic'],
+    demoIds: [
+      'MarimekkoChart.basic',
+      'MarimekkoChart.product-portfolio',
+      'MarimekkoChart.regional-mix',
+      'MarimekkoChart.budget-allocation',
+    ],
     related: ['BarChart', 'StackedBarChart'],
     sourcePath: 'charts/src/components/GroupedBarChart',
     resources: [
@@ -184,7 +189,12 @@ const RAW_CHART_DOCS: RawChartDoc[] = [
     category: 'composition',
     tags: ['categorical', 'stacked', 'composition'],
     packageName: '@platform-blocks/charts',
-    demoIds: ['StackedBarChart.basic'],
+    demoIds: [
+      'ParetoChart.basic',
+      'ParetoChart.customer-support-hotspots',
+      'ParetoChart.revenue-concentration',
+      'ParetoChart.incident-root-causes',
+    ],
     related: ['BarChart', 'StackedAreaChart'],
     sourcePath: 'charts/src/components/StackedBarChart',
     resources: [
@@ -428,6 +438,36 @@ const RAW_CHART_DOCS: RawChartDoc[] = [
       { label: 'Investopedia – Candlestick Charting Basics', href: 'https://www.investopedia.com/trading/candlestick-charting-what-is-it/' },
     ],
   },
+  {
+    slug: 'MarimekkoChart',
+    title: 'Marimekko Chart',
+    summary: 'Two-dimensional stacked chart for visualising categorical data across dual axes.',
+    icon: 'chart-bar',
+    category: 'composition',
+    tags: ['categorical', 'stacked', 'dual-axis'],
+    packageName: '@platform-blocks/charts',
+    demoIds: ['MarimekkoChart.basic'],
+    related: ['StackedBarChart', 'GroupedBarChart'],  
+    sourcePath: 'charts/src/components/MarimekkoChart',
+    resources: [
+      { label: 'Data Viz Catalogue – Marimekko Chart', href: 'https://datavizcatalogue.com/methods/marimekko_chart.html' },
+    ],
+  },
+  {
+    slug: 'ParetoChart',
+    title: 'Pareto Chart',
+    summary: 'Combination of bars and a line to highlight the most significant factors in a dataset.',
+    icon: 'chart-bar',
+    category: 'comparison',
+    tags: ['categorical', 'cumulative', 'dual-axis'],
+    packageName: '@platform-blocks/charts',
+    demoIds: ['ParetoChart.basic'],
+    related: ['BarChart', 'ComboChart'],  
+    sourcePath: 'charts/src/components/ParetoChart',
+    resources: [
+      { label: 'Data Viz Catalogue – Pareto Chart', href: 'https://datavizcatalogue.com/methods/pareto_chart.html' },
+    ],  
+  }
 ];
 
 export const CHART_DOCS: ChartDocEntry[] = RAW_CHART_DOCS.map((entry) => ({

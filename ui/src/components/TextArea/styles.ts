@@ -3,6 +3,7 @@ import { createInputStyles } from '../Input/styles';
 import { TextAreaProps } from './types';
 import { PlatformBlocksTheme, SizeValue } from '../../core/theme/types';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
+import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
 
 interface TextAreaStyleProps {
   size: SizeValue;
@@ -16,51 +17,57 @@ export const useTextAreaStyles = (props: TextAreaProps & { theme: PlatformBlocks
   const { theme } = props;
   
   const getSizeStyles = (size: SizeValue, rows: number = 3) => {
-    const sizeMap = {
-      xs: { 
-        fontSize: DESIGN_TOKENS.typography.fontSize.xs, 
-        padding: DESIGN_TOKENS.spacing.xs, 
-        minHeight: 32 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight.xs
-      },
-      sm: { 
-        fontSize: DESIGN_TOKENS.typography.fontSize.sm, 
-        padding: DESIGN_TOKENS.spacing.sm, 
-        minHeight: 36 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight.sm
-      },
-      md: { 
-        fontSize: DESIGN_TOKENS.typography.fontSize.md, 
-        padding: DESIGN_TOKENS.spacing.md, 
-        minHeight: 40 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight.md
-      },
-      lg: { 
-        fontSize: DESIGN_TOKENS.typography.fontSize.lg, 
-        padding: DESIGN_TOKENS.spacing.lg, 
-        minHeight: 44 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight.lg
-      },
-      xl: { 
-        fontSize: DESIGN_TOKENS.typography.fontSize.xl, 
-        padding: DESIGN_TOKENS.spacing.xl, 
-        minHeight: 48 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight.xl
-      },
-      '2xl': { 
-        fontSize: DESIGN_TOKENS.typography.fontSize['2xl'], 
-        padding: DESIGN_TOKENS.spacing['2xl'], 
-        minHeight: 52 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight['2xl']
-      },
-      '3xl': { 
-        fontSize: DESIGN_TOKENS.typography.fontSize['3xl'], 
-        padding: DESIGN_TOKENS.spacing['3xl'], 
-        minHeight: 56 * rows,
-        lineHeight: DESIGN_TOKENS.typography.lineHeight['3xl']
-      }
+    const fontSizeMap: Partial<Record<ComponentSize, number>> = {
+      xs: DESIGN_TOKENS.typography.fontSize.xs,
+      sm: DESIGN_TOKENS.typography.fontSize.sm,
+      md: DESIGN_TOKENS.typography.fontSize.md,
+      lg: DESIGN_TOKENS.typography.fontSize.lg,
+      xl: DESIGN_TOKENS.typography.fontSize.xl,
+      '2xl': DESIGN_TOKENS.typography.fontSize['2xl'],
+      '3xl': DESIGN_TOKENS.typography.fontSize['3xl'],
     };
-    return sizeMap[size] || sizeMap.md;
+
+    const paddingMap: Partial<Record<ComponentSize, number>> = {
+      xs: DESIGN_TOKENS.spacing.xs,
+      sm: DESIGN_TOKENS.spacing.sm,
+      md: DESIGN_TOKENS.spacing.md,
+      lg: DESIGN_TOKENS.spacing.lg,
+      xl: DESIGN_TOKENS.spacing.xl,
+      '2xl': DESIGN_TOKENS.spacing['2xl'],
+      '3xl': DESIGN_TOKENS.spacing['3xl'],
+    };
+
+    const minHeightMap: Partial<Record<ComponentSize, number>> = {
+      xs: 32,
+      sm: 36,
+      md: 40,
+      lg: 44,
+      xl: 48,
+      '2xl': 52,
+      '3xl': 56,
+    };
+
+    const lineHeightMap: Partial<Record<ComponentSize, number>> = {
+      xs: DESIGN_TOKENS.typography.lineHeight.xs,
+      sm: DESIGN_TOKENS.typography.lineHeight.sm,
+      md: DESIGN_TOKENS.typography.lineHeight.md,
+      lg: DESIGN_TOKENS.typography.lineHeight.lg,
+      xl: DESIGN_TOKENS.typography.lineHeight.xl,
+      '2xl': DESIGN_TOKENS.typography.lineHeight['2xl'],
+      '3xl': DESIGN_TOKENS.typography.lineHeight['3xl'],
+    };
+
+    const fontSize = resolveComponentSize(size, fontSizeMap, { fallback: 'md' });
+    const padding = resolveComponentSize(size, paddingMap, { fallback: 'md' });
+    const minHeight = resolveComponentSize(size, minHeightMap, { fallback: 'md' });
+    const lineHeight = resolveComponentSize(size, lineHeightMap, { fallback: 'md' });
+
+    return {
+      fontSize: typeof fontSize === 'number' ? fontSize : fontSizeMap.md!,
+      padding: typeof padding === 'number' ? padding : paddingMap.md!,
+      minHeight: (typeof minHeight === 'number' ? minHeight : minHeightMap.md!) * rows,
+      lineHeight: typeof lineHeight === 'number' ? lineHeight : lineHeightMap.md!,
+    };
   };
 
   const getTextAreaStyles = (styleProps: TextAreaStyleProps) => {

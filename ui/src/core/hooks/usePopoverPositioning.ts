@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Platform, Dimensions } from 'react-native';
 import { 
   calculateOverlayPositionEnhanced, 
@@ -8,12 +8,15 @@ import {
   type PositioningOptions,
   type Rect 
 } from '../utils/positioning-enhanced';
+import { useKeyboardManagerOptional } from '../providers/KeyboardManagerProvider';
 
 export interface UsePopoverPositioningOptions extends PositioningOptions {
   /** Whether to automatically reposition on window resize */
   autoUpdate?: boolean;
   /** Debounce delay for resize/scroll updates in ms */
   updateDelay?: number;
+  /** Adjust viewport height when on-screen keyboard is visible (default: true) */
+  keyboardAvoidance?: boolean;
 }
 
 export interface UsePopoverPositioningReturn {
@@ -39,6 +42,7 @@ export function usePopoverPositioning(
   const {
     autoUpdate = true,
     updateDelay = 100,
+    keyboardAvoidance = true,
     ...positioningOptions
   } = options;
 
@@ -49,9 +53,31 @@ export function usePopoverPositioning(
   const popoverRef = useRef<any>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const positioningOptionsRef = useRef(positioningOptions);
-  
+
+  const keyboardManager = useKeyboardManagerOptional();
+
+  const computedPositioningOptions = useMemo(() => {
+    if (!keyboardAvoidance || !keyboardManager?.isKeyboardVisible) {
+      return positioningOptions;
+    }
+
+    const baseViewport = positioningOptions.viewport ?? getViewport();
+    const adjustedHeight = Math.max(0, baseViewport.height - keyboardManager.keyboardHeight);
+
+    // If keyboard consumes entire viewport, fall back to minimal height to avoid zero-sized calculations
+    const safeHeight = adjustedHeight > 0 ? adjustedHeight : 1;
+
+    return {
+      ...positioningOptions,
+      viewport: {
+        ...baseViewport,
+        height: safeHeight,
+      },
+    } satisfies PositioningOptions;
+  }, [keyboardAvoidance, keyboardManager?.isKeyboardVisible, keyboardManager?.keyboardHeight, positioningOptions]);
+
   // Update the ref when positioning options change
-  positioningOptionsRef.current = positioningOptions;
+  positioningOptionsRef.current = computedPositioningOptions;
 
   const updatePosition = useCallback(async () => {
     if (!isOpen || !anchorRef.current) {
@@ -114,12 +140,23 @@ export function usePopoverPositioning(
     }
   }, [isOpen]);
 
+  const optionsSignature = useMemo(() => JSON.stringify(computedPositioningOptions), [computedPositioningOptions]);
+  const lastSignatureRef = useRef<string | null>(null);
+
   // Update position when positioning options change (if already open)
   useEffect(() => {
-    if (isOpen) {
-      debouncedUpdate();
+    if (!isOpen) {
+      lastSignatureRef.current = null;
+      return;
     }
-  }, [positioningOptions, isOpen]);
+
+    if (lastSignatureRef.current === optionsSignature) {
+      return;
+    }
+
+    lastSignatureRef.current = optionsSignature;
+    debouncedUpdate();
+  }, [isOpen, optionsSignature, debouncedUpdate]);
 
   // Auto-update on window resize/orientation change
   useEffect(() => {
@@ -186,25 +223,5 @@ export function useTooltipPositioning(
     offset: 8,
     autoUpdate: true,
     updateDelay: 50, // Faster updates for tooltips
-  });
-}
-
-/**
- * Hook for managing dropdown/menu positioning
- * (optimized for dropdown behavior)
- */
-export function useDropdownPositioning(
-  isOpen: boolean,
-  placement: PositioningOptions['placement'] = 'auto'
-) {
-  return usePopoverPositioning(isOpen, {
-    placement,
-    flip: true,
-    shift: true,
-    boundary: 12,
-    offset: 4,
-    autoUpdate: true,
-    // Prefer top fallbacks first to avoid covering the input when near the bottom
-    fallbackPlacements: ['top-start', 'top-end', 'top', 'bottom-start', 'bottom-end', 'bottom'],
   });
 }

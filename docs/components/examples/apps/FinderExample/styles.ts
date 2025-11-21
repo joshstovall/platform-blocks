@@ -2,10 +2,11 @@ import { StyleSheet } from 'react-native';
 
 export const finderStyles = StyleSheet.create({
   window: {
-    borderRadius: 10,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)'
+    borderColor: 'rgba(0,0,0,0.1)',
+    flex: 1,
   },
   titleBar: {
     height: 32,
@@ -24,8 +25,12 @@ export const finderStyles = StyleSheet.create({
   },
   layout: {
     flexDirection: 'row',
-    height: 420,
+    flex: 1,
+    minHeight: 420,
     backgroundColor: '#f8f9fa'
+  },
+  layoutMobile: {
+    flexDirection: 'column',
   },
   sidebar: {
     width: 170,
@@ -34,6 +39,15 @@ export const finderStyles = StyleSheet.create({
     padding: 8,
     gap: 4,
     backgroundColor: '#f1f3f5'
+  },
+  sidebarMobile: {
+    width: '100%',
+    borderRightWidth: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   sidebarSectionTitle: {
     fontSize: 11,
@@ -47,6 +61,9 @@ export const finderStyles = StyleSheet.create({
     padding: 12,
     gap: 6,
   },
+  filePaneMobile: {
+    padding: 12,
+  },
   breadcrumb: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,6 +75,9 @@ export const finderStyles = StyleSheet.create({
     flexDirection: 'column',
     flexWrap: 'nowrap',
     gap: 2
+  },
+  fileGridMobile: {
+    gap: 4,
   },
   fileRow: {
     flexDirection: 'row',
@@ -78,6 +98,22 @@ export const finderStyles = StyleSheet.create({
     padding: 12,
     gap: 8,
     backgroundColor: '#ffffff'
+  },
+  previewPaneMobile: {
+    width: '100%',
+    borderLeftWidth: 0,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  footerMobile: {
+    position: 'relative',
+    right: 0,
   },
   previewTitle: {
     fontSize: 14,

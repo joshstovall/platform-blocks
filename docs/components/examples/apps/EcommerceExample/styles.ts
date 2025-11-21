@@ -16,6 +16,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
+  headerBarMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingVertical: 16
+  },
   brand: {
     fontSize: 18,
     fontWeight: '700'
@@ -23,6 +29,11 @@ export const styles = StyleSheet.create({
   searchBarLarge: {
     flex: 1,
     marginHorizontal: 16
+  },
+  searchBarMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+    marginTop: 8
   },
   categoryBar: {
     paddingHorizontal: 12,
@@ -65,9 +76,19 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%'
   },
+  mainContentColumn: {
+    flexDirection: 'column'
+  },
   filtersColumn: {
     width: 180,
-    paddingRight: 16
+    paddingRight: 16,
+    marginRight: 24,
+    flexShrink: 0
+  },
+  accountActionsMobile: {
+    width: '100%',
+    justifyContent: 'space-between',
+    marginTop: 8
   },
   productsGrid: {
     flexDirection: 'row',
@@ -116,6 +137,10 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 20,
     borderRadius: 12
+  },
+  heroMobile: {
+    marginHorizontal: 12,
+    padding: 16
   },
   emptyState: {
     padding: 40,

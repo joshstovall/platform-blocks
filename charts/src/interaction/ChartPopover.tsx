@@ -1,9 +1,4 @@
 import React from 'react';
-// Lazy portal import to avoid RN native crash
-let ReactDOM: any = null;
-if (typeof document !== 'undefined') {
-  try { ReactDOM = require('react-dom'); } catch { }
-}
 import { View, Text, Animated, I18nManager } from 'react-native';
 import { useChartTheme } from '../theme/ChartThemeContext';
 import { useChartInteractionContext } from '../interaction/ChartInteractionContext';
@@ -30,6 +25,23 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   const { config, pointer: interactionPointer, rootOffset, crosshair, series: registeredSeries } = useChartInteractionContext() as any;
   const { entries, anchorPixelX } = useTooltipAggregator();
   const isRTL = I18nManager.isRTL;
+  const [reactDomModule, setReactDomModule] = React.useState<typeof import('react-dom') | null>(() => null);
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const mod = await import('react-dom');
+        if (!cancelled) setReactDomModule(mod);
+      } catch {
+        if (!cancelled) setReactDomModule(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Smooth animated position (lerp towards target)
   const animX = React.useRef(new Animated.Value(0)).current;
@@ -60,7 +72,7 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   const explicitlyOutside = interactionPointer?.inside === false;
   const shouldShow = !explicitlyOutside && (wantMulti || wantLive);
 
-  const usePortal = !!(typeof document !== 'undefined' && ReactDOM && (config.popoverPortal ?? true));
+  const usePortal = !!(typeof document !== 'undefined' && reactDomModule && (config.popoverPortal ?? true));
 
   // Compute raw target position (portal uses page coordinates, non-portal uses local container coordinates)
   let rawLeft = 0; let rawTop = 0;
@@ -398,8 +410,8 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
     </Animated.View>
   );
 
-  if (usePortal && ReactDOM?.createPortal) {
-    return ReactDOM.createPortal(body, document.body);
+  if (usePortal && reactDomModule?.createPortal) {
+    return reactDomModule.createPortal(body, document.body);
   }
   return body;
 };

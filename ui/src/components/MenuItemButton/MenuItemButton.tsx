@@ -6,6 +6,9 @@ import { Text } from '../Text';
 import { useTheme } from '../../core/theme';
 import { getSpacingStyles, extractSpacingProps, SpacingProps } from '../../core/utils';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
+import { getComponentSize } from '../../core/theme/unified-sizing';
+import { getFontSize } from '../../core/theme/sizes';
 
 export interface MenuItemButtonProps extends SpacingProps {
   /** Text label (alternative to children) */
@@ -27,7 +30,7 @@ export interface MenuItemButtonProps extends SpacingProps {
   /** Whether the button should take up full width */
   fullWidth?: boolean;
   /** Size of the button */
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ComponentSizeValue;
   /** Whether to use compact styling */
   compact?: boolean;
   /** Whether to use fully rounded corners */
@@ -68,13 +71,125 @@ export interface MenuItemButtonProps extends SpacingProps {
   testID?: string;
 }
 
-// Size mapping for heights & spacing (tuned for sidebar / menus)
-const SIZE_CONFIG = {
-  xs: { fontSize: 'xs', padY: 4, padX: 8, gap: 6, radius: 4, minHeight: 30 },
-  sm: { fontSize: 'sm', padY: 6, padX: 10, gap: 8, radius: 6, minHeight: 34 },
-  md: { fontSize: 'sm', padY: 8, padX: 12, gap: 10, radius: 8, minHeight: 38 },
-  lg: { fontSize: 'md', padY: 10, padX: 14, gap: 12, radius: 10, minHeight: 44 },
+interface MenuItemButtonMetrics {
+  fontSize: number;
+  paddingX: number;
+  paddingY: number;
+  gap: number;
+  radius: number;
+  minHeight: number;
+}
+
+const MENU_ITEM_ALLOWED_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+const MENU_ITEM_ALLOWED_SIZES_ARRAY: ComponentSize[] = [...MENU_ITEM_ALLOWED_SIZES];
+
+const MIN_MENU_ITEM_METRICS = {
+  fontSize: 10,
+  paddingX: 6,
+  paddingY: 4,
+  gap: 4,
+  radius: 4,
+  minHeight: 28,
 } as const;
+
+const MENU_ITEM_BASE_METRICS: Record<'xs' | 'sm' | 'md' | 'lg', MenuItemButtonMetrics> = {
+  xs: {
+    fontSize: getFontSize('xs'),
+    paddingX: 8,
+    paddingY: 4,
+    gap: 6,
+    radius: 4,
+    minHeight: 30,
+  },
+  sm: {
+    fontSize: getFontSize('sm'),
+    paddingX: 10,
+    paddingY: 6,
+    gap: 8,
+    radius: 6,
+    minHeight: 34,
+  },
+  md: {
+    fontSize: getFontSize('sm'),
+    paddingX: 12,
+    paddingY: 8,
+    gap: 10,
+    radius: 8,
+    minHeight: 38,
+  },
+  lg: {
+    fontSize: getFontSize('md'),
+    paddingX: 14,
+    paddingY: 10,
+    gap: 12,
+    radius: 10,
+    minHeight: 44,
+  },
+};
+
+function scaleMetricsFromBase(size: ComponentSize): MenuItemButtonMetrics {
+  const base = MENU_ITEM_BASE_METRICS.lg;
+  const baseConfig = getComponentSize('lg');
+  const targetConfig = getComponentSize(size);
+
+  const heightScale = targetConfig.height / baseConfig.height;
+  const paddingScale = targetConfig.padding / baseConfig.padding;
+  const fontScale = targetConfig.fontSize / baseConfig.fontSize;
+  const radiusScale = targetConfig.borderRadius / baseConfig.borderRadius;
+
+  const scaleMetric = (value: number, scale: number, minimum: number) => Math.max(minimum, Math.round(value * scale));
+
+  return {
+    fontSize: scaleMetric(base.fontSize, fontScale, MIN_MENU_ITEM_METRICS.fontSize),
+    paddingX: scaleMetric(base.paddingX, paddingScale, MIN_MENU_ITEM_METRICS.paddingX),
+    paddingY: scaleMetric(base.paddingY, paddingScale, MIN_MENU_ITEM_METRICS.paddingY),
+    gap: scaleMetric(base.gap, paddingScale, MIN_MENU_ITEM_METRICS.gap),
+    radius: scaleMetric(base.radius, radiusScale, MIN_MENU_ITEM_METRICS.radius),
+    minHeight: scaleMetric(base.minHeight, heightScale, MIN_MENU_ITEM_METRICS.minHeight),
+  };
+}
+
+const MENU_ITEM_SIZE_SCALE: Partial<Record<ComponentSize, MenuItemButtonMetrics>> = {
+  xs: MENU_ITEM_BASE_METRICS.xs,
+  sm: MENU_ITEM_BASE_METRICS.sm,
+  md: MENU_ITEM_BASE_METRICS.md,
+  lg: MENU_ITEM_BASE_METRICS.lg,
+  xl: scaleMetricsFromBase('xl'),
+  '2xl': scaleMetricsFromBase('2xl'),
+  '3xl': scaleMetricsFromBase('3xl'),
+};
+
+const BASE_MENU_ITEM_METRICS = MENU_ITEM_SIZE_SCALE.md ?? MENU_ITEM_BASE_METRICS.md;
+const BASE_MENU_ITEM_HEIGHT = getComponentSize('md').height;
+
+function resolveMenuItemMetrics(value: ComponentSizeValue | undefined): MenuItemButtonMetrics {
+  const resolved = resolveComponentSize(value, MENU_ITEM_SIZE_SCALE, {
+    allowedSizes: MENU_ITEM_ALLOWED_SIZES_ARRAY,
+    fallback: 'sm',
+  });
+
+  if (typeof resolved === 'number') {
+    return calculateNumericMetrics(resolved);
+  }
+
+  return resolved;
+}
+
+function calculateNumericMetrics(height: number): MenuItemButtonMetrics {
+  const normalizedHeight = Math.max(MIN_MENU_ITEM_METRICS.minHeight, Math.round(height));
+  const scale = normalizedHeight / BASE_MENU_ITEM_HEIGHT;
+
+  const scaleMetric = (value: number, minimum: number) => Math.max(minimum, Math.round(value * scale));
+
+  return {
+    fontSize: scaleMetric(BASE_MENU_ITEM_METRICS.fontSize, MIN_MENU_ITEM_METRICS.fontSize),
+    paddingX: scaleMetric(BASE_MENU_ITEM_METRICS.paddingX, MIN_MENU_ITEM_METRICS.paddingX),
+    paddingY: scaleMetric(BASE_MENU_ITEM_METRICS.paddingY, MIN_MENU_ITEM_METRICS.paddingY),
+    gap: scaleMetric(BASE_MENU_ITEM_METRICS.gap, MIN_MENU_ITEM_METRICS.gap),
+    radius: scaleMetric(BASE_MENU_ITEM_METRICS.radius, MIN_MENU_ITEM_METRICS.radius),
+    minHeight: Math.max(normalizedHeight, scaleMetric(BASE_MENU_ITEM_METRICS.minHeight, MIN_MENU_ITEM_METRICS.minHeight)),
+  };
+}
 
 export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, ref) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
@@ -87,8 +202,8 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
     disabled = false,
     active = false,
     danger = false,
-    fullWidth = true,
-    size = 'sm',
+  fullWidth = true,
+  size = 'sm',
     compact = false,
     rounded = false,
     style,
@@ -114,7 +229,7 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
   const theme = useTheme();
   const { isRTL } = useDirection();
   const spacingStyles = getSpacingStyles(spacingProps);
-  const cfg = SIZE_CONFIG[size] ?? SIZE_CONFIG.sm;
+  const metrics = useMemo(() => resolveMenuItemMetrics(size), [size]);
   const content = children || title;
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -173,15 +288,15 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
   const buttonBaseStyle = useMemo(() => ({
     flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
-    minHeight: cfg.minHeight,
-    paddingHorizontal: cfg.padX,
-    paddingVertical: compact ? Math.max(2, cfg.padY - 4) : cfg.padY,
+    minHeight: metrics.minHeight,
+    paddingHorizontal: metrics.paddingX,
+    paddingVertical: compact ? Math.max(2, metrics.paddingY - 4) : metrics.paddingY,
     width: fullWidth ? '100%' : undefined,
-    borderRadius: rounded ? 999 : cfg.radius,
+    borderRadius: rounded ? 999 : metrics.radius,
     opacity: disabled ? 0.45 : 1,
-    gap: cfg.gap,
+    gap: metrics.gap,
     backgroundColor: basePalette.bg,
-  }), [isRTL, cfg, compact, fullWidth, rounded, disabled, basePalette.bg]);
+  }), [isRTL, metrics, compact, fullWidth, rounded, disabled, basePalette.bg]);
 
   const handlePressIn = useCallback((event: GestureResponderEvent) => {
     if (!disabled) setIsPressed(true);
@@ -261,7 +376,7 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
         {content && (
           typeof content === 'string' ? (
             <Text
-              size={cfg.fontSize as any}
+              size={metrics.fontSize}
               weight={active ? '600' : '500'}
               color={textColor}
               style={{ flex: 1, overflow: 'hidden' }}
@@ -271,7 +386,7 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
           ) : content
         )}
         {endIcon && (
-          <View style={isRTL ? { marginRight: cfg.gap, opacity: disabled ? 0.6 : 1 } : { marginLeft: cfg.gap, opacity: disabled ? 0.6 : 1 }}>
+          <View style={isRTL ? { marginRight: metrics.gap, opacity: disabled ? 0.6 : 1 } : { marginLeft: metrics.gap, opacity: disabled ? 0.6 : 1 }}>
             {endIcon}
           </View>
         )}

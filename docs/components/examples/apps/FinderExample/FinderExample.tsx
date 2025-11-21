@@ -1,17 +1,18 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Pressable, TextInput } from 'react-native';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { View, Pressable } from 'react-native';
 // Optional video thumbnails (expo-video-thumbnails). We'll lazy-require to avoid hard dependency.
 let VideoThumbModule: any = null;
 try { // eslint-disable-next-line @typescript-eslint/no-var-requires
   VideoThumbModule = require('expo-video-thumbnails');
 } catch { /* Module not installed; thumbnails for video will show placeholder */ }
-import { Card, Text, Flex, Icon, Chip, Switch, useTheme, Image } from '@platform-blocks/ui';
-import { Search } from '@platform-blocks/ui';
+import { Card, Text, Flex, Icon, Switch, SegmentedControl, useTheme, Image, Input, Indicator, Tree, IconButton, Search, Breadcrumbs, Badge } from '@platform-blocks/ui';
+import type { TreeNode } from '@platform-blocks/ui';
 import { FinderFile } from './types';
 import { FolderIcon } from './FolderIcon';
 import { rootFiles } from './mockData';
 import { finderStyles as S } from './styles';
 import { PreviewFile } from './PreviewFile';
+import { useResponsive } from '../../../../hooks/useResponsive';
 
 interface FinderState {
   path: string[]; // array of folder ids from root
@@ -20,6 +21,7 @@ interface FinderState {
   view: 'list' | 'grid';
   selected?: string; // selected file id
   selectedIds?: string[]; // multi-select set (includes selected)
+  activeTag?: string | null;
 }
 // Drag & drop interface removed
 
@@ -66,6 +68,15 @@ function findFileRecursive(tree: FinderFile[], id: string): FinderFile | undefin
   return undefined;
 }
 
+function fileHasTag(file: FinderFile, tag?: string | null): boolean {
+  if (!tag) return true;
+  if (file.tags?.includes(tag)) return true;
+  if (file.type === 'folder' && file.children) {
+    return file.children.some(child => fileHasTag(child, tag));
+  }
+  return false;
+}
+
 // Map extensions to available Icon names
 const FILE_ICONS: Record<string, 'code' | 'folder' | 'table' | 'image'> = {
   md: 'code',
@@ -76,12 +87,20 @@ const FILE_ICONS: Record<string, 'code' | 'folder' | 'table' | 'image'> = {
   xlsx: 'table'
 };
 
+type FinderTreeNode = TreeNode & { data: FinderFile; children?: FinderTreeNode[] };
+
+const pathsEqual = (a: string[], b: string[]) => (
+  a.length === b.length && a.every((segment, idx) => segment === b[idx])
+);
+
 export function FinderExample() {
   // Maintain a mutable copy of the file tree so we can reorder
   const [fileTree, setFileTree] = useState<FinderFile[]>(() => JSON.parse(JSON.stringify(rootFiles)));
-  const [state, setState] = useState<FinderState>({ path: [], showPreview: true, search: '', view: 'list', selectedIds: [] });
+  const [state, setState] = useState<FinderState>({ path: [], showPreview: true, search: '', view: 'list', selectedIds: [], activeTag: null });
+  const [navHistory, setNavHistory] = useState<{ entries: string[][]; index: number }>({ entries: [[]], index: 0 });
   // Drag state removed
   const [titleHover, setTitleHover] = useState(false); // show proxy icon on hover like macOS
+  const [titleText, setTitleText] = useState('Finder');
   const [controlsHover, setControlsHover] = useState(false); // show x/−/+ glyphs on hover
   const [expanded, setExpanded] = useState<Record<string, boolean>>({}); // expanded folders (list tree)
   const [imageError, setImageError] = useState(false);
@@ -90,6 +109,7 @@ export function FinderExample() {
   const [renameDraft, setRenameDraft] = useState('');
   // Layout refs for drag removed
   const theme = useTheme();
+  const { isMobile } = useResponsive();
   const isDark = theme.colorScheme === 'dark';
   // Track last press for double-press to open folders
   const lastPressRef = React.useRef<{ id: string; time: number }>({ id: '', time: 0 });
@@ -97,6 +117,47 @@ export function FinderExample() {
   const listContainerRef = React.useRef<any>(null);
   // Row element refs for auto-scroll
   const rowRefs = React.useRef<Record<string, any>>({});
+
+  const updatePath = useCallback((nextPathInput: string[] | ((prev: string[]) => string[])) => {
+    setState(prevState => {
+      const resolved = typeof nextPathInput === 'function'
+        ? (nextPathInput as (prev: string[]) => string[])(prevState.path)
+        : nextPathInput;
+      const normalized = resolved.slice();
+      const nextState = { ...prevState, path: normalized, selected: undefined, selectedIds: [] };
+      setNavHistory(prevHistory => {
+        const trimmed = prevHistory.entries.slice(0, prevHistory.index + 1);
+        if (trimmed.length && pathsEqual(trimmed[trimmed.length - 1], normalized)) {
+          return prevHistory;
+        }
+        return { entries: [...trimmed, normalized], index: trimmed.length };
+      });
+      return nextState;
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    setNavHistory(prev => {
+      if (prev.index === 0) return prev;
+      const targetIndex = prev.index - 1;
+      const nextPath = prev.entries[targetIndex];
+      setState(s => ({ ...s, path: nextPath.slice(), selected: undefined, selectedIds: [] }));
+      return { entries: prev.entries, index: targetIndex };
+    });
+  }, []);
+
+  const goForward = useCallback(() => {
+    setNavHistory(prev => {
+      if (prev.index >= prev.entries.length - 1) return prev;
+      const targetIndex = prev.index + 1;
+      const nextPath = prev.entries[targetIndex];
+      setState(s => ({ ...s, path: nextPath.slice(), selected: undefined, selectedIds: [] }));
+      return { entries: prev.entries, index: targetIndex };
+    });
+  }, []);
+
+  const canGoBack = navHistory.index > 0;
+  const canGoForward = navHistory.index < navHistory.entries.length - 1;
 
   const colors = {
     winBorder: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.08)',
@@ -115,6 +176,9 @@ export function FinderExample() {
     textMuted: theme.text.muted,
   } as const;
 
+  const activeSegmentIconColor = theme.text?.onPrimary ?? '#FFFFFF';
+  const inactiveSegmentIconColor = theme.text?.secondary ?? theme.text?.muted ?? '#6D6D70';
+
   // Prevent native text selection so custom row highlight feels native
   const noSelect: any = { userSelect: 'none', WebkitUserSelect: 'none' };
 
@@ -122,15 +186,53 @@ export function FinderExample() {
   const crumbs = useMemo(() => resolveCrumbs(rootFiles, state.path), [state.path]);
 
   const visibleFiles = useMemo(() => {
-    return folderFiles.filter(f => f.name.toLowerCase().includes(state.search.toLowerCase()));
-  }, [folderFiles, state.search]);
+    const query = state.search.trim().toLowerCase();
+    const tag = state.activeTag;
+    return folderFiles.filter(file => {
+      const matchesSearch = !query || file.name.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+      return fileHasTag(file, tag);
+    });
+  }, [folderFiles, state.search, state.activeTag]);
+
+  const sidebarShortcuts = React.useMemo(() => (
+    [
+      { label: 'All Files', path: [] as string[] },
+      { label: 'Documents', path: ['docs'] as string[] },
+      { label: 'Media', path: ['media'] as string[] }
+    ]
+  ), []);
+
+  const sidebarTags = React.useMemo(() => (
+    [
+      { id: 'red', label: 'Red', color: '#FF3B30' },
+      { id: 'orange', label: 'Orange', color: '#FF9500' },
+      { id: 'yellow', label: 'Yellow', color: '#FFCC00' },
+      { id: 'green', label: 'Green', color: '#34C759' },
+      { id: 'blue', label: 'Blue', color: '#007AFF' },
+      { id: 'purple', label: 'Purple', color: '#AF52DE' },
+      { id: 'gray', label: 'Gray', color: '#8E8E93' }
+    ]
+  ), []);
+
+  const sidebarTagsById = React.useMemo(() => {
+    const map: Record<string, { id: string; label: string; color: string }> = {};
+    sidebarTags.forEach(tag => { map[tag.id] = tag; });
+    return map;
+  }, [sidebarTags]);
+
+  const isSidebarPathActive = React.useCallback((target: string[]) => {
+    if (!target.length) return state.path.length === 0;
+    if (state.path.length < target.length) return false;
+    return target.every((id, idx) => state.path[idx] === id);
+  }, [state.path]);
 
   // selectedFile will be recalculated after treeFiles for nested visibility; placeholder here (overridden below)
   const selectedFile = useMemo(() => {
     const id = state.selected || state.selectedIds?.[0];
     if (!id) return undefined;
-    return folderFiles.find(f => f.id === id);
-  }, [folderFiles, state.selected, state.selectedIds]);
+    return visibleFiles.find(f => f.id === id);
+  }, [visibleFiles, state.selected, state.selectedIds]);
   useEffect(() => { setImageError(false); }, [selectedFile?.id]);
 
   const renderThumb = (file: FinderFile, size: number) => {
@@ -173,21 +275,63 @@ export function FinderExample() {
   };
 
   // selectedInfo moved below treeFiles declaration
+  const treeData = useMemo<FinderTreeNode[]>(() => {
+    if (state.view !== 'list') return [];
+    const buildNodes = (items: FinderFile[]): FinderTreeNode[] => {
+      return items.map(item => ({
+        id: item.id,
+        label: item.name,
+        data: item,
+        children: item.type === 'folder' ? buildNodes(item.children || []) : undefined
+      }));
+    };
+    return buildNodes(folderFiles);
+  }, [folderFiles, state.view]);
 
-  const toggleExpand = (id: string) => setExpanded(e => ({ ...e, [id]: !e[id] }));
+  const filteredTreeData = useMemo<FinderTreeNode[]>(() => {
+    if (state.view !== 'list') return treeData;
+    const query = state.search.trim().toLowerCase();
+    const tag = state.activeTag;
+    const shouldFilter = Boolean(query) || Boolean(tag);
+    if (!shouldFilter) return treeData;
+
+    const filterNodes = (nodes: FinderTreeNode[]): FinderTreeNode[] => {
+      const result: FinderTreeNode[] = [];
+      nodes.forEach(node => {
+        const filteredChildren = node.children ? filterNodes(node.children) : undefined;
+        const file = node.data as FinderFile;
+        const matchesSearch = !query || node.label.toLowerCase().includes(query);
+        const matchesTag = fileHasTag(file, tag);
+        const shouldInclude = (matchesSearch && matchesTag) || (filteredChildren && filteredChildren.length);
+        if (shouldInclude) {
+          result.push({
+            ...node,
+            children: filteredChildren,
+          });
+        }
+      });
+      return result;
+    };
+
+    return filterNodes(treeData);
+  }, [treeData, state.search, state.view, state.activeTag]);
+
   const treeFiles = useMemo(() => {
     if (state.view !== 'list') return [] as { file: FinderFile; depth: number }[];
-    const current = getFolderByPath(fileTree, state.path);
     const out: { file: FinderFile; depth: number }[] = [];
-    const walk = (arr: FinderFile[], depth: number) => {
-      for (const f of arr) {
-        out.push({ file: f, depth });
-        if (f.type === 'folder' && expanded[f.id] && f.children) walk(f.children, depth + 1);
-      }
+    const walk = (nodes: FinderTreeNode[], depth: number) => {
+      nodes.forEach(node => {
+        out.push({ file: node.data, depth });
+        if (node.children?.length && expanded[node.id]) {
+          walk(node.children, depth + 1);
+        }
+      });
     };
-    walk(current, 0);
-    return out.filter(n => n.file.name.toLowerCase().includes(state.search.toLowerCase()));
-  }, [state.view, fileTree, state.path, expanded, state.search]);
+    walk(filteredTreeData, 0);
+    return out;
+  }, [filteredTreeData, expanded, state.view]);
+
+  const expandedIds = useMemo(() => Object.keys(expanded).filter(id => expanded[id]), [expanded]);
 
   const selectedInfo = useMemo(() => {
     const ids = state.selectedIds || [];
@@ -261,17 +405,53 @@ export function FinderExample() {
     });
   }, [state.view, treeFiles, visibleFiles, thumbs]);
 
-  const enterFolder = (file: FinderFile) => {
+  const enterFolder = useCallback((file: FinderFile) => {
     if (file.type !== 'folder') return;
-    setState(s => ({ ...s, path: [...s.path, file.id], selected: undefined }));
-  };
-  const goToCrumb = (id: string) => {
-    if (id === '__root__') { setState(s => ({ ...s, path: [], selected: undefined })); return; }
-    const idx = state.path.indexOf(id);
-    if (idx !== -1) {
-      setState(s => ({ ...s, path: state.path.slice(0, idx + 1), selected: undefined }));
+    updatePath(prev => [...prev, file.id]);
+  }, [updatePath]);
+  const goToCrumb = useCallback((id: string) => {
+    if (id === '__root__') { updatePath([]); return; }
+    updatePath(prev => {
+      const idx = prev.indexOf(id);
+      if (idx === -1) return prev;
+      return prev.slice(0, idx + 1);
+    });
+  }, [updatePath]);
+
+  const breadcrumbItems = useMemo(() => crumbs.map((crumb, idx) => {
+    const isLast = idx === crumbs.length - 1;
+    return {
+      label: crumb.name,
+      onPress: isLast ? undefined : () => goToCrumb(crumb.id),
+      disabled: isLast
+    };
+  }), [crumbs, goToCrumb]);
+
+  const handleTreeSelectionChange = useCallback((ids: string[], _node?: TreeNode) => {
+    setState(prev => ({ ...prev, selectedIds: ids, selected: ids[0] }));
+    lastAnchorRef.current = ids.length ? ids[ids.length - 1] : null;
+  }, []);
+
+  const handleTreeNodePress = useCallback((node: TreeNode, context: { isBranch: boolean; event?: any }) => {
+    const file = (node as FinderTreeNode).data as FinderFile | undefined;
+    if (!file) return true;
+    const nativeEvent = context.event?.nativeEvent;
+    const now = Date.now();
+    if (nativeEvent?.metaKey || nativeEvent?.ctrlKey || nativeEvent?.shiftKey) {
+      lastPressRef.current = { id: node.id, time: now };
+      return true;
     }
-  };
+    const lastPress = lastPressRef.current;
+    if (lastPress.id === node.id && now - lastPress.time < 350) {
+      if (file.type === 'folder') {
+        enterFolder(file);
+      }
+      lastPressRef.current = { id: '', time: 0 };
+      return false;
+    }
+    lastPressRef.current = { id: node.id, time: now };
+    return true;
+  }, [enterFolder]);
 
   const lastAnchorRef = React.useRef<string | null>(null);
   const toggleSelect = (file: FinderFile, index: number, list: FinderFile[], shiftKey?: boolean, metaKey?: boolean) => {
@@ -372,6 +552,62 @@ export function FinderExample() {
     setRenamingId(null);
   };
 
+  const renderTreeLabel = useCallback((node: TreeNode, _depth: number, _isOpen: boolean, _stateInfo: { selected: boolean; checked: boolean; indeterminate: boolean }) => {
+    const file = (node as FinderTreeNode).data as FinderFile;
+    if (!file) return null;
+    const isFolder = file.type === 'folder';
+    const hasDirectFiles = isFolder && (file.children?.some(child => child.type === 'file') ?? false);
+    const iconName = FILE_ICONS[file.ext || ''] || 'code';
+
+    return (
+      <View
+        ref={ref => {
+          if (ref) {
+            rowRefs.current[file.id] = ref;
+          } else {
+            delete rowRefs.current[file.id];
+          }
+        }}
+        style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 8 }}
+      >
+        <View style={{ width: 20, alignItems: 'center', marginRight: 6 }}>
+          {isFolder ? (
+            <FolderIcon size={16} hasFiles={hasDirectFiles} />
+          ) : (
+            renderThumb(file, 20) || <Icon name={iconName} size={16} color="gray" stroke={4} />
+          )}
+        </View>
+        {renamingId === file.id ? (
+          <Input
+            value={renameDraft}
+            onChangeText={setRenameDraft}
+            onBlur={finalizeRename}
+            onEnter={finalizeRename}
+            size="xs"
+            radius="sm"
+            style={{
+              marginBottom: 0,
+              width: 'auto',
+              minWidth: 80,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              alignSelf: 'flex-start'
+            }}
+            textInputProps={{
+              autoFocus: true,
+              returnKeyType: 'done'
+            }}
+          />
+        ) : (
+          <Text style={[S.fileName, noSelect]} numberOfLines={1}>{file.name}</Text>
+        )}
+        {!isFolder && (
+          <Text size="xs" color="muted" style={{ marginLeft: 12 }}>{formatSize(file.size)}</Text>
+        )}
+      </View>
+    );
+  }, [finalizeRename, noSelect, renamingId, renameDraft, renderThumb]);
+
   // Ensure the file list container is focusable for keyboard navigation
   useEffect(() => {
     if (listContainerRef.current && typeof listContainerRef.current.focus === 'function') {
@@ -390,7 +626,7 @@ export function FinderExample() {
   const handleArrowNav = (e: any) => {
     const key = e.key;
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
-    // Avoid interfering while renaming (TextInput focused)
+    // Avoid interfering while renaming (t focused)
     if (renamingId) return;
     const listMode = state.view === 'list';
     const dataset = listMode ? treeFiles.map(t => t.file) : visibleFiles;
@@ -488,7 +724,12 @@ export function FinderExample() {
   };
 
   return (
-    <Card style={[S.window, { width: '100%', maxWidth: 1000, borderColor: colors.winBorder }]} shadow="lg">
+    <Flex direction="column" style={{ flex: 1, width: '100%', height: '100%' }}>
+      <Card
+      p={0}
+        style={[S.window, { borderColor: colors.winBorder, alignSelf: 'stretch', width: '100%', height: '100%' }]}
+        shadow="lg"
+      >
       {/* Title Bar */}
       <View style={[S.titleBar, { backgroundColor: colors.titleBarBg, borderBottomColor: colors.titleBarBorder }]}>
         <Pressable
@@ -506,6 +747,26 @@ export function FinderExample() {
             {controlsHover && <Text style={{ fontSize: 10, lineHeight: 10, color: '#034d19', fontWeight: '600', marginTop: -1 }}>+</Text>}
           </View>
         </Pressable>
+        <Flex direction="row" align="center" gap={4} style={{ marginRight: 8 }}>
+          <IconButton
+            icon="chevronLeft"
+            variant="ghost"
+            size="sm"
+            onPress={goBack}
+            disabled={!canGoBack}
+            tooltip="Back"
+            accessibilityLabel="Go back"
+          />
+          <IconButton
+            icon="chevronRight"
+            variant="ghost"
+            size="sm"
+            onPress={goForward}
+            disabled={!canGoForward}
+            tooltip="Forward"
+            accessibilityLabel="Go forward"
+          />
+        </Flex>
         {/* Title + proxy icon (appears on hover like macOS Finder) */}
         <Pressable
           onHoverIn={() => setTitleHover(true)}
@@ -518,7 +779,9 @@ export function FinderExample() {
               <FolderIcon size={14} />
             </View>
           )}
-          <Text weight="semibold" style={noSelect}>Finder</Text>
+          <Text weight="semibold" style={noSelect}>
+            {titleText}
+          </Text>
         </Pressable>
         <Flex direction="row" gap={8} style={{ marginLeft: 'auto' }} align="center">
           <Pressable
@@ -541,36 +804,42 @@ export function FinderExample() {
             style={{ width: 140, marginBottom: 0 }}
           />
           {/* View mode toggle */}
-          <Flex direction="row" gap={4} align="center">
-            <Pressable
-              onPress={() => setState(s => ({ ...s, view: 'list' }))}
-              style={({ pressed }) => ({
-                paddingVertical: 4,
-                paddingHorizontal: 8,
-                borderRadius: 6,
-                backgroundColor: state.view === 'list' ? colors.selection : pressed ? colors.selectionPressed : 'transparent'
-              })}
-            >
-              <Flex direction="row" gap={4} align="center">
-                <Icon name="table" size={14} color={state.view === 'list' ? 'primary' : 'gray'} />
-                <Text size="xs" color={state.view === 'list' ? 'primary' : 'muted'}>List</Text>
-              </Flex>
-            </Pressable>
-            <Pressable
-              onPress={() => setState(s => ({ ...s, view: 'grid' }))}
-              style={({ pressed }) => ({
-                paddingVertical: 4,
-                paddingHorizontal: 8,
-                borderRadius: 6,
-                backgroundColor: state.view === 'grid' ? colors.selection : pressed ? colors.selectionPressed : 'transparent'
-              })}
-            >
-              <Flex direction="row" gap={4} align="center">
-                <Icon name="grid" size={14} color={state.view === 'grid' ? 'primary' : 'gray'} />
-                <Text size="xs" color={state.view === 'grid' ? 'primary' : 'muted'}>Icons</Text>
-              </Flex>
-            </Pressable>
-          </Flex>
+          <SegmentedControl
+            size="sm"
+            accessibilityLabel="View mode"
+            variant="default"
+            value={state.view}
+            onChange={(value) => setState(s => ({ ...s, view: value === 'grid' ? 'grid' : 'list' }))}
+            data={[
+              {
+                value: 'list',
+                label: (
+                  <Flex direction="row" gap={4} align="center">
+                    <Icon
+                      name="table"
+                      size={14}
+                      color={state.view === 'list' ? activeSegmentIconColor : inactiveSegmentIconColor}
+                       stroke={4}
+                    />
+                    <Text size="xs" color={state.view === 'list' ? 'inverted' : 'muted'}>List</Text>
+                  </Flex>
+                )
+              },
+              {
+                value: 'grid',
+                label: (
+                  <Flex direction="row" gap={4} align="center">
+                    <Icon
+                      name="grid"
+                      size={14}
+                      color={state.view === 'grid' ? activeSegmentIconColor : inactiveSegmentIconColor}
+                    />
+                    <Text size="xs" color={state.view === 'grid' ? 'inverted' : 'muted'}>Icons</Text>
+                  </Flex>
+                )
+              }
+            ]}
+          />
           <Switch
             size="sm"
             checked={state.showPreview}
@@ -580,42 +849,95 @@ export function FinderExample() {
         </Flex>
       </View>
       {/* Layout */}
-      <View style={[S.layout, { backgroundColor: colors.windowBg }]}>
+      <View
+        style={[S.layout, isMobile && S.layoutMobile, { backgroundColor: colors.windowBg }]}
+      >
         {/* Sidebar */}
-        <View style={[S.sidebar, { backgroundColor: colors.sidebarBg, borderRightColor: colors.sidebarBorder }]}>
-          <Text style={[S.sidebarSectionTitle, { color: colors.textMuted }]}>
-            FAVORITES
+        <View
+          style={[S.sidebar, isMobile && S.sidebarMobile, { backgroundColor: colors.sidebarBg, borderRightColor: colors.sidebarBorder }]}
+        >
+          <Text variant="small" colorVariant='muted'>
+            Favorites
           </Text>
-          {['All Files', 'Documents', 'Media'].map(label => (
-            <Pressable key={label} onPress={() => {
-              if (label === 'All Files') setState(s => ({ ...s, path: [] }));
-              else if (label === 'Documents') setState(s => ({ ...s, path: ['docs'] }));
-              else if (label === 'Media') setState(s => ({ ...s, path: ['media'] }));
-            }} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, padding: 6, borderRadius: 6 })}>
-              <Text size="sm" color={isDark ? 'gray' : undefined}>{label}</Text>
-            </Pressable>
-          ))}
-          <Text style={[S.sidebarSectionTitle, { color: colors.textMuted }]}>TAGS</Text>
-          <Flex direction="row" wrap="wrap" gap={6}>
-            {['work', 'design', 'assets', 'docs'].map(t => (
-              <Chip key={t} size="xs" variant="filled">{t}</Chip>
-            ))}
+          {sidebarShortcuts.map(({ label, path: shortcutPath }) => {
+            const active = isSidebarPathActive(shortcutPath);
+            return (
+              <Pressable
+                key={label}
+                onPress={() => updatePath(shortcutPath)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
+                  padding: 6,
+                  borderRadius: 6,
+                  backgroundColor: active ? colors.selection : pressed ? colors.selectionPressed : 'transparent'
+                })}
+              >
+                <Text
+                  size="sm"
+                  weight={active ? 'semibold' : 'normal'}
+                  color={active ? 'primary' : (isDark ? 'white' : undefined)}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Flex direction="row" align="center" justify="space-between" style={{ marginTop: 16 }}>
+            <Text variant="small" colorVariant="muted">
+              Tags
+            </Text>
+            {state.activeTag && (
+              <Pressable
+                onPress={() => setState(s => ({ ...s, activeTag: null }))}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, padding: 4, marginRight: -4 })}
+              >
+                <Text size="xs" color="muted">Clear</Text>
+              </Pressable>
+            )}
+          </Flex>
+          <Flex direction="column" gap={8} style={{ marginTop: 6 }}>
+            {sidebarTags.map(tag => {
+              const active = state.activeTag === tag.id;
+              return (
+                <Pressable
+                  key={tag.id}
+                  onPress={() => setState(s => ({ ...s, activeTag: active ? null : tag.id }))}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.7 : 1,
+                    paddingVertical: 6,
+                    paddingHorizontal: 8,
+                    borderRadius: 6,
+                    backgroundColor: active ? colors.selection : pressed ? colors.selectionPressed : 'transparent'
+                  })}
+                >
+                  <Flex direction="row" align="center" gap={8}>
+                    <Indicator
+                      size={12}
+                      color={tag.color}
+                      borderWidth={active || isDark ? 0 : 1}
+                      borderColor={isDark ? 'transparent' : 'rgba(0,0,0,0.12)'}
+                      style={{ position: 'relative' }}
+                    />
+                    <Text size="sm" weight={active ? 'semibold' : 'normal'} color={active ? 'primary' : (isDark ? 'white' : undefined)}>
+                      {tag.label}
+                    </Text>
+                  </Flex>
+                </Pressable>
+              );
+            })}
           </Flex>
         </View>
 
         {/* Main Files Pane */}
-        <View style={S.filePane}>
+        <View style={[S.filePane, isMobile && S.filePaneMobile]}>
           {/* Breadcrumb */}
-          <View style={S.breadcrumb}>
-            {crumbs.map((c, idx) => (
-              <Flex key={c.id} direction="row" align="center" gap={4} style={noSelect}>
-                <Pressable onPress={() => goToCrumb(c.id)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-                  <Text size="sm" weight={idx === crumbs.length - 1 ? 'semibold' : 'medium'} style={noSelect}>{c.name}</Text>
-                </Pressable>
-                {idx < crumbs.length - 1 && <Text size="sm" color="muted" style={noSelect}>/</Text>}
-              </Flex>
-            ))}
-          </View>
+          <Breadcrumbs
+            items={breadcrumbItems}
+            size="sm"
+            showIcons={false}
+            separator="/"
+            style={[S.breadcrumb, noSelect] as any}
+          />
 
           {/* File list */}
           <View
@@ -626,98 +948,42 @@ export function FinderExample() {
             onKeyDown={handleArrowNav}
             // @ts-ignore web only
             focusable={true}
-            style={[S.fileGrid, state.view === 'grid' && { flexDirection: 'row', flexWrap: 'wrap', gap: 12 }]}
+            style={[
+              S.fileGrid,
+              state.view === 'grid' && { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+              isMobile && S.fileGridMobile
+            ]}
           >
-            {state.view === 'list' && treeFiles.map(({ file, depth }, idx) => {
-              const selected = state.selected === file.id;
-              const multiSelected = state.selectedIds?.includes(file.id);
-              const isFolder = file.type === 'folder';
-              const icon: any = isFolder ? 'folder' : (FILE_ICONS[file.ext || ''] || 'code');
-              // Drag indicators removed
-              return (
-                <View
-                  key={file.id}
-                  ref={el => { if (el) rowRefs.current[file.id] = el; }}
-                  style={{ position: 'relative' }}
-                >
-                  <Pressable
-                    onPress={(e) => {
-                      const listForSelection = treeFiles.map(t => t.file);
-                      const shiftKey = (e as any)?.nativeEvent?.shiftKey;
-                      const metaKey = (e as any)?.nativeEvent?.metaKey || (e as any)?.nativeEvent?.ctrlKey;
-                      if (isFolder) {
-                        const now = Date.now();
-                        const dbl = state.selected === file.id && lastPressRef.current.id === file.id && (now - lastPressRef.current.time) < 350;
-                        if (dbl) {
-                          enterFolder(file);
-                          lastPressRef.current.time = 0; // reset
-                        } else {
-                          toggleSelect(file, idx, listForSelection, shiftKey, metaKey);
-                          lastPressRef.current = { id: file.id, time: now };
-                        }
-                      } else {
-                        toggleSelect(file, idx, listForSelection, shiftKey, metaKey);
-                      }
-                    }}
-                    style={({ pressed }) => ([
-                      S.fileRow,
-                      {
-                        // Increase indentation for nested folder depth
-                        paddingLeft: 10 + depth * 20,
-                        backgroundColor: (multiSelected || selected) ? colors.selectionRowBg : pressed ? colors.selectionPressed : 'transparent',
-                        // Removed border to avoid layout shift on selection
-                        borderWidth: 0,
-                        borderColor: 'transparent',
-                        outlineWidth: 0,
-                        outlineColor: 'transparent'
-                      }
-                    ])}
-                  >
-                    {isFolder && (
-                      <Pressable
-                        onPress={(ev) => { ev.stopPropagation(); toggleExpand(file.id); }}
-                        style={({ pressed }) => ({ padding: 2, marginRight: 2, opacity: pressed ? 0.6 : 1 })}
-                      >
-                        <Icon name={expanded[file.id] ? 'chevronDown' : 'chevronRight'} size={12} color="gray" />
-                      </Pressable>
-                    )}
-                    {isFolder ? (
-                      <FolderIcon size={16} />
-                    ) : (
-                      renderThumb(file, 20) || <Icon name={icon} size={16} color={'gray'} />
-                    )}
-                    {renamingId === file.id ? (
-                      <TextInput
-                        autoFocus
-                        value={renameDraft}
-                        onChangeText={setRenameDraft}
-                        onBlur={finalizeRename}
-                        onSubmitEditing={finalizeRename}
-                        style={{
-                          paddingVertical: 0,
-                          paddingHorizontal: 4,
-                          borderWidth: 1,
-                          borderColor: colors.selectionPressed,
-                          borderRadius: 4,
-                          minWidth: 80,
-                          fontSize: 12
-                        }}
-                      />
-                    ) : (
-                      <Text style={[S.fileName, noSelect]}>{file.name}</Text>
-                    )}
-                    {!isFolder && (
-                      <Text size="xs" color="muted">{formatSize(file.size)}</Text>
-                    )}
-                  </Pressable>
-                </View>
-              );
-            })}
+            {state.view === 'list' && (
+              <Tree
+                data={filteredTreeData}
+                selectionMode="multiple"
+                selectedIds={state.selectedIds}
+                onSelectionChange={handleTreeSelectionChange}
+                onNodePress={handleTreeNodePress}
+                expandOnClick={false}
+                expandedIds={expandedIds}
+                onToggle={(node, open) => setExpanded(prev => {
+                  const next = { ...prev };
+                  if (open) {
+                    next[node.id] = true;
+                  } else {
+                    delete next[node.id];
+                  }
+                  return next;
+                })}
+                striped
+                indent={20}
+                style={{ width: '100%' }}
+                renderLabel={renderTreeLabel}
+              />
+            )}
             {/* Drag overlay removed */}
             {state.view === 'grid' && visibleFiles.map((file, idx) => {
               const selected = state.selected === file.id;
               const multiSelected = state.selectedIds?.includes(file.id);
               const isFolder = file.type === 'folder';
+              const hasDirectFiles = isFolder && (file.children?.some(child => child.type === 'file') ?? false);
               const icon: any = isFolder ? 'folder' : (FILE_ICONS[file.ext || ''] || 'code');
               // Drag indicators removed
               return (
@@ -730,10 +996,11 @@ export function FinderExample() {
                     const metaKey = (e as any)?.nativeEvent?.metaKey || (e as any)?.nativeEvent?.ctrlKey;
                     if (isFolder) {
                       const now = Date.now();
-                      const dbl = state.selected === file.id && lastPressRef.current.id === file.id && (now - lastPressRef.current.time) < 350;
+                      const last = lastPressRef.current;
+                      const dbl = last.id === file.id && (now - last.time) < 350;
                       if (dbl) {
                         enterFolder(file);
-                        lastPressRef.current.time = 0;
+                        lastPressRef.current = { id: '', time: 0 };
                       } else {
                         toggleSelect(file, idx, listForSelection, shiftKey, metaKey);
                         lastPressRef.current = { id: file.id, time: now };
@@ -763,29 +1030,32 @@ export function FinderExample() {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    {isFolder ? <FolderIcon size={28} /> : (
+                    {isFolder ? <FolderIcon size={28} hasFiles={hasDirectFiles} /> : (
                       renderThumb(file, 48) || (
                         <View style={{ width: 48, height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? theme.colors.gray[7] : theme.colors.gray[1] }}>
-                          <Icon name={icon} size={20} color={'gray'} />
+                          <Icon name={icon} size={20} color={'gray'}  stroke={4}/>
                         </View>
                       )
                     )}
                   </View>
                   {renamingId === file.id ? (
-                    <TextInput
-                      autoFocus
+                    <Input
                       value={renameDraft}
                       onChangeText={setRenameDraft}
                       onBlur={finalizeRename}
-                      onSubmitEditing={finalizeRename}
+                      onEnter={finalizeRename}
+                      size="xs"
+                      radius="sm"
                       style={{
-                        paddingVertical: 0,
-                        paddingHorizontal: 4,
-                        borderWidth: 1,
-                        borderColor: colors.selectionPressed,
-                        borderRadius: 4,
+                        marginBottom: 0,
                         width: 80,
-                        fontSize: 11,
+                        paddingHorizontal: 6,
+                        paddingVertical: 4,
+                        alignSelf: 'center'
+                      }}
+                      textInputProps={{
+                        autoFocus: true,
+                        returnKeyType: 'done',
                         textAlign: 'center'
                       }}
                     />
@@ -800,13 +1070,20 @@ export function FinderExample() {
                 </Pressable>
               );
             })}
-            {visibleFiles.length === 0 && (
+            {state.view === 'grid' && visibleFiles.length === 0 && (
               <Text size="sm" color="muted">No items</Text>
             )}
           </View>
         </View>
         {/* Footer summary */}
-        <View style={{ position: 'absolute', left: 0, right: state.showPreview ? 300 : 0, bottom: 0 }} pointerEvents="box-none">
+        <View
+          pointerEvents="box-none"
+          style={[
+            S.footer,
+            isMobile && S.footerMobile,
+            !isMobile && { right: state.showPreview ? 300 : 0 }
+          ]}
+        >
           <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderTopWidth: 1, borderTopColor: colors.sidebarBorder, backgroundColor: colors.windowBg, flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
             <Text size="xs" color="muted">{selectedInfo.count} selected</Text>
             <Text size="xs" color="muted">{selectedInfo.count ? formatSize(selectedInfo.total) : ''}</Text>
@@ -815,7 +1092,9 @@ export function FinderExample() {
 
         {/* Preview Pane */}
         {state.showPreview && (
-          <View style={[S.previewPane, { backgroundColor: colors.previewBg, borderLeftColor: colors.previewBorder }]}>
+          <View
+            style={[S.previewPane, isMobile && S.previewPaneMobile, { backgroundColor: colors.previewBg, borderLeftColor: colors.previewBorder }]}
+          >
             {selectedFiles.length > 1 ? (
               <>
                 <Text style={S.previewTitle}>{selectedFiles.length} items selected</Text>
@@ -842,6 +1121,25 @@ export function FinderExample() {
                     {effectiveSelectedFile.children?.length || 0} item(s)
                   </Text>
                 )}
+                {effectiveSelectedFile.tags?.length ? (
+                  <Flex direction="row" align="center" gap={6} style={{ flexWrap: 'wrap', marginTop: 8 }}>
+                    {effectiveSelectedFile.tags.map(tagId => {
+                      const tagMeta = sidebarTagsById[tagId];
+                      if (!tagMeta) return null;
+                      return (
+                        <Badge
+                          key={tagId}
+                          size="xs"
+                          variant="light"
+                          color={tagMeta.color}
+                          startIcon={<Indicator size={8} color={tagMeta.color} borderWidth={0} />}
+                        >
+                          {tagMeta.label}
+                        </Badge>
+                      );
+                    })}
+                  </Flex>
+                ) : null}
                 {effectiveSelectedFile.type === 'file' && (
                   <PreviewFile file={effectiveSelectedFile} style={{ marginTop: 12 }} />
                 )}
@@ -856,6 +1154,7 @@ export function FinderExample() {
           </View>
         )}
       </View>
-    </Card>
+      </Card>
+    </Flex>
   );
 }

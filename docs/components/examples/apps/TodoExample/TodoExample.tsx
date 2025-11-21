@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { Text, Card, Button, Input, Flex, Icon, Checkbox, useTheme } from '@platform-blocks/ui';
+import {
+  Text,
+  Card,
+  Button,
+  Input,
+  Flex,
+  Icon,
+  Checkbox,
+  KeyboardAwareLayout,
+  useKeyboardManagerOptional,
+  useTheme,
+} from '@platform-blocks/ui';
 import { Task } from './types';
 import { initialTasks } from './mockData';
 import { styles } from './styles';
@@ -10,6 +21,8 @@ export function TodoExample() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const theme = useTheme();
+  const keyboardManager = useKeyboardManagerOptional();
+  const focusId = 'todo-new-task-input';
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -21,24 +34,35 @@ export function TodoExample() {
   };
 
   const addTask = () => {
-    if (newTask.trim()) {
-      setTasks([...tasks, {
-        id: Date.now(),
-        text: newTask,
-        completed: false,
-        priority: 'medium'
-      }]);
-      setNewTask('');
+    const trimmed = newTask.trim();
+    if (!trimmed) {
+      return;
     }
+
+    setTasks((prev) => ([
+      ...prev,
+      {
+        id: Date.now(),
+        text: trimmed,
+        completed: false,
+        priority: 'medium',
+      },
+    ]));
+
+    setNewTask('');
+
+    // Queue focus back to the input so the user can keep typing without reopening the keyboard manually
+    keyboardManager?.setFocusTarget(focusId);
   };
 
   const toggleTask = (id: number) => {
-    setTasks(tasks.map(task => 
+    setTasks((prev) => prev.map(task => 
       task.id === id ? { ...task, completed: !task.completed } : task
     ));
   };
 
   return (
+    <KeyboardAwareLayout contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
       <View style={styles.todoContainer}>
         <View style={styles.todoHeader}>
           <Text size="xl" weight="bold">
@@ -56,6 +80,7 @@ export function TodoExample() {
               onChangeText={setNewTask}
               onEnter={addTask}
               placeholder="Add new task..."
+              keyboardFocusId={focusId}
               style={styles.taskInput}
             />
             <Button 
@@ -101,5 +126,6 @@ export function TodoExample() {
           ))}
         </View>
       </View>
+    </KeyboardAwareLayout>
   );
 }

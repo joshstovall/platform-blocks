@@ -7,8 +7,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden'
   },
-  todoContainer: {
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
+  },
+  todoContainer: {
     flex: 1
   },
   todoHeader: {

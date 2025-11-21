@@ -40,10 +40,13 @@ A versatile text input component that provides a consistent interface for text e
 - **Accessibility**: Full keyboard navigation and screen reader support
 - **Responsive Design**: Adapts to different screen sizes and orientations
 - **Customizable**: Extensive styling and theming options
+- **Keyboard-aware**: Works with `KeyboardManagerProvider` and `KeyboardAwareLayout` to keep fields visible and optionally refocus them after selection flows
 
 ## Usage
 
 The Input component is designed to be the primary text input element in forms and data entry interfaces. It provides consistent styling and behavior across platforms while supporting platform-specific features when needed.
+
+Wrap screens in `KeyboardManagerProvider` (and typically `KeyboardAwareLayout`) to opt into shared keyboard dismissal and avoidance logic. Use the new `keyboardFocusId` prop when you need precise control over which field should regain focus after a selection completes.
 
 ```tsx
 import { Input } from '@platform-blocks/ui';

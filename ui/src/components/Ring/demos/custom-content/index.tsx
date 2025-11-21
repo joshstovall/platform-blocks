@@ -30,7 +30,7 @@ export default function Demo() {
         caption={<Badge color="#64748b">Paused</Badge>}
         label="Design System"
         subLabel="--"
-        progressColor={rgba(148, 163, 184, 0.4)}
+  progressColor="rgba(148, 163, 184, 0.4)"
       />
     </Block>
   );
