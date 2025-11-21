@@ -1,6 +1,6 @@
 {
   "name": "@platform-blocks/ui",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A React Native UI library",
   "type": "module",
   "main": "lib/cjs/index.js",
@@ -34,17 +34,12 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:update": "jest --updateSnapshot",
-    "test:timeline": "jest Timeline.test.tsx",
-    "test:rating": "jest Rating.test.tsx",
-    "test:select": "jest Select.test.tsx",
-    "test:avatar": "jest Avatar.test.tsx",
     "test:component": "jest",
     "lint": "eslint src --ext .ts,.tsx --ignore-path .eslintignore",
     "lint:fix": "eslint src --ext .ts,.tsx --fix --ignore-path .eslintignore",
     "lint:check": "eslint src --ext .ts,.tsx --max-warnings 0",
     "format": "eslint src --ext .ts,.tsx --fix && echo 'Code formatted successfully!'",
-    "precommit": "npm run lint:check && npm run test",
-    "qr:diff": "node ./lib/components/QRCode/dev/compareEngines.js"
+    "precommit": "npm run lint:check && npm run test"
   },
   "keywords": [
     "react-native",
@@ -105,7 +100,7 @@
     "react-native-reanimated-carousel": "^4.0.3",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-svg": "^15.12.1",
-    "react-syntax-highlighter": "^15.5.0",
+    "react-syntax-highlighter": "^16.1.0",
     "react-test-renderer": "19.1.0",
     "rollup": "^4.52.3",
     "rollup-plugin-dts": "^6.2.3",
@@ -142,5 +137,10 @@
     "react-syntax-highlighter": {
       "optional": true
     }
+  },
+  "optionalDependencies": {
+    "lottie-react": "^2.4.1",
+    "@lottiefiles/dotlottie-react": "^0.13.5",
+    "lottie-react-native": "^7.3.4"
   }
 }

@@ -14,9 +14,6 @@
 
 [Platform Blocks](https://platform-blocks.com/) is a React Native UI component library for building intuitive, accessible, and highly customizable mobile and web applications.
 
-> ⚠️ This project is a work in progress with no guarantees of stable code (yet). Use at your own risk.
-
-
 ## Documentation 
 
 Full documentation and examples are available at [platform-blocks.com](https://platform-blocks.com).
