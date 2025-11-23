@@ -1,81 +1,120 @@
-import { memo, ReactNode } from 'react';
-import { Carousel, Text, Button, Block, Column, Row, Image } from '@platform-blocks/ui';
-import { resolveLinearGradient } from '../../../../utils/optionalDependencies';
+import { Block, Button, Carousel, Column, Image, Row, Text } from '@platform-blocks/ui';
 
-const { LinearGradient } = resolveLinearGradient();
-
-const IMAGES = [
-  {
-    id: 'mountain',
-    uri: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=60',
-    title: 'Mountain Escape',
-    subtitle: 'Find peace in high places.'
-  },
-  {
-    id: 'forest',
-    uri: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=60&sat=-50',
-    title: 'Forest Retreat',
-    subtitle: 'Breathe with the trees.'
-  },
-  {
-    id: 'desert',
-    uri: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60',
-    title: 'Desert Journey',
-    subtitle: 'Silence and endless horizons.'
-  }
-];
-
-// Memoized gradient component to prevent recreating LinearGradient
-const OverlayGradient = memo(({ children }: { children: ReactNode }) => (
-  <LinearGradient
-    colors={['rgba(0,0,0,0.65)', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.75)']}
-    start={{ x: 0, y: 1 }}
-    end={{ x: 1, y: 0 }}
-    style={{
-      flex: 1,
-      padding: 28,
-      justifyContent: 'flex-end',
-    }}
-  >
-    {children}
-  </LinearGradient>
-));
-
-// Memoized slide component
-const ImageSlide = memo(({ item }: { item: typeof IMAGES[0] }) => (
-  <Block radius="xl" h="100%" position="relative">
-    <Image src={item.uri} width="100%" height="100%" resizeMode="cover" rounded />
-    <Block position="absolute" top={0} bottom={0} left={0} right={0}>
-      <OverlayGradient>
-        <Column gap="md" justify="flex-end" maxWidth={480} grow={1}>
-          <Text variant="h2" color="white">{item.title}</Text>
-          <Text variant="subtitle" color="rgba(255,255,255,0.9)">{item.subtitle}</Text>
-          <Row gap="md" mt="md">
-            <Button size="sm" variant="filled">Explore</Button>
-            <Button size="sm" variant="secondary">Details</Button>
-          </Row>
-        </Column>
-      </OverlayGradient>
-    </Block>
-  </Block>
-));
-
-export default function CarouselImageOverlayDemo() {
+export default function Demo() {
   return (
-    <Block w="100%" maxW={920} h={380}>
+    <Column gap="md" w="100%" maxWidth={920}>
       <Carousel
+        height={360}
         autoPlay
-        autoPlayInterval={5000}
+        autoPlayInterval={6000}
         loop
         showArrows
         showDots
-        reducedMotion={false}
       >
-        {IMAGES.map(item => (
-          <ImageSlide key={item.id} item={item} />
-        ))}
+        <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
+          <Image
+            src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=60"
+            width="100%"
+            height="100%"
+            resizeMode="cover"
+          />
+          <Block
+            position="absolute"
+            top={0}
+            right={0}
+            bottom={0}
+            left={0}
+            bg="rgba(15,23,42,0.55)"
+            p="xl"
+            justify="flex-end"
+          >
+            <Column gap="md" maxWidth={420}>
+              <Text variant="h2" color="white">
+                Mountain escape
+              </Text>
+              <Text color="rgba(255,255,255,0.9)">
+                Overlay `Block` plus absolutely positioned text creates hero-style slides.
+              </Text>
+              <Row gap="md">
+                <Button size="sm">Book now</Button>
+                <Button size="sm" variant="secondary">
+                  Learn more
+                </Button>
+              </Row>
+            </Column>
+          </Block>
+        </Block>
+
+        <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
+          <Image
+            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=60"
+            width="100%"
+            height="100%"
+            resizeMode="cover"
+          />
+          <Block
+            position="absolute"
+            top={0}
+            right={0}
+            bottom={0}
+            left={0}
+            bg="rgba(12,74,110,0.55)"
+            p="xl"
+            justify="flex-end"
+          >
+            <Column gap="md" maxWidth={420}>
+              <Text variant="h2" color="white">
+                Forest retreat
+              </Text>
+              <Text color="rgba(255,255,255,0.9)">
+                Pair `showArrows` and `showDots` for accessible navigation cues on media carousels.
+              </Text>
+              <Row gap="md">
+                <Button size="sm">Reserve cabin</Button>
+                <Button size="sm" variant="secondary">
+                  See amenities
+                </Button>
+              </Row>
+            </Column>
+          </Block>
+        </Block>
+
+        <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
+          <Image
+            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=60"
+            width="100%"
+            height="100%"
+            resizeMode="cover"
+          />
+          <Block
+            position="absolute"
+            top={0}
+            right={0}
+            bottom={0}
+            left={0}
+            bg="rgba(88,28,135,0.55)"
+            p="xl"
+            justify="flex-end"
+          >
+            <Column gap="md" maxWidth={420}>
+              <Text variant="h2" color="white">
+                Desert journey
+              </Text>
+              <Text color="rgba(255,255,255,0.9)">
+                Use a tinted overlay when image contrast makes foreground buttons hard to read.
+              </Text>
+              <Row gap="md">
+                <Button size="sm">Plan route</Button>
+                <Button size="sm" variant="secondary">
+                  View packing list
+                </Button>
+              </Row>
+            </Column>
+          </Block>
+        </Block>
       </Carousel>
-    </Block>
+    </Column>
   );
 }
+
 

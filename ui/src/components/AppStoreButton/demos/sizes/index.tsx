@@ -1,48 +1,30 @@
+import type { AppStoreButtonProps } from '@platform-blocks/ui';
 import { AppStoreButton, Column, Row, Text } from '@platform-blocks/ui';
 
-export default function AppStoreButtonSizesDemo() {
+type ButtonSize = NonNullable<AppStoreButtonProps['size']>;
+
+const sizeSections: { label: string; token: ButtonSize }[] = [
+  { label: 'Small', token: 'sm' },
+  { label: 'Medium (default)', token: 'md' },
+  { label: 'Large', token: 'lg' },
+  { label: 'Extra large', token: 'xl' },
+];
+
+export default function Demo() {
   return (
-    <Column gap="2xl" p="lg">
-      <Column gap="sm">
-        <Text weight="semibold" size="lg">Button Sizes</Text>
-        <Text colorVariant="secondary" size="sm">
-          Available sizes: sm, md (default), lg, and xl
-        </Text>
-      </Column>
+    <Column gap="lg">
+      {sizeSections.map(({ label, token }) => (
+        <Column key={token} gap="xs">
+          <Text size="sm" weight="medium">
+            {label}
+          </Text>
 
-      <Column gap="lg">
-        <Column gap="sm">
-          <Text weight="medium" size="sm">Small (sm)</Text>
           <Row gap="md">
-            <AppStoreButton store="app-store" size="sm" />
-            <AppStoreButton store="google-play" size="sm" />
+            <AppStoreButton store="app-store" size={token} />
+            <AppStoreButton store="google-play" size={token} />
           </Row>
         </Column>
-
-        <Column gap="sm">
-          <Text weight="medium" size="sm">Medium (md) - Default</Text>
-          <Row gap="md">
-            <AppStoreButton store="app-store" size="md" />
-            <AppStoreButton store="google-play" size="md" />
-          </Row>
-        </Column>
-
-        <Column gap="sm">
-          <Text weight="medium" size="sm">Large (lg)</Text>
-          <Row gap="md">
-            <AppStoreButton store="app-store" size="lg" />
-            <AppStoreButton store="google-play" size="lg" />
-          </Row>
-        </Column>
-
-        <Column gap="sm">
-          <Text weight="medium" size="sm">Extra Large (xl)</Text>
-          <Row gap="md">
-            <AppStoreButton store="app-store" size="xl" />
-            <AppStoreButton store="google-play" size="xl" />
-          </Row>
-        </Column>
-      </Column>
+      ))}
     </Column>
   );
 }

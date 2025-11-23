@@ -1,5 +1,6 @@
 import React from 'react';
 import { SizeValue, ColorValue, SpacingProps } from '../../core/theme/types';
+import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
 export interface BaseComponentProps extends SpacingProps {
   /** Component test ID for testing */
@@ -9,7 +10,7 @@ export interface BaseComponentProps extends SpacingProps {
   style?: any;
 }
 
-export interface SwitchProps extends BaseComponentProps {
+export interface SwitchProps extends BaseComponentProps, DisclaimerSupport {
   /** Whether switch is on */
   checked?: boolean;
   /** Initial checked state for uncontrolled usage */

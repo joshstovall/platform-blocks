@@ -1,88 +1,56 @@
 import { useState } from 'react';
-import { Radio, RadioGroup, Text, Column, Card, Row } from '@platform-blocks/ui';
+import { Column, Radio, RadioGroup, Text } from '@platform-blocks/ui';
+
+const COLOR_OPTIONS = ['primary', 'secondary', 'success', 'error'] as const;
 
 export default function Demo() {
-  const [selectedSize, setSelectedSize] = useState('medium');
-  const [selectedColor, setSelectedColor] = useState('primary');
+  const [sizeValue, setSizeValue] = useState<string>('club');
+  const [colorValue, setColorValue] = useState<typeof COLOR_OPTIONS[number]>('primary');
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Radio Variants</Text>
-      
-      <Card padding={16}>
-        <Column gap={12}>
-          <Text variant="body" weight="medium">Sizes</Text>
-          <RadioGroup
-            value={selectedSize}
-            onChange={setSelectedSize}
-            options={[
-              { label: 'Small radio', value: 'small' },
-              { label: 'Medium radio', value: 'medium' },
-              { label: 'Large radio', value: 'large' },
-            ]}
-            size="sm"
-          />
+    <Column gap="lg">
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Size tokens
+        </Text>
+        <RadioGroup
+          size="sm"
+          value={sizeValue}
+          onChange={setSizeValue}
+          options={[
+            { label: 'Club', value: 'club' },
+            { label: 'Suite', value: 'suite' },
+            { label: 'Field level', value: 'field' }
+          ]}
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Semantic colors
+        </Text>
+        <Column gap="xs">
+          {COLOR_OPTIONS.map((tone) => (
+            <Radio
+              key={tone}
+              value={tone}
+              checked={colorValue === tone}
+              onChange={(value) => setColorValue(value as typeof COLOR_OPTIONS[number])}
+              label={`${tone.charAt(0).toUpperCase()}${tone.slice(1)} tickets`}
+              color={tone}
+            />
+          ))}
         </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={12}>
-          <Text variant="body" weight="medium">Colors</Text>
-          <Column gap={8}>
-            <Radio
-              value="primary"
-              checked={selectedColor === 'primary'}
-              onChange={setSelectedColor}
-              label="Primary color"
-              color="primary"
-            />
-            <Radio
-              value="secondary"
-              checked={selectedColor === 'secondary'}
-              onChange={setSelectedColor}
-              label="Secondary color"
-              color="secondary"
-            />
-            <Radio
-              value="success"
-              checked={selectedColor === 'success'}
-              onChange={setSelectedColor}
-              label="Success color"
-              color="success"
-            />
-            <Radio
-              value="error"
-              checked={selectedColor === 'error'}
-              onChange={setSelectedColor}
-              label="Error color"
-              color="error"
-            />
-          </Column>
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={12}>
-          <Text variant="body" weight="medium">States</Text>
-          <Column gap={8}>
-            <Radio
-              value="normal"
-              checked={true}
-              label="Normal state"
-            />
-            <Radio
-              value="disabled"
-              disabled={true}
-              label="Disabled state"
-            />
-            <Radio
-              value="error-state"
-              error="This field has an error"
-              label="Error state"
-            />
-          </Column>
-        </Column>
-      </Card>
+      </Column>
+
+      <Column gap="xs">
+        <Text variant="small" colorVariant="muted">
+          Common states
+        </Text>
+        <Radio value="available" checked label="Available" />
+        <Radio value="disabled" disabled label="Disabled" />
+        <Radio value="error" error="Select a seat" label="Needs attention" />
+      </Column>
     </Column>
   );
 }

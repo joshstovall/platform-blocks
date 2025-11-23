@@ -1,7 +1,12 @@
 ---
-title: Persistent Menu
-description: `closeOnSelect={false}` keeps the dropdown open after selection for easy comparison.
-tags: ["persistent", "menu", "close-on-select", "multi-select", "comparison"]
+title: Persistent menu
+category: interaction
+order: 50
+tags: [persistent, close-on-select, comparison]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates the closeOnSelect prop set to false, which keeps the dropdown menu open after making a selection. This is useful for scenarios where users need to quickly compare options or make multiple selections.
+Keep the dropdown open after each choice for quick comparisons.

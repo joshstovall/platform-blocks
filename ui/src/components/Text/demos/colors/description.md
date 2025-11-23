@@ -3,7 +3,7 @@ title: Colors
 category: usage
 order: 20
 tags: [colors, theming]
-highlightLines: []
+highlightLines: [7-15, 19-25]
 status: stable
 since: 1.0.0
 hidden: false

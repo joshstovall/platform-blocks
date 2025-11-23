@@ -1,8 +1,12 @@
 ---
-title: States
+title: Interaction States
+category: behavior
+order: 70
 tags: [segmented-control, states, disabled, readonly]
-order: 50
-status: beta
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Different interaction states including disabled, read-only, and individually disabled items.
+Combine `disabled`, `readOnly`, or per-item `disabled` flags to signal availability without changing layout or selection rules.

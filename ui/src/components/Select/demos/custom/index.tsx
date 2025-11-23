@@ -1,41 +1,71 @@
-import React, { useState } from 'react';
-import { Select, Flex, Text, Block } from '@platform-blocks/ui';
+import { useState } from 'react'
 
-export default function CustomSelectDemo() {
-  const [value, setValue] = useState<string | null>(null);
-  const options = [
-    { label: '🚀 Rocket', value: 'rocket' },
-    { label: '🌙 Moon', value: 'moon' },
-    { label: '🪐 Planet', value: 'planet' },
-    { label: '☀️ Sun', value: 'sun' },
-  ];
+import { Block, Column, Select, Text } from '@platform-blocks/ui'
+
+type SportOption = { label: string; value: string; description: string }
+
+const sportsOptions: SportOption[] = [
+  {
+    label: '🏓 Table Tennis',
+    value: 'table-tennis',
+    description: 'Fast rallies on a compact table.',
+  },
+  {
+    label: '🏐 Volleyball',
+    value: 'volleyball',
+    description: 'Six-player rotations at the net.',
+  },
+  {
+  label: '🥍 Lacrosse',
+    value: 'lacrosse',
+    description: 'Stick handling plus quick transitions.',
+  },
+  {
+    label: '🥅 Water Polo',
+    value: 'water-polo',
+    description: 'Continuous play in the pool.',
+  },
+]
+
+export default function Demo() {
+  const [value, setValue] = useState<string | null>(sportsOptions[0].value)
 
   return (
-    <Flex direction="column" gap={12}>
+    <Column gap="sm">
+      <Text weight="semibold">Custom option rendering</Text>
+      <Text size="sm" colorVariant="secondary">
+        Render each option with additional detail and selection styling using `renderOption`.
+      </Text>
       <Select
-        label="Celestial Body"
-        placeholder="Choose..."
-        options={options}
-        value={value || undefined}
-        onChange={(val) => setValue(val as string)}
-        renderOption={(opt, _active, selected) => (
-          <Block>
-            <Text
-              key={String(opt.value)}
-              onPress={() => !opt.disabled && setValue(opt.value as string)}
+        label="Choose a sport"
+        placeholder="Pick a sport"
+        options={sportsOptions}
+        value={value ?? undefined}
+        onChange={(selected) => setValue(selected as string)}
+        renderOption={(option, _active, selected) => {
+          const sportOption = option as SportOption
+
+          return (
+            <Block
+              direction="column"
+              gap="xs"
               style={{
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                backgroundColor: selected ? 'rgba(59,130,246,0.10)' : 'transparent',
-                fontWeight: selected ? '600' : '400'
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: selected ? 'rgba(59,130,246,0.12)' : undefined,
               }}
             >
-              {opt.label} {selected ? '✓' : ''}
-            </Text>
-          </Block>
-        )}
+              <Text weight={selected ? 'semibold' : undefined}>{option.label}</Text>
+              <Text size="sm" colorVariant="secondary">
+                {sportOption.description}
+              </Text>
+            </Block>
+          )
+        }}
       />
-      {value && <Text size="sm" colorVariant="secondary">Selected: {value}</Text>}
-    </Flex>
-  );
+      <Text size="xs" colorVariant="secondary">
+        Selected: {value}
+      </Text>
+    </Column>
+  )
 }

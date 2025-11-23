@@ -1,11 +1,26 @@
-import { ToggleButton, ToggleGroup } from '@platform-blocks/ui';
+import { useState } from 'react';
 
-export default function BasicToggleDemo() {
+import { Column, Text, ToggleButton, ToggleGroup } from '@platform-blocks/ui';
+
+export default function Demo() {
+  const [alignment, setAlignment] = useState('center');
+
+  const handleChange = (nextValue: string | number | (string | number)[]) => {
+    if (typeof nextValue === 'string' || typeof nextValue === 'number') {
+      setAlignment(String(nextValue));
+    }
+  };
+
   return (
-    <ToggleGroup>
-      <ToggleButton value="left">Left</ToggleButton>
-      <ToggleButton value="center">Center</ToggleButton>
-      <ToggleButton value="right">Right</ToggleButton>
-    </ToggleGroup>
+    <Column gap="xs">
+      <ToggleGroup value={alignment} exclusive onChange={handleChange}>
+        <ToggleButton value="left">Left</ToggleButton>
+        <ToggleButton value="center">Center</ToggleButton>
+        <ToggleButton value="right">Right</ToggleButton>
+      </ToggleGroup>
+      <Text size="xs" colorVariant="secondary">
+        Selected alignment: {alignment}
+      </Text>
+    </Column>
   );
 }

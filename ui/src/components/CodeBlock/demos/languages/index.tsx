@@ -1,25 +1,19 @@
-import { CodeBlock, Flex } from '@platform-blocks/ui';
+import { CodeBlock, Column, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  return (
-    <Flex direction="column" gap={16}>
-      <CodeBlock language="tsx" title="React Component">
-        {`interface Props {
+const tsxExample = `interface Props {
   title: string;
   onPress?: () => void;
 }
 
-export const Button: React.FC<Props> = ({ title, onPress }) => {
+export function Button({ title, onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress}>
       <Text>{title}</Text>
     </TouchableOpacity>
   );
-};`}
-      </CodeBlock>
+}`;
 
-      <CodeBlock language="json" title="Package Configuration">
-        {`{
+const jsonExample = `{
   "name": "my-app",
   "version": "1.0.0",
   "dependencies": {
@@ -30,11 +24,9 @@ export const Button: React.FC<Props> = ({ title, onPress }) => {
     "start": "expo start",
     "build": "expo build"
   }
-}`}
-      </CodeBlock>
+}`;
 
-      <CodeBlock language="markdown" title="Documentation">
-        {`# Getting Started
+const markdownExample = `# Getting Started
 
 This is a **markdown** example with \`inline code\`.
 
@@ -44,8 +36,26 @@ This is a **markdown** example with \`inline code\`.
 - Multiple languages
 - Copy functionality
 
-> Blockquote with *emphasis* and **bold** text.`}
-      </CodeBlock>
-    </Flex>
+> Blockquote with *emphasis* and **bold** text.`;
+
+export default function Demo() {
+  return (
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Language presets</Text>
+      <Text size="sm" colorVariant="secondary">
+        CodeBlock detects syntax styles across languages like TypeScript, JSON, and Markdown.
+      </Text>
+      <Column gap="lg">
+        <CodeBlock language="tsx" title="React component">
+          {tsxExample}
+        </CodeBlock>
+        <CodeBlock language="json" title="Package configuration">
+          {jsonExample}
+        </CodeBlock>
+        <CodeBlock language="markdown" title="Documentation">
+          {markdownExample}
+        </CodeBlock>
+      </Column>
+    </Column>
   );
 }

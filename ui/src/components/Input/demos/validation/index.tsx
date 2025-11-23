@@ -45,7 +45,7 @@ export default function Demo() {
       
       <Card padding={16}>
         <Column gap={16}>
-          <Text variant="body" weight="medium">Required Fields</Text>
+          <Text variant="p" weight="medium">Required Fields</Text>
           
           <Input
             type="email"
@@ -92,7 +92,7 @@ export default function Demo() {
 
       <Card padding={16}>
         <Column gap={16}>
-          <Text variant="body" weight="medium">Disabled State</Text>
+          <Text variant="p" weight="medium">Disabled State</Text>
           <Input
             label="Disabled Input"
             placeholder="This input is disabled"

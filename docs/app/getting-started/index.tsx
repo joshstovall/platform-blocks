@@ -1,6 +1,6 @@
 import { ScrollView } from 'react-native';
 import { PageLayout } from '../../components/PageLayout';
-import { Text, Button, Card, Icon, CodeBlock, Alert, Row, Title, Flex, BrandIcon, Chip, Grid, GridItem } from '@platform-blocks/ui';
+import { Text, Button, Card, Icon, CodeBlock, Notice, Row, Title, Flex, BrandIcon, Chip, Grid, GridItem } from '@platform-blocks/ui';
 import { DocsPageHeader } from '../../components/DocsPageHeader';
 import { router } from 'expo-router';
 import { AVAILABLE_BRANDS, PLATFORMS, getTagConfig, type TagType } from '../../config/platforms';
@@ -12,7 +12,7 @@ const renderTagChip = (tag: TagType) => {
   return (
     <Chip
       key={tag}
-      size='sm'
+      size="sm"
       color={config.color}
       variant={config.variant as any}
       style={{ marginLeft: 4 }}
@@ -32,23 +32,23 @@ export default function GettingStartedOverviewScreen() {
           <Flex direction="column" p="lg" gap="xl">
             <Flex direction="column" gap="xs" fullWidth>
               <DocsPageHeader
-                weight='black'
-                subtitle='Everything you need to start building with Platform Blocks'
-                action={<Button title='Install' onPress={() => router.push('/installation')} />}
+                weight="black"
+                subtitle="Everything you need to start building with Platform Blocks"
+                action={<Button title="Install" onPress={() => router.push('/installation')} />}
               >
                 Getting Started
               </DocsPageHeader>
             </Flex>
 
             <Flex>
-              <Card>
-                <Text variant='h3' >
+              <Card variant="elevated" p="md">
+                <Text variant="h3" >
                   Installation
                 </Text>
-                <Text variant='body' colorVariant='secondary' >
+                <Text variant="p" colorVariant="secondary" >
                   Install Platform Blocks in your React Native project
                 </Text>
-                <CodeBlock language='javascript' mb="md">
+                <CodeBlock language="javascript" mb="md">
                   npm install @platform-blocks/ui
                 </CodeBlock>
               </Card>
@@ -56,30 +56,31 @@ export default function GettingStartedOverviewScreen() {
           </Flex>
           <Flex direction="column" p="lg" gap="xl" fullWidth>
             {/* <Flex> */}
-              <Title weight='black' size={40} afterline
-                            subtitle='One component model. Native feel everywhere.'
+              <Title weight="black" size={40} afterline
+                            subtitle="One component model. Native feel everywhere."
                 subtitleProps={{ variant: 'body' }}
 
               > Platforms</Title>
             
             {/* </Flex> */}
 
-            <Grid columns={12} gap='md'>
+            <Grid columns={12} gap="md">
               {PLATFORMS.map(p => (
                 <GridItem key={p.key} span={{ base: 12, lg: 4 }}>
                   <Card
                     key={p.key}
-                    variant='outline'
+                    variant="elevated"
+                    p="md"
                   >
-                    <Flex direction='column'  justify='space-between' gap="md">
-                        <Flex direction='row' align='center' gap='sm' >
-                          <BrandIcon brand={p.brand as any} size='xl' />
-                          <Text variant='h6' weight='semibold'>{p.label}</Text>
-                          <Text variant='caption' colorVariant='secondary'>({p.note})</Text>
+                    <Flex direction="column"  justify="space-between" gap="md">
+                        <Flex direction="row" align="center" gap="sm" >
+                          <BrandIcon brand={p.brand as any} size="xl" />
+                          <Text variant="h6" weight="semibold">{p.label}</Text>
+                          <Text variant="small" colorVariant="secondary">({p.note})</Text>
 
                           {p.tags?.map(renderTagChip)}
                         </Flex>
-                        <Text variant='body' colorVariant='secondary'>
+                        <Text variant="p" colorVariant="secondary">
                           {p.description}
                         </Text>
                     

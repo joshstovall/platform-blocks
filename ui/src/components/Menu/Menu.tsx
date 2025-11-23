@@ -16,7 +16,7 @@ import { ListGroup, ListGroupBody, ListGroupDivider } from '../ListGroup';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { useOverlay } from '../../core/providers/OverlayProvider';
-import { measureElement, calculateOverlayPosition } from '../../core/utils/positioning-enhanced';
+import { measureElement, calculateOverlayPositionEnhanced } from '../../core/utils/positioning-enhanced';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { MenuItemButton } from '../MenuItemButton';
 import {
@@ -236,7 +236,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
           positionResult = { x: cursorX, y: cursorY };
         }
       } else {
-        const calc = calculateOverlayPosition(triggerRect, overlaySize, {
+        const calc = calculateOverlayPositionEnhanced(triggerRect, overlaySize, {
           placement: position,
           offset,
           strategy: strategy === 'portal' ? 'fixed' : strategy,
@@ -397,8 +397,8 @@ function MenuItemBase(props: MenuItemProps, ref: React.Ref<View>) {
     children,
     onPress,
     disabled = false,
-    leftSection,
-    rightSection,
+    startSection,
+    endSection,
     color = 'default',
     closeMenuOnClick = true,
     testID,
@@ -427,8 +427,8 @@ function MenuItemBase(props: MenuItemProps, ref: React.Ref<View>) {
       ref={ref as any}
       onPress={handlePress}
       disabled={disabled}
-      startIcon={leftSection}
-      endIcon={rightSection}
+      startIcon={startSection}
+      endIcon={endSection}
       tone={tone}
       testID={testID}
       {...spacingProps}
@@ -447,7 +447,7 @@ function MenuLabelBase(props: MenuLabelProps, ref: React.Ref<View>) {
 
   return (
     <View ref={ref} style={[styles.label, spacingStyles]} testID={testID}>
-      <Text variant="caption" colorVariant="secondary">
+      <Text variant="small" colorVariant="secondary">
         {children}
       </Text>
     </View>

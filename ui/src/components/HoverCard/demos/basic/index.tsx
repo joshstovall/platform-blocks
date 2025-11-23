@@ -9,8 +9,8 @@ export default function HoverCardBasicDemo() {
         position="top"
         withArrow
       >
-        <Text variant="body" weight="semibold">Simple hover card</Text>
-        <Text variant="caption" colorVariant="muted" style={{ marginTop: 4 }}>
+        <Text variant="p" weight="semibold">Simple hover card</Text>
+        <Text variant="small" colorVariant="muted" style={{ marginTop: 4 }}>
           Appears when you hover or tap (on mobile) the target.
         </Text>
       </HoverCard>
@@ -23,7 +23,7 @@ export default function HoverCardBasicDemo() {
         radius="lg"
         withArrow
       >
-        <Text variant="body">You can wrap any element.</Text>
+        <Text variant="p">You can wrap any element.</Text>
       </HoverCard>
 
       <HoverCard
@@ -32,7 +32,7 @@ export default function HoverCardBasicDemo() {
         position="bottom"
         withArrow
       >
-        <Text variant="body">Opened via click. Click again (or outside) to close.</Text>
+        <Text variant="p">Opened via click. Click again (or outside) to close.</Text>
       </HoverCard>
     </Flex>
   );

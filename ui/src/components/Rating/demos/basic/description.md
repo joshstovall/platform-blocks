@@ -1,12 +1,12 @@
 ---
-title: Basic Usage
-category: usage
+title: Basics
+category: basics
 order: 10
-tags: [basic, rating]
+tags: [interactive]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic rating component with interactive and read-only modes for user feedback.
+Capture a single rating value with an interactive control and mirror the current score in helper text.

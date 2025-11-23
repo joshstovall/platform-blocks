@@ -1,5 +1,5 @@
 ---
-title: AppStoreBadge Basic
+title: Convenience components
 category: basics
 order: 10
 tags: [basic, getting-started, badge, app-store]

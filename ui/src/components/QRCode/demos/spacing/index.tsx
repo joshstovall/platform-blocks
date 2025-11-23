@@ -1,58 +1,37 @@
-import { View } from 'react-native';
-import { QRCode, Column, Text } from '@platform-blocks/ui';
+import { Block, Column, QRCode, Text, useTheme } from '@platform-blocks/ui';
+
+const QUIET_ZONES = [
+  { label: 'Default quiet zone (4)', quietZone: undefined },
+  { label: 'Minimal quiet zone (1)', quietZone: 1 },
+  { label: 'No quiet zone (0)', quietZone: 0 }
+] as const;
 
 export default function Demo() {
+  const theme = useTheme();
+
   return (
-    <Column gap={24} align="center">
-      {/* Default QRCode with significant quiet zone */}
-      <View style={{ alignItems: 'center' }}>
-        <QRCode
-          value="https://platform-blocks.com"
-          size={150}
-        />
-        <Text variant="caption" style={{ marginTop: 8, color: '#6b7280' }}>
-          Default (quietZone: 4)
+    <Column gap="lg" align="center">
+      {QUIET_ZONES.map(({ label, quietZone }) => (
+        <Column key={label} gap="xs" align="center">
+          <QRCode value="https://platform-blocks.com" size={150} quietZone={quietZone} />
+          <Text variant="small" colorVariant="muted">
+            {label}
+          </Text>
+        </Column>
+      ))}
+      <Column gap="xs" align="center">
+        <Block bg={theme.backgrounds.subtle} radius="lg" p="sm">
+          <QRCode
+            value="https://platform-blocks.com"
+            size={150}
+            quietZone={0}
+            m="xs"
+          />
+        </Block>
+        <Text variant="small" colorVariant="muted">
+          Use spacing props and container styling to pad the QR code externally.
         </Text>
-      </View>
-
-      {/* Reduced quiet zone for tighter spacing */}
-      <View style={{ alignItems: 'center' }}>
-        <QRCode
-          value="https://platform-blocks.com"
-          size={150}
-          quietZone={1}
-        />
-        <Text variant="caption" style={{ marginTop: 8, color: '#6b7280' }}>
-          Minimal padding (quietZone: 1)
-        </Text>
-      </View>
-
-      {/* No quiet zone for maximum code density */}
-      <View style={{ alignItems: 'center' }}>
-        <QRCode
-          value="https://platform-blocks.com"
-          size={150}
-          quietZone={0}
-        />
-        <Text variant="caption" style={{ marginTop: 8, color: '#6b7280' }}>
-          No padding (quietZone: 0)
-        </Text>
-      </View>
-
-      {/* Using spacing props for external margin control */}
-      <View style={{ alignItems: 'center' }}>
-        <QRCode
-          value="https://platform-blocks.com"
-          size={150}
-          quietZone={0}
-          m={16} // 16px margin on all sides
-          p={8}  // 8px padding inside the container
-          style={{ backgroundColor: '#f3f4f6', borderRadius: 12 }}
-        />
-        <Text variant="caption" style={{ marginTop: 8, color: '#6b7280' }}>
-          Custom container styling + spacing props
-        </Text>
-      </View>
+      </Column>
     </Column>
   );
 }

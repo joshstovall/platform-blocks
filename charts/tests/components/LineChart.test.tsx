@@ -270,7 +270,7 @@ describe('LineChart', () => {
 
     const alphaSeries = mockInteractionState.series.find((entry: any) => entry.id === 'alpha');
     expect(alphaSeries).toBeTruthy();
-    expect(alphaSeries.points[0].meta).toEqual(seriesData[0].data[0]);
+    expect(alphaSeries.points[0].meta).toMatchObject(seriesData[0].data[0]);
 
     const chartPressable = renderResult.UNSAFE_root.findAll(
       (node: any) => {

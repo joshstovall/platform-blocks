@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RangeSlider, Text, Column, Card, Flex } from '@platform-blocks/ui';
+import { RangeSlider, Text, Block, Card, Flex } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [priceRange, setPriceRange] = useState<[number, number]>([25, 75]);
@@ -7,11 +7,11 @@ export default function Demo() {
   const [scoreRange, setScoreRange] = useState<[number, number]>([60, 90]);
 
   return (
-    <Column gap={16}>
-      <Card>
-        <Column gap={16}>
+    <Block gap={16} fullWidth>
+       <Card>
+        <Block gap={16}>
           <Text size="lg" weight="semibold">Price Range</Text>
-          <Column gap={8}>
+          <Block gap={8}>
             <Flex justify="space-between">
               <Text size="sm">Min: ${priceRange[0]}</Text>
               <Text size="sm">Max: ${priceRange[1]}</Text>
@@ -28,14 +28,14 @@ export default function Demo() {
             <Text size="sm" style={{ color: '#666' }}>
               Budget range: ${priceRange[1] - priceRange[0]}
             </Text>
-          </Column>
-        </Column>
-      </Card>
+          </Block>
+        </Block>
+        </Card>
 
       <Card>
-        <Column gap={16}>
+        <Block gap={16}>
           <Text size="lg" weight="semibold">Temperature Range</Text>
-          <Column gap={8}>
+          <Block gap={8}>
             <RangeSlider
               value={temperatureRange}
               onChange={setTemperatureRange}
@@ -49,14 +49,14 @@ export default function Demo() {
             <Text size="sm" style={{ color: '#666' }}>
               Range: {temperatureRange[0]}°C - {temperatureRange[1]}°C
             </Text>
-          </Column>
-        </Column>
+          </Block>
+        </Block>
       </Card>
 
       <Card>
-        <Column gap={16}>
+        <Block gap={16}>
           <Text size="lg" weight="semibold">Score Range</Text>
-          <Column gap={8}>
+          <Block gap={8}>
             <RangeSlider
               value={scoreRange}
               onChange={setScoreRange}
@@ -70,10 +70,10 @@ export default function Demo() {
             <Text size="sm" style={{ color: '#666' }}>
               Score range: {scoreRange[0]} - {scoreRange[1]} (span: {scoreRange[1] - scoreRange[0]})
             </Text>
-          </Column>
-        </Column>
+          </Block>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }
 

@@ -14,7 +14,7 @@ import {
 import { useThemeMode } from '@platform-blocks/ui';
 import { directSpotlight } from '@platform-blocks/ui';
 import { GITHUB_REPO } from '../../config/urls';
-import { NAVIGATION_ITEMS } from '../../config/navigationConfig';
+import { NAV_SECTIONS } from '../../config/navigationConfig';
 
 interface AppHeaderProps {
   onThemeToggle?: () => void;
@@ -28,7 +28,7 @@ export function AppHeader({ onThemeToggle }: AppHeaderProps) {
 
   // Get page title based on current route
   const getPageTitle = useCallback(() => {
-    for (const section of NAVIGATION_ITEMS) {
+    for (const section of NAV_SECTIONS) {
       const item = section.items.find(item => item.route === pathname);
       if (item) return item.label;
     }

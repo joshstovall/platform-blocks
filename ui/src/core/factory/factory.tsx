@@ -1,6 +1,8 @@
 import React, { forwardRef, memo } from 'react';
 import { UniversalSystemProps } from '../utils/universal';
 
+type UnknownProps = Record<string, unknown>;
+
 // Base factory payload interface
 export interface FactoryPayload {
   props: any & UniversalSystemProps;
@@ -9,7 +11,7 @@ export interface FactoryPayload {
 }
 
 // Component with static properties
-export interface ComponentWithProps<Props = {}, RefType = any> {
+export interface ComponentWithProps<Props = UnknownProps, RefType = any> {
   withProps: <T extends Partial<Props>>(fixedProps: T) => any;
 }
 

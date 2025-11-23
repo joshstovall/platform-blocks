@@ -2,7 +2,6 @@ import React from 'react';
 import { Text as RNText, Platform, TextProps as RNTextProps } from 'react-native';
 
 import { useTheme } from '../../core/theme/ThemeProvider';
-import type { PlatformBlocksTheme } from '../../core/theme/types';
 import { SizeValue, getFontSize, getLineHeight } from '../../core/theme/sizes';
 import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { useI18n } from '../../core/i18n';
@@ -11,11 +10,9 @@ import { useDirection } from '../../core/providers/DirectionProvider';
 export type HTMLTextVariant =
   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   | 'p' | 'span' | 'div'
-  | 'small' | 'strong' | 'b' | 'i' | 'em' | 'u'
+  | 'small' | 'caption' | 'strong' | 'b' | 'i' | 'em' | 'u'
   | 'sub' | 'sup' | 'mark' | 'code' | 'kbd'
   | 'blockquote' | 'cite';
-
-export type LegacyTextVariant = 'body' | 'caption' | 'heading1' | 'heading2' | 'heading3' | 'subtitle';
 
 export interface TextProps extends SpacingProps {
   /** Text node children. Optional if using translation via `tx`. */
@@ -24,8 +21,8 @@ export interface TextProps extends SpacingProps {
   tx?: string;
   /** Params for translation interpolation */
   txParams?: Record<string, any>;
-  /** Text variant (HTML tags or legacy variants) */
-  variant?: HTMLTextVariant | LegacyTextVariant;
+  /** Text variant (mirrors semantic HTML tags) */
+  variant?: HTMLTextVariant;
   /** Size can be a size token or number (overrides variant fontSize) */
   size?: SizeValue;
   /** Text color (overrides theme text color) */
@@ -64,7 +61,7 @@ export interface TextProps extends SpacingProps {
 
 const getTextStyles = (
   theme: any,
-  variant: HTMLTextVariant | LegacyTextVariant = 'p',
+  variant: HTMLTextVariant = 'p',
   size?: SizeValue,
   weight?: TextProps['weight'],
   align: 'left' | 'center' | 'right' | 'justify' = 'left',
@@ -76,8 +73,7 @@ const getTextStyles = (
   uppercase?: boolean,
   isRTL?: boolean
 ) => {
-  // Combined variant font sizes (HTML + legacy support)
-  const variantFontSizes: Record<HTMLTextVariant | LegacyTextVariant, number> = {
+  const variantFontSizes: Record<HTMLTextVariant, number> = {
     // HTML heading variants
     h1: 32,
     h2: 28,
@@ -91,6 +87,7 @@ const getTextStyles = (
     span: 16,
     div: 16,
     small: 12,
+    caption: 12,
     code: 14,
     kbd: 14,
     blockquote: 18,
@@ -104,15 +101,7 @@ const getTextStyles = (
     u: 16,
     sub: 12,
     sup: 12,
-    mark: 16,
-
-    // Legacy variants (for backward compatibility)
-    heading1: 32,
-    heading2: 24,
-    heading3: 20,
-    subtitle: 18,
-    body: 16,
-    caption: 12
+    mark: 16
   };
 
   // Use size prop if provided, otherwise use variant-based size
@@ -123,7 +112,7 @@ const getTextStyles = (
     : fontSize * lineHeightMultiplier;
 
   // HTML variant styles with semantic defaults
-  const variantStyles: Record<HTMLTextVariant | LegacyTextVariant, any> = {
+  const variantStyles: Record<HTMLTextVariant, any> = {
     // HTML headings
     h1: { fontSize, fontWeight: '700', lineHeight: calculatedLineHeight },
     h2: { fontSize, fontWeight: '700', lineHeight: calculatedLineHeight },
@@ -137,6 +126,7 @@ const getTextStyles = (
     span: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight },
     div: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight },
     small: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight },
+    caption: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight },
 
     // HTML semantic elements
     strong: { fontSize, fontWeight: '700', lineHeight: calculatedLineHeight },
@@ -150,18 +140,7 @@ const getTextStyles = (
     code: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, fontFamily: Platform.select({ web: 'monospace', default: 'Courier New' }) },
     kbd: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, fontFamily: Platform.select({ web: 'monospace', default: 'Courier New' }) },
     blockquote: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, fontStyle: 'italic' },
-    cite: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, fontStyle: 'italic' },
-
-    // Legacy variants (backward compatibility)
-    heading1: { fontSize, fontWeight: '700', lineHeight: calculatedLineHeight },
-    heading2: { fontSize, fontWeight: '600', lineHeight: calculatedLineHeight },
-    heading3: { fontSize, fontWeight: '600', lineHeight: calculatedLineHeight },
-    subtitle: { fontSize, fontWeight: '500', lineHeight: calculatedLineHeight },
-    body: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, 
-      // wrap lines
-      flexWrap: 'wrap'
-     },
-    caption: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight }
+    cite: { fontSize, fontWeight: '400', lineHeight: calculatedLineHeight, fontStyle: 'italic' }
   };
 
   // Enhanced weight styles supporting all CSS font-weight values
@@ -449,7 +428,7 @@ export const Text: React.FC<TextProps> = (allProps) => {
 const isHTMLVariant = (variant: any): variant is HTMLTextVariant => {
   const htmlTags = [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'p', 'span', 'div', 'small', 'strong', 'b', 'i', 'em', 'u',
+    'p', 'span', 'div', 'small', 'caption', 'strong', 'b', 'i', 'em', 'u',
     'sub', 'sup', 'mark', 'code', 'kbd', 'blockquote', 'cite'
   ];
   return htmlTags.includes(variant);

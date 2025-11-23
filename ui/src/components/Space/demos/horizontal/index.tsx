@@ -1,17 +1,44 @@
-import { Row, Space, Button } from '@platform-blocks/ui';
+import { Block, Button, Column, Row, Space, Text, useTheme } from '@platform-blocks/ui';
 
-export default function HorizontalSpaceDemo() {
+const GROUPS = [
+  {
+    label: 'Token spacing (lg)',
+    gap: 'lg' as const,
+    helper: 'Theme tokens keep button gutters aligned with the spacing scale.'
+  },
+  {
+    label: 'Numeric spacing (18px)',
+    gap: 18,
+    helper: 'Use a numeric width when exact measurements are required.'
+  }
+] as const;
+
+export default function Demo() {
+  const theme = useTheme();
+
   return (
-    <Row align="center">
-      <Button size="sm">Primary</Button>
-      <Space w="lg" />
-      <Button size="sm" variant="secondary">
-        Secondary
-      </Button>
-      <Space w={12} />
-      <Button size="sm" variant="ghost">
-        Ghost
-      </Button>
-    </Row>
+    <Column gap="xl">
+      {GROUPS.map(({ label, gap, helper }) => (
+        <Column key={label} gap="xs">
+          <Text weight="medium">{label}</Text>
+          <Block bg={theme.backgrounds.surface} radius="lg" p="md">
+            <Row align="center">
+              <Button size="sm">Primary</Button>
+              <Space w={gap} />
+              <Button size="sm" variant="secondary">
+                Secondary
+              </Button>
+              <Space w={gap} />
+              <Button size="sm" variant="ghost">
+                Ghost
+              </Button>
+            </Row>
+          </Block>
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
+    </Column>
   );
 }

@@ -1,5 +1,5 @@
 ---
-title: AppStoreBadge Basic
+title: Basic usage
 category: basics
 order: 10
 tags: [basic, getting-started, badge, app-store]

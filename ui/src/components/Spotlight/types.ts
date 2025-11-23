@@ -32,7 +32,7 @@ export interface SpotlightSearchProps {
   value?: string;
   onChangeText?: (text: string) => void;
   placeholder?: string;
-  leftSection?: React.ReactNode;
+  startSection?: React.ReactNode;
   onNavigateUp?: () => void;
   onNavigateDown?: () => void;
   onSelectAction?: () => void;
@@ -53,8 +53,8 @@ export interface SpotlightActionsListProps {
 export interface SpotlightActionProps {
   label?: string;
   description?: string;
-  leftSection?: React.ReactNode;
-  rightSection?: React.ReactNode;
+  startSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   onPress?: () => void;
   disabled?: boolean;
   selected?: boolean;

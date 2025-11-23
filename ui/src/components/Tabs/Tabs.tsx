@@ -479,6 +479,10 @@ export const Tabs: React.FC<TabsProps> = (props) => {
   // Tab layout measurements
   const [tabLayouts, setTabLayouts] = useState<Record<string, LayoutRectangle>>({});
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  const [contentVersions, setContentVersions] = useState<Record<string, number>>({});
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const labelCacheRef = useRef<Record<string, { label: TabItem['label']; subLabel?: TabItem['subLabel'] }>>({});
+  const itemsSignatureRef = useRef<string>('');
 
   const handleTabLayout = useCallback((tabKey: string, event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout;
@@ -496,6 +500,67 @@ export const Tabs: React.FC<TabsProps> = (props) => {
         : { width, height }
     ));
   }, []);
+
+  // Detect runtime label/subLabel or ordering changes and invalidate layouts when needed
+  useEffect(() => {
+    const cache = labelCacheRef.current;
+    const currentKeys = new Set(items.map(item => item.key));
+    const nextSignature = items.map(item => item.key).join('|');
+    const orderChanged = itemsSignatureRef.current !== nextSignature;
+    itemsSignatureRef.current = nextSignature;
+
+    const removedKeys: string[] = [];
+    Object.keys(cache).forEach((key) => {
+      if (!currentKeys.has(key)) {
+        removedKeys.push(key);
+        delete cache[key];
+      }
+    });
+
+    const dirtyKeys: string[] = [];
+    items.forEach((item) => {
+      const cached = cache[item.key];
+      if (!cached) {
+        cache[item.key] = { label: item.label, subLabel: item.subLabel };
+        return;
+      }
+
+      if (cached.label !== item.label || cached.subLabel !== item.subLabel) {
+        cache[item.key] = { label: item.label, subLabel: item.subLabel };
+        dirtyKeys.push(item.key);
+      }
+    });
+
+    if (!dirtyKeys.length && !removedKeys.length && !orderChanged) {
+      return;
+    }
+
+    setContentVersions((prev) => {
+      let changed = false;
+      const next = { ...prev };
+
+      removedKeys.forEach((key) => {
+        if (next[key] !== undefined) {
+          delete next[key];
+          changed = true;
+        }
+      });
+
+      dirtyKeys.forEach((key) => {
+        next[key] = (next[key] ?? 0) + 1;
+        changed = true;
+      });
+
+      return changed ? next : prev;
+    });
+
+    const shouldInvalidateLayouts = orderChanged || dirtyKeys.length > 0 || removedKeys.length > 0;
+
+    if (shouldInvalidateLayouts) {
+      setLayoutVersion((prev) => prev + 1);
+      setTabLayouts((prev) => (Object.keys(prev).length ? {} : prev));
+    }
+  }, [items]);
 
   // Reduced motion preference & re-animation guards
   const reducedMotion = useReducedMotion();
@@ -701,6 +766,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
       {navigationOnly ? (
         <TabsHeader {...tabsHeaderProps}>
           {items.map((item, index) => {
+            const renderKey = `${item.key}-${layoutVersion}-${contentVersions[item.key] ?? 0}`;
             const isActive = item.key === activeTab;
             const isDisabled = item.disabled || disabledKeySet.has(item.key);
             const cornerStyles = getCornerStyles(index, items.length);
@@ -712,7 +778,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
 
             return (
               <Pressable
-                key={item.key}
+                key={renderKey}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive, disabled: isDisabled }}
                 onLayout={(event) => handleTabLayout(item.key, event)}
@@ -753,6 +819,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
 
           {(variant === 'line' || variant === 'chip') && (
             <Animated.View
+              testID="tabs-indicator"
               style={[
                 styles.indicator,
                 animatedIndicatorStyle,
@@ -764,6 +831,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
         <>
           <TabsHeader {...tabsHeaderProps}>
             {items.map((item, index) => {
+              const renderKey = `${item.key}-${layoutVersion}-${contentVersions[item.key] ?? 0}`;
               const isActive = item.key === activeTab;
               const isDisabled = item.disabled || disabledKeySet.has(item.key);
               const cornerStyles = getCornerStyles(index, items.length);
@@ -776,7 +844,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
 
               return (
                 <Pressable
-                  key={item.key}
+                  key={renderKey}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: isActive, disabled: isDisabled }}
                   onLayout={(event) => handleTabLayout(item.key, event)}
@@ -827,6 +895,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
             {/* Animated indicator for line variant */}
             {(variant === 'line' || variant === 'chip') && (
               <Animated.View
+                testID="tabs-indicator"
                 style={[
                   styles.indicator,
                   animatedIndicatorStyle,

@@ -16,7 +16,6 @@ export interface CoreComponentConfig {
  * List of core components to show in the components explorer
  * Components not in this list will be hidden from the main /components page
  */
-// TODO: can this be removed / geneated from source?
 export const CORE_COMPONENTS: CoreComponentConfig[] = [
   // Input Components
   { name: 'Button', category: 'input', icon: 'button' },
@@ -45,7 +44,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Search', category: 'input', icon: 'search', description: 'Search input with debouncing and customizable features' },
   { name: 'Select', category: 'input', icon: 'select', description: 'Dropdown selection input with keyboard-aware dismissal defaults' },
   { name: 'Slider', category: 'input', icon: 'slider' },
-  { name: 'Knob', category: 'input', icon: 'dial', description: 'Rotary knob input for selecting values within a range' },
+  { name: 'Knob', category: 'input', icon: 'knob', description: 'Rotary knob input for selecting values within a range' },
   { name: 'Switch', category: 'input', icon: 'toggle' },
   { name: 'TextArea', category: 'input', icon: 'textarea', description: 'Multi-line text input with auto-resize and character counter' },
   { name: 'Toggle', category: 'input', icon: 'toggle', description: 'Toggle button group for single or multiple selection' },
@@ -57,6 +56,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
 
   // Display Components
   { name: 'Avatar', category: 'display', icon: 'avatar' },
+  { name: 'Collapse', category: 'display', icon: 'accordion', description: 'Animated height collapse/expand container for showing/hiding content' },
   { name: 'Badge', category: 'display', icon: 'badge', description: 'Small status or counter indicator positioned on a parent element' },
   { name: 'Tooltip', category: 'display', icon: 'tooltip' },
   { name: 'Popover', category: 'display', icon: 'popover' },
@@ -70,7 +70,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'CodeBlock', category: 'typography', icon: 'code' },
   { name: 'CopyButton', category: 'typography', icon: 'copy', description: 'Utility to copy content to clipboard with feedback' },
   { name: 'KeyCap', category: 'typography', icon: 'keycap', description: 'Display keyboard shortcuts with press animations' },
-  { name: 'SyntaxHighlighter', category: 'typography', icon: 'code' },
+  // { name: 'SyntaxHighlighter', category: 'typography', icon: 'code' },
   { name: 'GradientText', category: 'typography', icon: 'text', description: 'Text component with gradient color support' },
   { name: 'ShimmerText', category: 'typography', icon: 'text', description: 'Animated shimmering text placeholder for loading states' },
   { name: 'Icon', category: 'typography', icon: 'star' },
@@ -90,7 +90,8 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
 
   // Layout Components
   { name: 'Block', category: 'layout', icon: 'block' },
-  { name: 'KeyboardAwareLayout', category: 'layout', icon: 'keyboard', description: 'Layout wrapper that pads or scrolls content based on keyboard height using KeyboardManagerProvider' },
+  { name: 'Can', category: 'layout', icon: 'lock', description: 'Conditional rendering based on user permissions and abilities' },
+  // { name: 'KeyboardAwareLayout', category: 'layout', icon: 'keyboard', description: 'Layout wrapper that pads or scrolls content based on keyboard height using KeyboardManagerProvider' },
   { name: 'Card', category: 'display', icon: 'card' },
   { name: 'HoverCard', category: 'display', icon: 'tooltip', description: 'Contextual popup card on hover or focus' },
   { name: 'Flex', category: 'layout', icon: 'flex' },
@@ -105,7 +106,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'SegmentedControl', category: 'layout', icon: 'splitTrack' },
 
   // Feedback Components 
-  { name: 'Alert', category: 'feedback', icon: 'bell' },
+  { name: 'Notice', category: 'feedback', icon: 'bell' },
   { name: 'Blockquote', category: 'typography', icon: 'quote', description: 'Stylized blockquote for highlighting quotes or important text' },
   { name: 'Dialog', category: 'feedback', icon: 'dialog' },
   { name: 'ToastProvider', category: 'feedback', icon: 'bell', description: 'Global notification system with positioning and queuing' },
@@ -129,12 +130,12 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Spotlight', category: 'navigation', icon: 'spotlight', description: 'Command palette / global action search interface' },
   { name: 'Tree', category: 'navigation', icon: 'tree', description: 'Hierarchical tree view with expansion, selection, checkboxes, and filtering' },
 
-  // Form Components
-  { name: 'LoginForm', category: 'form', icon: 'user' },
-  { name: 'SignupForm', category: 'form', icon: 'user' },
-  { name: 'ContactForm', category: 'form', icon: 'mail' },
-  { name: 'ForgotPasswordForm', category: 'form', icon: 'settings' },
-  { name: 'Form', category: 'form', icon: 'form', description: 'Declarative form system with validation and layout primitives' },
+  // // Form Components
+  // { name: 'LoginForm', category: 'form', icon: 'user' },
+  // { name: 'SignupForm', category: 'form', icon: 'user' },
+  // { name: 'ContactForm', category: 'form', icon: 'mail' },
+  // { name: 'ForgotPasswordForm', category: 'form', icon: 'settings' },
+  // { name: 'Form', category: 'form', icon: 'form', description: 'Declarative form system with validation and layout primitives' },
 
   // Charts
   { name: 'AreaChart', category: 'charts', icon: 'chart-area' },
@@ -156,7 +157,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'RidgeChart', category: 'charts', icon: 'chart-area' },
   { name: 'SankeyChart', category: 'charts', icon: 'chart-line' },
   { name: 'ScatterChart', category: 'charts', icon: 'chart-scatter' },
-  { name: 'SparklineChart', category: 'charts', icon: 'waveform' },
+  { name: 'SparklineChart', category: 'charts', icon: 'chart-sparkline' },
   { name: 'StackedAreaChart', category: 'charts', icon: 'chart-area' },
   { name: 'StackedBarChart', category: 'charts', icon: 'chart-bar' },
   { name: 'ViolinChart', category: 'charts', icon: 'chart-area' },

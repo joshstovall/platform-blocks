@@ -1,41 +1,49 @@
-import { useMemo, useRef } from 'react';
-import { View } from 'react-native';
+import { useMemo } from 'react';
+import type { AccordionAnimationProp } from '../types';
 
 export interface UseAccordionItemAnimationOptions {
   expanded: boolean;
-  animated: boolean | { duration?: number; easing?: (t: number) => number };
+  animated: AccordionAnimationProp;
+}
+
+export interface AccordionCollapseConfig {
+  shouldAnimate: boolean;
+  duration: number;
+  easing?: (t: number) => number;
 }
 
 export interface UseAccordionItemAnimationResult {
-  contentRef: React.RefObject<View | null>;
-  onContentLayout: (e: any) => void;
-  animatedHeightStyle: any;
   animatedChevronStyle: any;
-  isLayoutComplete: boolean;
-  contentHeight: number;
+  CollapseConfig: AccordionCollapseConfig;
 }
 
+const DEFAULT_DURATION = 220;
+
 export function useAccordionItemAnimation(opts: UseAccordionItemAnimationOptions): UseAccordionItemAnimationResult {
-  const { expanded } = opts;
-  const contentRef = useRef<View>(null);
-  const onContentLayout = () => {};
+  const { expanded, animated } = opts;
 
-  // No animation: just show or hide content via static style
-  const animatedHeightStyle = useMemo(() => (
-    expanded ? {} : { height: 0, overflow: 'hidden' as const }
-  ), [expanded]);
-
-  // No animation: snap chevron rotation based on state
   const animatedChevronStyle = useMemo(() => ({
     transform: [{ rotate: expanded ? '90deg' : '0deg' }],
   }), [expanded]);
 
+  const CollapseConfig = useMemo<AccordionCollapseConfig>(() => {
+    if (animated === false) {
+      return { shouldAnimate: false, duration: 0 };
+    }
+
+    if (animated === true || animated === undefined) {
+      return { shouldAnimate: true, duration: DEFAULT_DURATION };
+    }
+
+    return {
+      shouldAnimate: true,
+      duration: animated.duration ?? DEFAULT_DURATION,
+      easing: animated.easing,
+    };
+  }, [animated]);
+
   return {
-    contentRef,
-    onContentLayout,
-    animatedHeightStyle,
     animatedChevronStyle,
-    isLayoutComplete: true,
-    contentHeight: 0,
+    CollapseConfig,
   };
 }

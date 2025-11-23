@@ -1,11 +1,11 @@
 ---
-title: Performance Optimized
+title: Performance tuning
 category: performance
 order: 40
-tags: [performance, virtualization, memoization, large-data]
-status: experimental
-since: 1.0.0
+tags: [virtualization, reduced-motion]
+highlightLines: []
+status: stable
+since: 0.3.0
 hidden: false
 ---
-
-High-performance carousel with 50 slides using virtualization, memoization, and reduced motion for optimal performance.
+Pair `windowSize` with `reducedMotion` to keep large or data-heavy carousels responsive while still exposing arrow navigation.

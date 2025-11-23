@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { SpacingProps, LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 import { SizeValue } from '../../core/theme/sizes';
+import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
 export interface ToggleButtonProps extends SpacingProps, LayoutProps, BorderRadiusProps {
   /** Value for this toggle button */
@@ -29,7 +30,7 @@ export interface ToggleButtonProps extends SpacingProps, LayoutProps, BorderRadi
   testID?: string;
 }
 
-export interface ToggleGroupProps extends SpacingProps, LayoutProps, BorderRadiusProps {
+export interface ToggleGroupProps extends SpacingProps, LayoutProps, BorderRadiusProps, DisclaimerSupport {
   /** Current selected value(s) */
   value?: string | number | (string | number)[];
   /** Initial value(s) for uncontrolled usage */

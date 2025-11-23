@@ -1,41 +1,41 @@
-import { Button, Text, Flex } from '@platform-blocks/ui';
-import { Popover } from '../..';
+import { Button, Card, Column, Popover, Row, Text } from '@platform-blocks/ui';
 
-type PlacementOption = {
-  label: string;
-  position: 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end';
-};
+const OPTIONS = [
+  { label: 'Top', position: 'top', description: 'Appears above the trigger.' },
+  { label: 'Right', position: 'right', description: 'Anchors to the right edge.' },
+  { label: 'Bottom', position: 'bottom', description: 'Drops below the trigger.' },
+  { label: 'Left', position: 'left', description: 'Anchors to the left edge.' },
+] as const;
 
-const OPTIONS: PlacementOption[] = [
-  { label: 'Top', position: 'top' },
-  { label: 'Top start', position: 'top-start' },
-  { label: 'Top end', position: 'top-end' },
-  { label: 'Right', position: 'right' },
-  { label: 'Right start', position: 'right-start' },
-  { label: 'Right end', position: 'right-end' },
-  { label: 'Bottom', position: 'bottom' },
-  { label: 'Bottom start', position: 'bottom-start' },
-  { label: 'Bottom end', position: 'bottom-end' },
-  { label: 'Left', position: 'left' },
-  { label: 'Left start', position: 'left-start' },
-  { label: 'Left end', position: 'left-end' },
-];
-
-export default function PopoverPlacementsDemo() {
+export default function Demo() {
   return (
-    <Flex wrap="wrap" gap="md" style={{ maxWidth: 520 }}>
-      {OPTIONS.map(({ label, position }) => (
-        <Popover key={position} position={position} withArrow>
-          <Popover.Target>
-            <Button size="xs" variant="outline">
-              {label}
-            </Button>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Text style={{ padding: 12 }}>Placement: {position}</Text>
-          </Popover.Dropdown>
-        </Popover>
-      ))}
-    </Flex>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="sm">
+          <Text size="sm" colorVariant="secondary">
+            Set the `position` prop to control where the dropdown renders relative to its trigger.
+          </Text>
+          <Row gap="md" justify="center" wrap="wrap">
+            {OPTIONS.map(({ label, position, description }) => (
+              <Popover key={position} position={position} withArrow>
+                <Popover.Target>
+                  <Button size="sm" variant="outline">
+                    {label}
+                  </Button>
+                </Popover.Target>
+                <Popover.Dropdown>
+                  <Column gap="xs" p="sm" style={{ maxWidth: 220 }}>
+                    <Text weight="semibold">{label} placement</Text>
+                    <Text variant="small" colorVariant="secondary">
+                      {description}
+                    </Text>
+                  </Column>
+                </Popover.Dropdown>
+              </Popover>
+            ))}
+          </Row>
+        </Column>
+      </Card>
+    </Column>
   );
 }

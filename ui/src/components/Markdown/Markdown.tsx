@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Image } from 'react-native';
+import React, { useMemo, useCallback, useRef } from 'react';
+import { View, Image, Pressable, Linking } from 'react-native';
 import { Text } from '../Text';
 import { CodeBlock } from '../CodeBlock';
 import { useTheme } from '../../core/theme';
@@ -19,6 +19,8 @@ export interface MarkdownProps extends SpacingProps {
   allowHtml?: boolean;
   /** Custom renderer overrides */
   components?: Partial<MarkdownComponentMap>;
+  /** Optional handler invoked when a markdown link is pressed */
+  onLinkPress?: (href: string) => void;
 }
 
 export interface MarkdownComponentMap {
@@ -34,11 +36,22 @@ export interface MarkdownComponentMap {
   link: (props: { href: string; children: React.ReactNode }) => React.ReactNode;
   image: (props: { src: string; alt?: string }) => React.ReactNode;
   thematicBreak: () => React.ReactNode;
-  table: (props: { headers: React.ReactNode[]; rows: React.ReactNode[][] }) => React.ReactNode;
-  tableCell: (props: { children: React.ReactNode; isHeader?: boolean }) => React.ReactNode;
+  table: (props: {
+    headers: React.ReactNode[];
+    rows: React.ReactNode[][];
+    alignments?: (TableAlignment | undefined)[];
+  }) => React.ReactNode;
+  tableCell: (props: {
+    children: React.ReactNode;
+    isHeader?: boolean;
+    align?: TableAlignment;
+  }) => React.ReactNode;
 }
 
-const createDefaultComponents = (theme: PlatformBlocksTheme): MarkdownComponentMap => ({
+const createDefaultComponents = (
+  theme: PlatformBlocksTheme,
+  handleLinkPress: (href: string) => void,
+): MarkdownComponentMap => ({
   heading: ({ level, children }) => (
     <Text
       variant={`h${Math.min(level, 6)}` as any}
@@ -117,10 +130,12 @@ const createDefaultComponents = (theme: PlatformBlocksTheme): MarkdownComponentM
       {children}
     </Text>
   ),
-  link: ({ children }) => (
-    <Text variant="u" style={{ color: theme.text.link }}>
-      {children}
-    </Text>
+  link: ({ href, children }) => (
+    <Pressable onPress={() => handleLinkPress(href)}>
+      <Text variant="u" style={{ color: theme.text.link }}>
+        {children}
+      </Text>
+    </Pressable>
   ),
   image: ({ src, alt }) => (
     <Image
@@ -143,71 +158,81 @@ const createDefaultComponents = (theme: PlatformBlocksTheme): MarkdownComponentM
       }}
     />
   ),
-  table: ({ headers, rows }) => (
-    <View
-      style={{
-        marginVertical: 12,
-        borderRadius: 8,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: theme.colors.gray?.[3] || theme.backgrounds.border,
-      }}
-    >
-      {/* Header row */}
+  table: ({ headers, rows, alignments }) => {
+    const getAlignmentStyle = (alignment?: TableAlignment) => {
+      if (alignment === 'center') return { alignItems: 'center' as const };
+      if (alignment === 'right') return { alignItems: 'flex-end' as const };
+      return { alignItems: 'flex-start' as const };
+    };
+    return (
       <View
         style={{
-          flexDirection: 'row',
-          backgroundColor: theme.colors.gray?.[1] || theme.backgrounds.subtle,
+          marginVertical: 12,
+          borderRadius: 8,
+          overflow: 'hidden',
+          borderWidth: 1,
+          borderColor: theme.colors.gray?.[3] || theme.backgrounds.border,
         }}
       >
-        {headers.map((header, i) => (
-          <View
-            key={i}
-            style={{
-              flex: 1,
-              padding: 12,
-              borderRightWidth: i < headers.length - 1 ? 1 : 0,
-              borderRightColor: theme.colors.gray?.[3] || theme.backgrounds.border,
-            }}
-          >
-            {header}
-          </View>
-        ))}
-      </View>
-      {/* Data rows */}
-      {rows.map((row, rowIndex) => (
+        {/* Header row */}
         <View
-          key={rowIndex}
           style={{
             flexDirection: 'row',
-            borderTopWidth: 1,
-            borderTopColor: theme.colors.gray?.[3] || theme.backgrounds.border,
+            backgroundColor: theme.colors.gray?.[1] || theme.backgrounds.subtle,
           }}
         >
-          {row.map((cell, cellIndex) => (
+          {headers.map((header, i) => (
             <View
-              key={cellIndex}
+              key={i}
               style={{
                 flex: 1,
                 padding: 12,
-                borderRightWidth: cellIndex < row.length - 1 ? 1 : 0,
+                borderRightWidth: i < headers.length - 1 ? 1 : 0,
                 borderRightColor: theme.colors.gray?.[3] || theme.backgrounds.border,
+                ...getAlignmentStyle(alignments?.[i]),
               }}
             >
-              {cell}
+              {header}
             </View>
           ))}
         </View>
-      ))}
-    </View>
-  ),
-  tableCell: ({ children, isHeader }) => (
+        {/* Data rows */}
+        {rows.map((row, rowIndex) => (
+          <View
+            key={rowIndex}
+            style={{
+              flexDirection: 'row',
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.gray?.[3] || theme.backgrounds.border,
+            }}
+          >
+            {row.map((cell, cellIndex) => (
+              <View
+                key={cellIndex}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRightWidth: cellIndex < row.length - 1 ? 1 : 0,
+                  borderRightColor: theme.colors.gray?.[3] || theme.backgrounds.border,
+                  ...getAlignmentStyle(alignments?.[cellIndex]),
+                }}
+              >
+                {cell}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  },
+  tableCell: ({ children, isHeader, align }) => (
     <Text
       variant={isHeader ? 'strong' : 'p'}
       style={{
         fontSize: 14,
         lineHeight: 18,
         marginBottom: 0,
+        textAlign: align ?? 'left',
       }}
     >
       {children}
@@ -215,107 +240,290 @@ const createDefaultComponents = (theme: PlatformBlocksTheme): MarkdownComponentM
   ),
 });
 
-interface TokenBase { type: string; }
-interface HeadingToken extends TokenBase { type: 'heading'; level: number; text: string; }
-interface ParagraphToken extends TokenBase { type: 'paragraph'; text: string; }
-interface CodeBlockToken extends TokenBase { type: 'code'; code: string; language?: string; }
-interface BlockquoteToken extends TokenBase { type: 'blockquote'; children: Token[]; }
-interface ListToken extends TokenBase { type: 'list'; ordered: boolean; items: string[]; }
-interface ThematicBreakToken extends TokenBase { type: 'thematicBreak'; }
-interface TableToken extends TokenBase { 
-  type: 'table'; 
-  headers: string[]; 
-  rows: string[][]; 
+interface InlineTextNode { type: 'text'; value: string; }
+interface InlineStrongNode { type: 'strong'; value: string; }
+interface InlineEmNode { type: 'em'; value: string; }
+interface InlineStrongEmNode { type: 'strongEm'; value: string; }
+interface InlineCodeNode { type: 'code'; value: string; }
+interface InlineLinkNode { type: 'link'; href: string; label: string; }
+interface InlineImageNode { type: 'image'; src: string; alt?: string; }
+
+type InlineNode =
+  | InlineTextNode
+  | InlineStrongNode
+  | InlineEmNode
+  | InlineStrongEmNode
+  | InlineCodeNode
+  | InlineLinkNode
+  | InlineImageNode;
+
+type TableAlignment = 'left' | 'center' | 'right';
+
+interface HeadingNode { type: 'heading'; level: number; inline: InlineNode[]; }
+interface ParagraphNode { type: 'paragraph'; inline: InlineNode[]; }
+interface CodeBlockNode { type: 'code'; code: string; language?: string; }
+interface BlockquoteNode { type: 'blockquote'; children: BlockNode[]; }
+interface ListNode { type: 'list'; ordered: boolean; items: InlineNode[][]; }
+interface ThematicBreakNode { type: 'thematicBreak'; }
+interface TableNode { type: 'table'; headers: InlineNode[][]; rows: InlineNode[][][]; alignments: (TableAlignment | undefined)[]; }
+
+type BlockNode =
+  | HeadingNode
+  | ParagraphNode
+  | CodeBlockNode
+  | BlockquoteNode
+  | ListNode
+  | ThematicBreakNode
+  | TableNode;
+
+const createTokenKeyGenerator = () => {
+  const occurrences = new Map<string, number>();
+  return (token: BlockNode) => {
+    const count = occurrences.get(token.type) ?? 0;
+    occurrences.set(token.type, count + 1);
+    return `${token.type}-${count}`;
+  };
+};
+
+class LineIterator {
+  private buffer: (string | null)[] = [];
+  private position = 0;
+
+  constructor(private readonly src: string) {}
+
+  peek(offset = 0): string | null {
+    while (this.buffer.length <= offset) {
+      const next = this.readLine();
+      if (next === null) break;
+      this.buffer.push(next);
+    }
+    return this.buffer[offset] ?? null;
+  }
+
+  next(): string | null {
+    if (this.buffer.length > 0) {
+      return this.buffer.shift() ?? null;
+    }
+    return this.readLine();
+  }
+
+  private readLine(): string | null {
+    if (this.position >= this.src.length) return null;
+    const newlineIndex = this.src.indexOf('\n', this.position);
+    let line: string;
+    if (newlineIndex === -1) {
+      line = this.src.slice(this.position);
+      this.position = this.src.length;
+    } else {
+      line = this.src.slice(this.position, newlineIndex);
+      this.position = newlineIndex + 1;
+    }
+    if (line.endsWith('\r')) {
+      line = line.slice(0, -1);
+    }
+    return line;
+  }
 }
 
-type Token = HeadingToken | ParagraphToken | CodeBlockToken | BlockquoteToken | ListToken | ThematicBreakToken | TableToken;
-
-// Very small block-level tokenizer
-const tokenize = (src: string): Token[] => {
-  const lines = src.split(/\r?\n/);
-  const tokens: Token[] = [];
-  let i=0;
-  while(i<lines.length){
-    let line = lines[i];
-    // code fence
-    const fenceMatch = line.match(/^```(.*)$/);
-    if(fenceMatch){
-      const lang = fenceMatch[1].trim()||undefined;
-      i++;
-      const codeLines: string[] = [];
-      while(i<lines.length && !lines[i].startsWith('```')){ codeLines.push(lines[i]); i++; }
-      if(i<lines.length && lines[i].startsWith('```')) i++; // consume closing fence
-      tokens.push({ type:'code', code: codeLines.join('\n'), language: lang });
-      continue;
-    }
-    // heading
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
-    if(headingMatch){
-      tokens.push({ type:'heading', level: headingMatch[1].length, text: headingMatch[2] });
-      i++; continue;
-    }
-    // thematic break
-    if(/^(-\s?){3,}$/.test(line) || /^(\*\s?){3,}$/.test(line) || /^(\_\s?){3,}$/.test(line)){
-      tokens.push({ type:'thematicBreak' }); i++; continue;
-    }
-    // blockquote
-    if(line.startsWith('>')){
-      const quoteLines: string[] = [];
-      while(i<lines.length && lines[i].startsWith('>')){ quoteLines.push(lines[i].replace(/^>\s?/,'')); i++; }
-      const inner = tokenize(quoteLines.join('\n'));
-      tokens.push({ type:'blockquote', children: inner });
-      continue;
-    }
-    // list
-    if(/^\s*([*\-+] )/.test(line) || /^\s*\d+\. /.test(line)){
-      const ordered = /^\s*\d+\. /.test(line);
-      const items: string[] = [];
-      while(i<lines.length && ( /^\s*([*\-+] )/.test(lines[i]) || /^\s*\d+\. /.test(lines[i]) )){
-        items.push(lines[i].replace(/^\s*([*\-+]|\d+\.)\s+/,''));
-        i++;
-      }
-      tokens.push({ type:'list', ordered, items });
-      continue;
-    }
-    // table (must have header row followed by separator row)
-    if(line.includes('|') && i+1 < lines.length && lines[i+1].includes('|') && /^\s*[\|\s\-:]+\s*$/.test(lines[i+1])){
-      const headerLine = line;
-      const separatorLine = lines[i+1];
-      i += 2; // consume header and separator
-      
-      // Parse header
-      const headers = headerLine.split('|').map(h => h.trim()).filter(h => h.length > 0);
-      
-      // Parse data rows
-      const rows: string[][] = [];
-      while(i < lines.length && lines[i].includes('|') && lines[i].trim().length > 0){
-        const cells = lines[i].split('|').map(c => c.trim()).filter(c => c.length > 0);
-        if(cells.length > 0) {
-          rows.push(cells);
-        }
-        i++;
-      }
-      
-      tokens.push({ type: 'table', headers, rows });
-      continue;
-    }
-    // paragraph (collect consecutive non-empty, non-special lines)
-    if(line.trim().length===0){ i++; continue; }
-    const para: string[] = [];
-    while(i<lines.length && lines[i].trim().length>0 && !/^(#{1,6})\s+/.test(lines[i]) && !lines[i].startsWith('>') && !/^```/.test(lines[i]) && !/^\s*([*\-+]|\d+\.)\s/.test(lines[i]) && !(lines[i].includes('|') && i+1 < lines.length && lines[i+1].includes('|') && /^\s*[\|\s\-:]+\s*$/.test(lines[i+1]))){
-      para.push(lines[i]); i++;
-    }
-    tokens.push({ type:'paragraph', text: para.join(' ') });
+const isHeadingLine = (line: string | null) => !!line && /^(#{1,6})\s+/.test(line);
+const isFenceLine = (line: string | null) => !!line && /^```/.test(line.trim());
+const isThematicBreakLine = (line: string | null) => !!line && (/^(-\s?){3,}$/.test(line.trim()) || /^(\*\s?){3,}$/.test(line.trim()) || /^(\_\s?){3,}$/.test(line.trim()));
+const isBlockquoteLine = (line: string | null) => !!line && /^>/.test(line.trim());
+const isListLine = (line: string | null) => !!line && (/^\s*([*\-+] )/.test(line) || /^\s*\d+\.\s+/.test(line));
+const isTableSeparatorLine = (line: string | null) => !!line && /^\s*\|?[\-: \|]+\|?\s*$/.test(line);
+const hasTablePipes = (line: string | null) => !!line && line.includes('|');
+const isIndentedContinuationLine = (line: string | null) => !!line && /^\s{2,}\S/.test(line);
+const splitTableRow = (line: string): string[] => {
+  const trimmed = line.trim();
+  const hasLeading = trimmed.startsWith('|');
+  const hasTrailing = trimmed.endsWith('|');
+  const segments = trimmed.split('|');
+  if (hasLeading) {
+    segments.shift();
   }
+  if (hasTrailing) {
+    segments.pop();
+  }
+  const cells = segments.map(cell => cell.trim());
+  return cells.length ? cells : [''];
+};
+const alignmentFromSeparator = (cell: string): TableAlignment | undefined => {
+  const trimmed = cell.trim();
+  const startsColon = trimmed.startsWith(':');
+  const endsColon = trimmed.endsWith(':');
+  if (startsColon && endsColon) return 'center';
+  if (startsColon) return 'left';
+  if (endsColon) return 'right';
+  return undefined;
+};
+
+const tokenize = (src: string, getInlineNodes?: (value: string) => InlineNode[]): BlockNode[] => {
+  const iter = new LineIterator(src);
+  const tokens: BlockNode[] = [];
+  const inlineFor = getInlineNodes ?? ((value: string) => parseInline(value));
+
+  const consumeBlankLines = () => {
+    let line = iter.peek();
+    while (line !== null && line.trim().length === 0) {
+      iter.next();
+      line = iter.peek();
+    }
+  };
+
+  const parseParagraph = () => {
+    const lines: string[] = [];
+    let line = iter.peek();
+    while (line !== null && line.trim().length > 0) {
+      if (isHeadingLine(line) || isFenceLine(line) || isBlockquoteLine(line) || isListLine(line) || isThematicBreakLine(line)) {
+        break;
+      }
+      const nextLine = iter.peek(1);
+      if (hasTablePipes(line) && hasTablePipes(nextLine) && isTableSeparatorLine(nextLine)) {
+        break;
+      }
+      lines.push(iter.next() || '');
+      line = iter.peek();
+    }
+    if (lines.length) {
+      tokens.push({ type: 'paragraph', inline: inlineFor(lines.join(' ')) });
+    }
+  };
+
+  while (iter.peek() !== null) {
+    consumeBlankLines();
+    const line = iter.peek();
+    if (line === null) break;
+
+    if (isFenceLine(line)) {
+      const fence = iter.next() ?? '';
+      const lang = fence.replace(/^```/, '').trim() || undefined;
+      const codeLines: string[] = [];
+      let nextLine = iter.peek();
+      while (nextLine !== null) {
+        if (isFenceLine(nextLine)) {
+          iter.next();
+          break;
+        }
+        codeLines.push(iter.next() || '');
+        nextLine = iter.peek();
+      }
+      tokens.push({ type: 'code', code: codeLines.join('\n'), language: lang });
+      continue;
+    }
+
+    if (isHeadingLine(line)) {
+      const match = (iter.next() || '').match(/^(#{1,6})\s+(.*)$/);
+      if (match) {
+        tokens.push({ type: 'heading', level: match[1].length, inline: inlineFor(match[2]) });
+        continue;
+      }
+    }
+
+    if (isThematicBreakLine(line)) {
+      iter.next();
+      tokens.push({ type: 'thematicBreak' });
+      continue;
+    }
+
+    if (isBlockquoteLine(line)) {
+      const quoteLines: string[] = [];
+      while (isBlockquoteLine(iter.peek())) {
+        const raw = iter.next() || '';
+        quoteLines.push(raw.replace(/^>\s?/, ''));
+      }
+      const inner = tokenize(quoteLines.join('\n'), inlineFor);
+      tokens.push({ type: 'blockquote', children: inner });
+      continue;
+    }
+
+    if (isListLine(line)) {
+      const ordered = /^\s*\d+\./.test(line);
+      const items: InlineNode[][] = [];
+      while (isListLine(iter.peek())) {
+        const raw = iter.next() || '';
+        const cleaned = raw.replace(/^\s*([*\-+]|\d+\.)\s+/, '');
+        const buffer: string[] = [cleaned];
+
+        let continuationLine = iter.peek();
+        while (continuationLine !== null) {
+          if (isIndentedContinuationLine(continuationLine)) {
+            buffer.push((iter.next() || '').trim());
+            continuationLine = iter.peek();
+            continue;
+          }
+
+          if (continuationLine.trim().length === 0) {
+            const afterBlank = iter.peek(1);
+            if (isIndentedContinuationLine(afterBlank)) {
+              iter.next();
+              buffer.push('');
+              continuationLine = iter.peek();
+              continue;
+            }
+          }
+          break;
+        }
+
+        items.push(inlineFor(buffer.join(' ').replace(/\s{2,}/g, ' ').trim()));
+      }
+      tokens.push({ type: 'list', ordered, items });
+      continue;
+    }
+
+    const nextLine = iter.peek(1);
+    if (hasTablePipes(line) && hasTablePipes(nextLine) && isTableSeparatorLine(nextLine)) {
+      const headerLine = iter.next() || '';
+      const separatorLine = iter.next() || '';
+      const headerCells = splitTableRow(headerLine);
+      const separatorCells = splitTableRow(separatorLine);
+      const columnCount = Math.max(headerCells.length, separatorCells.length, 1);
+      const normalizedHeaders = [...headerCells];
+      while (normalizedHeaders.length < columnCount) {
+        normalizedHeaders.push('');
+      }
+      const alignments: (TableAlignment | undefined)[] = separatorCells.map(alignmentFromSeparator);
+      while (alignments.length < columnCount) {
+        alignments.push(undefined);
+      }
+      if (alignments.length > columnCount) {
+        alignments.splice(columnCount);
+      }
+
+      const rows: InlineNode[][][] = [];
+      let rowLine = iter.peek();
+      while (rowLine !== null && rowLine.trim().length !== 0 && hasTablePipes(rowLine)) {
+        const rawCells = splitTableRow(iter.next() || '');
+        while (rawCells.length < columnCount) {
+          rawCells.push('');
+        }
+        rows.push(rawCells.slice(0, columnCount).map(cell => inlineFor(cell)));
+        rowLine = iter.peek();
+      }
+      const headerInline = normalizedHeaders.slice(0, columnCount).map(cell => inlineFor(cell));
+      tokens.push({ type: 'table', headers: headerInline, rows, alignments });
+      continue;
+    }
+
+    parseParagraph();
+  }
+
   return tokens;
 };
 
 // Inline parsing: bold ** ** or __ __, italic * * or _ _, combined bold+italic *** *** or ___ ___, inline code `code`, images, links.
 // Supports emphasis inside list items like: - **Bold** text
-const parseInline = (text: string, components: MarkdownComponentMap): React.ReactNode => {
-  const parts: React.ReactNode[] = [];
+const parseInline = (text: string): InlineNode[] => {
+  const parts: InlineNode[] = [];
   let remaining = text;
-  const pushText = (t:string)=>{ if(!t) return; parts.push(<Text key={parts.length} variant="span">{t}</Text>); };
+  const pushText = (t: string) => {
+    if (!t) return;
+    const last = parts[parts.length - 1];
+    if (last && last.type === 'text') {
+      last.value += t;
+    } else {
+      parts.push({ type: 'text', value: t });
+    }
+  };
   // Order matters: longer tokens first (***, ___) to avoid premature matching
   const regex = /(!\[[^\]]*\]\([^\)]+\)|\[[^\]]+\]\([^\)]+\)|`[^`]+`|\*\*\*[^*]+\*\*\*|___[^_]+___|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/;
   while(remaining.length){
@@ -326,22 +534,21 @@ const parseInline = (text: string, components: MarkdownComponentMap): React.Reac
     const token = m[0];
     if(token.startsWith('![')){
       const im = token.match(/^!\[([^\]]*)\]\(([^\)]+)\)/);
-      if(im){ parts.push(<React.Fragment key={parts.length}>{components.image({ src: im[2], alt: im[1] })}</React.Fragment>); }
+      if(im){ parts.push({ type: 'image', src: im[2], alt: im[1] || undefined }); }
     } else if(token.startsWith('[')){
       const lm = token.match(/^\[([^\]]+)\]\(([^\)]+)\)/);
-      if(lm){ parts.push(<React.Fragment key={parts.length}>{components.link({ href: lm[2], children: lm[1] })}</React.Fragment>); }
+      if(lm){ parts.push({ type: 'link', href: lm[2], label: lm[1] }); }
     } else if(token.startsWith('`')){
-      parts.push(<React.Fragment key={parts.length}>{components.codeInline({ children: token.slice(1,-1) })}</React.Fragment>);
+      parts.push({ type: 'code', value: token.slice(1,-1) });
     } else if(/^\*\*\*.*\*\*\*$/.test(token) || /^___.*___$/.test(token)){
       const content = token.slice(3,-3);
-      // bold+italic: wrap italic inside strong for styling fallback
-      parts.push(<React.Fragment key={parts.length}>{components.strong({ children: components.em({ children: content }) as any })}</React.Fragment>);
+      parts.push({ type: 'strongEm', value: content });
     } else if(/^\*\*.*\*\*$/.test(token) || /^__.*__$/.test(token)){
       const content = token.slice(2,-2);
-      parts.push(<React.Fragment key={parts.length}>{components.strong({ children: content })}</React.Fragment>);
+      parts.push({ type: 'strong', value: content });
     } else if(/^\*.*\*$/.test(token) || /^_.*_$/.test(token)){
       const content = token.slice(1,-1);
-      parts.push(<React.Fragment key={parts.length}>{components.em({ children: content })}</React.Fragment>);
+      parts.push({ type: 'em', value: content });
     } else {
       pushText(token);
     }
@@ -350,55 +557,227 @@ const parseInline = (text: string, components: MarkdownComponentMap): React.Reac
   return parts;
 };
 
+const renderInlineNodes = (nodes: InlineNode[], components: MarkdownComponentMap): React.ReactNode[] => {
+  const coalesced: InlineNode[] = [];
+  nodes.forEach(node => {
+    if (node.type === 'text' && coalesced.length) {
+      const last = coalesced[coalesced.length - 1];
+      if (last.type === 'text') {
+        last.value += node.value;
+        return;
+      }
+    }
+    coalesced.push({ ...node });
+  });
+
+  return coalesced.map((node, idx) => {
+    switch (node.type) {
+      case 'text':
+        return node.value;
+      case 'strong':
+        return (
+          <React.Fragment key={idx}>
+            {components.strong({ children: node.value })}
+          </React.Fragment>
+        );
+      case 'em':
+        return (
+          <React.Fragment key={idx}>
+            {components.em({ children: node.value })}
+          </React.Fragment>
+        );
+      case 'strongEm': {
+        const emphasized = components.em({ children: node.value });
+        return (
+          <React.Fragment key={idx}>
+            {components.strong({ children: emphasized })}
+          </React.Fragment>
+        );
+      }
+      case 'code':
+        return (
+          <React.Fragment key={idx}>
+            {components.codeInline({ children: node.value })}
+          </React.Fragment>
+        );
+      case 'link':
+        return (
+          <React.Fragment key={idx}>
+            {components.link({ href: node.href, children: node.label })}
+          </React.Fragment>
+        );
+      case 'image':
+        return (
+          <React.Fragment key={idx}>
+            {components.image({ src: node.src, alt: node.alt })}
+          </React.Fragment>
+        );
+      default:
+        return null;
+    }
+  });
+};
+
+const getThemeSignature = (theme: PlatformBlocksTheme): string => {
+  const { primaryColor, colorScheme, fontFamily, text, backgrounds } = theme;
+  return [
+    primaryColor,
+    colorScheme,
+    fontFamily,
+    text?.primary,
+    text?.link,
+    backgrounds?.base,
+    backgrounds?.surface,
+    backgrounds?.border,
+  ].join('|');
+};
+
+const getOverrideFingerprint = (overrides?: Partial<MarkdownComponentMap>): string => {
+  if (!overrides) return 'none';
+  return Object.keys(overrides)
+    .filter(key => Boolean(overrides[key as keyof MarkdownComponentMap]))
+    .sort()
+    .join('|');
+};
+
 export const Markdown: React.FC<MarkdownProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, defaultCodeLanguage='tsx', maxHeadingLevel=6, allowHtml=false, components } = otherProps;
+  const { children, defaultCodeLanguage='tsx', maxHeadingLevel=6, allowHtml=false, components, onLinkPress } = otherProps;
   const spacingStyles = getSpacingStyles(spacingProps);
   const theme = useTheme();
 
-  const baseComponents = useMemo(() => createDefaultComponents(theme), [theme]);
-  const merged = useMemo(
-    () => ({ ...baseComponents, ...(components || {}) }) as MarkdownComponentMap,
-    [baseComponents, components]
+  const handleLinkPress = useCallback(
+    (href: string) => {
+      if (onLinkPress) {
+        onLinkPress(href);
+        return;
+      }
+      Linking.openURL(href).catch(() => undefined);
+    },
+    [onLinkPress]
   );
 
-  const tokens = useMemo(()=> tokenize(children), [children]);
+  const themeSignature = useMemo(() => getThemeSignature(theme), [theme]);
+  const overrideFingerprint = useMemo(() => getOverrideFingerprint(components), [components]);
 
-  const renderToken = (t: Token): React.ReactNode => {
-    switch(t.type){
-      case 'heading':{
+  const merged = useMemo(() => {
+    const defaults = createDefaultComponents(theme, handleLinkPress);
+    if (!components) {
+      return defaults;
+    }
+    const next: MarkdownComponentMap = { ...defaults };
+    Object.entries(components).forEach(([key, renderer]) => {
+      if (renderer) {
+        (next as any)[key] = renderer;
+      }
+    });
+    return next;
+  }, [themeSignature, overrideFingerprint, theme, components, handleLinkPress]);
+
+  const inlineCache = useMemo(() => new Map<string, InlineNode[]>(), []);
+  const getInlineNodes = useCallback((value: string) => {
+    if (!inlineCache.has(value)) {
+      inlineCache.set(value, parseInline(value));
+    }
+    return inlineCache.get(value)!;
+  }, [inlineCache]);
+
+  const tokenCacheRef = useRef<{ input: string; tokens: BlockNode[] }>({ input: '', tokens: [] });
+  const tokens = useMemo(() => {
+    if (tokenCacheRef.current.input !== children) {
+      tokenCacheRef.current = {
+        input: children,
+        tokens: tokenize(children, getInlineNodes),
+      };
+    }
+    return tokenCacheRef.current.tokens;
+  }, [children, getInlineNodes]);
+
+  const getKeyForToken = createTokenKeyGenerator();
+
+  const renderToken = (t: BlockNode, key: string): React.ReactNode => {
+    switch (t.type) {
+      case 'heading': {
         const level = Math.min(t.level, maxHeadingLevel);
-        return <React.Fragment key={iKey++}>{merged.heading({ level, children: parseInline(t.text, merged) })}</React.Fragment>;
-      }
-      case 'paragraph':{
-        return <React.Fragment key={iKey++}>{merged.paragraph({ children: parseInline(t.text, merged) })}</React.Fragment>;
-      }
-      case 'code':{
-        return <React.Fragment key={iKey++}>{merged.codeBlock({ code: t.code, language: t.language||defaultCodeLanguage })}</React.Fragment>;
-      }
-      case 'blockquote':{
-        return <React.Fragment key={iKey++}>{merged.blockquote({ children: t.children.map(c=>renderToken(c)) })}</React.Fragment>;
-      }
-      case 'list':{
-        return <React.Fragment key={iKey++}>{merged.list({ ordered: t.ordered, items: t.items.map(it=> merged.listItem({ children: parseInline(it, merged) })) })}</React.Fragment>;
-      }
-      case 'thematicBreak':{
-        return <React.Fragment key={iKey++}>{merged.thematicBreak()}</React.Fragment>;
-      }
-      case 'table':{
-        const headers = t.headers.map(h => merged.tableCell({ children: parseInline(h, merged), isHeader: true }));
-        const rows = t.rows.map(row => 
-          row.map(cell => merged.tableCell({ children: parseInline(cell, merged), isHeader: false }))
+        return (
+          <React.Fragment key={key}>
+            {merged.heading({ level, children: renderInlineNodes(t.inline, merged) })}
+          </React.Fragment>
         );
-        return <React.Fragment key={iKey++}>{merged.table({ headers, rows })}</React.Fragment>;
+      }
+      case 'paragraph': {
+        return (
+          <React.Fragment key={key}>
+            {merged.paragraph({ children: renderInlineNodes(t.inline, merged) })}
+          </React.Fragment>
+        );
+      }
+      case 'code': {
+        return (
+          <React.Fragment key={key}>
+            {merged.codeBlock({ code: t.code, language: t.language || defaultCodeLanguage })}
+          </React.Fragment>
+        );
+      }
+      case 'blockquote': {
+        return (
+          <React.Fragment key={key}>
+            {merged.blockquote({ children: t.children.map(child => renderToken(child, getKeyForToken(child))) })}
+          </React.Fragment>
+        );
+      }
+      case 'list': {
+        return (
+          <React.Fragment key={key}>
+            {merged.list({
+              ordered: t.ordered,
+              items: t.items.map((inlineNodes, idx) =>
+                merged.listItem({
+                  children: renderInlineNodes(inlineNodes, merged),
+                  index: idx,
+                  ordered: t.ordered,
+                })
+              ),
+            })}
+          </React.Fragment>
+        );
+      }
+      case 'thematicBreak': {
+        return <React.Fragment key={key}>{merged.thematicBreak()}</React.Fragment>;
+      }
+      case 'table': {
+        const headers = t.headers.map((inlineHeader, headerIndex) =>
+          merged.tableCell({
+            children: renderInlineNodes(inlineHeader, merged),
+            isHeader: true,
+            align: t.alignments?.[headerIndex],
+          })
+        );
+        const rows = t.rows.map(row =>
+          row.map((cellInline, cellIndex) =>
+            merged.tableCell({
+              children: renderInlineNodes(cellInline, merged),
+              isHeader: false,
+              align: t.alignments?.[cellIndex],
+            })
+          )
+        );
+        return (
+          <React.Fragment key={key}>
+            {merged.table({ headers, rows, alignments: t.alignments })}
+          </React.Fragment>
+        );
       }
       default:
         return null;
     }
   };
 
-  let iKey = 0; // reset per render
-  return <View style={spacingStyles}>{tokens.map(renderToken)}</View>;
+  return (
+    <View style={spacingStyles}>
+      {tokens.map(token => renderToken(token, getKeyForToken(token)))}
+    </View>
+  );
 };
 
 export default Markdown;

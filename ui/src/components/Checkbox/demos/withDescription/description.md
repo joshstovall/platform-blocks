@@ -1,1 +1,12 @@
-Checkboxes with description, helper text, and validation error usage.
+---
+title: Descriptions
+category: usage
+order: 50
+tags: [checkboxes, helper-text]
+highlightLines: [18-42]
+status: stable
+since: 1.0.0
+hidden: false
+---
+
+Showcase helper descriptions plus validation errors for required agreements.

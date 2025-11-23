@@ -55,7 +55,6 @@ export { INPUT_PERFORMANCE_CONFIG, PERFORMANCE_THRESHOLDS, buildInputComponents 
 
 // Export positioning utilities (unified from positioning-enhanced)
 export { 
-  calculateOverlayPosition,
   calculateOverlayPositionEnhanced,
   getViewport, 
   measureElement, 

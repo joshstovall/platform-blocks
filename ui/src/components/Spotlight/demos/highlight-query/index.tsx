@@ -1,25 +1,54 @@
-import { useState } from 'react';
-import { Spotlight, useSpotlightStoreInstance, Text, Button, Flex, Card } from '@platform-blocks/ui';
+import { Button, Card, Column, Spotlight, Text, useSpotlightStoreInstance, type SpotlightProps } from '@platform-blocks/ui';
 
 // Actions intentionally share overlapping substrings to show highlighting effect
-const actions = [
-  { id: 'create-project', label: 'Create Project', description: 'Start a new project workspace', icon: 'plus', onPress: () => console.log('create project') },
-  { id: 'create-branch', label: 'Create Branch', description: 'Open branch creation workflow', icon: 'code', onPress: () => console.log('create branch') },
-  { id: 'open-recent', label: 'Open Recent Project', description: 'Choose from recently opened', icon: 'folder', onPress: () => console.log('open recent') },
-  { id: 'project-settings', label: 'Project Settings', description: 'Configure repository options', icon: 'settings', onPress: () => console.log('project settings') },
+const actions: SpotlightProps['actions'] = [
+  {
+    id: 'create-project',
+    label: 'Create project',
+    description: 'Start a new project workspace',
+    icon: 'plus',
+    onPress: () => console.log('action: create project'),
+  },
+  {
+    id: 'create-branch',
+    label: 'Create branch',
+    description: 'Open branch creation workflow',
+    icon: 'code',
+    onPress: () => console.log('action: create branch'),
+  },
+  {
+    id: 'open-recent',
+    label: 'Open recent project',
+    description: 'Choose from recently opened projects',
+    icon: 'folder',
+    onPress: () => console.log('action: open recent'),
+  },
+  {
+    id: 'project-settings',
+    label: 'Project settings',
+    description: 'Configure repository options',
+    icon: 'settings',
+    onPress: () => console.log('action: project settings'),
+  },
 ];
 
 export default function Demo() {
   const [store] = useSpotlightStoreInstance();
-  
+
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="lg" weight="semibold" mb={8}>Highlighting Query Matches</Text>
-        <Text size="sm" color="dimmed" mb={12}>Type "proj" or "create" after opening to see matching substrings emphasized.</Text>
-        <Button title="Open Spotlight" onPress={() => store.open()} />
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Passing `highlightQuery` emphasizes matching substrings across labels and descriptions, reinforcing why a result surfaced.
+          </Text>
+          <Button onPress={() => store.open()}>Open spotlight</Button>
+          <Text size="xs" colorVariant="secondary">
+            Try typing “proj” or “create” to see the inline highlights.
+          </Text>
+        </Column>
       </Card>
-      <Spotlight actions={actions as any} highlightQuery store={store} />
-    </Flex>
+      <Spotlight actions={actions} highlightQuery store={store} />
+    </Column>
   );
 }

@@ -1,33 +1,43 @@
-import { Accordion, Text, Grid, GridItem } from '@platform-blocks/ui'
+import { Accordion, Card, Column, Text } from '@platform-blocks/ui';
+
+const onboardingSteps = [
+  {
+    key: 'create-project',
+    title: 'Create a project',
+    content: <Text size="sm">Spin up a workspace and invite your teammates so everyone builds from the same toolkit.</Text>,
+  },
+  {
+    key: 'import-assets',
+    title: 'Import assets',
+    content: <Text size="sm">Upload icons, typography tokens, and spacing primitives to stay consistent across platforms.</Text>,
+  },
+];
+
+const accordionVariants = [
+  { label: 'Default', description: 'Minimal chrome that blends into content-heavy layouts.' },
+  { label: 'Separated', description: 'Adds spacing and rounded corners between items for dashboards.', variant: 'separated' as const },
+  { label: 'Bordered', description: 'Outlines each item for high-contrast contexts.', variant: 'bordered' as const },
+];
 
 export default function Demo() {
-  const items = [
-    {
-      key: 'item1',
-      title: 'First Item',
-      content: <Text>Content for the first accordion item.</Text>
-    },
-    {
-      key: 'item2',
-      title: 'Second Item',
-      content: <Text>Content for the second accordion item.</Text>
-    }
-  ]
-
   return (
-    <Grid gap="2xl">
-      <GridItem span={4}>
-        <Text variant="h6" mb="md" colorVariant="secondary">Default Variant</Text>
-        <Accordion type="single" items={items} />
-      </GridItem>
-      <GridItem span={4}>
-        <Text variant="h6" mb="md" colorVariant="secondary">Separated Variant</Text>
-        <Accordion type="single" variant="separated" items={items} />
-      </GridItem>
-      <GridItem span={4}>
-        <Text variant="h6" mb="md" colorVariant="secondary">Bordered Variant</Text>
-        <Accordion type="single" variant="bordered" items={items} />
-      </GridItem>
-    </Grid>
-  )
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="lg">
+          <Text size="sm" colorVariant="secondary">
+            Adjust visual weight with the `variant` prop while reusing the same item content.
+          </Text>
+          {accordionVariants.map((entry) => (
+            <Column key={entry.label} gap="sm">
+              <Text weight="semibold">{entry.label}</Text>
+              <Text size="xs" colorVariant="secondary">
+                {entry.description}
+              </Text>
+              <Accordion type="single" variant={entry.variant} items={onboardingSteps} />
+            </Column>
+          ))}
+        </Column>
+      </Card>
+    </Column>
+  );
 }

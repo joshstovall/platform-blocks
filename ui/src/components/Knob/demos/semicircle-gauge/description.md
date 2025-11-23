@@ -1,0 +1,1 @@
+Semicircle gauge layout that uses `Knob.Root` with custom ring thickness, contiguous progress, and a pointer hand for instrumentation-style readouts.

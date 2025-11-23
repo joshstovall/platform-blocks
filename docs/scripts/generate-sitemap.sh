@@ -4,7 +4,7 @@
 # This generates a basic sitemap.xml file for better SEO
 
 BASE_URL="https://platform-blocks.com"
-SITEMAP_FILE="web/sitemap.xml"
+SITEMAP_FILE="public/sitemap.xml"
 
 echo "Generating sitemap.xml..."
 
@@ -35,7 +35,7 @@ cat > $SITEMAP_FILE << 'EOF'
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://platform-blocks.com/components/Alert</loc>
+    <loc>https://platform-blocks.com/components/Notice</loc>
     <lastmod>2025-08-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

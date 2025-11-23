@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, forwardRef, useMemo } from 'react';
-import { View, TextInput, Pressable, Platform, Modal } from 'react-native';
+import { View, TextInput, Pressable, Modal } from 'react-native';
 import { Text } from '../Text';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
@@ -12,6 +12,7 @@ import { clampComponentSize, resolveComponentSize, type ComponentSize, type Comp
 import { getComponentSize } from '../../core/theme/unified-sizing';
 import { useColorPickerStyles, type ColorPickerSizeMetrics } from './styles';
 import { ColorPickerProps } from './types';
+import { useOverlayMode } from '../../hooks';
 
 import { isValidHex, normalizeHex } from './utils';
 import { ColorSwatch } from '../ColorSwatch';
@@ -168,7 +169,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(effectiveValue);
   const [focused, setFocused] = useState(false);
-  const isWeb = Platform.OS === 'web';
+  const { shouldUseModal, shouldUseOverlay } = useOverlayMode();
 
   const theme = useTheme();
   const sizeMetrics = useMemo(() => resolveColorPickerMetrics(size), [size]);
@@ -197,7 +198,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
     hideOverlay,
     updatePosition,
   } = useDropdownPositioning({
-    isOpen: isOpen && isWeb,
+    isOpen: isOpen && shouldUseOverlay,
     placement,
     flip,
     shift,
@@ -250,7 +251,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
     <>
       {withSwatches && (
         <View style={styles.colorPalette}>
-          <Text style={styles.paletteTitle}>Color Swatches</Text>
+          {/* <Text style={styles.paletteTitle}>Color Swatches</Text> */}
           <View style={styles.swatchGrid}>
             {swatches.map((swatchColor) => (
               <ColorSwatch
@@ -359,7 +360,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
 
   // Handle opening/closing overlay with positioning
   useEffect(() => {
-    if (!isWeb || !isOpen || !position) {
+    if (!shouldUseOverlay || !isOpen || !position) {
       return;
     }
 
@@ -390,7 +391,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
       maxHeight: dropdownMaxHeight,
     });
   }, [
-    isWeb,
+    shouldUseOverlay,
     isOpen,
     position,
     showOverlay,
@@ -421,22 +422,25 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
             inputStyle,
           ]}
         >
-          <View style={[styles.preview, previewStyle]}>
-            <View
-              style={[
-                styles.preview,
-                {
-                  backgroundColor: effectiveValue || 'transparent',
-                  // Show a subtle border when no color is selected
-                  ...((!effectiveValue) && {
-                    borderWidth: 1,
-                    borderColor: theme.colors.gray[3],
-                    borderStyle: 'dashed',
-                  })
-                },
-              ]}
-            />
-          </View>
+          {showPreview && (
+            <View style={styles.previewWrapper}>
+              <View
+                style={[
+                  styles.preview,
+                  previewStyle,
+                  {
+                    backgroundColor: effectiveValue || 'transparent',
+                    // Show a subtle border when no color is selected
+                    ...((!effectiveValue) && {
+                      borderWidth: 1,
+                      borderColor: theme.colors.gray[3],
+                      borderStyle: 'dashed',
+                    })
+                  },
+                ]}
+              />
+            </View>
+          )}
 
           {showInput && (
             <TextInput
@@ -454,6 +458,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
               autoCapitalize="characters"
               autoComplete="off"
               autoCorrect={false}
+              underlineColorAndroid="transparent"
               maxLength={7}
               editable={!disabled}
             />
@@ -485,7 +490,7 @@ const ColorPickerBase = forwardRef<View, ColorPickerProps>((props, ref) => {
           </Pressable>
         </View>
       </View>
-      {isOpen && !isWeb && (
+      {isOpen && shouldUseModal && (
         <Modal
           transparent
           animationType="fade"

@@ -1,12 +1,12 @@
 ---
 title: Labeled Dividers
-category: usage
+category: layout
 order: 30
-tags: [labeled, text]
+tags: [label, labelPosition]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Dividers with labels and different label positions for form sections and content organization.
+Provide a `label` node and adjust `labelPosition` plus `colorVariant` to separate form sections with contextual dividers.

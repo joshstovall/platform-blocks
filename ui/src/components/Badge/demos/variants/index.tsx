@@ -1,26 +1,13 @@
-import { Block, Badge, Text, Divider } from '@platform-blocks/ui'
+import { Badge, Row } from '@platform-blocks/ui'
 
 export default function Demo() {
   return (
-    <Block>
-      <Text>Variants</Text>
-      <Block gap="sm" direction="row" >
-        <Badge v="filled">Filled</Badge>
-        <Badge v="outline">Outline</Badge>
-        <Badge v="light">Light</Badge>
-        <Badge v="subtle">Subtle</Badge>
-        <Badge v="gradient">Gradient</Badge>
-      </Block>
-      <Divider my="lg" />
-      <Text>Colors</Text>
-      <Block gap="sm" direction="row" >
-        <Badge c="primary">Primary</Badge>
-        <Badge c="secondary">Secondary</Badge>
-        <Badge c="success">Success</Badge>
-        <Badge c="warning">Warning</Badge>
-        <Badge c="error">Error</Badge>
-        <Badge c="gray">Gray</Badge>
-      </Block>
-    </Block>
+    <Row gap={8} wrap="wrap">
+      <Badge variant="filled">Filled</Badge>
+      <Badge variant="outline">Outline</Badge>
+      <Badge variant="light">Light</Badge>
+      <Badge variant="subtle">Subtle</Badge>
+      <Badge variant="gradient">Gradient</Badge>
+    </Row>
   )
 }

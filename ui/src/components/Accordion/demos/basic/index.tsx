@@ -1,39 +1,46 @@
-import { Accordion, Text } from '@platform-blocks/ui'
+import { Accordion, Card, Column, Text } from '@platform-blocks/ui';
+
+const faqItems = [
+  {
+    key: 'foundation',
+    title: 'What is Platform Blocks?',
+    content: (
+      <Text size="sm">
+        Platform Blocks is a cross-platform design system that helps teams ship polished React Native apps faster.
+      </Text>
+    ),
+  },
+  {
+    key: 'benefits',
+    title: 'Why use an accordion?',
+    content: (
+      <Text size="sm">
+        Accordions keep dense guidance scannable while letting readers expand only the sections they care about.
+      </Text>
+    ),
+  },
+  {
+    key: 'next-steps',
+    title: 'How do I get started?',
+    content: (
+      <Text size="sm">
+        Install the package, drop the provider at the root, and follow the onboarding checklist in the documentation.
+      </Text>
+    ),
+  },
+];
 
 export default function Demo() {
   return (
-    <Accordion
-      type="single"
-      items={[
-        {
-          key: 'what-is',
-          title: 'What is React Native?',
-          content: (
-            <Text>
-              React Native is a framework for building mobile applications using React. 
-            </Text>
-          )
-        },
-        {
-          key: 'why-use',
-          title: 'Why use a design system?',
-          content: (
-            <Text>
-              Design systems provide consistency, efficiency, and scalability to development.
-            </Text>
-          )
-        },
-        {
-          key: 'getting-started',
-          title: 'How do I get started?',
-          content: (
-            <Text>
-              Install the PlatformBlocks package, start building! 
-              Check our documentation for detailed setup instructions.
-            </Text>
-          )
-        }
-      ]}
-    />
-  )
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Use `type="single"` to ensure only one panel stays open at a time.
+          </Text>
+          <Accordion type="single" items={faqItems} />
+        </Column>
+      </Card>
+    </Column>
+  );
 }

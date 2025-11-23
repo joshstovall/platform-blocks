@@ -1,11 +1,11 @@
 ---
-title: Spacing & Padding Control
-category: styling
+title: Spacing
+category: layout
 order: 25
-tags: [spacing, padding, quietZone, margin]
+tags: [quiet-zone]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Control QR code spacing and padding using the `quietZone` prop and spacing utilities.
+Compare quiet zone values and pair them with outer spacing props when embedding codes in dense layouts.

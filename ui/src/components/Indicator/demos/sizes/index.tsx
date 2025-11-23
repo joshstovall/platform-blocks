@@ -1,99 +1,101 @@
-import { View } from 'react-native';
-import { Flex, Text, Indicator, Card } from '@platform-blocks/ui';
+import type { IndicatorProps } from '@platform-blocks/ui';
+import { Block, Column, Indicator, Row, Text } from '@platform-blocks/ui';
 
-export default function IndicatorSizesDemo() {
-  const sizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
-  
+const tokenSizes: IndicatorProps['size'][] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
+const countSizes: IndicatorProps['size'][] = ['xs', 'sm', 'md', 'lg', 'xl'];
+
+export default function Demo() {
   return (
-    <Flex direction="column" gap={20} p={16} style={{ maxWidth: 600 }}>
-      <Text size="sm" weight="semibold">Indicator Sizes (String Values)</Text>
-      
-      <Flex gap={32} wrap="wrap" align="center">
-        {sizes.map((size) => (
-          <Flex key={size} direction="column" align="center" gap={8}>
-            <Text size="xs" color="muted" style={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-              {size}
-            </Text>
-            <View style={{ 
-              width: 60, 
-              height: 60, 
-              backgroundColor: '#f5f5f5', 
-              borderRadius: 12, 
-              position: 'relative',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: '#e0e0e0'
-            }}>
-              <Indicator 
-                placement="top-right" 
-                size={size} 
-                color="#6366F1"
-                offset={2}
-              />
-              <Text size="xs" color="muted">Item</Text>
-            </View>
-          </Flex>
-        ))}
-      </Flex>
+    <Column gap="lg">
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Size tokens
+        </Text>
 
-      <Text size="sm" weight="semibold">Indicator with Content (Different Sizes)</Text>
-      
-      <Flex gap={24} wrap="wrap" align="center">
-        {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => (
-          <Flex key={size} direction="column" align="center" gap={8}>
-            <Text size="xs" color="muted">{size}</Text>
-            <View style={{ 
-              width: 80, 
-              height: 60, 
-              backgroundColor: '#f8f9fa', 
-              borderRadius: 8, 
-              position: 'relative',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Indicator 
-                placement="top-right" 
-                size={size} 
-                color="#10b981"
-                offset={4}
+        <Row gap="lg" wrap="wrap">
+          {tokenSizes.map((size) => (
+            <Column key={size} align="center" gap="xs">
+              <Text size="xs" colorVariant="secondary" uppercase>
+                {size}
+              </Text>
+              <Block
+                w={72}
+                h={72}
+                radius="lg"
+                bg="#f5f5f7"
+                position="relative"
+                align="center"
+                justify="center"
               >
-                <Text 
-                  size="xs" 
-                  weight="bold" 
-                  color="white"
-                  style={{ fontSize: size === 'xs' ? 8 : size === 'sm' ? 9 : 10 }}
-                >
-                  {size === 'xs' ? '1' : size === 'sm' ? '5' : size === 'md' ? '12' : size === 'lg' ? '99' : '99+'}
+                <Text size="xs" colorVariant="secondary">
+                  Item
                 </Text>
-              </Indicator>
-              <Text size="xs" color="muted">Inbox</Text>
-            </View>
-          </Flex>
-        ))}
-      </Flex>
+                <Indicator placement="top-right" size={size} color="#6366F1" offset={4} />
+              </Block>
+            </Column>
+          ))}
+        </Row>
+      </Column>
 
-      <Text size="sm" weight="semibold">Numeric Size (Legacy Support)</Text>
-      <Flex gap={16} align="center">
-        <View style={{ 
-          width: 60, 
-          height: 60, 
-          backgroundColor: '#f5f5f5', 
-          borderRadius: 12, 
-          position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Indicator 
-            placement="top-right" 
-            size={24} 
-            color="#ef4444"
-            offset={2}
-          />
-          <Text size="xs" color="muted">Custom</Text>
-        </View>
-        <Text size="xs" color="muted">size={24}</Text>
-      </Flex>
-    </Flex>
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Indicators with content
+        </Text>
+
+        <Row gap="lg" wrap="wrap">
+          {countSizes.map((size, index) => (
+            <Column key={size} align="center" gap="xs">
+              <Text size="xs" colorVariant="secondary">
+                {size}
+              </Text>
+              <Block
+                w={88}
+                h={64}
+                radius="lg"
+                bg="#eef2ff"
+                position="relative"
+                align="center"
+                justify="center"
+              >
+                <Text size="xs" colorVariant="secondary">
+                  Inbox
+                </Text>
+                <Indicator placement="top-right" size={size} color="#0ea5e9" offset={6}>
+                  <Text size="xs" weight="bold" color="white">
+                    {index === 0 ? '1' : index === 1 ? '5' : index === 2 ? '12' : index === 3 ? '72' : '99+'}
+                  </Text>
+                </Indicator>
+              </Block>
+            </Column>
+          ))}
+        </Row>
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Numeric values
+        </Text>
+
+        <Row gap="md" align="center">
+          <Block
+            w={72}
+            h={72}
+            radius="lg"
+            bg="#f5f5f7"
+            position="relative"
+            align="center"
+            justify="center"
+          >
+            <Text size="xs" colorVariant="secondary">
+              Custom
+            </Text>
+            <Indicator placement="top-right" size={24} color="#ef4444" offset={4} />
+          </Block>
+          <Text size="xs" colorVariant="secondary">
+            size={24}
+          </Text>
+        </Row>
+      </Column>
+    </Column>
   );
 }

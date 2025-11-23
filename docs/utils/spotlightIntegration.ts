@@ -147,7 +147,7 @@ function createNavigationActions(router: any): SpotlightAction[] {
       id: 'action-github',
       label: 'View on GitHub',
       description: 'Open project repository',
-      icon: 'github',
+      icon: 'code',
       keywords: ['github', 'source', 'repository', 'code'],
       category: 'Quick Actions',
       onPress: () => {

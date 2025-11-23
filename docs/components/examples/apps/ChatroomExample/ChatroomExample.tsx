@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { SectionList, View, TextInput } from 'react-native';
-import { Text, Button, Flex, Icon, useTheme, Container, Chip } from '@platform-blocks/ui';
+import { Text, Button, Flex, Icon, useTheme, Block, Chip } from '@platform-blocks/ui';
 import { platformShadow } from '../../../../utils/platformShadow';
 import { ChatroomHeader } from './ChatroomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -136,9 +136,9 @@ export function ChatroomExample() {
     }
   };
   return (
-    <Container
+    <Block
       backgroundImage={backgroundImage}
-      style={styles.chatContainer}
+      style={styles.chatBlock}
     >
   <ChatroomHeader />
 
@@ -273,6 +273,6 @@ export function ChatroomExample() {
         );
       })()}
       
-    </Container>
+    </Block>
   );
 }

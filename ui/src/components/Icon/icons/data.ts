@@ -104,6 +104,12 @@ export const dataIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Heatmap grid with cells for intensity comparisons.',
   },
+  'chart-sparkline': {
+    content: 'M3 18l4.5-5 3 3 4.5-6L21 18',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Sparkline trendline for quick micro visualizations.',
+  },
   database: {
     content: 'M12 2C7.03 2 3 3.79 3 6v12c0 2.21 4.03 4 9 4s9-1.79 9-4V6c0-2.21-4.03-4-9-4Zm0 2c4.42 0 7 .89 7 2s-2.58 2-7 2-7-.89-7-2 2.58-2 7-2Zm0 6c4.42 0 7-.89 7-2v3c0 1.11-2.58 2-7 2s-7-.89-7-2V8c0 1.11 2.58 2 7 2Zm0 5c4.42 0 7-.89 7-2v3c0 1.11-2.58 2-7 2s-7-.89-7-2v-3c0 1.11 2.58 2 7 2Z',
     viewBox: '0 0 24 24',

@@ -2,10 +2,11 @@
 title: Validation
 category: features
 order: 50
-tags: [validation, error]
+tags: [validation, feedback, phone]
+highlightLines: []
 status: experimental
 since: 1.0.0
 hidden: false
 ---
 
-Basic length validation example.
+Length-based validation for US and international formats with inline messaging.

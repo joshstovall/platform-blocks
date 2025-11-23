@@ -23,7 +23,7 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   const { maxEntries = 8, filterEntry, sortEntries, renderEntry: customRenderEntry, renderHeader, style } = props;
   const theme = useChartTheme();
   const { config, pointer: interactionPointer, rootOffset, crosshair, series: registeredSeries } = useChartInteractionContext() as any;
-  const { entries, anchorPixelX } = useTooltipAggregator();
+  const { entries, bestEntry, anchorPixelX, anchorPixelY } = useTooltipAggregator();
   const isRTL = I18nManager.isRTL;
   const [reactDomModule, setReactDomModule] = React.useState<typeof import('react-dom') | null>(() => null);
 
@@ -74,20 +74,25 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
 
   const usePortal = !!(typeof document !== 'undefined' && reactDomModule && (config.popoverPortal ?? true));
 
+  const followMode = config.popoverFollowMode ?? 'crosshair';
+  const hasAnchor = anchorPixelX != null && anchorPixelY != null;
+  const anchorPageCoords = hasAnchor && rootOffset
+    ? { x: anchorPixelX! + rootOffset.left, y: anchorPixelY! + rootOffset.top }
+    : null;
+
   // Compute raw target position (portal uses page coordinates, non-portal uses local container coordinates)
   let rawLeft = 0; let rawTop = 0;
   if (usePortal) {
-    if (interactionPointer?.pageX != null && interactionPointer?.pageY != null) {
+    if (followMode === 'crosshair' && anchorPageCoords) {
+      rawLeft = anchorPageCoords.x + 14;
+      rawTop = anchorPageCoords.y + 14;
+    } else if (interactionPointer?.pageX != null && interactionPointer?.pageY != null) {
       rawLeft = interactionPointer.pageX + 14;
       rawTop = interactionPointer.pageY + 14;
-    } else if (crosshair?.pixelX != null && rootOffset) {
-      rawLeft = crosshair.pixelX + rootOffset.left + 14;
-      rawTop = (interactionPointer?.pageY ?? (rootOffset.top + 20)) + 14;
-    } else if (anchorPixelX != null && rootOffset) {
-      rawLeft = anchorPixelX + rootOffset.left + 14;
-      rawTop = (interactionPointer?.pageY ?? (rootOffset.top + 20)) + 14;
+    } else if (anchorPageCoords) {
+      rawLeft = anchorPageCoords.x + 14;
+      rawTop = (anchorPageCoords.y ?? (rootOffset?.top ?? 0)) + 14;
     } else if (interactionPointer) {
-      // Fallback to local transformed to page if possible
       if (rootOffset) {
         rawLeft = interactionPointer.x + rootOffset.left + 14;
         rawTop = interactionPointer.y + rootOffset.top + 14;
@@ -99,13 +104,18 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   } else {
     // Container-relative mode (legacy / RN)
     let baseLeft: number;
-    if (interactionPointer?.pageX != null && rootOffset) baseLeft = interactionPointer.pageX - rootOffset.left;
-    else if (anchorPixelX != null) baseLeft = anchorPixelX;
-    else if (crosshair?.pixelX != null) baseLeft = crosshair.pixelX;
-    else baseLeft = interactionPointer?.x || 0;
     let baseTop: number;
-    if (interactionPointer?.pageY != null && rootOffset) baseTop = interactionPointer.pageY - rootOffset.top;
-    else baseTop = interactionPointer?.y || 0;
+    if (followMode === 'crosshair' && hasAnchor) {
+      baseLeft = anchorPixelX!;
+      baseTop = anchorPixelY!;
+    } else {
+      if (interactionPointer?.pageX != null && rootOffset) baseLeft = interactionPointer.pageX - rootOffset.left;
+      else if (anchorPixelX != null) baseLeft = anchorPixelX;
+      else if (crosshair?.pixelX != null) baseLeft = crosshair.pixelX;
+      else baseLeft = interactionPointer?.x || 0;
+      if (interactionPointer?.pageY != null && rootOffset) baseTop = interactionPointer.pageY - rootOffset.top;
+      else baseTop = interactionPointer?.y || 0;
+    }
     rawLeft = baseLeft + 14;
     rawTop = baseTop + 14;
   }
@@ -404,6 +414,8 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
             <Text style={{ fontSize: 11, color: theme.colors.textSecondary }}>No data</Text>
           )}
         </View>
+      ) : bestEntry ? (
+        renderEntry(bestEntry)
       ) : (
         renderPointerFallback()
       )}

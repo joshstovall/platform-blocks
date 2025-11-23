@@ -1,19 +1,11 @@
 ---
-title: Vertical Carousel
-category: usage
+title: Vertical orientation
+category: layout
 order: 15
-tags: [vertical, orientation, arrows, dots]
-highlightLines: [3]
+tags: [vertical, navigation]
+highlightLines: []
 status: stable
-since: 1.0.0
+since: 0.3.0
 hidden: false
 ---
-
-Vertical carousel with navigation arrows and dots positioned appropriately for vertical scrolling. Perfect for displaying content in a vertical layout or when horizontal space is limited.
-
-Features demonstrated:
-- Vertical orientation with `orientation="vertical"`
-- Vertical navigation arrows (up/down)
-- Vertically aligned dots indicator
-- Same API as horizontal carousel
-- Responsive sizing and gaps
+Set `orientation="vertical"` to rotate content along the Y-axis while keeping arrow and dot controls aligned for keyboard and touch users.

@@ -1,12 +1,12 @@
 ---
-title: Variants
-category: usage
+title: Visual Variants
+category: appearance
 order: 40
-tags: [variants, styles, underline]
-highlightLines: []
+tags: [link, appearance]
+highlightLines: [20-21]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different visual variants for links including default, hover-underline, and subtle styles.
+Compare persistent and hover-only underlines alongside subtle variants.

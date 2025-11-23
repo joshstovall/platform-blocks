@@ -63,30 +63,37 @@ export const Title: React.FC<TitleProps> = ({
     if (prefixVariant === 'dot') {
       const size = prefixSize || 6;
       return (
-        <View style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: resolvedPrefixColor,
-          ...(isRTL ? { marginLeft: prefixGap } : { marginRight: prefixGap })
-        }} />
+        <View
+          testID="title-prefix"
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: resolvedPrefixColor,
+            ...(isRTL ? { marginLeft: prefixGap } : { marginRight: prefixGap })
+          }}
+        />
       );
     }
     // bar variant
     return (
-      <View style={{
-        width: prefixSize,
-        height: prefixLength,
-        backgroundColor: resolvedPrefixColor,
-        borderRadius: prefixRadius ?? (prefixSize / 2),
-        ...(isRTL ? { marginLeft: prefixGap } : { marginRight: prefixGap })
-      }} />
+      <View
+        testID="title-prefix"
+        style={{
+          width: prefixSize,
+          height: prefixLength,
+          backgroundColor: resolvedPrefixColor,
+          borderRadius: prefixRadius ?? (prefixSize / 2),
+          ...(isRTL ? { marginLeft: prefixGap } : { marginRight: prefixGap })
+        }}
+      />
     );
   };
 
   // Build underline element
   const Underline = underline ? (
     <View
+      testID="title-underline"
       style={{
         height: underlineStroke,
         backgroundColor: color,
@@ -100,7 +107,7 @@ export const Title: React.FC<TitleProps> = ({
 
   // Afterline layout: text + flexible line filling rest
   const Afterline = afterline ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', marginTop: underline ? afterlineGap : 4 }}>
+    <View testID="title-afterline" style={{ flexDirection: 'row', alignItems: 'center', width: '100%', marginTop: underline ? afterlineGap : 4 }}>
       <View style={{ 
         flex: 1, 
         height: underlineStroke, 
@@ -156,13 +163,16 @@ export const Title: React.FC<TitleProps> = ({
           {endIcon && <Block ml={8}>{endIcon}</Block>}
         </View>
         {afterline && !underline && (
-          <View style={{ 
-            flex: 1, 
-            height: underlineStroke, 
-            backgroundColor: color, 
-            borderRadius: underlineStroke / 2,
-            ...(isRTL ? { marginRight: 12 } : { marginLeft: 12 })
-          }} />
+          <View
+            testID="title-afterline-inline"
+            style={{ 
+              flex: 1, 
+              height: underlineStroke, 
+              backgroundColor: color, 
+              borderRadius: underlineStroke / 2,
+              ...(isRTL ? { marginRight: 12 } : { marginLeft: 12 })
+            }}
+          />
         )}
         {action && <Block ml={12}>{action}</Block>}
       </View>

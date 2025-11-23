@@ -1,12 +1,12 @@
 ---
-title: Basic Usage
-category: usage
+title: Basics
+category: basics
 order: 10
-tags: [basic, qrcode]
+tags: [qr-code]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic QR code generation for encoding text, URLs, and other data.
+Render a single QR code for a link or payload and provide helper text for scanning context.

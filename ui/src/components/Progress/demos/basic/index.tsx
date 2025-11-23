@@ -1,38 +1,43 @@
-import React, { useState } from 'react';
-import { Progress, Text, Column, Card, Button, Row } from '@platform-blocks/ui';
+import { useState } from 'react';
+import { Block, Button, Column, Progress, Row, Text } from '@platform-blocks/ui';
+
+const STEP = 10;
 
 export default function Demo() {
-  const [progress, setProgress] = useState(65);
+  const [completion, setCompletion] = useState<number>(60);
 
-  const decreaseProgress = () => {
-    setProgress(prev => Math.max(prev - 10, 0));
-  };
-
-  const increaseProgress = () => {
-    setProgress(prev => Math.min(prev + 10, 100));
+  const handleAdjust = (delta: number) => {
+    setCompletion((value) => Math.min(100, Math.max(0, value + delta)));
   };
 
   return (
-    <Card>
-      <Column gap={16}>
-        <Text size="lg" weight="semibold">Basic Progress Bar</Text>
-        <Progress value={progress} />
-        
-        <Text size="md" weight="semibold">Full Width Progress Bar</Text>
-        <Progress value={progress} fullWidth />
-        
-        <Text size="md" weight="semibold">Progress Bar with Custom Width</Text>
-        <Progress value={progress} style={{ width: 200 }} />
-        
-        <Text size="sm" style={{ color: '#666' }}>
-          Progress: {progress}%
+    <Column gap="lg">
+      <Column gap="xs">
+        <Text variant="small" colorVariant="muted">
+          Scouting report completion
         </Text>
-        <Row gap={8}>
-          <Button title="Decrease" onPress={decreaseProgress} />
-          <Button title="Increase" onPress={increaseProgress} />
-        </Row>
+  <Progress value={completion} fullWidth />
+        <Text variant="small" colorVariant="muted">
+          {completion}% of checklist items submitted.
+        </Text>
       </Column>
-    </Card>
+      <Row gap="sm">
+        <Button size="sm" variant="outline" onPress={() => handleAdjust(-STEP)}>
+          -10%
+        </Button>
+        <Button size="sm" onPress={() => handleAdjust(STEP)}>
+          +10%
+        </Button>
+      </Row>
+      <Block maxW={240} w="full">
+        <Column gap="xs">
+        <Text variant="small" colorVariant="muted">
+            Embed inside constrained layouts
+          </Text>
+          <Progress value={completion} fullWidth />
+        </Column>
+      </Block>
+    </Column>
   );
 }
 

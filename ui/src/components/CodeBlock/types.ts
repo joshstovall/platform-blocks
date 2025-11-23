@@ -1,7 +1,37 @@
 import React from 'react';
 import { ViewStyle, TextStyle } from 'react-native';
 import { SpacingProps } from '../../core/utils';
-// import type { SupportedLanguage } from './SyntaxHighlighter';
+
+export type CodeBlockToken =
+  | 'keyword'
+  | 'string'
+  | 'comment'
+  | 'number'
+  | 'function'
+  | 'operator'
+  | 'punctuation'
+  | 'tag'
+  | 'attribute'
+  | 'className';
+
+export type CodeBlockTextPalette =
+  | string
+  | string[]
+  | Partial<Record<CodeBlockToken, string>>;
+
+export interface CodeBlockColorOverrides {
+  /** Background color (hex, rgb, or theme token like `primary.6`) */
+  background?: string;
+  /** Border/accent color (hex/rgb/theme token) */
+  border?: string;
+  /** Override text/token colors. Accepts a single color, an array, or a token map. */
+  text?: CodeBlockTextPalette;
+  /** Highlight colors for emphasized lines */
+  highlight?: {
+    background?: string;
+    accent?: string;
+  };
+}
 
 export interface CodeBlockProps extends SpacingProps {
   /** Optional language for syntax highlighting */
@@ -43,4 +73,8 @@ export interface CodeBlockProps extends SpacingProps {
   githubUrl?: string;
   /** Force a distinct file header bar (even without title) showing the filename */
   fileHeader?: boolean;
+  /** Override base colors (background, text, highlights) */
+  colors?: CodeBlockColorOverrides;
+  /** Control whether long lines wrap (defaults to true). Set to false to enable horizontal scrolling instead. */
+  wrap?: boolean;
 }

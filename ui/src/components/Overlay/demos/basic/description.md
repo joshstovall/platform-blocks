@@ -1,6 +1,12 @@
 ---
-title: Basic Overlay
-description: Toggleable overlay that dims, gradients, and blurs background content just like Mantine Overlay.
-tags: ["overlay", "blur", "gradient", "dimming", "mantine"]
+title: Overlay patterns
+category: surfaces
+order: 10
+tags: [overlays, effects]
+highlightLines: [24-74]
+status: stable
+since: 1.0.0
+hidden: false
 ---
-Demonstrates three overlay patterns inspired by Mantine: a toggleable dim layer, a directional gradient, and a frosted glass blur. Use `backgroundOpacity` for Mantine-compatible APIs and combine radius, gradient, and blur for richer effects.
+
+Showcases dimming, gradient, and blurred overlays that inherit their parent size for spotlights and modal scrims.

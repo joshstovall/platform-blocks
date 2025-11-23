@@ -1,13 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  PanResponder,
-  Platform,
-  NativeSyntheticEvent,
-  TextInputKeyPressEventData,
-} from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import React, { MutableRefObject, useCallback, useEffect, useMemo, useRef } from 'react';
+import { NativeSyntheticEvent, TextInputKeyPressEventData, Platform } from 'react-native';
+import type { View } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
@@ -18,35 +13,55 @@ import {
   getSpacingStyles,
   getLayoutStyles,
 } from '../../core/utils';
-import { FieldHeader } from '../_internal/FieldHeader';
-import { Row, Column } from '../Layout';
-import { Text } from '../Text';
-import type { KnobProps, KnobMark } from './types';
+import type {
+  KnobProps,
+  KnobMark,
+  KnobValueLabelConfig,
+  KnobValueLabelPosition,
+  KnobTickLayer,
+  KnobAppearance,
+  KnobPointerStyle,
+  KnobRootProps,
+  KnobFillPartProps,
+  KnobRingPartProps,
+  KnobProgressPartProps,
+  KnobTickLayerPartProps,
+  KnobPointerPartProps,
+  KnobThumbPartProps,
+  KnobValueLabelPartProps,
+  KnobPartKind,
+  KnobPartEntry,
+  KnobPartComponent,
+} from './types';
+import {
+  normalizeArcConfig,
+  getArcAngleFromRatio,
+  buildArcPathForSweep,
+  buildArcPathBetweenAngles,
+} from './arc';
+import { resolveKnobAppearance } from './appearance';
+import { clamp } from './utils/math';
+import { findClosestMarkEntry } from './utils/marks';
+import { toRadians } from './utils/geometry';
+import { useKnobGeometry } from './hooks/useKnobGeometry';
+import { useKnobValue } from './hooks/useKnobValue';
+import { useKnobValueLabels } from './hooks/useKnobValueLabels';
+import { useKnobGestures } from './hooks/useKnobGestures';
+import { normalizeInteractionConfig } from './interactionConfig';
+import { knobStyles as styles } from './styles';
+import { KnobSurface } from './components/KnobSurface';
+import type { SurfaceLayersProps } from './components/SurfaceLayers';
+import type { TickLayersProps } from './components/TickLayers';
+import type { PointerLayerProps } from './components/PointerLayer';
+import type { ThumbLayerProps } from './components/ThumbLayer';
+import { ValueLabelLayout } from './components/ValueLabelLayout';
 
-type LayoutState = {
-  width: number;
-  height: number;
-  cx: number;
-  cy: number;
-  radius: number;
-};
+const defaultKnobLabelFormatter = (val: number) => `${Math.round(val)}°`;
 
-const toRadians = (deg: number) => (deg * Math.PI) / 180;
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const pickClosestMark = (value: number, marks: KnobMark[]) => {
-  if (!marks.length) return value;
-  let closest = marks[0].value;
-  let diff = Math.abs(value - closest);
-  for (let i = 1; i < marks.length; i += 1) {
-    const markValue = marks[i].value;
-    const nextDiff = Math.abs(value - markValue);
-    if (nextDiff < diff) {
-      closest = markValue;
-      diff = nextDiff;
-    }
-  }
-  return closest;
+const getGestureDegreeSpan = (isEndless: boolean, sweepAngle: number) => {
+  if (isEndless) return 360;
+  if (!Number.isFinite(sweepAngle) || sweepAngle <= 0) return 360;
+  return Math.min(360, Math.max(1, sweepAngle));
 };
 
 const getKeyFromEvent = (event: NativeSyntheticEvent<TextInputKeyPressEventData> | any) => {
@@ -54,7 +69,7 @@ const getKeyFromEvent = (event: NativeSyntheticEvent<TextInputKeyPressEventData>
   return nativeEvent?.key ?? nativeEvent?.code;
 };
 
-export const Knob = factory<{
+const KnobBase = factory<{
   props: KnobProps;
   ref: View;
 }>((props, ref) => {
@@ -77,12 +92,15 @@ export const Knob = factory<{
     readOnly = false,
     formatLabel,
     withLabel = true,
+    valueLabel: valueLabelProp,
     marks,
-    restrictToMarks = false,
-  mode = 'bounded',
+    restrictToMarks: restrictToMarksProp,
+    mode: modeProp,
+    variant,
     label,
     description,
     labelPosition = 'top',
+    appearance,
     style,
     trackStyle,
     thumbStyle,
@@ -97,124 +115,24 @@ export const Knob = factory<{
   const spacingStyles = useMemo(() => getSpacingStyles(spacingProps), [spacingProps]);
   const layoutStyles = useMemo(() => getLayoutStyles(layoutProps), [layoutProps]);
 
+  const hasLabelContent = label != null || description != null;
+  const resolvedMode = modeProp ?? (variant === 'endless' ? 'endless' : 'bounded');
+  const resolvedVariant = variant ?? (resolvedMode === 'endless' ? 'endless' : 'level');
+  const isEndless = resolvedMode === 'endless';
+
   const size = Math.max(60, sizeProp);
-  const thumbSize = thumbSizeProp ?? Math.max(12, Math.round(size * 0.18));
-  const halfThumb = thumbSize / 2;
-  const trackThickness = 4;
+  const baseThumbSize = thumbSizeProp ?? Math.max(12, Math.round(size * 0.18));
 
-  const [layoutState, setLayoutState] = useState<LayoutState>(() => ({
-    width: size,
-    height: size,
-    cx: size / 2,
-    cy: size / 2,
-    radius: size / 2,
-  }));
+  const { layoutState, handleLayout, centerX, centerY, radiusValue, angle } = useKnobGeometry(size);
 
-  const centerX = useSharedValue(layoutState.cx);
-  const centerY = useSharedValue(layoutState.cy);
-  const radiusValue = useSharedValue(Math.max(0, layoutState.radius - trackThickness / 2));
-  const angle = useSharedValue(0);
-
-  const isEndless = mode === 'endless';
-
-  const marksNormalized = useMemo(() => {
-    if (!marks || !marks.length) return [] as KnobMark[];
-    const clamped = marks.map((mark) => ({
-      value: clamp(mark.value, min, max),
-      label: mark.label,
-    }));
-    return clamped.sort((a, b) => a.value - b.value);
-  }, [marks, min, max]);
-
-  const isControlled = value !== undefined;
-  const clampValue = useCallback(
-    (val: number) => clamp(Number.isFinite(val) ? val : min, min, max),
-    [min, max]
+  const interactionConfig = useMemo(
+    () => normalizeInteractionConfig(appearance?.interaction),
+    [appearance?.interaction]
   );
 
-  const normalizeValue = useCallback(
-    (val: number | undefined) => {
-      const candidate = Number.isFinite(val as number) ? (val as number) : min;
-      return isEndless ? candidate : clampValue(candidate);
-    },
-    [isEndless, clampValue, min]
-  );
-
-  const [internalValue, setInternalValue] = useState(() =>
-    normalizeValue(value ?? defaultValue ?? min)
-  );
-  const resolvedValue = isControlled ? normalizeValue(value) : internalValue;
-  const [displayValue, setDisplayValue] = useState(resolvedValue);
-  const valueRef = useRef(displayValue);
-  const lastDragAngleRef = useRef<number | null>(null);
-  const selectionStateRef = useRef<{ count: number; prev?: string | null }>({ count: 0 });
-
-  const disableTextSelection = useCallback(() => {
-    if (Platform.OS !== 'web') return;
-    const doc = typeof document !== 'undefined' ? document : undefined;
-    const body = doc?.body;
-    if (!body) return;
-    const state = selectionStateRef.current;
-    if (state.count === 0) {
-      state.prev = body.style.userSelect;
-      body.style.userSelect = 'none';
-    }
-    state.count += 1;
-  }, []);
-
-  const restoreTextSelection = useCallback(() => {
-    if (Platform.OS !== 'web') return;
-    const doc = typeof document !== 'undefined' ? document : undefined;
-    const body = doc?.body;
-    if (!body) return;
-    const state = selectionStateRef.current;
-    if (state.count === 0) return;
-    state.count -= 1;
-    if (state.count === 0) {
-      body.style.userSelect = state.prev ?? '';
-      state.prev = undefined;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isControlled) {
-      setInternalValue(normalizeValue(value));
-    }
-  }, [value, isControlled, normalizeValue]);
-
-  useEffect(() => {
-    const next = isEndless ? resolvedValue : clampValue(resolvedValue);
-    setDisplayValue(next);
-  }, [resolvedValue, clampValue, isEndless]);
-
-  useEffect(() => {
-    centerX.value = layoutState.cx;
-    centerY.value = layoutState.cy;
-    radiusValue.value = Math.max(0, layoutState.radius - trackThickness / 2);
-  }, [layoutState, centerX, centerY, radiusValue]);
-
-  const applyConstraints = useCallback(
-    (rawValue: number) => {
-      const fallbackValue = Number.isFinite(rawValue) ? rawValue : resolvedValue;
-      if (isEndless) {
-        let constrained = fallbackValue;
-        if (step > 0 && Number.isFinite(step)) {
-          const steps = Math.round((constrained - min) / step);
-          constrained = min + steps * step;
-        }
-        return constrained;
-      }
-      const clampedValue = clampValue(fallbackValue);
-      if (restrictToMarks && marksNormalized.length) {
-        return pickClosestMark(clampedValue, marksNormalized);
-      }
-      if (step > 0 && Number.isFinite(step)) {
-        const steps = Math.round((clampedValue - min) / step);
-        return clampValue(min + steps * step);
-      }
-      return clampedValue;
-    },
-    [resolvedValue, isEndless, step, min, clampValue, restrictToMarks, marksNormalized]
+  const arcConfig = useMemo(
+    () => normalizeArcConfig(appearance?.arc, { isEndless }),
+    [appearance?.arc, isEndless]
   );
 
   const valueToAngle = useCallback(
@@ -223,169 +141,313 @@ export const Knob = factory<{
         const spanRaw = max - min;
         const span = spanRaw === 0 ? 360 : Math.abs(spanRaw);
         if (!Number.isFinite(span) || span <= 0) {
-          return 0;
+          return arcConfig.startAngle;
         }
         const normalized = ((val - min) % span + span) % span;
         const ratio = normalized / span;
-        return clamp(ratio * 360, 0, 360);
+        return getArcAngleFromRatio(arcConfig, ratio);
       }
-      if (max <= min) return 0;
-      const ratio = (val - min) / (max - min);
-      return clamp(ratio * 360, 0, 360);
+      if (max <= min) return arcConfig.startAngle;
+      const ratio = clamp((val - min) / (max - min), 0, 1);
+      return getArcAngleFromRatio(arcConfig, ratio);
     },
-    [isEndless, min, max]
+    [isEndless, max, min, arcConfig]
   );
+
+  const {
+    marksNormalized,
+    restrictToMarks,
+    displayValue,
+    resolvedValue,
+    valueRef,
+    handleValueUpdate,
+    clampValue,
+  } = useKnobValue({
+    value,
+    defaultValue,
+    min,
+    max,
+    step,
+    marks,
+    restrictToMarksProp,
+    resolvedVariant,
+    isEndless,
+    onChange,
+    onChangeEnd,
+    angle,
+    valueToAngle,
+  });
+
+  const activeMark = useMemo(
+    () => findClosestMarkEntry(displayValue, marksNormalized),
+    [displayValue, marksNormalized]
+  );
+  const statusAccent =
+    !disabled && resolvedVariant === 'status' && activeMark?.accentColor
+      ? activeMark.accentColor
+      : undefined;
+
+  const resolvedAppearance = useMemo(
+    () =>
+      resolveKnobAppearance({
+        appearance,
+        theme,
+        variant: resolvedVariant,
+        disabled,
+        size,
+        thumbSize: baseThumbSize,
+        accentColor: statusAccent,
+      }),
+    [appearance, theme, resolvedVariant, disabled, size, baseThumbSize, statusAccent]
+  );
+
+  const panningConfig = resolvedAppearance.panning;
+
+  const boundedRatio = useMemo(() => {
+    if (isEndless || max <= min) return 0;
+    return clamp((displayValue - min) / (max - min), 0, 1);
+  }, [displayValue, isEndless, min, max]);
+
+  const progressMode = resolvedAppearance.progress?.mode ?? 'none';
+  const showProgress = !!resolvedAppearance.progress && progressMode !== 'none' && !isEndless;
+  const showSplitProgress = showProgress && progressMode === 'split' && max > min;
+  const showContiguousProgress = showProgress && progressMode !== 'split';
+  const progressRatio = showContiguousProgress ? boundedRatio : 0;
+
+  const defaultPivotValue = useMemo(() => (max <= min ? min : min + (max - min) / 2), [min, max]);
+  const pivotValue = useMemo(() => {
+    const candidate =
+      panningConfig?.pivotValue !== undefined ? panningConfig.pivotValue : defaultPivotValue;
+    return clamp(Number.isFinite(candidate) ? candidate : defaultPivotValue, min, max);
+  }, [panningConfig?.pivotValue, defaultPivotValue, min, max]);
+
+  const thumbSize = resolvedAppearance.thumb?.size ?? baseThumbSize;
+  const ringThickness = resolvedAppearance.ring.thickness;
+  const ringRadius = clamp(
+    layoutState.radius - ringThickness / 2 + resolvedAppearance.ring.radiusOffset,
+    ringThickness / 2,
+    layoutState.radius
+  );
+  const baseThumbOffset = resolvedAppearance.thumb?.offset ?? 0;
+  const thumbOffset = useMemo(() => {
+    if (!resolvedAppearance.thumb) return 0;
+    if (!panningConfig?.mirrorThumbOffset || !showSplitProgress || baseThumbOffset === 0) {
+      return baseThumbOffset;
+    }
+    const delta = displayValue - pivotValue;
+    if (Math.abs(delta) < 0.0001) return 0;
+    return Math.abs(baseThumbOffset) * (delta > 0 ? 1 : -1);
+  }, [
+    resolvedAppearance.thumb,
+    panningConfig?.mirrorThumbOffset,
+    showSplitProgress,
+    baseThumbOffset,
+    displayValue,
+    pivotValue,
+  ]);
+  const fillConfig = resolvedAppearance.fill;
+  const fillRadius = fillConfig
+    ? clamp(layoutState.radius + fillConfig.radiusOffset, 0, layoutState.radius)
+    : 0;
+  const fillDiameter = fillConfig ? fillRadius * 2 : 0;
+  const ringBaseDiameter = ringRadius * 2 + ringThickness;
+  const trackColor = resolvedAppearance.ring.color;
+  const thumbColor = resolvedAppearance.thumb?.color ?? theme.colors.gray[7];
+  const ringSvgCenter = ringBaseDiameter / 2;
+  const ringShadowStyle = useMemo(() => {
+    const shadow = resolvedAppearance.ring.shadow;
+    if (!shadow) return null;
+    return {
+      shadowColor: shadow.color ?? '#000',
+      shadowOpacity: shadow.opacity ?? 0.25,
+      shadowRadius: shadow.blur ?? ringThickness,
+      shadowOffset: {
+        width: shadow.offsetX ?? 0,
+        height: shadow.offsetY ?? Math.max(1, ringThickness * 0.25),
+      },
+      elevation:
+        Platform.OS === 'android'
+          ? Math.max(1, shadow.blur ?? ringThickness * 0.5)
+          : undefined,
+    } as ViewStyle;
+  }, [resolvedAppearance.ring.shadow, ringThickness]);
+
+  const progressThickness = resolvedAppearance.progress?.thickness ?? ringThickness;
+  const progressRadius = ringRadius + (ringThickness - progressThickness) / 2;
+
+  const ringPath = useMemo(
+    () =>
+      buildArcPathForSweep(arcConfig, ringRadius, 1, {
+        cx: ringSvgCenter,
+        cy: ringSvgCenter,
+      }),
+    [arcConfig, ringRadius, ringSvgCenter]
+  );
+
+  const progressPath = useMemo(
+    () =>
+      showContiguousProgress
+        ? buildArcPathForSweep(arcConfig, progressRadius, progressRatio, {
+          cx: ringSvgCenter,
+          cy: ringSvgCenter,
+        })
+        : '',
+    [showContiguousProgress, arcConfig, progressRadius, progressRatio, ringSvgCenter]
+  );
+
+  const hostRef = useRef<View | null>(null);
+
+  const setHostRef = useCallback(
+    (node: View | null) => {
+      hostRef.current = node;
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (ref) {
+        (ref as MutableRefObject<View | null>).current = node;
+      }
+    },
+    [ref]
+  );
+
+  useEffect(() => {
+    centerX.value = layoutState.cx;
+    centerY.value = layoutState.cy;
+  }, [layoutState, centerX, centerY]);
+
+  useEffect(() => {
+    radiusValue.value = Math.max(0, ringRadius + thumbOffset);
+  }, [ringRadius, thumbOffset, radiusValue]);
+
+  const valueSpan = useMemo(() => {
+    const rawSpan = Math.abs(max - min);
+    if (!Number.isFinite(rawSpan) || rawSpan === 0) {
+      return 360;
+    }
+    return rawSpan;
+  }, [max, min]);
+
+  const gestureDegreeSpan = useMemo(
+    () => getGestureDegreeSpan(isEndless, arcConfig.sweepAngle),
+    [isEndless, arcConfig.sweepAngle]
+  );
+
+  const degreesToValueDelta = useCallback(
+    (deg: number) => {
+      if (!Number.isFinite(deg) || deg === 0) return 0;
+      return (deg / gestureDegreeSpan) * valueSpan;
+    },
+    [gestureDegreeSpan, valueSpan]
+  );
+
+  const displayAngle = useMemo(() => valueToAngle(displayValue), [displayValue, valueToAngle]);
+
+  const pivotAngle = useMemo(() => valueToAngle(pivotValue), [pivotValue, valueToAngle]);
+  const pivotDelta = displayValue - pivotValue;
+  const isAtPivot = Math.abs(pivotDelta) < 0.0001;
+
+  type SplitProgressState = {
+    positivePath: string;
+    negativePath: string;
+    pivotAngle: number;
+  };
+
+  const splitProgressState = useMemo<SplitProgressState | null>(() => {
+    if (!showSplitProgress) return null;
+    if (isAtPivot) {
+      return { positivePath: '', negativePath: '', pivotAngle };
+    }
+    const path = buildArcPathBetweenAngles(
+      ringSvgCenter,
+      ringSvgCenter,
+      progressRadius,
+      pivotAngle,
+      displayAngle
+    );
+    if (!path) {
+      return { positivePath: '', negativePath: '', pivotAngle };
+    }
+    return pivotDelta > 0
+      ? { positivePath: path, negativePath: '', pivotAngle }
+      : { positivePath: '', negativePath: path, pivotAngle };
+  }, [
+    showSplitProgress,
+    isAtPivot,
+    ringSvgCenter,
+    progressRadius,
+    pivotAngle,
+    displayAngle,
+    pivotDelta,
+  ]);
+
+  const progressStrokeColor = resolvedAppearance.progress?.color ?? resolvedAppearance.ring.color;
+  const splitPositiveColor =
+    panningConfig?.positiveColor ?? resolvedAppearance.progress?.color ?? progressStrokeColor;
+  const splitNegativeColor =
+    panningConfig?.negativeColor ??
+    resolvedAppearance.progress?.trailColor ??
+    resolvedAppearance.ring.trailColor ??
+    progressStrokeColor;
+  const showZeroIndicator = Boolean(showSplitProgress && panningConfig?.showZeroIndicator);
+  const zeroIndicatorColor = resolvedAppearance.progress?.trailColor ?? resolvedAppearance.ring.color;
+
+  const zeroIndicatorPoints = useMemo(() => {
+    if (!showZeroIndicator || !splitProgressState) return null;
+    const angleRad = toRadians(splitProgressState.pivotAngle);
+    const indicatorLength = Math.max(progressThickness * 0.9, 6);
+    const innerRadius = progressRadius - indicatorLength / 2;
+    const outerRadius = progressRadius + indicatorLength / 2;
+    return {
+      x1: ringSvgCenter + Math.sin(angleRad) * innerRadius,
+      y1: ringSvgCenter - Math.cos(angleRad) * innerRadius,
+      x2: ringSvgCenter + Math.sin(angleRad) * outerRadius,
+      y2: ringSvgCenter - Math.cos(angleRad) * outerRadius,
+    };
+  }, [showZeroIndicator, splitProgressState, progressThickness, progressRadius, ringSvgCenter]);
 
   useEffect(() => {
     valueRef.current = displayValue;
     angle.value = valueToAngle(displayValue);
   }, [displayValue, valueToAngle, angle]);
 
-  const handleValueUpdate = useCallback(
-    (nextValue: number, final: boolean) => {
-      const constrained = applyConstraints(nextValue);
-      const constrainedAngle = valueToAngle(constrained);
-      if (constrained !== valueRef.current) {
-        angle.value = constrainedAngle;
-        setDisplayValue(constrained);
-        valueRef.current = constrained;
-        if (!isControlled) {
-          setInternalValue(constrained);
-        }
-        onChange?.(constrained);
-      } else {
-        angle.value = constrainedAngle;
-      }
-      if (final) {
-        onChangeEnd?.(constrained);
-      }
-    },
-    [angle, applyConstraints, isControlled, onChange, onChangeEnd, valueToAngle]
-  );
+  const { panHandlers } = useKnobGestures({
+    disabled,
+    readOnly,
+    interactionConfig,
+    isEndless,
+    min,
+    max,
+    arcConfig,
+    gestureDegreeSpan,
+    layoutState,
+    handleValueUpdate,
+    onScrubStart,
+    onScrubEnd,
+    onChangeEnd,
+    valueRef,
+    hostRef,
+    degreesToValueDelta,
+    valueToAngle,
+    isRTL,
+  });
 
-  const updateFromPoint = useCallback(
-    (x: number, y: number, final = false, fromGrant = false) => {
-      const dx = x - layoutState.cx;
-      const dy = layoutState.cy - y;
-      const rawAngle = (Math.atan2(dx, dy) * 180) / Math.PI;
-      const normalizedAngle = (rawAngle + 360) % 360;
-      if (isEndless) {
-        const spanRaw = max - min;
-        const span = spanRaw === 0 ? 360 : Math.abs(spanRaw);
-        if (!Number.isFinite(span) || span <= 0) return;
-
-        if (lastDragAngleRef.current == null) {
-          lastDragAngleRef.current = normalizedAngle;
-          if (fromGrant) {
-            const currentAngle = valueToAngle(valueRef.current);
-            let deltaInitial = normalizedAngle - currentAngle;
-            if (deltaInitial > 180) deltaInitial -= 360;
-            if (deltaInitial < -180) deltaInitial += 360;
-            if (deltaInitial !== 0) {
-              const nextValue = valueRef.current + (deltaInitial / 360) * span;
-              handleValueUpdate(nextValue, final);
-            }
-          }
-          return;
-        }
-
-        let deltaAngle = normalizedAngle - lastDragAngleRef.current;
-        if (deltaAngle > 180) deltaAngle -= 360;
-        if (deltaAngle < -180) deltaAngle += 360;
-        lastDragAngleRef.current = normalizedAngle;
-        if (deltaAngle === 0) return;
-        const nextValue = valueRef.current + (deltaAngle / 360) * span;
-        handleValueUpdate(nextValue, final);
-        return;
-      }
-
-      const nextValue = min + (normalizedAngle / 360) * (max - min);
-      handleValueUpdate(nextValue, final);
-    },
-    [layoutState, min, max, isEndless, valueToAngle, handleValueUpdate]
-  );
-
-  const handlePanGrant = useCallback(
-    (event: any) => {
-      if (disabled || readOnly) return;
-      onScrubStart?.();
-      const native = event.nativeEvent;
-      if (Platform.OS === 'web') {
-        native?.preventDefault?.();
-        native?.stopPropagation?.();
-      }
-      lastDragAngleRef.current = null;
-      disableTextSelection();
-      updateFromPoint(native.locationX, native.locationY, false, true);
-    },
-    [disabled, readOnly, onScrubStart, disableTextSelection, updateFromPoint]
-  );
-
-  const handlePanMove = useCallback(
-    (event: any) => {
-      if (disabled || readOnly) return;
-      const native = event.nativeEvent;
-      if (Platform.OS === 'web') {
-        native?.preventDefault?.();
-      }
-      updateFromPoint(native.locationX, native.locationY, false);
-    },
-    [disabled, readOnly, updateFromPoint]
-  );
-
-  const handlePanEnd = useCallback(() => {
-    lastDragAngleRef.current = null;
-    restoreTextSelection();
-    if (disabled || readOnly) return;
-    onScrubEnd?.();
-    onChangeEnd?.(valueRef.current);
-  }, [disabled, readOnly, onScrubEnd, onChangeEnd, restoreTextSelection]);
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => !disabled && !readOnly,
-        onStartShouldSetPanResponderCapture: () => !disabled && !readOnly,
-        onMoveShouldSetPanResponder: () => !disabled && !readOnly,
-        onMoveShouldSetPanResponderCapture: () => !disabled && !readOnly,
-        onPanResponderGrant: handlePanGrant,
-        onPanResponderMove: handlePanMove,
-        onPanResponderRelease: handlePanEnd,
-        onPanResponderTerminate: handlePanEnd,
-      }),
-    [disabled, readOnly, handlePanGrant, handlePanMove, handlePanEnd]
-  );
-
-  useEffect(() => () => restoreTextSelection(), [restoreTextSelection]);
-
-  const handleLayout = useCallback(
-    (event: any) => {
-      const { width, height } = event.nativeEvent.layout;
-      const nextWidth = width || size;
-      const nextHeight = height || size;
-      const diameter = Math.min(nextWidth, nextHeight);
-      const containerRadius = diameter / 2;
-      setLayoutState({
-        width: nextWidth,
-        height: nextHeight,
-        cx: nextWidth / 2,
-        cy: nextHeight / 2,
-        radius: containerRadius,
-      });
-    },
-    [size]
-  );
-
-  const trackColor = disabled ? theme.colors.gray[4] : theme.colors.gray[3];
-  const thumbColor = disabled ? theme.colors.gray[4] : theme.colors.primary[5];
   const labelColor = disabled ? theme.text.secondary : theme.text.primary;
-  const trackDiameter = Math.max(trackThickness, layoutState.radius * 2 + trackThickness);
-  const markRadius = Math.max(0, layoutState.radius - trackThickness / 2);
-  const markDotSize = Math.max(4, Math.round(size * 0.05));
-  const markLabelDistance = markRadius + thumbSize / 2 + 16;
-  const markLabelWidth = Math.max(48, Math.round(size * 0.55));
-  const markLabelHeight = Math.max(20, Math.round(size * 0.18));
-  const markColor = disabled ? theme.colors.gray[4] : theme.colors.gray[6];
+  const pointerConfig = resolvedAppearance.pointer;
+
+  const panningValueFormatter = panningConfig?.valueFormatter;
+
+  const { valueLabelSlots } = useKnobValueLabels({
+    resolvedVariant,
+    withLabel,
+    valueLabelProp,
+    formatLabel,
+    panningValueFormatter,
+    min,
+    max,
+    displayValue,
+    theme,
+    labelColor,
+    activeMark,
+  });
 
   // ✅ Fixed alignment math
   const thumbAnimatedStyle = useAnimatedStyle(() => {
@@ -398,215 +460,364 @@ export const Knob = factory<{
     };
   }, [radiusValue, angle]);
 
-  const formattedLabel = useMemo(() => {
-    if (!withLabel) return null;
-    return formatLabel ? formatLabel(displayValue) : `${Math.round(displayValue)}°`;
-  }, [withLabel, formatLabel, displayValue]);
+  const webTabIndex = (disabled ? -1 : 0) as 0 | -1;
+  const keyboardHandlers = Platform.OS === 'web'
+    ? { onKeyDown: () => { }, tabIndex: webTabIndex }
+    : {};
 
-  const keyboardHandlers = Platform.OS === 'web' ? { onKeyDown: () => {} } : {};
+  const ringBaseStroke = showProgress
+    ? resolvedAppearance.progress?.trailColor ?? resolvedAppearance.ring.trailColor
+    : resolvedAppearance.ring.color;
 
-  const knobElement = (
-    <View
-      ref={ref}
-      {...panResponder.panHandlers}
-      onLayout={handleLayout}
-      accessible
-      accessibilityRole="adjustable"
+  const ringStrokeCap = resolvedAppearance.ring.cap ?? 'round';
+  const progressStrokeCap = resolvedAppearance.progress?.roundedCaps ? 'round' : 'butt';
+  const splitPositivePath = splitProgressState?.positivePath;
+  const splitNegativePath = splitProgressState?.negativePath;
+
+  const surfaceLayersProps: SurfaceLayersProps = {
+    layoutState,
+    fillConfig: fillConfig ?? undefined,
+    fillDiameter,
+    fillRadius,
+    ringBaseDiameter,
+    ringSvgCenter,
+    ringBackgroundColor: resolvedAppearance.ring.backgroundColor,
+    ringBaseStroke,
+    ringPath,
+    ringThickness,
+    ringCap: ringStrokeCap,
+    ringShadowStyle,
+    trackStyle,
+    showContiguousProgress,
+    progressPath,
+    progressStrokeColor,
+    progressThickness,
+    progressStrokeCap,
+    showSplitProgress,
+    splitPositivePath,
+    splitNegativePath,
+    splitPositiveColor,
+    splitNegativeColor,
+    showZeroIndicator,
+    zeroIndicatorPoints,
+    zeroIndicatorColor,
+  };
+
+  const tickLayersProps: TickLayersProps = {
+    appearanceTicks: resolvedAppearance.ticks,
+    marksNormalized,
+    min,
+    max,
+    step,
+    isEndless,
+    valueToAngle,
+    layoutState,
+    ringRadius,
+    ringThickness,
+    theme,
+    boundedRatio,
+    size,
+    thumbSize,
+    resolvedVariant,
+    displayValue,
+    activeMark,
+    disabled,
+    markLabelStyle,
+    labelColor,
+  };
+
+  const pointerLayerProps: PointerLayerProps = {
+    pointerConfig,
+    labelColor,
+    displayAngle,
+    layoutState,
+    size,
+    thumbSize,
+    ringRadius,
+  };
+
+  const thumbLayerProps: ThumbLayerProps = {
+    thumbConfig: resolvedAppearance.thumb,
+    thumbSize,
+    thumbColor,
+    disabled,
+    thumbAnimatedStyle,
+    thumbStyle,
+    displayValue,
+    displayAngle,
+  };
+
+  const knobSurface = (
+    <KnobSurface
+      size={size}
+      disabled={disabled}
+      trackColor={trackColor}
       accessibilityLabel={accessibilityLabel ?? (typeof label === 'string' ? label : 'Knob')}
-      accessibilityState={{ disabled }}
-      accessibilityValue={{ min, max, now: Math.round(displayValue) }}
-      focusable={!disabled}
-      {...(Platform.OS === 'web' ? { tabIndex: disabled ? -1 : 0 } : {})}
-      {...keyboardHandlers}
-      style={[
-        styles.knob,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderColor: trackColor,
-          opacity: disabled ? 0.6 : 1,
-        },
-        style,
-      ]}
+      accessibilityMin={min}
+      accessibilityMax={max}
+      accessibilityNow={Math.round(displayValue)}
+      setHostRef={setHostRef}
+      panHandlers={panHandlers}
+      handleLayout={handleLayout}
+      keyboardHandlers={keyboardHandlers}
+      surfaceLayersProps={surfaceLayersProps}
+      tickLayersProps={tickLayersProps}
+      pointerLayerProps={pointerLayerProps}
+      thumbLayerProps={thumbLayerProps}
+      centerSlot={valueLabelSlots.center}
+      style={style}
       testID={testID}
       {...rest}
-    >
-      <View
-        pointerEvents="none"
-        style={[
-          {
-            position: 'absolute',
-            left: layoutState.cx - trackDiameter / 2,
-            top: layoutState.cy - trackDiameter / 2,
-            width: trackDiameter,
-            height: trackDiameter,
-            borderRadius: trackDiameter / 2,
-            borderWidth: trackThickness,
-            borderColor: trackColor,
-            backgroundColor: theme.backgrounds.surface,
-          },
-          trackStyle,
-        ]}
-      />
-
-      {marksNormalized.length > 0 && (
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          {marksNormalized.map((mark) => {
-            const markAngle = valueToAngle(mark.value);
-            const rad = toRadians(markAngle);
-            const dotX = layoutState.cx + Math.sin(rad) * markRadius - markDotSize / 2;
-            const dotY = layoutState.cy - Math.cos(rad) * markRadius - markDotSize / 2;
-            const labelX = layoutState.cx + Math.sin(rad) * markLabelDistance;
-            const labelY = layoutState.cy - Math.cos(rad) * markLabelDistance;
-
-            return (
-              <React.Fragment key={`mark-${mark.value}`}>
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.markDot,
-                    {
-                      width: markDotSize,
-                      height: markDotSize,
-                      borderRadius: markDotSize / 2,
-                      left: dotX,
-                      top: dotY,
-                      backgroundColor: markColor,
-                    },
-                  ]}
-                />
-                {mark.label != null && (
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.markLabelContainer,
-                      {
-                        left: labelX,
-                        top: labelY,
-                        width: markLabelWidth,
-                        height: markLabelHeight,
-                        transform: [
-                          { translateX: -markLabelWidth / 2 },
-                          { translateY: -markLabelHeight / 2 },
-                        ],
-                      },
-                    ]}
-                  >
-                    {typeof mark.label === 'string' ? (
-                      <Text
-                        size="xs"
-                        weight="500"
-                        selectable={false}
-                        style={[
-                          styles.markLabelText,
-                          { color: labelColor },
-                          markLabelStyle,
-                        ]}
-                      >
-                        {mark.label}
-                      </Text>
-                    ) : (
-                      mark.label
-                    )}
-                  </View>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </View>
-      )}
-
-      {formattedLabel != null && (
-        <Text size="sm" weight="600" selectable={false} style={{ color: labelColor }}>
-          {formattedLabel}
-        </Text>
-      )}
-
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.thumb,
-          {
-            width: thumbSize,
-            height: thumbSize,
-            borderRadius: thumbSize / 2,
-            backgroundColor: thumbColor,
-            shadowOpacity: disabled ? 0 : 0.2,
-          },
-          thumbStyle,
-          thumbAnimatedStyle,
-        ]}
-      />
-    </View>
-  );
-
-  const hasLabelContent = label != null || description != null;
-  if (!hasLabelContent) return knobElement;
-
-  const labelNode = (
-    <FieldHeader
-      label={label}
-      description={description}
-      size="md"
-      marginBottom={labelPosition === 'top' || labelPosition === 'bottom' ? undefined : 0}
     />
   );
-
-  const LayoutComponent =
-    labelPosition === 'top' || labelPosition === 'bottom' ? Column : Row;
-  const layoutGap =
-    labelPosition === 'top' || labelPosition === 'bottom' ? 'xs' : 'sm';
-  const layoutAlign =
-    labelPosition === 'top' || labelPosition === 'bottom' ? 'stretch' : 'center';
-
   return (
-    <LayoutComponent gap={layoutGap} align={layoutAlign} {...spacingProps} {...layoutProps}>
-      {labelPosition === 'top' && labelNode}
-      {labelPosition === 'left' && labelNode}
-      {knobElement}
-      {labelPosition === 'right' && labelNode}
-      {labelPosition === 'bottom' && labelNode}
-    </LayoutComponent>
+    <ValueLabelLayout
+      knobElement={knobSurface}
+      valueLabelSlots={valueLabelSlots}
+      spacingStyles={spacingStyles}
+      layoutStyles={layoutStyles}
+      spacingProps={spacingProps}
+      layoutProps={layoutProps}
+      hasLabelContent={hasLabelContent}
+      label={label}
+      description={description}
+      labelPosition={labelPosition}
+    />
   );
 });
 
-Knob.displayName = 'Knob';
+KnobBase.displayName = 'Knob';
 
+type PartEntry = KnobPartEntry;
 
-const styles = StyleSheet.create({
-  knob: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumb: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    marginLeft: -14, // half of thumbSize (updated dynamically above)
-    marginTop: -14,
-    shadowColor: '#000',
-    shadowRadius: 4,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  markDot: {
-    position: 'absolute',
-  },
-  markLabelContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  markLabelText: {
-    textAlign: 'center',
-    includeFontPadding: false,
-  },
-});
+const createPartComponent = <P extends object>(
+  kind: KnobPartKind,
+  displayName: string
+): KnobPartComponent<P> => {
+  const PartComponent: React.FC<P> = () => null;
+  PartComponent.displayName = displayName;
+  (PartComponent as KnobPartComponent<P>).__knobPartKind = kind;
+  return PartComponent as KnobPartComponent<P>;
+};
+
+const KnobFillPart = createPartComponent<KnobFillPartProps>('fill', 'Knob.Fill');
+const KnobRingPart = createPartComponent<KnobRingPartProps>('ring', 'Knob.Ring');
+const KnobProgressPart = createPartComponent<KnobProgressPartProps>('progress', 'Knob.Progress');
+const KnobTickLayerPart = createPartComponent<KnobTickLayerPartProps>('tick', 'Knob.TickLayer');
+const KnobPointerPart = createPartComponent<KnobPointerPartProps>('pointer', 'Knob.Pointer');
+const KnobThumbPart = createPartComponent<KnobThumbPartProps>('thumb', 'Knob.Thumb');
+const KnobValueLabelPart = createPartComponent<KnobValueLabelPartProps>(
+  'valueLabel',
+  'Knob.ValueLabel'
+);
+
+const normalizeTickInput = (ticks?: KnobAppearance['ticks']): KnobTickLayer[] => {
+  if (!ticks) return [];
+  return Array.isArray(ticks) ? ticks : [ticks];
+};
+
+const buildAppearanceFromParts = (
+  baseAppearance: KnobAppearance | undefined,
+  parts: PartEntry[]
+): KnobAppearance | undefined => {
+  if (!parts.length) {
+    return baseAppearance;
+  }
+  const sortedParts = [...parts].sort((a, b) => a.order - b.order);
+  let mutated = false;
+  const nextAppearance: KnobAppearance = baseAppearance ? { ...baseAppearance } : {};
+  let tickLayers = normalizeTickInput(baseAppearance?.ticks);
+  let tickLayersMutated = false;
+
+  sortedParts.forEach((entry) => {
+    switch (entry.kind) {
+      case 'fill': {
+        const { visible, ...rest } = entry.props;
+        if (visible === false) {
+          if (nextAppearance.fill !== undefined) {
+            delete nextAppearance.fill;
+            mutated = true;
+          }
+        } else {
+          nextAppearance.fill = { ...(nextAppearance.fill ?? {}), ...rest };
+          mutated = true;
+        }
+        break;
+      }
+      case 'ring': {
+        const { visible, ...rest } = entry.props;
+        if (visible === false) {
+          if (nextAppearance.ring) {
+            delete nextAppearance.ring;
+            mutated = true;
+          }
+        } else {
+          nextAppearance.ring = { ...(nextAppearance.ring ?? {}), ...rest };
+          mutated = true;
+        }
+        break;
+      }
+      case 'progress': {
+        const { visible, ...rest } = entry.props;
+        if (visible === false) {
+          if (nextAppearance.progress !== false) {
+            nextAppearance.progress = false;
+            mutated = true;
+          }
+        } else {
+          nextAppearance.progress = { ...(nextAppearance.progress ?? {}), ...rest };
+          mutated = true;
+        }
+        break;
+      }
+      case 'pointer': {
+        const { enabled, visible, ...rest } = entry.props;
+        if (enabled === false || visible === false) {
+          if (nextAppearance.pointer !== false) {
+            nextAppearance.pointer = false;
+            mutated = true;
+          }
+        } else {
+          const basePointer =
+            nextAppearance.pointer && typeof nextAppearance.pointer === 'object'
+              ? (nextAppearance.pointer as KnobPointerStyle)
+              : undefined;
+          nextAppearance.pointer = {
+            ...(basePointer ?? {}),
+            visible,
+            ...rest,
+          } as KnobPointerStyle;
+          mutated = true;
+        }
+        break;
+      }
+      case 'thumb': {
+        const { visible, ...rest } = entry.props;
+        if (visible === false) {
+          if (nextAppearance.thumb !== false) {
+            nextAppearance.thumb = false;
+            mutated = true;
+          }
+        } else {
+          nextAppearance.thumb = { ...(nextAppearance.thumb ?? {}), ...rest };
+          mutated = true;
+        }
+        break;
+      }
+      case 'tick': {
+        if (!tickLayersMutated) {
+          tickLayers = [...tickLayers];
+          tickLayersMutated = true;
+        }
+        tickLayers.push(entry.props);
+        break;
+      }
+      case 'valueLabel':
+        // handled separately in buildValueLabelFromParts
+        break;
+      default:
+        break;
+    }
+  });
+
+  if (tickLayersMutated) {
+    nextAppearance.ticks = tickLayers;
+    mutated = true;
+  }
+
+  return mutated ? nextAppearance : baseAppearance;
+};
+
+const buildValueLabelFromParts = (
+  baseValueLabel: KnobProps['valueLabel'],
+  parts: PartEntry[]
+): KnobProps['valueLabel'] => {
+  const sortedParts = [...parts].sort((a, b) => a.order - b.order);
+  let current = baseValueLabel;
+  let mutated = false;
+
+  sortedParts.forEach((entry) => {
+    if (entry.kind !== 'valueLabel') return;
+    const { visible, ...rest } = entry.props;
+    if (visible === false) {
+      current = false;
+      mutated = true;
+      return;
+    }
+    const baseConfig = current && typeof current === 'object' ? (current as KnobValueLabelConfig) : undefined;
+    current = { ...(baseConfig ?? {}), ...rest };
+    mutated = true;
+  });
+
+  return mutated ? current : baseValueLabel;
+};
+
+const warnNonPartChild = __DEV__
+  ? (child: React.ReactNode) => {
+    if (child == null) return;
+    console.warn('Knob.Root only accepts Knob.* part components. Other children will be ignored.');
+  }
+  : () => { };
+
+const collectPartEntries = (children: React.ReactNode): PartEntry[] => {
+  const entries: PartEntry[] = [];
+  React.Children.forEach(children, (child, index) => {
+    if (!React.isValidElement(child)) {
+      warnNonPartChild(child);
+      return;
+    }
+    const kind = (child.type as any)?.__knobPartKind as KnobPartKind | undefined;
+    if (!kind) {
+      warnNonPartChild(child);
+      return;
+    }
+    entries.push({ kind, props: child.props, order: index } as PartEntry);
+  });
+  return entries;
+};
+
+const KnobRootComponent: React.FC<KnobRootProps> = ({ children, appearance, valueLabel, ...rest }) => {
+  const partEntries = useMemo(() => collectPartEntries(children), [children]);
+  const derivedAppearance = useMemo(
+    () => buildAppearanceFromParts(appearance, partEntries),
+    [appearance, partEntries]
+  );
+  const derivedValueLabel = useMemo(
+    () => buildValueLabelFromParts(valueLabel, partEntries),
+    [valueLabel, partEntries]
+  );
+
+  return <KnobBase {...rest} appearance={derivedAppearance} valueLabel={derivedValueLabel} />;
+};
+
+KnobRootComponent.displayName = 'Knob.Root';
+
+type KnobCompoundComponent = typeof KnobBase & {
+  Root: React.FC<KnobRootProps>;
+  Fill: React.FC<KnobFillPartProps>;
+  Ring: React.FC<KnobRingPartProps>;
+  Progress: React.FC<KnobProgressPartProps>;
+  TickLayer: React.FC<KnobTickLayerPartProps>;
+  Pointer: React.FC<KnobPointerPartProps>;
+  Thumb: React.FC<KnobThumbPartProps>;
+  ValueLabel: React.FC<KnobValueLabelPartProps>;
+};
+
+export const Knob = Object.assign(KnobBase, {
+  Root: KnobRootComponent,
+  Fill: KnobFillPart,
+  Ring: KnobRingPart,
+  Progress: KnobProgressPart,
+  TickLayer: KnobTickLayerPart,
+  Pointer: KnobPointerPart,
+  Thumb: KnobThumbPart,
+  ValueLabel: KnobValueLabelPart,
+}) as KnobCompoundComponent;
+
+export const __KnobInternals = {
+  buildAppearanceFromParts,
+  buildValueLabelFromParts,
+  getGestureDegreeSpan,
+};
+
+export type { KnobPartEntry } from './types';

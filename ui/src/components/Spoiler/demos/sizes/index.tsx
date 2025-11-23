@@ -1,30 +1,36 @@
-import { Spoiler, Text, Flex, Card } from '@platform-blocks/ui';
+import { Card, Column, Spoiler, Text } from '@platform-blocks/ui';
+
+const longText =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer tincidunt condimentum risus, sit amet cursus massa fermentum non.';
+
+const examples = [
+  { key: 'small', label: '60px height', maxHeight: 60 },
+  { key: 'medium', label: '100px height', maxHeight: 100 },
+  { key: 'large', label: '150px height', maxHeight: 150 },
+];
 
 export default function Demo() {
-  const longText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer tincidunt condimentum risus, sit amet cursus massa fermentum non.';
-
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Small Height (60px)</Text>
-        <Spoiler maxHeight={60}>
-          <Text>{longText}</Text>
-        </Spoiler>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Adjust maxHeight to control how much text stays visible before the rest collapses behind the toggle.
+          </Text>
+          <Column gap="sm">
+            {examples.map((example) => (
+              <Column key={example.key} gap="xs">
+                <Text size="xs" colorVariant="secondary">
+                  {example.label}
+                </Text>
+                <Spoiler maxHeight={example.maxHeight}>
+                  <Text size="sm">{longText}</Text>
+                </Spoiler>
+              </Column>
+            ))}
+          </Column>
+        </Column>
       </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Medium Height (100px)</Text>
-        <Spoiler maxHeight={100}>
-          <Text>{longText}</Text>
-        </Spoiler>
-      </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Large Height (150px)</Text>
-        <Spoiler maxHeight={150}>
-          <Text>{longText}</Text>
-        </Spoiler>
-      </Card>
-    </Flex>
+    </Column>
   );
 }

@@ -1,12 +1,12 @@
 ---
 title: Variants
-category: usage
+category: theming
 order: 20
-tags: [variants, styles, colors]
+tags: [color, stripe]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different progress bar variants including colors, sizes, and visual styles.
+Compare default, semantic, and striped progress states to match the tone of your status updates.

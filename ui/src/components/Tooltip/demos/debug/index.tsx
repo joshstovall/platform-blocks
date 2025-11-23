@@ -1,71 +1,30 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Tooltip, Button, Text } from '@platform-blocks/ui';
+import { useState } from 'react';
+import { Card, Column, Tooltip, Button, Text } from '@platform-blocks/ui';
 
-export default function DebugTooltipDemo() {
-  const [manualOpen, setManualOpen] = useState(false);
+export default function Demo() {
+  const [opened, setOpened] = useState(false);
 
   return (
-    <View style={{ padding: 40, gap: 20 }}>
-      <Text variant="h3" mb="lg">Tooltip Debugging</Text>
-
-      {/* Manual control tooltip */}
-      <View>
-        <Text mb="sm">Manually Controlled Tooltip</Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Control `opened` manually when tooltips should sync with another piece of UI state.
+          </Text>
           <Tooltip
-            label="This tooltip is manually controlled"
-            opened={manualOpen}
+            label="Shown programmatically"
+            opened={opened}
+            events={{ hover: false, focus: false, touch: false }}
           >
-            <View style={{
-              padding: 10,
-              backgroundColor: '#f0f0f0',
-              borderRadius: 5,
-              borderWidth: 1,
-              borderColor: '#ccc'
-            }}>
-              <Text>Target Element</Text>
-            </View>
+            <Button size="sm" variant="outline">
+              Controlled tooltip
+            </Button>
           </Tooltip>
-
-          <Button
-            title={manualOpen ? 'Hide' : 'Show'}
-            onPress={() => setManualOpen(!manualOpen)}
-          />
-        </View>
-      </View>
-
-      {/* Simple hover tooltip */}
-      <View>
-        <Text mb="sm">Simple Hover Tooltip</Text>
-        <Tooltip
-          label="Hover tooltip - should appear on hover"
-        >
-          <Button title="Hover Me" onPress={() => console.log('Button clicked')} />
-        </Tooltip>
-      </View>
-
-      {/* Touch tooltip */}
-      <View>
-        <Text mb="sm">Touch Tooltip</Text>
-        <Tooltip
-          label="Touch tooltip - should appear on press"
-          events={{ hover: false, touch: true, focus: false }}
-        >
-          <Button title="Press Me" onPress={() => console.log('Touch button clicked')} />
-        </Tooltip>
-      </View>
-
-      {/* Offset tooltip */}
-      <View>
-        <Text mb="sm">Offset Tooltip</Text>
-        <Tooltip
-          label="This tooltip has custom offset"
-          offset={20}
-        >
-          <Button title="Offset Tooltip" onPress={() => console.log('Offset button clicked')} />
-        </Tooltip>
-      </View>
-    </View>
+          <Button size="xs" onPress={() => setOpened((value) => !value)}>
+            {opened ? 'Hide tooltip' : 'Show tooltip'}
+          </Button>
+        </Column>
+      </Card>
+    </Column>
   );
 }

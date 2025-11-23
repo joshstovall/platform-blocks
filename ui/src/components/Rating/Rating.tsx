@@ -4,12 +4,16 @@ import { View, Platform, PanResponder, GestureResponderHandlers } from 'react-na
 import { factory } from '../../core/factory';
 import { SizeValue, getIconSize } from '../../core/theme/sizes';
 import { useTheme } from '../../core/theme/ThemeProvider';
-import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
-import { RatingProps, RatingFactoryPayload } from './types';
-import { Icon } from '../Icon'
+import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
+import { Icon } from '../Icon';
 import { Text } from '../Text';
+import { Tooltip } from '../Tooltip';
+import { RatingProps, RatingFactoryPayload } from './types';
 
-function RatingBase(props: RatingProps, ref: React.Ref<View>) {
+function RatingBase(rawProps: RatingProps, ref: React.Ref<View>) {
+  const { disclaimerProps: disclaimerData, otherProps: propsAfterDisclaimer } = extractDisclaimerProps(rawProps);
+  const { spacingProps, otherProps: props } = extractSpacingProps(propsAfterDisclaimer as RatingProps);
   const {
     value: controlledValue,
     defaultValue = 0,
@@ -35,40 +39,31 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
     label,
     labelPosition = 'above',
     labelGap = 'xs',
-    ...spacingProps
-  } = props;
+  } = props as RatingProps;
 
   const theme = useTheme();
-  const { spacingProps: extractedSpacingProps } = extractSpacingProps(spacingProps);
-  const spacingStyles = getSpacingStyles(extractedSpacingProps);
+  const spacingStyles = getSpacingStyles(spacingProps);
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
 
-  // Determine if fractional ratings are enabled
   const fractionalEnabled = allowFraction || allowHalf;
-
-  // Clamp precision to reasonable bounds
   const actualPrecision = Math.max(0.01, Math.min(1, precision));
 
-  // State for uncontrolled component
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [hoverValue, setHoverValue] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const containerMetricsRef = useRef<{ width: number; left: number }>({ width: 0, left: 0 });
+  const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
 
-  // Determine if controlled or uncontrolled
   const isControlled = controlledValue !== undefined;
   const currentValue = isControlled ? controlledValue! : internalValue;
-  const displayValue = hoverValue !== null ? hoverValue : currentValue;
+  const displayValue = hoverValue ?? currentValue;
 
-  // Helper function to round value to specified precision
   const roundToPrecision = useCallback((value: number) => {
-    // Use parseFloat and toFixed to avoid floating-point precision issues
     const rounded = Math.round(value / actualPrecision) * actualPrecision;
-    // Round to the number of decimal places based on precision
     const decimalPlaces = Math.max(0, -Math.floor(Math.log10(actualPrecision)));
     return parseFloat(rounded.toFixed(decimalPlaces));
   }, [actualPrecision]);
 
-  // Helper function to calculate rating value based on position within a star
   const calculateRatingFromPosition = useCallback((starIndex: number, positionRatio: number) => {
     if (!fractionalEnabled) {
       return starIndex + 1;
@@ -79,51 +74,97 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
     return roundToPrecision(clampedValue);
   }, [count, fractionalEnabled, roundToPrecision]);
 
-  // Theme-based colors
   const filledColor = color || theme.colors.warning[5] || '#FFA500';
   const unfilledColor = emptyColor || theme.colors.gray[4] || '#D1D5DB';
   const highlightColor = hoverColor || theme.colors.warning[6] || '#FF8C00';
 
-  // Size calculations
-  const iconSize = typeof size === 'number' ? size : getIconSize(size);
-  const gapSize = typeof gap === 'number' ? gap : getIconSize(gap) / 2;
-  const labelGapSize = typeof labelGap === 'number' ? labelGap : getIconSize(labelGap) / 2;
+  const iconSize = typeof size === 'number' ? size : getIconSize(size as SizeValue);
+  const gapSize = typeof gap === 'number' ? gap : getIconSize(gap as SizeValue) / 2;
+  const labelGapSize = typeof labelGap === 'number' ? labelGap : getIconSize(labelGap as SizeValue) / 2;
+
   const labelNode = useMemo(() => {
     if (!label) return null;
     if (typeof label === 'string') {
       return (
-        <Text variant="caption" colorVariant="secondary">
+        <Text variant="small" colorVariant="secondary">
           {label}
         </Text>
       );
     }
     return label;
-  }, [label, size, iconSize, filledColor]);
-
-  const handlePress = useCallback((starIndex: number, positionRatio: number = 1) => {
-    if (readOnly) return;
-
-    const newValue = calculateRatingFromPosition(starIndex, positionRatio);
-
-    if (!isControlled) {
-      setInternalValue(newValue);
-    }
-
-    onChange?.(newValue);
-  }, [readOnly, isControlled, onChange, calculateRatingFromPosition]);
-
-  const handleHover = useCallback((starIndex: number, positionRatio: number = 1) => {
-    if (readOnly || Platform.OS !== 'web') return;
-
-    const newValue = calculateRatingFromPosition(starIndex, positionRatio);
-    setHoverValue(newValue);
-    onHover?.(newValue);
-  }, [readOnly, onHover, calculateRatingFromPosition]);
+  }, [label]);
 
   const handleHoverLeave = useCallback(() => {
-    if (readOnly || Platform.OS !== 'web') return;
+    if (Platform.OS !== 'web') return;
     setHoverValue(null);
-  }, [readOnly]);
+    setTooltipIndex(null);
+    if (!readOnly) {
+      onHover?.(currentValue);
+    }
+  }, [onHover, currentValue, readOnly]);
+
+  const tooltipDecimalPlaces = useMemo(() => {
+    if (!fractionalEnabled) return 0;
+
+    let decimals = 0;
+    let precisionCandidate = actualPrecision;
+    const maxIterations = 6;
+
+    while (precisionCandidate < 1 && decimals < maxIterations) {
+      precisionCandidate *= 10;
+      decimals += 1;
+
+      if (Math.abs(Math.round(precisionCandidate) - precisionCandidate) < 1e-6) {
+        break;
+      }
+    }
+
+    return decimals;
+  }, [fractionalEnabled, actualPrecision]);
+
+  const tooltipNumberFormatter = useMemo(() => {
+    if (!showTooltip || !fractionalEnabled) {
+      return null;
+    }
+
+    const decimals = Math.min(tooltipDecimalPlaces, 6);
+
+    try {
+      return new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    } catch (_error) {
+      return null;
+    }
+  }, [showTooltip, fractionalEnabled, tooltipDecimalPlaces]);
+
+  const tooltipValue = useMemo(() => {
+    if (!showTooltip) return null;
+    if (hoverValue !== null) return hoverValue;
+    if (tooltipIndex !== null) return currentValue;
+    return null;
+  }, [showTooltip, hoverValue, tooltipIndex, currentValue]);
+
+  const tooltipLabel = useMemo(() => {
+    if (!showTooltip || tooltipValue === null) {
+      return '';
+    }
+
+    const clampedValue = Math.max(0, Math.min(tooltipValue, count));
+    if (!fractionalEnabled) {
+      const integerValue = Math.round(clampedValue);
+      return `${integerValue} / ${count}`;
+    }
+
+    const normalizedValue = roundToPrecision(clampedValue);
+    const decimals = Math.min(tooltipDecimalPlaces, 6);
+    const formattedValue = tooltipNumberFormatter
+      ? tooltipNumberFormatter.format(normalizedValue)
+      : normalizedValue.toFixed(decimals);
+
+    return `${formattedValue} / ${count}`;
+  }, [showTooltip, tooltipValue, fractionalEnabled, tooltipDecimalPlaces, tooltipNumberFormatter, count, roundToPrecision]);
 
   const renderStar = useCallback((starIndex: number) => {
     const starValue = starIndex + 1;
@@ -137,18 +178,15 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
 
     const StarComponent = () => {
       if (typeof character === 'string' && typeof emptyCharacter === 'string') {
-        // For fractional ratings, we need to render a partially filled star
         if (isPartiallyFilled) {
           return (
             <View style={{ position: 'relative' }}>
-              {/* Empty star base */}
               <Icon
                 name="star"
                 size={iconSize}
                 color={unfilledColor}
                 variant="filled"
               />
-              {/* Filled portion overlay */}
               <View
                 style={{
                   position: 'absolute',
@@ -170,7 +208,6 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
           );
         }
 
-        // Regular star rendering
         return (
           <Icon
             name="star"
@@ -179,50 +216,62 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
             variant="filled"
           />
         );
-      } else {
-        // Use custom components
-        const StarChar = isFilled || isPartiallyFilled ? character : emptyCharacter;
-        if (React.isValidElement(StarChar)) {
-          return React.cloneElement(StarChar as React.ReactElement<any>, {
-            size: iconSize,
-            color: starColor,
-          });
-        }
-        return (
-          <Icon
-            name="star"
-            size={iconSize}
-            color={starColor}
-          />
-        );
       }
+
+      const StarChar = isFilled || isPartiallyFilled ? character : emptyCharacter;
+      if (React.isValidElement(StarChar)) {
+        return React.cloneElement(StarChar as React.ReactElement<any>, {
+          size: iconSize,
+          color: starColor,
+        });
+      }
+
+      return (
+        <Icon
+          name="star"
+          size={iconSize}
+          color={starColor}
+        />
+      );
     };
+
+    const baseStar = <StarComponent />;
+
+    const starWithTooltip = showTooltip ? (
+      <Tooltip
+        label={tooltipLabel}
+        position="top"
+        opened={tooltipIndex === starIndex && tooltipLabel.length > 0}
+        events={{ hover: false, focus: false, touch: false }}
+      >
+        {baseStar}
+      </Tooltip>
+    ) : baseStar;
 
     return (
       <View key={starIndex} style={{ marginRight: starIndex < count - 1 ? gapSize : 0 }}>
-        <StarComponent />
+        {starWithTooltip}
       </View>
     );
   }, [
     displayValue,
-    hoverValue,
     fractionalEnabled,
+    hoverValue,
     actualPrecision,
-    count,
-    readOnly,
-    iconSize,
-    gapSize,
+    highlightColor,
     filledColor,
     unfilledColor,
-    highlightColor,
     character,
     emptyCharacter,
-    roundToPrecision,
+    iconSize,
+    gapSize,
+    count,
+    showTooltip,
+    tooltipIndex,
+    tooltipLabel,
   ]);
 
-  const stars = useMemo(() => {
-    return Array.from({ length: count }, (_, index) => renderStar(index));
-  }, [count, renderStar]);
+  const stars = useMemo(() => Array.from({ length: count }, (_, index) => renderStar(index)), [count, renderStar]);
 
   const accessibilityProps = {
     accessibilityRole: (readOnly ? 'text' : 'adjustable') as any,
@@ -237,13 +286,10 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
 
   const isVertical = labelPosition === 'above' || labelPosition === 'below';
 
-  // Continuous pointer helpers across the entire row (including gaps)
-  const totalWidth = useMemo(() => {
-    return count * iconSize + (count - 1) * gapSize;
-  }, [count, iconSize, gapSize]);
+  const totalWidth = useMemo(() => count * iconSize + (count - 1) * gapSize, [count, iconSize, gapSize]);
 
-  // Web-only: container ref to compute clientX-relative position
   const containerRef = useRef<any>(null);
+
   const getOffsetXFromEventWeb = useCallback((e: any) => {
     const nativeEvent = e?.nativeEvent ?? e;
     const rect = containerRef.current?.getBoundingClientRect?.();
@@ -255,63 +301,65 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
       ?? nativeEvent?.touches?.[0]?.clientX;
 
     if (rect && typeof clientXCandidate === 'number' && !Number.isNaN(clientXCandidate)) {
-      const relative = clientXCandidate - rect.left;
-      if (__DEV__) {
-        console.log('[Rating] getOffsetXFromEventWeb:clientX', { clientXCandidate, rectLeft: rect.left, relative });
-      }
-      return relative;
+      return clientXCandidate - rect.left;
     }
 
     const offsetX = nativeEvent?.offsetX;
     if (typeof offsetX === 'number' && !Number.isNaN(offsetX)) {
-      if (__DEV__) {
-        console.log('[Rating] getOffsetXFromEventWeb:offsetX', { offsetX });
-      }
       return offsetX;
     }
 
     const locationX = nativeEvent?.locationX;
     if (typeof locationX === 'number' && !Number.isNaN(locationX)) {
-      if (__DEV__) {
-        console.log('[Rating] getOffsetXFromEventWeb:locationX', { locationX });
-      }
       return locationX;
     }
 
-    if (__DEV__) {
-      console.log('[Rating] getOffsetXFromEventWeb:fallback-zero');
-    }
     return 0;
   }, []);
 
-  const valueFromOffsetX = useCallback((x: number, containerWidth?: number) => {
-    const width = containerWidth && containerWidth > 0 ? containerWidth : totalWidth;
+  const resolveValueDetails = useCallback((x: number, widthOverride?: number) => {
+    const width = widthOverride && widthOverride > 0 ? widthOverride : totalWidth;
     const clampedX = Math.max(0, Math.min(width, x));
-    const rawUnits = (clampedX / width) * count; // 0..count
+    const rawUnits = width > 0 ? (clampedX / width) * count : 0;
+
+    const ratingValue = fractionalEnabled
+      ? roundToPrecision(rawUnits)
+      : Math.min(count, Math.max(1, Math.ceil(rawUnits)));
+
     if (__DEV__) {
-      console.log('[Rating] valueFromOffsetX', { x, containerWidth, resolvedWidth: width, clampedX, rawUnits, count, fractionalEnabled });
+      console.log('[Rating] resolveValueDetails', { x, widthOverride, resolvedWidth: width, clampedX, rawUnits, ratingValue, count, fractionalEnabled });
     }
-    if (fractionalEnabled) {
-      return roundToPrecision(rawUnits);
-    }
-    // Integer mode: map to 1..count
-    const intVal = Math.ceil(rawUnits);
-    return Math.min(count, Math.max(1, intVal));
+
+    return { ratingValue, rawUnits };
   }, [totalWidth, count, fractionalEnabled, roundToPrecision]);
 
-  const handlePointerMove = useCallback((x: number, width?: number) => {
-    if (readOnly) return;
-    const newVal = valueFromOffsetX(x, width);
-    setHoverValue(newVal);
-    onHover?.(newVal);
-  }, [readOnly, valueFromOffsetX, onHover]);
+  const resolveTooltipIndexFromRaw = useCallback((rawUnits: number | null | undefined) => {
+    if (!showTooltip || rawUnits == null || Number.isNaN(rawUnits)) {
+      return null;
+    }
 
-  const commitAtOffsetX = useCallback((x: number, width?: number) => {
+    const approxIndex = Math.round(rawUnits - 0.5);
+    return Math.max(0, Math.min(count - 1, approxIndex));
+  }, [showTooltip, count]);
+
+  const handlePointerMove = useCallback((x: number, widthOverride?: number) => {
+    const { ratingValue, rawUnits } = resolveValueDetails(x, widthOverride);
+    setHoverValue(ratingValue);
+    setTooltipIndex(resolveTooltipIndexFromRaw(rawUnits));
+    if (!readOnly) {
+      onHover?.(ratingValue);
+    }
+  }, [resolveValueDetails, resolveTooltipIndexFromRaw, onHover, readOnly]);
+
+  const commitAtOffsetX = useCallback((x: number, widthOverride?: number) => {
     if (readOnly) return;
-    const newVal = valueFromOffsetX(x, width);
-    if (!isControlled) setInternalValue(newVal);
-    onChange?.(newVal);
-  }, [readOnly, valueFromOffsetX, isControlled, onChange]);
+    const { ratingValue, rawUnits } = resolveValueDetails(x, widthOverride);
+    if (!isControlled) {
+      setInternalValue(ratingValue);
+    }
+    onChange?.(ratingValue);
+    setTooltipIndex(resolveTooltipIndexFromRaw(rawUnits));
+  }, [readOnly, resolveValueDetails, resolveTooltipIndexFromRaw, isControlled, onChange]);
 
   const resolveRelativePosition = useCallback((evt: any) => {
     if (Platform.OS === 'web') {
@@ -320,38 +368,35 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
         ? measuredWidth
         : (containerWidth ?? containerMetricsRef.current.width ?? totalWidth);
       const x = getOffsetXFromEventWeb(evt);
-      if (__DEV__) {
-        console.log('[Rating] resolveRelativePosition:web', { measuredWidth, storedWidth: containerMetricsRef.current.width, containerWidth, totalWidth, x });
-      }
       return { x, width };
     }
 
     const { pageX, locationX } = evt?.nativeEvent ?? {};
     const { left, width } = containerMetricsRef.current;
+
     if (typeof pageX === 'number' && width > 0) {
-      if (__DEV__) {
-        console.log('[Rating] resolveRelativePosition:native-page', { pageX, left, width, relative: pageX - left });
-      }
       return { x: pageX - left, width };
     }
+
     const fallbackWidth = width || containerWidth || totalWidth;
     const relativeX = typeof locationX === 'number' ? locationX : 0;
-    if (__DEV__) {
-      console.log('[Rating] resolveRelativePosition:native-location', { pageX, locationX, width, containerWidth, totalWidth, fallbackWidth, relativeX });
-    }
     return {
       x: relativeX,
       width: fallbackWidth,
     };
   }, [containerWidth, getOffsetXFromEventWeb, totalWidth]);
 
-  useEffect(() => {
-    return () => {
-      if (Platform.OS === 'web' && typeof document !== 'undefined') {
-        (document.body.style as any).userSelect = '';
-      }
-    };
+  useEffect(() => () => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      (document.body.style as any).userSelect = '';
+    }
   }, []);
+
+  useEffect(() => {
+    if (!showTooltip) {
+      setTooltipIndex(null);
+    }
+  }, [showTooltip]);
 
   const panHandlers: GestureResponderHandlers = useMemo(() => {
     const responder = PanResponder.create({
@@ -366,9 +411,6 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
           }
         }
         const { x, width } = resolveRelativePosition(evt);
-        if (__DEV__) {
-          console.log('[Rating] panResponderGrant', { x, width });
-        }
         handlePointerMove(x, width);
       },
       onPanResponderMove: (evt) => {
@@ -377,9 +419,6 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
           (evt as any).preventDefault?.();
         }
         const { x, width } = resolveRelativePosition(evt);
-        if (__DEV__) {
-          console.log('[Rating] panResponderMove', { x, width });
-        }
         handlePointerMove(x, width);
       },
       onPanResponderTerminationRequest: () => false,
@@ -389,21 +428,84 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
           document.body.style.userSelect = '';
         }
         const { x, width } = resolveRelativePosition(evt);
-        if (__DEV__) {
-          console.log('[Rating] panResponderRelease', { x, width });
-        }
         commitAtOffsetX(x, width);
         setHoverValue(null);
+        setTooltipIndex(null);
       },
       onPanResponderTerminate: () => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
           document.body.style.userSelect = '';
         }
         setHoverValue(null);
+        setTooltipIndex(null);
       },
     });
+
     return responder.panHandlers;
   }, [readOnly, resolveRelativePosition, handlePointerMove, commitAtOffsetX]);
+
+  const ratingContent = (
+    <View
+      ref={containerRef}
+      style={{ flexDirection: 'row', position: 'relative' }}
+      onLayout={(event) => {
+        const layoutWidth = event.nativeEvent.layout?.width;
+        if (typeof layoutWidth === 'number' && layoutWidth > 0) {
+          setContainerWidth(layoutWidth);
+        }
+
+        if (Platform.OS === 'web') {
+          const rect = containerRef.current?.getBoundingClientRect?.();
+          if (rect) {
+            containerMetricsRef.current = {
+              width: rect.width,
+              left: rect.left,
+            };
+            if (rect.width > 0) {
+              setContainerWidth(rect.width);
+            }
+          }
+          return;
+        }
+
+        if ((containerRef.current as any)?.measure) {
+          (containerRef.current as any).measure((
+            _x: number,
+            _y: number,
+            width: number,
+            _height: number,
+            pageX: number,
+            _pageY: number,
+          ) => {
+            if (typeof width === 'number' && width > 0) {
+              setContainerWidth(width);
+              containerMetricsRef.current = {
+                width,
+                left: typeof pageX === 'number' ? pageX : containerMetricsRef.current.left,
+              };
+            }
+          });
+        }
+      }}
+      {...panHandlers}
+      {...(Platform.OS === 'web' && {
+        onMouseMove: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),
+        onMouseDown: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),
+        onMouseUp: (e: any) => {
+          const rect = containerRef.current?.getBoundingClientRect?.();
+          const x = getOffsetXFromEventWeb(e);
+          commitAtOffsetX(x, rect?.width);
+          setHoverValue(null);
+          setTooltipIndex(null);
+        },
+        onMouseLeave: () => handleHoverLeave(),
+      })}
+    >
+      {stars}
+    </View>
+  );
+
+  const disclaimerNode = renderDisclaimer();
 
   return (
     <View
@@ -412,6 +514,7 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
         {
           flexDirection: isVertical ? 'column' : 'row',
           alignItems: isVertical ? 'flex-start' : 'center',
+          flexWrap: 'wrap',
         },
         spacingStyles,
         style,
@@ -424,68 +527,17 @@ function RatingBase(props: RatingProps, ref: React.Ref<View>) {
           {labelNode}
         </View>
       )}
-      <View
-        ref={containerRef}
-        style={{ flexDirection: 'row', position: 'relative' }}
-        onLayout={(event) => {
-          const layoutWidth = event.nativeEvent.layout?.width;
-          if (typeof layoutWidth === 'number' && layoutWidth > 0) {
-            setContainerWidth(layoutWidth);
-          }
-
-          if (Platform.OS === 'web') {
-            const rect = containerRef.current?.getBoundingClientRect?.();
-            if (rect) {
-              containerMetricsRef.current = {
-                width: rect.width,
-                left: rect.left,
-              };
-              if (rect.width > 0) {
-                setContainerWidth(rect.width);
-              }
-            }
-            return;
-          }
-
-          if (containerRef.current?.measure) {
-            containerRef.current.measure((
-              _x: number,
-              _y: number,
-              width: number,
-              _height: number,
-              pageX: number,
-              _pageY: number,
-            ) => {
-              if (typeof width === 'number' && width > 0) {
-                setContainerWidth(width);
-                containerMetricsRef.current = {
-                  width,
-                  left: typeof pageX === 'number' ? pageX : containerMetricsRef.current.left,
-                };
-              }
-            });
-          }
-        }}
-        {...panHandlers}
-        {...(Platform.OS === 'web' && {
-          onMouseMove: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),
-          onMouseDown: (e: any) => handlePointerMove(getOffsetXFromEventWeb(e), containerRef.current?.getBoundingClientRect?.().width),
-          onMouseUp: (e: any) => {
-            const rect = containerRef.current?.getBoundingClientRect?.();
-            const x = getOffsetXFromEventWeb(e);
-            commitAtOffsetX(x, rect?.width);
-            setHoverValue(null);
-          },
-          onMouseLeave: () => setHoverValue(null),
-        })}
-      >
-        {stars}
-      </View>
+      {ratingContent}
       {labelNode && (labelPosition === 'right' || labelPosition === 'below') && (
         <View style={{ marginLeft: !isVertical && labelPosition === 'right' ? labelGapSize : 0, marginTop: isVertical && labelPosition === 'below' ? labelGapSize : 0 }}>
           {labelNode}
         </View>
       )}
+      {disclaimerNode ? (
+        <View style={{ width: '100%' }}>
+          {disclaimerNode}
+        </View>
+      ) : null}
     </View>
   );
 }

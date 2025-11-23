@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Input, Text, Card, Column } from '@platform-blocks/ui';
+import { Column, Input, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [textValue, setTextValue] = useState('');
@@ -9,73 +9,73 @@ export default function Demo() {
   const [telValue, setTelValue] = useState('');
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Input Types</Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Text Input</Text>
-          <Input
-            type="text"
-            label="Full Name"
-            placeholder="Enter your full name"
-            value={textValue}
-            onChangeText={setTextValue}
-          />
-        </Column>
-      </Card>
+    <Column gap="lg">
+      <Text weight="semibold">Input types</Text>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Email Input</Text>
-          <Input
-            type="email"
-            label="Email Address"
-            placeholder="user@example.com"
-            value={emailValue}
-            onChangeText={setEmailValue}
-          />
-        </Column>
-      </Card>
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Text input
+        </Text>
+        <Input
+          type="text"
+          label="Full name"
+          placeholder="Enter your full name"
+          value={textValue}
+          onChangeText={setTextValue}
+        />
+      </Column>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Password Input</Text>
-          <Input
-            type="password"
-            label="Password"
-            placeholder="Enter your password"
-            value={passwordValue}
-            onChangeText={setPasswordValue}
-          />
-        </Column>
-      </Card>
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Email input
+        </Text>
+        <Input
+          type="email"
+          label="Email address"
+          placeholder="user@example.com"
+          value={emailValue}
+          onChangeText={setEmailValue}
+        />
+      </Column>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Number Input</Text>
-          <Input
-            type="number"
-            label="Age"
-            placeholder="Enter your age"
-            value={numberValue}
-            onChangeText={setNumberValue}
-          />
-        </Column>
-      </Card>
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Password input
+        </Text>
+        <Input
+          type="password"
+          label="Password"
+          placeholder="Enter your password"
+          value={passwordValue}
+          onChangeText={setPasswordValue}
+        />
+      </Column>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Phone Input</Text>
-          <Input
-            type="tel"
-            label="Phone Number"
-            placeholder="+1 (555) 123-4567"
-            value={telValue}
-            onChangeText={setTelValue}
-          />
-        </Column>
-      </Card>
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Number input
+        </Text>
+        <Input
+          type="number"
+          label="Age"
+          placeholder="Enter your age"
+          value={numberValue}
+          onChangeText={setNumberValue}
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Phone input
+        </Text>
+        <Input
+          type="tel"
+          label="Phone number"
+          placeholder="+1 (555) 123-4567"
+          value={telValue}
+          onChangeText={setTelValue}
+        />
+      </Column>
     </Column>
   );
 }

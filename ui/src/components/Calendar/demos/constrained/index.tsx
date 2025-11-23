@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, Column, Text } from '@platform-blocks/ui';
+
+const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+const dateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
 export default function Demo() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  
-  // Constrain to current month
-  const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  const { minDate, maxDate, monthLabel } = useMemo(() => {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return { minDate: start, maxDate: end, monthLabel: monthFormatter.format(start) };
+  }, []);
 
   return (
-    <Column gap={16}>
-      <Calendar 
+    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+      <Calendar
         value={selectedDate}
         onChange={(date) => setSelectedDate(date as Date | null)}
-        minDate={startOfMonth}
-        maxDate={endOfMonth}
+        minDate={minDate}
+        maxDate={maxDate}
         highlightToday
       />
-      {selectedDate && (
-        <Text size="sm" color="gray">
-          Selected: {selectedDate.toLocaleDateString()}
-        </Text>
-      )}
-      <Text size="xs" color="gray">
-        Only dates in {startOfMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} are selectable
+      <Text size="sm" colorVariant="muted">
+        Selected date: {selectedDate ? dateFormatter.format(selectedDate) : 'none'}
+      </Text>
+      <Text size="xs" colorVariant="muted">
+        Only dates in {monthLabel} are enabled.
       </Text>
     </Column>
   );

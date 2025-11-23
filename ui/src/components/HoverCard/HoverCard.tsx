@@ -4,7 +4,7 @@ import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { getRadius, getSpacing } from '../../core/theme/sizes';
 import { useOverlay } from '../../core/providers/OverlayProvider';
-import { measureElement, calculateOverlayPosition, getViewport } from '../../core/utils/positioning-enhanced';
+import { measureElement, calculateOverlayPositionEnhanced, getViewport } from '../../core/utils/positioning-enhanced';
 import type { HoverCardProps, HoverCardFactoryPayload } from './types';
 
 // A lightweight hover-activated floating panel similar to Mantine HoverCard
@@ -130,7 +130,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
     const rect = await measureElement(targetRef);
     const estWidth = width || 240;
     const estHeight = 160; // rough initial height
-    const pos = calculateOverlayPosition(rect, { width: estWidth, height: estHeight }, {
+    const pos = calculateOverlayPositionEnhanced(rect, { width: estWidth, height: estHeight }, {
       placement: position as any,
       offset,
       viewport: getViewport(),
@@ -198,7 +198,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
       Promise.all([measureElement(targetRef)]).then(([rect]) => {
         const actualWidth = (overlayContentRef.current as any)?.offsetWidth || width || 240;
         const actualHeight = (overlayContentRef.current as any)?.offsetHeight || 160;
-        const pos = calculateOverlayPosition(rect, { width: actualWidth, height: actualHeight }, {
+        const pos = calculateOverlayPositionEnhanced(rect, { width: actualWidth, height: actualHeight }, {
           placement: position as any,
           offset,
           viewport: getViewport(),
@@ -228,7 +228,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
         const desiredWidth = width || contentRect.width;
         const desiredHeight = contentRect.height;
         // Recalculate with actual content size
-        const pos = calculateOverlayPosition(targetRect, { width: desiredWidth, height: desiredHeight }, {
+        const pos = calculateOverlayPositionEnhanced(targetRect, { width: desiredWidth, height: desiredHeight }, {
           placement: position as any,
           offset,
           viewport: getViewport(),
@@ -249,10 +249,22 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
   targetProps.onMouseLeave = () => { isHoveringTargetRef.current = false; scheduleClose(); };
     } else {
       // fallback: tap to toggle on native
-      targetProps.onPress = () => { isOpened ? doClose() : doOpen(); };
+      targetProps.onPress = () => {
+        if (isOpened) {
+          doClose();
+        } else {
+          doOpen();
+        }
+      };
     }
   } else if (trigger === 'click') {
-    targetProps.onPress = () => { isOpened ? doClose() : doOpen(); };
+    targetProps.onPress = () => {
+      if (isOpened) {
+        doClose();
+      } else {
+        doOpen();
+      }
+    };
   }
 
   const inlineContent = (isOpened || keepMounted) && !withinPortal ? (

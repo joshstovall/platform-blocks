@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, Column, Text } from '@platform-blocks/ui';
+
+const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
 export default function Demo() {
   const [selectedRange, setSelectedRange] = useState<[Date | null, Date | null]>([null, null]);
 
-  const formatRange = (range: [Date | null, Date | null]) => {
-    const [start, end] = range;
-    if (!start) return 'No selection';
-    if (!end) return `${start.toLocaleDateString()} - ...`;
-    return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
-  };
+  const summary = useMemo(() => {
+    const [start, end] = selectedRange;
+    if (!start) {
+      return 'No dates selected yet.';
+    }
+    if (!end) {
+      return `Start date chosen: ${formatter.format(start)} — pick an end date.`;
+    }
+    return `${formatter.format(start)} → ${formatter.format(end)}`;
+  }, [selectedRange]);
 
   return (
-    <Column gap={16}>
-      <Calendar 
+    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+      <Calendar
         type="range"
         value={selectedRange}
         onChange={(range) => setSelectedRange(range as [Date | null, Date | null])}
         highlightToday
       />
-      <Text size="sm" color="gray">
-        Selected range: {formatRange(selectedRange)}
+      <Text size="sm" colorVariant="muted">
+        {summary}
       </Text>
     </Column>
   );

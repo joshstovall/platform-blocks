@@ -1,4 +1,19 @@
 {
-  "compilerOptions": {},
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "paths": {
+      "@platform-blocks/ui": [
+        "./ui/src/index.ts"
+      ],
+      "@platform-blocks/ui/*": [
+        "./ui/src/*"
+      ],
+      "@platform-blocks/charts": [
+        "./charts/src/index.ts"
+      ],
+      "@platform-blocks/charts/*": [
+        "./charts/src/*"
+      ]
+    }
+  }
 }

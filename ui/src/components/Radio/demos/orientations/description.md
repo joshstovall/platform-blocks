@@ -1,12 +1,12 @@
 ---
 title: Orientations
-category: usage
+category: layout
 order: 30
-tags: [orientations, layout, horizontal, vertical]
+tags: [horizontal, vertical]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Radio group orientations with horizontal and vertical layouts.
+Toggle `orientation` between `horizontal` and `vertical` to adapt radio groups to the available space.

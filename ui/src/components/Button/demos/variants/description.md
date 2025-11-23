@@ -1,12 +1,12 @@
 ---
 title: Variants
-category: appearance
-order: 11
-tags: [variants, appearance]
+category: styling
+order: 30
+tags: [buttons, variants]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Button in primary, secondary, and outline variants.
+Preview the available button variants to match the desired emphasis level.

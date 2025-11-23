@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Checkbox } from '../..';
-import { Text } from '../../../Text';
+import { useState } from 'react';
+import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
-export default function CheckboxStatesDemo() {
+export default function Demo() {
   const [enabled, setEnabled] = useState(true);
-  const [withError, setWithError] = useState(false);
   const [required, setRequired] = useState(true);
+  const [withError, setWithError] = useState(false);
 
   return (
-    <View style={{ gap: 12 }}>
-      <Text weight="bold">States</Text>
+    <Column gap="sm">
+      <Text weight="medium">State variants</Text>
       <Checkbox label="Enabled" checked={enabled} onChange={setEnabled} />
       <Checkbox label="Disabled" checked={false} disabled />
       <Checkbox label="Required" required checked={required} onChange={setRequired} />
-      <Checkbox label="With error" error={withError ? 'Selection required' : undefined} checked={withError} onChange={setWithError} />
-    </View>
+      <Checkbox
+        label="With error"
+        error={withError ? 'Selection required' : undefined}
+        checked={withError}
+        onChange={setWithError}
+      />
+      <Text variant="small" colorVariant="muted">
+        Combine `required`, `disabled`, and `error` to communicate validation and accessibility states.
+      </Text>
+    </Column>
   );
 }

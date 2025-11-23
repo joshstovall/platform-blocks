@@ -1,11 +1,12 @@
 ---
-title: International Input
+title: International
 category: features
 order: 20
-tags: [international, prefix, phone]
+tags: [international, auto-detect, phone]
+highlightLines: []
 status: experimental
 since: 1.0.0
 hidden: false
 ---
 
-Allow international dialing prefixes and custom pattern.
+Compare auto-detected formats with a manual international configuration.

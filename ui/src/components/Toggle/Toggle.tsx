@@ -11,6 +11,7 @@ import {
   extractLayoutProps 
 } from '../../core/utils';
 import { Text } from '../Text';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
 import { ToggleButtonProps, ToggleGroupProps, ToggleGroupContextValue } from './types';
 
 // Create context for toggle group
@@ -257,7 +258,8 @@ export const ToggleGroup = factory<{
   ref: View;
 }>((props, ref) => {
   const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(props);
-  const { layoutProps, otherProps } = extractLayoutProps(propsAfterSpacing);
+  const { layoutProps, otherProps: propsAfterLayout } = extractLayoutProps(propsAfterSpacing);
+  const { disclaimerProps: disclaimerData, otherProps } = extractDisclaimerProps(propsAfterLayout as ToggleGroupProps);
   
   const {
     value,
@@ -277,6 +279,7 @@ export const ToggleGroup = factory<{
   } = otherProps;
 
   const theme = useTheme();
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
   
   const spacingStyles = getSpacingStyles(spacingProps);
   const layoutStyles = getLayoutStyles(layoutProps);
@@ -364,15 +367,24 @@ export const ToggleGroup = factory<{
     });
   }, [children, value, theme, disabled, size, color, orientation]);
 
+  const disclaimerNode = renderDisclaimer();
+
   return (
     <ToggleGroupContext.Provider value={contextValue}>
-      <View 
-        style={[containerStyles, spacingStyles, layoutStyles, style]} 
-        ref={ref}
-        testID={testID}
-        {...restProps}
-      >
-        {childrenWithProps}
+      <View style={spacingStyles}>
+        <View 
+          style={[containerStyles, layoutStyles, style]} 
+          ref={ref}
+          testID={testID}
+          {...restProps}
+        >
+          {childrenWithProps}
+        </View>
+        {disclaimerNode ? (
+          <View style={{ width: '100%' }}>
+            {disclaimerNode}
+          </View>
+        ) : null}
       </View>
     </ToggleGroupContext.Provider>
   );

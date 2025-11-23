@@ -1,62 +1,76 @@
-import { useState, useMemo } from 'react'
-import { PhoneInput, Text, Column } from '@platform-blocks/ui'
+import { useMemo, useState } from 'react';
+
+import { Column, PhoneInput, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [raw, setRaw] = useState('')
-  const [formatted, setFormatted] = useState('')
+  const [usRaw, setUsRaw] = useState('');
+  const [usFormatted, setUsFormatted] = useState('');
+  const [internationalRaw, setInternationalRaw] = useState('');
+  const [internationalFormatted, setInternationalFormatted] = useState('');
 
-  const isValidUS = useMemo(() => {
-    const digits = raw.replace(/\D/g, '')
-    return digits.length === 10
-  }, [raw])
-
-  const isValidInternational = useMemo(() => {
-    const digits = raw.replace(/\D/g, '')
-    return digits.length >= 7 && digits.length <= 15
-  }, [raw])
+  const isValidUs = useMemo(() => usRaw.length === 10, [usRaw]);
+  const isValidInternational = useMemo(
+    () => internationalRaw.length >= 7 && internationalRaw.length <= 15,
+    [internationalRaw]
+  );
 
   return (
-    <Column gap={16}>
-      <Column gap={8}>
-        <PhoneInput
-          label="US Phone (10 digits required)"
-          value={raw}
-          onChange={(rawValue, formattedValue) => {
-            setRaw(rawValue)
-            setFormatted(formattedValue)
-          }}
-          country="US"
-          showCountryCode={true}
-          error={raw.length > 0 && !isValidUS ? 'Please enter a valid 10-digit US phone number' : undefined}
-        />
-        <Text variant="caption" colorVariant={isValidUS || raw.length === 0 ? 'success' : 'error'}>
-          {raw.length === 0 
-            ? 'Enter a phone number' 
-            : isValidUS 
-              ? '✓ Valid US phone number' 
-              : `${raw.length}/10 digits entered`
-          }
-        </Text>
-      </Column>
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Validation states</Text>
+      <Text size="sm" colorVariant="secondary">
+        Surface validation messages based on raw digit counts for domestic and international numbers.
+      </Text>
 
-      <Column gap={8}>
-        <PhoneInput
-          label="International Phone"
-          value={raw}
-          onChange={(rawValue) => setRaw(rawValue)}
-          autoDetect={true}
-          showCountryCode={true}
-          error={raw.length > 0 && !isValidInternational ? 'Please enter a valid international phone number' : undefined}
-        />
-        <Text variant="caption" colorVariant={isValidInternational || raw.length === 0 ? 'success' : 'error'}>
-          {raw.length === 0 
-            ? 'Enter an international phone number' 
-            : isValidInternational 
-              ? '✓ Valid international format' 
-              : 'Phone number should be 7-15 digits'
-          }
-        </Text>
+      <Column gap="sm">
+        <Column gap="xs">
+          <PhoneInput
+            label="US phone (10 digits required)"
+            value={usRaw}
+            onChange={(raw, formatted) => {
+              setUsRaw(raw);
+              setUsFormatted(formatted);
+            }}
+            country="US"
+            showCountryCode
+            error={usRaw.length > 0 && !isValidUs ? 'Enter a 10-digit US phone number' : undefined}
+          />
+          <Text size="xs" colorVariant={isValidUs || usRaw.length === 0 ? 'success' : 'error'}>
+            {usRaw.length === 0
+              ? 'Enter a phone number'
+              : isValidUs
+                ? `✓ ${usFormatted}`
+                : `${usRaw.length}/10 digits entered`}
+          </Text>
+        </Column>
+
+        <Column gap="xs">
+          <PhoneInput
+            label="International phone (7-15 digits)"
+            value={internationalRaw}
+            onChange={(raw, formatted) => {
+              setInternationalRaw(raw);
+              setInternationalFormatted(formatted);
+            }}
+            autoDetect
+            showCountryCode
+            error={
+              internationalRaw.length > 0 && !isValidInternational
+                ? 'International numbers should be 7-15 digits'
+                : undefined
+            }
+          />
+          <Text
+            size="xs"
+            colorVariant={isValidInternational || internationalRaw.length === 0 ? 'success' : 'error'}
+          >
+            {internationalRaw.length === 0
+              ? 'Enter an international phone number'
+              : isValidInternational
+                ? `✓ ${internationalFormatted}`
+                : 'Adjust to 7-15 digits'}
+          </Text>
+        </Column>
       </Column>
     </Column>
-  )
+  );
 }

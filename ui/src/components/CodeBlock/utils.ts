@@ -1,4 +1,5 @@
 import type { PlatformBlocksTheme } from '../../core/theme/types';
+import type { CodeBlockToken } from './types';
 
 /**
  * Normalizes language identifiers to standard values for syntax highlighting
@@ -58,13 +59,16 @@ export function parseHighlightLines(specs: string[] | undefined, total: number):
 /**
  * Color schemes for different code block variants
  */
+export type SyntaxColorMap = Record<CodeBlockToken, string>;
+
 export function getSyntaxColors(
   theme: PlatformBlocksTheme,
   isDark: boolean,
-  variant: 'code' | 'terminal' | 'hacker' = 'code'
-) {
+  variant: 'code' | 'terminal' | 'hacker' = 'code',
+  overrides?: Partial<Record<CodeBlockToken, string>>
+): SyntaxColorMap {
   if (variant === 'hacker') {
-    return {
+    const base: SyntaxColorMap = {
       keyword: '#00ff00',
       string: '#00cc00',
       comment: '#006600',
@@ -76,9 +80,10 @@ export function getSyntaxColors(
       attribute: '#00bb00',
       className: '#00ee00',
     };
+    return applyOverrides(base, overrides);
   }
 
-  return {
+  const base: SyntaxColorMap = {
     keyword: isDark ? '#c678dd' : '#a626a4',
     string: isDark ? '#98c379' : '#50a14f',
     comment: isDark ? '#5c6370' : '#a0a1a7',
@@ -90,6 +95,23 @@ export function getSyntaxColors(
     attribute: isDark ? '#d19a66' : '#986801',
     className: isDark ? '#e5c07b' : '#c18401',
   };
+
+  return applyOverrides(base, overrides);
+}
+
+function applyOverrides(
+  base: SyntaxColorMap,
+  overrides?: Partial<Record<CodeBlockToken, string>>
+): SyntaxColorMap {
+  if (!overrides) return base;
+  const next = { ...base };
+  (Object.keys(overrides) as CodeBlockToken[]).forEach((key) => {
+    const color = overrides[key];
+    if (color) {
+      next[key] = color;
+    }
+  });
+  return next;
 }
 
 /**
@@ -126,9 +148,10 @@ export function getSyntaxPatterns(colors: ReturnType<typeof getSyntaxColors>) {
 export function createNativeHighlighter(
   theme: PlatformBlocksTheme,
   isDark: boolean,
-  variant: 'code' | 'terminal' | 'hacker' = 'code'
+  variant: 'code' | 'terminal' | 'hacker' = 'code',
+  overrides?: Partial<Record<CodeBlockToken, string>>
 ) {
-  const colors = getSyntaxColors(theme, isDark, variant);
+  const colors = getSyntaxColors(theme, isDark, variant, overrides);
   const patterns = getSyntaxPatterns(colors);
 
   return function highlightCode(code: string): Array<Array<{ text: string; color: string }>> {

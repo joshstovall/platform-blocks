@@ -3,7 +3,7 @@ title: Variants
 category: usage
 order: 30
 tags: [variants, styles]
-highlightLines: []
+highlightLines: [12-15]
 status: stable
 since: 1.0.0
 hidden: false

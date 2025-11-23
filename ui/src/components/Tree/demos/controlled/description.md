@@ -1,18 +1,12 @@
 ---
 title: Controlled Tree
-category: usage
+category: behavior
 order: 60
-tags: [controlled, external, state, programmatic]
-highlightLines: [8, 9, 10]
+tags: [tree, controlled]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Tree with externally controlled expansion state, allowing programmatic control over which nodes are expanded or collapsed.
-
-Features demonstrated:
-- Controlled expansion state
-- External expand/collapse buttons
-- Programmatic tree manipulation
-- State synchronization
+Drive `expandedIds` and `selectedIds` from component state to coordinate tree controls with external buttons.

@@ -1,4 +1,4 @@
-import type { BaseChartProps, ChartAxis, ChartGrid } from '../../types/base';
+import type { BaseChartProps, ChartAxis, ChartGrid, ChartLegend } from '../../types/base';
 import type { DensitySeries } from '../RidgeChart/types';
 
 export type ViolinLayout = 'vertical' | 'horizontal';
@@ -107,10 +107,12 @@ export interface ViolinChartProps extends BaseChartProps {
   statsMarkers?: ViolinStatsMarkersConfig;
   /** Value range highlights rendered across the chart */
   valueBands?: ViolinValueBand[];
-  /** Render a legend of series colors */
+  /** Legacy legend toggle (prefer `legend` prop) */
   showLegend?: boolean;
-  /** Legend placement */
+  /** Legacy legend position option */
   legendPosition?: 'top' | 'bottom';
+  /** Legend configuration */
+  legend?: ChartLegend;
   /** Series focus callback */
   onSeriesFocus?: (event: ViolinSeriesInteractionEvent) => void;
   /** Series blur callback */

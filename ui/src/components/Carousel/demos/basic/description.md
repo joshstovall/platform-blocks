@@ -1,12 +1,11 @@
 ---
-title: Basic
+title: Basic usage
 category: basics
 order: 10
-tags: [basic, getting-started, slider]
+tags: [auto-play, loop]
 highlightLines: []
 status: stable
-since: 1.0.0
+since: 0.3.0
 hidden: false
 ---
-
-Basic carousel with scrollable content.
+Enable `autoPlay` and `loop` on `Carousel` to rotate a small set of slides without custom pagination controls.

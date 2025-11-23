@@ -1,12 +1,12 @@
 ---
-title: Logo
-category: usage
+title: Logos
+category: branding
 order: 70
-tags: [logo, branding, advanced]
+tags: [logo]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-QR codes with custom logos or icons in the center for branding.
+Embed brand marks inside the QR code while preserving quiet zones and scanner-friendly contrast.

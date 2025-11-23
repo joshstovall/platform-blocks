@@ -13,42 +13,12 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { Text, type TextProps } from '../Text';
+import { Text } from '../Text';
 import { GradientText } from '../GradientText';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils';
+import type { ShimmerTextProps } from './types';
 
-type ShimmerDirection = 'ltr' | 'rtl';
 type GradientColors = [ColorValue, ColorValue, ...ColorValue[]];
-
-export interface ShimmerTextProps extends Omit<TextProps, 'children' | 'color' | 'onLayout'> {
-  children?: React.ReactNode;
-  /** Text to render with shimmer effect */
-  text?: string;
-  /** Base text color rendered underneath the shimmer */
-  color?: string;
-  /** Optional gradient stops override */
-  colors?: string[];
-  /** Primary shimmering color used to derive stops when `colors` not provided */
-  shimmerColor?: string;
-  /** Duration in seconds for a single sweep */
-  duration?: number;
-  /** Delay in seconds before the first sweep starts */
-  delay?: number;
-  /** Additional pause in seconds between repeated sweeps */
-  repeatDelay?: number;
-  /** Whether the shimmer should loop */
-  repeat?: boolean;
-  /** Run the shimmer exactly once */
-  once?: boolean;
-  /** Direction the shimmer should travel */
-  direction?: ShimmerDirection;
-  /** Multiplier that controls how wide the gradient band is relative to the text width */
-  spread?: number;
-  /** Enable verbose logging for debugging */
-  debug?: boolean;
-  /** Called with the layout of the text */
-  onLayout?: TextProps['onLayout'];
-}
 
 const MIN_SPREAD = 1;
 
@@ -525,3 +495,5 @@ export function ShimmerText(props: ShimmerTextProps) {
     </View>
   );
 }
+
+export type { ShimmerTextProps } from './types';

@@ -107,7 +107,7 @@ export default function RoadmapScreen() {
             <Title afterline>
               Platform Blocks Roadmap
             </Title>
-            <Text variant="body" colorVariant="secondary" mb="md">
+            <Text variant="p" colorVariant="secondary" mb="md">
               Our vision for building the most comprehensive React Native UI library 🚀
             </Text>
           </Flex>
@@ -123,8 +123,8 @@ export default function RoadmapScreen() {
                       label={goal.label}
                       description={goal.description}
                       checked={goal.completed}
-                      size='xs'
-                      colorVariant='secondary'
+                      size="xs"
+                      colorVariant="secondary"
                     />
                   </Flex>
                 </Flex>

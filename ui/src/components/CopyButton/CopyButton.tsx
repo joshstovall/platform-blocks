@@ -81,9 +81,8 @@ export function CopyButton({
       // only show if not disabled
       !disableToast
     ) {
-      toast.show({
+      toast.success({
         title: toastTitle,
-        message: effectiveMessage,
       });
     }
   }, [value, onCopy, disableToast, toast, toastTitle, effectiveMessage, copy]);

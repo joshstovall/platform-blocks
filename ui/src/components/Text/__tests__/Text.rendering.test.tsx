@@ -156,8 +156,8 @@ describe('Text - Rendering and Behavior', () => {
       });
     });
 
-    it('should render caption variant with small font size', () => {
-      const { getByText } = render(<Text variant="caption">Caption</Text>);
+    it('should render small variant with expected font size', () => {
+      const { getByText } = render(<Text variant="small">Caption</Text>);
       const element = getByText('Caption');
       const style = flattenStyle(element.props.style);
       expect(style).toMatchObject({
@@ -193,25 +193,7 @@ describe('Text - Rendering and Behavior', () => {
       });
     });
 
-    it('should render legacy heading1 variant', () => {
-      const { getByText } = render(<Text variant="heading1">Legacy H1</Text>);
-      const element = getByText('Legacy H1');
-      const style = flattenStyle(element.props.style);
-      expect(style).toMatchObject({
-        fontSize: 32,
-        fontWeight: '700'
-      });
-    });
-
-    it('should render legacy body variant', () => {
-      const { getByText } = render(<Text variant="body">Body Text</Text>);
-      const element = getByText('Body Text');
-      const style = flattenStyle(element.props.style);
-      expect(style).toMatchObject({
-        fontSize: 16,
-        fontWeight: '400'
-      });
-    });
+    // Legacy tests removed as per update
   });
 
   describe('Color Rendering', () => {

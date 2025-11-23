@@ -1,24 +1,27 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
-import { NavigationProgress, navigationProgress, Button, Row } from '../../../../';
+import { useEffect } from 'react';
+import { Button, Column, NavigationProgress, Row, navigationProgress } from '@platform-blocks/ui';
 
-export default function BasicNavigationProgressDemo() {
+const AUTO_COMPLETE_DELAY = 1500;
+
+export default function Demo() {
   useEffect(() => {
-    // Start automatically then complete after a moment for demo
     navigationProgress.start();
-    const t = setTimeout(() => navigationProgress.complete(), 1500);
-    return () => { clearTimeout(t); navigationProgress.reset(); };
+    const timer = setTimeout(() => navigationProgress.complete(), AUTO_COMPLETE_DELAY);
+    return () => {
+      clearTimeout(timer);
+      navigationProgress.reset();
+    };
   }, []);
 
   return (
-    <View style={{ paddingVertical: 16 }}>
+    <Column gap="sm" align="flex-start">
       <NavigationProgress overlay={false} />
-      <Row gap={12} mt={12}>
-        <Button size="sm" title="Start" onPress={() => navigationProgress.start()} />
-        <Button size="sm" title="Inc" onPress={() => navigationProgress.increment(10)} />
-        <Button size="sm" title="Complete" variant="outline" onPress={() => navigationProgress.complete()} />
-        <Button size="sm" title="Reset" variant="ghost" onPress={() => navigationProgress.reset()} />
+      <Row gap="sm" wrap="wrap">
+        <Button size="sm" onPress={() => navigationProgress.start()}>Start</Button>
+        <Button size="sm" onPress={() => navigationProgress.increment(10)}>Increment</Button>
+        <Button size="sm" variant="outline" onPress={() => navigationProgress.complete()}>Complete</Button>
+        <Button size="sm" variant="ghost" onPress={() => navigationProgress.reset()}>Reset</Button>
       </Row>
-    </View>
+    </Column>
   );
 }

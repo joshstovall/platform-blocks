@@ -1,10 +1,15 @@
-import { Button, Flex } from '@platform-blocks/ui'
-export default function Demo(){
-  return <Flex direction="row" gap={8}>
-    <Button title="Click Me" colorVariant="primary" />
-    <Button title="Click Me" colorVariant="secondary" />
-    <Button title="Click Me" colorVariant="success" />
-    <Button title="Click Me" colorVariant="warning" />
-    <Button title="Click Me" colorVariant="error" />
-  </Flex>
+import { Button, Column, Row } from '@platform-blocks/ui';
+
+export default function Demo() {
+  return (
+    <Column gap="sm">
+      <Row gap="md" wrap="wrap">
+        <Button colorVariant="primary">Primary</Button>
+        <Button colorVariant="secondary">Secondary</Button>
+        <Button colorVariant="success">Success</Button>
+        <Button colorVariant="warning">Warning</Button>
+        <Button colorVariant="error">Error</Button>
+      </Row>
+    </Column>
+  );
 }

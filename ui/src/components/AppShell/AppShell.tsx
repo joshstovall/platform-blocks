@@ -730,6 +730,8 @@ function AppShellBase(props: AppShellProps, ref: React.Ref<View>) {
     
   };
 
+  const safeAreaBackground = (containerStyle.backgroundColor as string | undefined) ?? theme.backgrounds.base;
+
   if (disabled) {
     return (
       <StatusBarManager {...statusBar}>
@@ -829,7 +831,7 @@ function AppShellBase(props: AppShellProps, ref: React.Ref<View>) {
   if (withSafeArea) {
     return (
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: safeAreaBackground }}>
           {content}
         </SafeAreaView>
       </SafeAreaProvider>

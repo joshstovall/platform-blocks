@@ -9,14 +9,14 @@ import { DISCORD_INVITE, GITHUB_REPO } from 'config/urls';
 const FAQ_DATA = [{
   id: 1,
   key: 'what-is',
-  icon: <Icon name="star" color="orange" />,
+  // icon: <Icon name="star" color="orange" />,
   title: 'What is Platform Blocks?',
   content: <Flex><Text>Platform Blocks is a React Native UI component library designed for building cross-platform applications with a consistent look and feel. It provides a set of customizable, accessible, and themeable components that work seamlessly on iOS, Android, and web platforms.</Text></Flex>
 }, {
   id: 1,
   key: 'expo-compatibility',
   title: 'Is Platform Blocks compatible with Expo?',
-  content: <P>Yes! Platform Blocks is fully compatible with <Text variant="body" colorVariant="link" onPress={() => Linking.openURL('https://expo.dev')}>Expo</Text> and works out of the box. All components are designed to work in the Expo environment without requiring any native code modifications.</P>
+  content: <P>Yes! Platform Blocks is fully compatible with <Text variant="p" colorVariant="link" onPress={() => Linking.openURL('https://expo.dev')}>Expo</Text> and works out of the box. All components are designed to work in the Expo environment without requiring any native code modifications.</P>
 }, {
   id: 2,
   key: 'does-support',
@@ -31,7 +31,7 @@ const FAQ_DATA = [{
   id: 7,
   key: 'can-use-custom-fonts',
   title: 'Can I use custom fonts?',
-  content: <Flex><Text>Yes, you can configure <Text fontFamily='cursive'>custom fonts</Text> through the theme system. Platform Blocks's typography system allows you to specify custom font families for different text variants.</Text></Flex>
+  content: <Flex><Text>Yes, you can configure <Text fontFamily="cursive">custom fonts</Text> through the theme system. Platform Blocks's typography system allows you to specify custom font families for different text variants.</Text></Flex>
 }, {
   id: 8,
   key: 'how-report-bugs',
@@ -55,7 +55,14 @@ export default function FAQScreen() {
         type="multiple"
         variant="separated"
         items={FAQ_DATA}
-        defaultExpanded={['what-is']}
+        defaultExpanded={[
+          'what-is',
+          'expo-compatibility',
+          'does-support',
+          'can-customize',
+          'can-use-custom-fonts',
+          'how-report-bugs',
+        ]}
       />
     </PageWrapper>
   );

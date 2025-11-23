@@ -43,7 +43,7 @@ export const MonthPickerInput = forwardRef<View, MonthPickerInputProps>(function
 
   const {
     required = false,
-    rightSection,
+    endSection,
     onFocus,
     onBlur,
     style,
@@ -136,7 +136,7 @@ export const MonthPickerInput = forwardRef<View, MonthPickerInputProps>(function
           withAsterisk={showAsterisk}
           clearable={shouldShowClear}
           onClear={shouldShowClear ? handleClear : undefined}
-          rightSection={rightSection ?? <Icon name="calendar" size={16} />}
+          endSection={endSection ?? <Icon name="calendar" size={16} />}
           onFocus={onFocus}
           onBlur={onBlur}
           style={style}

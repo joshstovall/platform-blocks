@@ -1,12 +1,12 @@
 ---
 title: Colors
-category: usage
+category: theming
 order: 30
-tags: [colors, theming]
+tags: [palette]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Custom color themes for QR codes with different foreground and background colors.
+Derive QR foreground and background colors from theme palettes to keep scans on brand.

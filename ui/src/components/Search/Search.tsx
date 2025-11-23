@@ -8,8 +8,10 @@ import { useTheme } from '../../core/theme';
 import { spotlight } from '../Spotlight';
 import type { SearchProps, InternalState } from './types';
 import { Space } from '../Space';
+import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 
 export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, ref) => {
+  const { spacingProps, otherProps } = extractSpacingProps(props);
   const {
     value,
     defaultValue = '',
@@ -22,15 +24,16 @@ export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, re
     debounce = 0,
     clearButton = true,
     loading = false,
-    rightSection,
+    endSection,
     rightComponent,
     accessibilityLabel = 'Search',
     style,
     buttonMode = false,
     onPress,
-  } = props;
+  } = otherProps;
 
   const theme = useTheme();
+  const spacingStyles = getSpacingStyles(spacingProps);
   const inputRef = useRef<TextInput | null>(null);
   const [internal, setInternal] = useState<InternalState>(() => ({
     value: value ?? defaultValue,
@@ -84,7 +87,7 @@ export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, re
   );
 
   // Right section logic (clear / loading / custom)
-  let finalRight: React.ReactNode = rightSection;
+  let finalRight: React.ReactNode = endSection;
   if (loading) {
     finalRight = <Icon name="loader" size={16} color={theme.text.muted} />;
   } else if (clearButton && internal.value && !buttonMode) {
@@ -113,57 +116,63 @@ export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, re
   // If in button mode, render as a pressable button
   if (buttonMode) {
     return (
-      <Pressable
-        onPress={handleButtonPress}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-        style={[
-          {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: theme.spacing.xl,
-            paddingHorizontal: theme.spacing.sm,
-            paddingVertical: theme.spacing.xs,
-            backgroundColor: theme.colors.surface[1],
-            borderRadius: radius === 'md' ? 8 : radius === 'sm' ? 6 : 4,
-            borderWidth: 1,
-            borderColor: theme.colors.gray[3],
-            minHeight: size === 'xs' ? 28 : size === 'sm' ? 32 : size === 'md' ? 36 : 40,
-          },
-          style
-        ]}
-      >
-        {left}
-        <Text
-          style={{
-            flex: 1,
-            marginLeft: theme.spacing.xs,
-            color: theme.text.muted,
-            fontSize: size === 'xs' ? 12 : size === 'sm' ? 14 : 16,
-          }}
+      <View style={spacingStyles}>
+        <Pressable
+          onPress={handleButtonPress}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityRole="button"
+          style={[
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.spacing.xl,
+              paddingHorizontal: theme.spacing.sm,
+              paddingVertical: theme.spacing.xs,
+              backgroundColor: theme.colors.surface[1],
+              borderRadius: radius === 'md' ? 8 : radius === 'sm' ? 6 : 4,
+              borderWidth: 1,
+              borderColor: theme.colors.gray[3],
+              minHeight: size === 'xs' ? 28 : size === 'sm' ? 32 : size === 'md' ? 36 : 40,
+            },
+            style
+          ]}
         >
-          {placeholder}
-        </Text>
-        <Space w={64} />
-        {rightComponent || finalRight}
-      </Pressable>
+          {left}
+          <Text
+            style={{
+              flex: 1,
+              marginLeft: theme.spacing.xs,
+              color: theme.text.muted,
+              fontSize: size === 'xs' ? 12 : size === 'sm' ? 14 : 16,
+            }}
+          >
+            {placeholder}
+          </Text>
+          <Space w={64} />
+          {rightComponent || finalRight}
+        </Pressable>
+      </View>
     );
   }
 
-  return <Input
-    ref={ref}
-    type="search"
-    value={internal.value}
-    onChangeText={handleChange}
-    onEnter={handleSubmit}
-    placeholder={placeholder}
-    size={size}
-    radius={radius}
-    leftSection={left}
-    rightSection={finalRight}
-    accessibilityLabel={accessibilityLabel}
-    style={style}
-  />;
+  return (
+    <View style={spacingStyles}>
+      <Input
+        ref={ref}
+        type="search"
+        value={internal.value}
+        onChangeText={handleChange}
+        onEnter={handleSubmit}
+        placeholder={placeholder}
+        size={size}
+        radius={radius}
+        startSection={left}
+        endSection={finalRight}
+        accessibilityLabel={accessibilityLabel}
+        style={style}
+      />
+    </View>
+  );
 });
 
 Search.displayName = 'Search';

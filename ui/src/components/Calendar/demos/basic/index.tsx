@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Calendar, Column, Text } from '@platform-blocks/ui';
+
+const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 
 export default function Demo() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
   return (
-    <Column gap={16}>
-      <Calendar 
+    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+      <Calendar
         value={selectedDate}
         onChange={(date) => setSelectedDate(date as Date | null)}
         highlightToday
       />
-      {selectedDate && (
-        <Text size="sm" color="gray">
-          Selected: {selectedDate.toLocaleDateString()}
-        </Text>
-      )}
+      <Text size="sm" colorVariant="muted">
+        Selected date: {selectedDate ? formatter.format(selectedDate) : 'none'}
+      </Text>
     </Column>
   );
 }

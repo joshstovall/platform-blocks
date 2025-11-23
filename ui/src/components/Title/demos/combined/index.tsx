@@ -1,22 +1,51 @@
-import { Title, Card, Flex, Text } from '@platform-blocks/ui';
+import { Card, Column, Text, Title } from '@platform-blocks/ui';
 
-export default function CombinedTitleDemo() {
+export default function Demo() {
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={28}>
-        <Title prefix underline afterline underlineStroke={3} prefixVariant="bar" prefixSize={6} prefixLength={48} prefixColor="#10b981">
-          Analytics Overview
-        </Title>
-        <Text size="sm" colorVariant="secondary" style={{ maxWidth: 560 }}>
-          Demonstrates a composite section heading using prefix bar for visual anchor, underline emphasizing the title, and afterline extending across remaining horizontal space.
-        </Text>
-        <Title order={3} prefix prefixVariant="dot" underlineColor="#ef4444" underline underlineStroke={2} prefixColor="#ef4444">
-          Active Users
-        </Title>
-        <Title order={3} prefix prefixVariant="dot" underlineColor="#6366f1" underline underlineStroke={2} prefixColor="#6366f1">
-          Conversion Rate
-        </Title>
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Title
+            prefix
+            underline
+            afterline
+            prefixVariant="bar"
+            prefixSize={6}
+            prefixLength={48}
+            prefixColor="#10b981"
+            underlineStroke={3}
+          >
+            Analytics overview
+          </Title>
+          <Text size="sm" colorVariant="secondary">
+            Combine prefixes, underline, and afterline to create a structured page heading with a strong visual anchor.
+          </Text>
+          <Column gap="sm">
+            <Title
+              order={3}
+              prefix
+              prefixVariant="dot"
+              prefixColor="#ef4444"
+              underline
+              underlineColor="#ef4444"
+              underlineStroke={2}
+            >
+              Active users
+            </Title>
+            <Title
+              order={3}
+              prefix
+              prefixVariant="dot"
+              prefixColor="#6366f1"
+              underline
+              underlineColor="#6366f1"
+              underlineStroke={2}
+            >
+              Conversion rate
+            </Title>
+          </Column>
+        </Column>
+      </Card>
+    </Column>
   );
 }

@@ -1,77 +1,49 @@
 import { useState } from 'react';
-import { Switch, Text, Column, Card } from '@platform-blocks/ui';
+import { Column, Switch, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [normalSwitch, setNormalSwitch] = useState(true);
-  const [loadingSwitch, setLoadingSwitch] = useState(false);
+  const [homeAlerts, setHomeAlerts] = useState(true);
+  const [awayAlerts, setAwayAlerts] = useState(false);
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Switch States</Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Normal States</Text>
-          
-          <Switch
-            checked={normalSwitch}
-            onChange={setNormalSwitch}
-            label="Normal switch (on)"
-          />
-          
-          <Switch
-            checked={false}
-            onChange={() => {}}
-            label="Normal switch (off)"
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Disabled States</Text>
-          
-          <Switch
-            checked={true}
-            disabled={true}
-            label="Disabled (on)"
-          />
-          
-          <Switch
-            checked={false}
-            disabled={true}
-            label="Disabled (off)"
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Error State</Text>
-          
-          <Switch
-            checked={false}
-            onChange={() => {}}
-            label="Switch with error"
-            error="This setting is required"
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">With Description</Text>
-          
-          <Switch
-            checked={true}
-            onChange={() => {}}
-            label="Enable two-factor authentication"
-            description="Adds an extra layer of security to your account"
-          />
-        </Column>
-      </Card>
+    <Column gap="lg">
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Interactive states
+        </Text>
+        <Switch
+          checked={homeAlerts}
+          onChange={setHomeAlerts}
+          label="Home team alerts"
+        />
+        <Switch
+          checked={awayAlerts}
+          onChange={setAwayAlerts}
+          label="Away team alerts"
+        />
+      </Column>
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Disabled states
+        </Text>
+        <Switch defaultChecked label="Lineup lock" disabled />
+        <Switch label="Sound effects" disabled />
+      </Column>
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Validation helpers
+        </Text>
+        <Switch
+          label="Require broadcast approval"
+          required
+          error="Approval is needed before publishing."
+        />
+        <Switch
+          defaultChecked
+          label="Send pre-game summary"
+          description="Dispatch an email recap to coaches and analysts."
+        />
+      </Column>
     </Column>
   );
 }
-
-

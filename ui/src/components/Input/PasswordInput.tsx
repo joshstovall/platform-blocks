@@ -91,7 +91,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = (props) => {
     ...inputProps
   } = props;
 
-  const { fullWidth, rightSection: propRightSection, ...restInputProps } = inputProps;
+  const { fullWidth, endSection: propRightSection, ...restInputProps } = inputProps;
 
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
@@ -109,7 +109,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = (props) => {
   }, [onChangeText]);
 
 
-  const rightSection = useMemo(() => {
+  const endSection = useMemo(() => {
     if (!showVisibilityToggle) return propRightSection;
 
     return (
@@ -154,7 +154,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = (props) => {
         value={value}
         onChangeText={handleChangeText}
         secureTextEntry={!showPassword}
-        rightSection={rightSection}
+        endSection={endSection}
         autoComplete="current-password"
       />
 

@@ -1,6 +1,12 @@
 ---
 title: Custom Control
-description: Custom toggle control using renderControl prop.
+category: advanced
+order: 40
+tags: [spoiler, render-control, controlled]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing how to provide a custom control for expanding/collapsing content with controlled state.
+Use the `renderControl` callback alongside `opened` and `onToggle` to drive expansion with your own button or analytics hooks.

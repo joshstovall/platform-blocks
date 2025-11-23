@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Text, Card, Button, Input, Switch, Flex, Icon, useTheme, Divider, Alert } from '@platform-blocks/ui';
+import { Text, Card, Button, Input, Switch, Flex, Icon, useTheme, Divider, Notice } from '@platform-blocks/ui';
 import { Settings, Profile } from './types';
 import { initialSettings, initialProfile } from './mockData';
 import { PageWrapper } from 'components/PageWrapper';
@@ -349,7 +349,7 @@ export function SettingsExample() {
         </View>
 
         {/* Danger Zone */}
-        <Alert sev='error'>
+        <Notice sev="error">
           <Flex direction="column" align="center" justify="space-between" style={{ marginBottom: 16 }}>
           <Text size="lg" weight="semibold" style={dynamicStyles.sectionTitle}>
             Danger Zone
@@ -371,7 +371,7 @@ export function SettingsExample() {
             />
           {/* </View> */}
           </Flex>
-        </Alert>
+        </Notice>
       </ScrollView>
       </PageWrapper>
   );

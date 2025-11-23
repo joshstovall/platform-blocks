@@ -1,47 +1,51 @@
-import { Timeline, Text, Card, Block } from '@platform-blocks/ui';
+import { Column, Text, Timeline } from '@platform-blocks/ui';
+
+const launches = [
+  { title: 'Announcement', description: 'Introduced the roadmap to stakeholders.' },
+  { title: 'Preview', description: 'Shared early access resources with champions.' },
+  { title: 'Release', description: 'Rolled the feature out to everyone.' },
+];
 
 export default function Demo() {
   return (
-    <Block gap={24}>
-      <Text variant="h6">Timeline Line Customization</Text>
+    <Column gap="lg">
+      <Text size="sm" colorVariant="secondary">
+        Customize the connector line globally with the `color`, `colorVariant`, and `lineWidth` props on `Timeline`.
+      </Text>
 
-      <Card padding={16}>
-        <Text variant="body" weight="medium">Line Color</Text>
-        <Timeline color="#ff0000">
-          <Timeline.Item title="Blue Line">
-            <Text variant="caption">Timeline with blue connecting line</Text>
-          </Timeline.Item>
-          <Timeline.Item title="Continues">
-            <Text variant="caption">Same blue line continues</Text>
-          </Timeline.Item>
-          <Timeline.Item title="To End">
-            <Text variant="caption">All the way to the end</Text>
-          </Timeline.Item>
+      <Column gap="sm">
+        <Text weight="semibold">Theme color</Text>
+        <Timeline colorVariant="primary.6">
+          {launches.map((milestone) => (
+            <Timeline.Item key={`color-${milestone.title}`} title={milestone.title}>
+              <Text size="sm">{milestone.description}</Text>
+            </Timeline.Item>
+          ))}
         </Timeline>
-      </Card>
-      <Card padding={16}>
-        <Text variant="body" weight="medium">Line Width</Text>
+      </Column>
+
+      <Column gap="sm">
+        <Text weight="semibold">Thicker connector</Text>
         <Timeline lineWidth={4}>
-          <Timeline.Item title="Thick Line">
-            <Text variant="caption">Timeline with thicker connecting line</Text>
-          </Timeline.Item>
-          <Timeline.Item title="Bold Connection">
-            <Text variant="caption">More prominent visual connection</Text>
-          </Timeline.Item>
+          {launches.slice(0, 2).map((milestone) => (
+            <Timeline.Item key={`width-${milestone.title}`} title={milestone.title}>
+              <Text size="sm">{milestone.description}</Text>
+            </Timeline.Item>
+          ))}
         </Timeline>
-      </Card>
-      <Card padding={16}>
-        <Text variant="body" weight="medium">Combined Styling</Text>
-        <Timeline color="#10b981" lineWidth={3}>
-          <Timeline.Item title="Custom Styled">
-            <Text variant="caption">Green thick line combination</Text>
-          </Timeline.Item>
-          <Timeline.Item title="Consistent Style">
-            <Text variant="caption">Same styling throughout</Text>
-          </Timeline.Item>
+      </Column>
+
+      <Column gap="sm">
+        <Text weight="semibold">Combined styling</Text>
+        <Timeline colorVariant="success.6" lineWidth={3}>
+          {launches.slice(1).map((milestone) => (
+            <Timeline.Item key={`combined-${milestone.title}`} title={milestone.title}>
+              <Text size="sm">{milestone.description}</Text>
+            </Timeline.Item>
+          ))}
         </Timeline>
-      </Card>
-    </Block>
+      </Column>
+    </Column>
   );
 }
 

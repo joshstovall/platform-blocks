@@ -1,5 +1,5 @@
 ---
-title: Basic Text Area
+title: Basic
 category: usage
 order: 10
 tags: [basic, multiline, textarea]
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-A basic multi-line text input for longer form content.
+Controlled text area with helper copy and inline character count feedback.

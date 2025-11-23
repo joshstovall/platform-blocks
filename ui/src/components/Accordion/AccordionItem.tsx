@@ -5,7 +5,7 @@ import { Icon } from '../Icon';
 import type { AccordionItem, AccordionProps } from './types';
 import { useAccordionItemAnimation } from './hooks/useAccordionItemAnimation';
 import type { AccordionAnimationProp } from './types';
-
+import { Collapse } from '../Collapse';
 export interface AccordionItemComponentProps {
   item: AccordionItem;
   isExpanded: boolean;
@@ -45,11 +45,14 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
 }) => {
   const headerId = `${idPrefix}-header-${item.key}`;
   const panelId = `${idPrefix}-panel-${item.key}`;
-  const { contentRef, onContentLayout, animatedHeightStyle, animatedChevronStyle } = useAccordionItemAnimation({ expanded: isExpanded, animated });
+  const { CollapseConfig, animatedChevronStyle } = useAccordionItemAnimation({ expanded: isExpanded, animated });
+  const { shouldAnimate, duration, easing } = CollapseConfig;
 
   return (
-    <View style={[styles.item, isLast && variant === 'default' && { borderBottomWidth: 0 },
-      !isExpanded &&  { backgroundColor: '#f3f4f630' }
+    <View style={[
+      styles.item,
+      isLast && variant === 'default' && { borderBottomWidth: 0 },
+      !isExpanded && { backgroundColor: '#f3f4f630' }
     ]}>
       <Pressable
         style={[styles.header, headerStyle]}
@@ -70,13 +73,17 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
             </View>
           )}
           {item.icon && <View style={{ marginRight: 12 }}>{item.icon}</View>}
-          <Text 
-          weight={isExpanded ? '600' : '400'}
-           style={[ styles.headerText, isExpanded && styles.activeHeaderText, isDisabled && styles.disabledHeaderText, headerTextStyle ]} selectable={false}>
+          <Text
+            weight={isExpanded ? '600' : '400'}
+            style={[styles.headerText, isExpanded && styles.activeHeaderText, isDisabled && styles.disabledHeaderText, headerTextStyle]}
+            selectable={false}
+          >
             {item.title}
           </Text>
           {chevronPosition === 'end' && showChevron && (
-            <View style={[styles.chevron, animatedChevronStyle,
+            <View style={[
+              styles.chevron,
+              animatedChevronStyle,
               { marginLeft: 'auto' }
             ]}>
               <Icon name="chevron-right" size="md" color={isDisabled ? disabledChevronColor : chevronColor} />
@@ -86,8 +93,8 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
       </Pressable>
       <View
         style={[
-          animatedHeightStyle,
           { position: 'relative', zIndex: 1 },
+          !shouldAnimate && !isExpanded && { height: 0, overflow: 'hidden' as const },
         ]}
         {...(Platform.OS === 'web' ? {
           id: panelId,
@@ -96,21 +103,30 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
           hidden: !isExpanded,
         } as any : {})}
       >
-        <View
-          ref={contentRef}
-          onLayout={onContentLayout}
-          // Prevent Android from collapsing this view away which can break onLayout
-          collapsable={false}
-          pointerEvents="box-none"
-          style={[
-            styles.content,
-            contentStyle,
-          ]}
-        >
-          <View>
-            {item.content}
-          </View>
-        </View>
+        {shouldAnimate ? (
+          <Collapse
+            isCollapsed={isExpanded}
+            duration={duration}
+            easing={easing}
+            fadeContent={false}
+            contentStyle={[styles.content, contentStyle]}
+          >
+            <View pointerEvents="box-none">
+              {item.content}
+            </View>
+          </Collapse>
+        ) : (
+          isExpanded && (
+            <View
+              pointerEvents="box-none"
+              style={[styles.content, contentStyle]}
+            >
+              <View>
+                {item.content}
+              </View>
+            </View>
+          )
+        )}
       </View>
     </View>
   );

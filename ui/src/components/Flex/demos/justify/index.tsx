@@ -31,16 +31,16 @@ export default function JustifyFlexDemo() {
             >
               {/* Small fixed squares with no shrink so free space is obvious */}
               <Card padding={0} style={{ width: 40, height: 40, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-                <Text variant="caption">A</Text>
+                <Text variant="small">A</Text>
               </Card>
               <Card padding={0} style={{ width: 40, height: 40, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-                <Text variant="caption">B</Text>
+                <Text variant="small">B</Text>
               </Card>
               <Card padding={0} style={{ width: 40, height: 40, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-                <Text variant="caption">C</Text>
+                <Text variant="small">C</Text>
               </Card>
             </Flex>
-            <Text variant="caption" colorVariant="muted" style={{ marginTop: 6 }}>
+            <Text variant="small" colorVariant="muted" style={{ marginTop: 6 }}>
               Notice where the extra space sits (left, right, between, around, evenly).
             </Text>
           </Card>

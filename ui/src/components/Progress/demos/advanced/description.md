@@ -1,12 +1,12 @@
 ---
-title: Advanced Features
-category: usage
+title: Advanced
+category: behavior
 order: 30
-tags: [advanced, features, animation]
+tags: [animation, striped]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Advanced progress features including animations, labels, and custom styling.
+Showcase eased transitions, striped indeterminate states, and compact sizing for nuanced status updates.

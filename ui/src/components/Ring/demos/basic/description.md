@@ -1,6 +1,12 @@
 ---
-title: Basic Ring
-description: Automatically adjust the ring color based on the current value. Configure thresholds or supply a custom resolver for fine-grained control.
+title: Interactive Presets
+category: usage
+order: 10
+tags: [ring]
+highlightLines: [36-63]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates the `Ring` component with color stops.
+Drive multiple ring presentations from a single stateful value and expose how sizing and labels adapt.

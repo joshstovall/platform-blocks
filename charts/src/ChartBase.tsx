@@ -117,6 +117,7 @@ export const ChartContainer: React.FC<BaseChartProps & {
           height,
           backgroundColor: 'transparent',
           position: 'relative',
+          overflow: 'visible',
         },
         spacingStyles,
         style,

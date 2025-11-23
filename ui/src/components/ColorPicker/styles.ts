@@ -61,15 +61,18 @@ export function useColorPickerStyles(metrics: ColorPickerSizeMetrics) {
     borderColor: theme.colors.error[5],
   };
 
+  const previewWrapper: ViewStyle = {
+    marginRight: metrics.previewMarginRight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
   const preview: ViewStyle = {
     width: metrics.previewSize,
     height: metrics.previewSize,
     borderRadius: metrics.previewBorderRadius,
     borderWidth: 1,
     borderColor: theme.colors.gray[3],
-    marginRight: metrics.previewMarginRight,
-    alignItems: 'center',
-    justifyContent: 'center',
   };
 
   const textInput: TextStyle = {
@@ -78,6 +81,10 @@ export function useColorPickerStyles(metrics: ColorPickerSizeMetrics) {
     color: theme.text.primary,
     fontFamily: 'monospace',
     height: metrics.textInputHeight,
+    borderWidth: 0,
+    outlineWidth: 0,
+    outlineColor: 'transparent',
+    backgroundColor: 'transparent',
   };
 
   const dropdownIcon: TextStyle = {
@@ -221,6 +228,7 @@ export function useColorPickerStyles(metrics: ColorPickerSizeMetrics) {
     inputFocused,
     inputDisabled,
     inputError,
+    previewWrapper,
     preview,
     textInput,
     dropdownIcon,

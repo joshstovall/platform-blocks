@@ -1,11 +1,14 @@
-import { Button, Row } from '@platform-blocks/ui'
+import { Button, Column, Row } from '@platform-blocks/ui';
+
 export default function Demo() {
   return (
-    <Row align="flex-end">
-      <Button title="Small" size="sm" />
-      <Button title="Medium" size="md" />
-      <Button title="Large" size="lg" />
-      <Button title="Extra Large" size="xl" />
-    </Row>
-  )
+    <Column gap="sm">
+      <Row gap="md" wrap="wrap" align="flex-end">
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+        <Button size="xl">Extra large</Button>
+      </Row>
+    </Column>
+  );
 }

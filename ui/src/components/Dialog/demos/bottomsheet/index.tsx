@@ -1,46 +1,36 @@
-import { View } from 'react-native';
-import { useDialog, Button, Text, Input } from '@platform-blocks/ui';
+import { Button, Column, Input, Text, useDialog } from '@platform-blocks/ui';
 
 export default function Demo() {
   const { openDialog, closeDialog } = useDialog();
 
   const showBottomSheetDialog = () => {
-    const id = openDialog({
+    const dialogId = openDialog({
       variant: 'bottomsheet',
       title: 'Bottom Sheet with Gestures',
       content: (
-        <View style={{ padding: 20, gap: 16 }}>
-          <Text>This dialog slides up from the bottom (theme aware).</Text>
-          <Text colorVariant="secondary">
-            ✨ Gesture features:
-          </Text>
-          <Text colorVariant="secondary" size="sm">
-            • Drag the handle or anywhere on the sheet
-          </Text>
-          <Text colorVariant="secondary" size="sm">
-            • Swipe down to dismiss
-          </Text>
-          <Text colorVariant="secondary" size="sm">
-            • Rubber band effect with smart thresholds
-          </Text>
-          <Text colorVariant="secondary" size="sm">
-            • Velocity-based dismissal
-          </Text>
+        <Column gap="md" p="md">
+          <Text>This dialog slides up from the bottom with theme-aware styling.</Text>
+          <Column gap="xs">
+            <Text size="sm" colorVariant="secondary">
+              Drag the handle or surface to move it.
+            </Text>
+            <Text size="sm" colorVariant="secondary">
+              Swipe down to dismiss with velocity thresholds.
+            </Text>
+            <Text size="sm" colorVariant="secondary">
+              Rubber-band resistance keeps the sheet anchored.
+            </Text>
+          </Column>
           <Input placeholder="Try typing while dragging..." />
-          <Button
-            title="Close Programmatically"
-            variant="secondary"
-            onPress={() => closeDialog(id)}
-          />
-        </View>
+          <Button variant="outline" onPress={() => closeDialog(dialogId)}>
+            Close programmatically
+          </Button>
+        </Column>
       )
     });
   };
 
   return (
-    <Button
-      title="Open Bottom Sheet"
-      onPress={showBottomSheetDialog}
-    />
+    <Button onPress={showBottomSheetDialog}>Open Bottom Sheet</Button>
   );
 }

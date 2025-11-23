@@ -1,1 +1,12 @@
-Providing custom initialData when headings are not yet in the DOM.
+---
+title: Preloaded data
+category: basics
+order: 30
+tags: [ssr]
+highlightLines: []
+status: stable
+since: 0.3.0
+hidden: false
+---
+
+Seed the table of contents with `initialData` so servers and prerender jobs can render the navigation before headings mount.

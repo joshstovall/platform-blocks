@@ -16,20 +16,8 @@ export interface GradientTextProps extends Omit<TextProps, 'color' | 'colorVaria
   /** End point [x, y] (0-1). Overrides angle if provided */
   end?: [number, number];
   
-  /** Gradient position offset (0-1). Animates the gradient from start to end of the line */
+  /** Gradient position offset (0-1). Moves the gradient along the line */
   position?: number;
-  
-  /** Whether to animate the gradient position automatically */
-  animate?: boolean;
-  
-  /** Animation duration in milliseconds (default: 2000) */
-  animationDuration?: number;
-  
-  /** Animation loop behavior: 'loop', 'reverse', or 'once' (default: 'loop') */
-  animationLoop?: 'loop' | 'reverse' | 'once';
-  
-  /** Delay before animation starts in milliseconds (default: 0) */
-  animationDelay?: number;
   
   /** Custom testID for testing */
   testID?: string;

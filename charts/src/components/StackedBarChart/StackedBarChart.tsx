@@ -176,7 +176,18 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
   const setCrosshair = interaction?.setCrosshair;
   const interactionSeries = interaction?.series;
 
-  const padding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const basePadding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const padding = React.useMemo(() => {
+    if (!legend?.show) return basePadding;
+    const position = legend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [legend?.show, legend?.position]);
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
 

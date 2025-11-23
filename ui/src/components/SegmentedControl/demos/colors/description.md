@@ -1,8 +1,12 @@
 ---
 title: Custom Colors
-tags: [segmented-control, colors, styling]
-order: 30
-status: beta
+category: theming
+order: 60
+tags: [segmented-control, colors, theming]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Use theme color tokens or custom hex values to customize the indicator color.
+Set the `color` prop to pull semantic tokens or pass custom values, and enable `autoContrast` when you need readable labels on vivid fills.

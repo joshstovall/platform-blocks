@@ -1,8 +1,12 @@
 ---
 title: Orientation
+category: layout
+order: 50
 tags: [segmented-control, layout, orientation]
-order: 25
-status: beta
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Switch between horizontal and vertical layouts to fit different design needs.
+Toggle the `orientation` prop to rotate the control vertically for sidebars or keep it horizontal for toolbars.

@@ -3,11 +3,11 @@ import { View, Text, ScrollView, Switch, StyleSheet } from 'react-native';
 import { AudioPlayer } from '../AudioPlayer';
 import { Card } from '../Card';
 import { Button } from '../Button';
-import { Container } from '../Container';
 import { Divider } from '../Divider';
 import { useTheme } from '../../core/theme';
 import { DESIGN_TOKENS } from '../../core';
 import type { AudioPlayerRef, PlaybackState } from '../AudioPlayer';
+import { Block } from '../Block';
 
 // Sample audio URLs (these would be real audio files in production)
 const SAMPLE_AUDIO_FILES = [
@@ -79,7 +79,7 @@ export const AudioPlayerDemo: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Block>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={[styles.title, { color: theme.colors.gray[9] }]}>
           AudioPlayer Component Demo
@@ -335,7 +335,7 @@ export const AudioPlayerDemo: React.FC = () => {
           </View>
         </Card>
       </ScrollView>
-    </Container>
+    </Block>
   );
 };
 

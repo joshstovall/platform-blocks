@@ -67,9 +67,7 @@ export function ChatMessageBubble({ message: msg, getUserColor }: ChatMessageBub
       ]}
       {...(Platform.OS === 'web'
         ? {
-            // @ts-ignore web only
             onMouseEnter: () => setHovered(true),
-            // @ts-ignore web only
             onMouseLeave: () => { setHovered(false); setShowReactions(false); }
           }
         : {})}
@@ -151,7 +149,7 @@ export function ChatMessageBubble({ message: msg, getUserColor }: ChatMessageBub
             size="sm" 
             weight="semibold" 
             color={getUserColor(msg.user)}
-            style={[styles.userName]}
+            style={styles.userName}
           >
             {msg.user}
           </Text>

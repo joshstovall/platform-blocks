@@ -1,8 +1,12 @@
 ---
 title: Full Width
-tags: [segmented-control, layout]
-order: 20
-status: beta
+category: layout
+order: 40
+tags: [segmented-control, layout, full-width]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Stretch the segmented control to fill its container while evenly distributing segments.
+Apply `fullWidth` to let segments expand and distribute evenly across the available horizontal space.

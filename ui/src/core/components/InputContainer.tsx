@@ -12,8 +12,8 @@ export interface InputContainerProps {
   error?: boolean;
   focused?: boolean;
   radius?: any;
-  leftSection?: React.ReactNode;
-  rightSection?: React.ReactNode;
+  startSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   style?: ViewStyle;
 }
 
@@ -28,8 +28,8 @@ export function InputContainer({
   error = false,
   focused = false,
   radius,
-  leftSection,
-  rightSection,
+  startSection,
+  endSection,
   style,
 }: InputContainerProps) {
   const theme = useTheme();
@@ -81,9 +81,9 @@ export function InputContainer({
 
   return (
     <View style={[finalStyles, style]}>
-      {leftSection && (
+      {startSection && (
         <View style={{ paddingRight: spacing }}>
-          {leftSection}
+          {startSection}
         </View>
       )}
       
@@ -91,13 +91,13 @@ export function InputContainer({
         {children}
       </View>
       
-      {rightSection && (
+      {endSection && (
         <View style={{ 
           paddingLeft: spacing,
           flexDirection: 'row',
           alignItems: 'center' 
         }}>
-          {rightSection}
+          {endSection}
         </View>
       )}
     </View>

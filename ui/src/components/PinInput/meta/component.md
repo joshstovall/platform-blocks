@@ -30,8 +30,6 @@ examples:
   - OTP input with auto-advance
 ---
 
-# PinInput
-
 A specialized input component designed for entering PIN codes, one-time passwords (OTP), verification codes, and other sequential character inputs. The component provides an intuitive interface with automatic focus management.
 
 ## Features

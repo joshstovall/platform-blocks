@@ -1,10 +1,13 @@
-# Basic CodeBlock
+---
+title: Basic
+category: basics
+order: 10
+tags: [basic, code, snippet]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
+---
 
-A simple code block displaying syntax-highlighted code. This is the most basic usage of the CodeBlock component, showing how to display code with default settings.
+Default CodeBlock showing a single snippet with automatic language detection and copy controls.
 
-## Features Demonstrated
-
-- Default syntax highlighting
-- Clean, minimal appearance
-- Automatic language detection
-- Basic copy functionality

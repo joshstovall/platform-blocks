@@ -1,7 +1,12 @@
 ---
-title: Tab Location Positioning
-description: Demonstrates different tab positioning: start (top/left) vs end (bottom/right).
-tags: ["location", "positioning", "start", "end", "layout"]
+title: Location
+category: layout
+order: 50
+tags: [tabs, layout]
+highlightLines: [31-40]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Shows how to position tabs at different locations relative to their content. The location prop controls whether tabs appear at the start (top for horizontal, left for vertical) or end (bottom for horizontal, right for vertical) of the content area.
+Switch tab placement between `start` and `end` to position triggers above or below the associated content.

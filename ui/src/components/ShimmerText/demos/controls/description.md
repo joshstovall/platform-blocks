@@ -1,5 +1,11 @@
 ---
-title: Interactive Controls
-tags: [text, shimmer, animation, gradient]
+title: Interactive controls
+category: behavior
+order: 20
+tags: [animation, controls]
+highlightLines: []
+status: stable
+since: 0.3.0
+hidden: false
 ---
-Interactive example showing how to toggle repeat behavior and spread at runtime.
+Expose `spread`, `repeat`, and `once` controls to let readers tune the shimmer loop at runtime.

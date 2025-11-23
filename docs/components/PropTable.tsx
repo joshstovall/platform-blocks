@@ -6,7 +6,9 @@ import {
   Row,
   Tooltip,
   CopyButton,
-  useTheme
+  useTheme,
+  Block,
+  Flex
 } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTableSort } from '@platform-blocks/ui';
 
@@ -43,7 +45,7 @@ export function PropTable({ props }: PropTableProps) {
   if (filtered.length === 0) {
     return (
       <CardAny variant="outline" style={{ marginVertical: 16 }}>
-        <TextAny variant="body" colorVariant="muted" align="center">
+        <TextAny variant="p" colorVariant="muted" align="center">
           This component has no props.
         </TextAny>
       </CardAny>
@@ -56,26 +58,33 @@ export function PropTable({ props }: PropTableProps) {
   const PropNameCell = ({ value, row }: { value: string; row: PropMetadata }) => {
     return (
       <RowAny gap={4} align="center">
-        <TextAny variant="body" weight="semibold" style={{ fontFamily: 'monospace' }}>
-          {value}
-        </TextAny>
-        <CopyButtonAny
-          value={value}
-          mode="icon"
-          size="xs"
-          tooltip="Copy prop name"
-          tooltipPosition="top"
-          disableToast
-          style={{ marginLeft: 4 }}
-        />
+        <Flex direction="row" align="center">
+          <CopyButtonAny
+            value={value}
+            mode="icon"
+            size="xs"
+            tooltip="Copy prop name"
+            tooltipPosition="top"
+            disableToast
+            style={{ marginLeft: 4 }}
+          />
+          <Block>
+            <TextAny variant="p" weight="semibold" style={{ fontFamily: 'monospace' }}>
+              {value}
+            </TextAny>
+            <TextAny variant="small" colorVariant="secondary">
+              {value}
+            </TextAny>
+          </Block>
+        </Flex>
         {row.required && (
-          <TooltipAny label="This prop is required"><TextAny variant="sup" color='red'>*</TextAny></TooltipAny>
+          <TooltipAny label="This prop is required"><TextAny variant="sup" color="red">*</TextAny></TooltipAny>
         )}
         {row.deprecated && (
-          <TooltipAny label="Deprecated – avoid use"><TextAny variant="sup" color='orange'>D</TextAny></TooltipAny>
+          <TooltipAny label="Deprecated – avoid use"><TextAny variant="sup" color="orange">D</TextAny></TooltipAny>
         )}
         {row.internal && (
-          <TooltipAny label="Internal – not part of public API"><TextAny variant="sup" color='purple'>I</TextAny></TooltipAny>
+          <TooltipAny label="Internal – not part of public API"><TextAny variant="sup" color="purple">I</TextAny></TooltipAny>
         )}
       </RowAny>
     );
@@ -101,12 +110,12 @@ export function PropTable({ props }: PropTableProps) {
       align: 'center',
       cell: (value: string | undefined) => value ? (
         <TextAny
-          variant="caption"
+          variant="small"
           style={{ fontFamily: 'monospace', color: theme.colors.gray[7] }}
         >
           {value}
         </TextAny>
-      ) : <TextAny variant="caption" colorVariant="muted">—</TextAny>
+      ) : null //<TextAny variant="small" colorVariant="muted">—</TextAny>
     } : undefined,
     {
       key: 'type',
@@ -119,35 +128,36 @@ export function PropTable({ props }: PropTableProps) {
       align: 'center',
       cell: (value: string) => (
         <TextAny
-          variant="caption"
+          variant="small"
           style={{
             fontFamily: 'monospace',
-            backgroundColor: theme.colors.gray[1],
+            // backgroundColor: theme.colors.gray[1],
             paddingHorizontal: 8,
             paddingVertical: 4,
             borderRadius: 4,
-            textAlign: 'center',
+            textAlign: 'end',
+            width: '100%'
           }}
         >
           {value}
         </TextAny>
       ),
     },
-    {
-      key: 'description',
-      header: 'Description',
-      accessor: 'description',
-      minWidth: 200,
-      filterable: true,
-      filterType: 'text',
-      align: 'left',
-      cell: (value: string) =>
-        value && (
-          <TextAny variant="caption" colorVariant="secondary">
-            {value}
-          </TextAny>
-        )
-    }
+    // {
+    //   key: 'description',
+    //   header: 'Description',
+    //   accessor: 'description',
+    //   minWidth: 200,
+    //   filterable: true,
+    //   filterType: 'text',
+    //   align: 'left',
+    //   cell: (value: string) =>
+    //     value && (
+    //       <TextAny variant="small" colorVariant="secondary">
+    //         {value}
+    //       </TextAny>
+    //     )
+    // }
   ].filter(Boolean) as DataTableColumn<PropMetadata>[];
 
   return (

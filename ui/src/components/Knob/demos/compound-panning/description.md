@@ -1,0 +1,1 @@
+Stereo-style panning knob composed with `Knob.Root`, split progress, and custom tick labels to highlight the compound sub-component API.

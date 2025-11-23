@@ -1,12 +1,12 @@
 ---
-title: Switch Sizes
-category: usage
-order: 30
-tags: [sizes, scale]
+title: Sizes
+category: layout
+order: 20
+tags: [size]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different size options for switches from small to large.
+Choose a `size` token to scale the switch track and thumb; `defaultChecked` seeds uncontrolled switches.

@@ -13,14 +13,17 @@ import crypto from 'crypto';
 
 const ROOT = path.resolve(__dirname, '..');
 const UI_COMPONENTS_DIR = path.join(ROOT, 'ui', 'src', 'components');
+const UI_HOOKS_DIR = path.join(ROOT, 'ui', 'src', 'hooks');
 const CHARTS_COMPONENTS_DIR = path.join(ROOT, 'charts', 'src', 'components'); // charts components directory
 const OUTPUT_DIR = path.join(ROOT, 'docs', 'data', 'generated');
+const COMPONENT_MARKDOWN_DIR = path.join(OUTPUT_DIR, 'component-markdown');
 
 interface DemoMeta {
   id: string; // Component.demoId
   component: string;
   demo: string; // short demo key (no component prefix)
   title: string;
+  kind?: 'component' | 'chart' | 'hook';
   description?: string;
   localizedDescriptions?: Record<string, string>;
   tags: string[];
@@ -38,6 +41,8 @@ interface DemoMeta {
   showCodeToggle?: boolean; // show/hide toggle for code block (default true)
   previewCenter?: boolean; // center preview region regardless of layout
   codeFirst?: boolean; // if true show code before preview
+  code?: string; // raw source when inlined (hooks, playgrounds)
+  importPath?: string; // source module path reference
 }
 
 interface CodeEntry { code: string; hash: string; importPath: string; }
@@ -79,11 +84,38 @@ interface ComponentMetaRecord {
   [component: string]: any;
 }
 
+interface HookMetaRecord {
+  [hook: string]: any;
+}
+
+type PlaygroundMetaConfig = {
+  id: string;
+  label?: string;
+  description?: string;
+};
+
 function parseHighlight(val: any): (number | string)[] | undefined {
   if (!val) return undefined;
   if (Array.isArray(val)) return val;
   if (typeof val === 'string') {
     return val.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return undefined;
+}
+
+function normalizePlaygroundMeta(value: any, componentName: string): PlaygroundMetaConfig | undefined {
+  if (!value) return undefined;
+  if (value === true) {
+    return { id: componentName };
+  }
+  if (typeof value === 'string') {
+    return { id: value };
+  }
+  if (typeof value === 'object') {
+    const id = typeof value.id === 'string' && value.id.trim() ? value.id.trim() : componentName;
+    const label = typeof value.label === 'string' ? value.label : undefined;
+    const description = typeof value.description === 'string' ? value.description : undefined;
+    return { id, label, description };
   }
   return undefined;
 }
@@ -112,10 +144,14 @@ function collectDemos() {
         const raw = fs.readFileSync(canonicalMetaMd, 'utf8');
         const { frontmatter, body } = parseFrontmatter(raw);
         const fm = { ...(frontmatter || {}) } as any;
+        const { playground: playgroundRaw, ...restFm } = fm;
         const desc = (body || '').trim() || (typeof fm.description === 'string' ? fm.description : '');
         const name = typeof fm.name === 'string' && fm.name.trim() ? fm.name : comp;
         const title = typeof fm.title === 'string' && fm.title.trim() ? fm.title : comp;
-        componentMeta[comp] = { ...fm, name, title, description: desc || `${comp} component` };
+        const playgroundMeta = normalizePlaygroundMeta(playgroundRaw, comp);
+        const metaEntry: Record<string, any> = { ...restFm, name, title, description: desc || `${comp} component` };
+        if (playgroundMeta) metaEntry.playground = playgroundMeta;
+        componentMeta[comp] = metaEntry;
       } catch {
         console.warn(`[generate-demos] Failed to parse metadata for ${comp}`);
       }
@@ -288,11 +324,15 @@ function collectDemos() {
           const raw = fs.readFileSync(canonicalMetaMd, 'utf8');
           const { frontmatter, body } = parseFrontmatter(raw);
           const fm = { ...(frontmatter || {}) } as any;
+          const { playground: playgroundRaw, ...restFm } = fm;
           const desc = (body || '').trim() || (typeof fm.description === 'string' ? fm.description : '');
           const name = typeof fm.name === 'string' && fm.name.trim() ? fm.name : comp;
           const title = typeof fm.title === 'string' && fm.title.trim() ? fm.title : comp;
           const category = fm.category || 'charts';
-          componentMeta[comp] = { ...fm, name, title, description: desc || `${comp} component`, category };
+          const playgroundMeta = normalizePlaygroundMeta(playgroundRaw, comp);
+          const metaEntry: Record<string, any> = { ...restFm, name, title, description: desc || `${comp} component`, category };
+          if (playgroundMeta) metaEntry.playground = playgroundMeta;
+          componentMeta[comp] = metaEntry;
         } catch {
           console.warn(`[generate-demos] Failed to parse metadata for chart ${comp}`);
         }
@@ -613,22 +653,317 @@ function collectDemos() {
   return { demos, codeByComponent, componentMeta, propsMeta, warningCounts, componentWarnings };
 }
 
+function collectHooks() {
+  const hooks: DemoMeta[] = [];
+  const codeByHook: Record<string, Record<string, CodeEntry>> = {};
+  const hookMeta: HookMetaRecord = {};
+
+  if (!fs.existsSync(UI_HOOKS_DIR)) {
+    return { hooks, codeByHook, hookMeta };
+  }
+
+  const hookDirs = fs.readdirSync(UI_HOOKS_DIR).filter(dir => {
+    const full = path.join(UI_HOOKS_DIR, dir);
+    return fs.statSync(full).isDirectory();
+  });
+
+  for (const hook of hookDirs) {
+    const hookDir = path.join(UI_HOOKS_DIR, hook);
+    const demosDir = path.join(hookDir, 'demos');
+    const metaDir = path.join(hookDir, 'meta');
+
+    if (!fs.existsSync(demosDir)) continue;
+
+    const canonicalMetaMd = path.join(metaDir, 'hook.md');
+    if (fs.existsSync(canonicalMetaMd)) {
+      try {
+        const raw = fs.readFileSync(canonicalMetaMd, 'utf8');
+        const { frontmatter, body } = parseFrontmatter(raw);
+        const fm = { ...(frontmatter || {}) } as any;
+        const desc = (body || '').trim() || (typeof fm.description === 'string' ? fm.description : '');
+        const name = typeof fm.name === 'string' && fm.name.trim() ? fm.name : hook;
+        const title = typeof fm.title === 'string' && fm.title.trim() ? fm.title : hook;
+        hookMeta[hook] = {
+          ...fm,
+          name,
+          title,
+          description: desc || `${hook} hook`
+        };
+      } catch {
+        console.warn(`[generate-demos] Failed to parse hook metadata for ${hook}`);
+      }
+    } else {
+      console.warn(`[generate-demos] Missing meta/hook.md for ${hook}`);
+    }
+
+    const entries = fs.readdirSync(demosDir);
+    const subfolders = entries.filter(entry => {
+      const full = path.join(demosDir, entry);
+      return fs.existsSync(full) && fs.statSync(full).isDirectory();
+    });
+
+    codeByHook[hook] = codeByHook[hook] || {};
+
+    for (const folder of subfolders) {
+      const indexPath = path.join(demosDir, folder, 'index.tsx');
+      if (!fs.existsSync(indexPath)) continue;
+
+      const raw = fs.readFileSync(indexPath, 'utf8');
+      let codeSnippet = raw;
+      const codeMatch = raw.match(/export const code\s*=\s*`([\s\S]*?)`;/);
+      if (codeMatch) codeSnippet = codeMatch[1];
+
+      const codeHash = sha256(codeSnippet);
+      const id = `${hook}.${folder}`;
+      const relImport = `../../../ui/src/hooks/${hook}/demos/${folder}`;
+      codeByHook[hook][id] = { code: codeSnippet, hash: codeHash, importPath: relImport };
+
+      let meta: any = {};
+      const descPath = path.join(demosDir, folder, 'description.md');
+      let mdDesc = '';
+      const localizedDescriptions: Record<string, string> = {};
+
+      try {
+        const localeFiles = fs
+          .readdirSync(path.join(demosDir, folder))
+          .filter(f => /^description\.[a-zA-Z-]+\.md$/.test(f));
+        for (const lf of localeFiles) {
+          const rawLocale = fs.readFileSync(path.join(demosDir, folder, lf), 'utf8');
+          const { body } = parseFrontmatter(rawLocale);
+          const locale = lf.split('.')[1];
+          localizedDescriptions[locale] = body.trim();
+        }
+      } catch {/* ignore */}
+
+      if (fs.existsSync(descPath)) {
+        const mdRaw = fs.readFileSync(descPath, 'utf8');
+        const { frontmatter, body } = parseFrontmatter(mdRaw);
+        meta = { ...meta, ...frontmatter };
+        mdDesc = body.trim();
+      }
+
+      const short = folder;
+      const title = meta.title || short.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+      hooks.push({
+        id,
+        component: hook,
+        demo: short,
+        title,
+        kind: 'hook',
+        description: meta.description || mdDesc.split('\n').find(l => l.trim()) || '',
+        localizedDescriptions: Object.keys(localizedDescriptions).length ? localizedDescriptions : undefined,
+        tags: Array.isArray(meta.tags) ? meta.tags : [],
+        category: meta.category || 'general',
+        order: typeof meta.order === 'number' ? meta.order : 100,
+        status: meta.status,
+        since: meta.since,
+        hidden: meta.hidden === true,
+        highlightLines: parseHighlight(meta.highlightLines),
+        renderStyle: ['center', 'code_flex', 'auto'].includes(meta.renderStyle) ? meta.renderStyle : undefined,
+        codeCopy: meta.codeCopy === true || meta.codeCopy === false ? meta.codeCopy : undefined,
+        codeLineNumbers: meta.codeLineNumbers === true || meta.codeLineNumbers === false ? meta.codeLineNumbers : undefined,
+        codeSpoiler: meta.codeSpoiler === true,
+        codeSpoilerMaxHeight: typeof meta.codeSpoilerMaxHeight === 'number' ? meta.codeSpoilerMaxHeight : undefined,
+        showCodeToggle: meta.showCodeToggle === false ? false : undefined,
+        previewCenter: meta.previewCenter === true ? true : undefined,
+        codeFirst: meta.codeFirst === true ? true : undefined,
+        code: codeSnippet,
+        importPath: relImport
+      });
+    }
+  }
+
+  return { hooks, codeByHook, hookMeta };
+}
+
 function writeJsonPretty(file: string, data: any) {
   const content = JSON.stringify(data, null, 2) + '\n';
   if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === content) return; // skip unchanged
   fs.writeFileSync(file, content, 'utf8');
 }
 
+function writeTextFile(file: string, data: string) {
+  const content = data.endsWith('\n') ? data : `${data}\n`;
+  if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === content) return;
+  fs.writeFileSync(file, content, 'utf8');
+}
+
+function withCodeBlock(code: string, language = 'tsx'): string {
+  const cleaned = code.replace(/\r\n/g, '\n').trimEnd();
+  return `
+\`\`\`${language}
+${cleaned}
+\`\`\`
+`.trim();
+}
+
+function sanitizeDemoCode(code: string): string {
+  const normalized = code.replace(/\r\n/g, '\n');
+  const lines = normalized.split('\n');
+  const filtered = lines.filter(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (trimmed.startsWith('import ')) return false;
+    if (trimmed.startsWith('export ')) return false;
+    return true;
+  });
+  return filtered.join('\n').trim();
+}
+
+function escapeTableCell(value: string | number | boolean | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  const str = String(value);
+  return str.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|').trim();
+}
+
+function compactParagraph(text?: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatTagList(tags: unknown): string | null {
+  if (!tags) return null;
+  if (Array.isArray(tags)) {
+    const normalized = tags
+      .map(tag => (typeof tag === 'string' ? tag : String(tag ?? '')))
+      .map(tag => tag.trim())
+      .filter(Boolean);
+    if (!normalized.length) return null;
+    return normalized.join(', ');
+  }
+  if (tags instanceof Set) {
+    return formatTagList(Array.from(tags));
+  }
+  if (typeof tags === 'string') {
+    const trimmed = tags.trim();
+    return trimmed || null;
+  }
+  return null;
+}
+
+function buildPropsTable(props: Array<Record<string, any>>): string {
+  if (!props || props.length === 0) {
+    return '_No documented props yet._';
+  }
+  const header = ['| Name | Type | Required | Default | Description |', '| --- | --- | --- | --- | --- |'];
+  const rows = props.map(prop => {
+    const name = `\`${prop.name}\``;
+    const type = escapeTableCell(prop.type);
+    const required = prop.required ? 'Yes' : 'No';
+    const defaultValue = escapeTableCell(prop.defaultValue);
+    const description = escapeTableCell(prop.description);
+    return `| ${name} | ${type} | ${required} | ${defaultValue} | ${description} |`;
+  });
+  return [...header, ...rows].join('\n');
+}
+
+function formatDemoMarkdown(
+  demo: DemoMeta,
+  codeEntry: CodeEntry | undefined,
+): string {
+  const lines: string[] = [];
+  lines.push(`### ${demo.title || demo.demo}`);
+  const metaBits: string[] = [];
+  metaBits.push(`ID: \`${demo.id}\``);
+  const demoTags = formatTagList(demo.tags);
+  if (demoTags) metaBits.push(`Tags: ${demoTags}`);
+  if (demo.category) metaBits.push(`Category: ${demo.category}`);
+  if (demo.status) metaBits.push(`Status: ${demo.status}`);
+  if (demo.since) metaBits.push(`Since: ${demo.since}`);
+  lines.push(metaBits.join(' • '));
+  if (demo.description) {
+    lines.push('');
+    lines.push(compactParagraph(demo.description));
+  }
+  if (codeEntry?.code) {
+    const sanitized = sanitizeDemoCode(codeEntry.code);
+    if (sanitized) {
+      lines.push('');
+      lines.push(withCodeBlock(sanitized));
+    }
+  }
+  return lines.join('\n');
+}
+
+function buildComponentMarkdown(
+  name: string,
+  meta: ComponentMetaRecord,
+  propsMap: Record<string, any[]>,
+  demosMap: Map<string, DemoMeta[]>,
+  codeMap: Record<string, Record<string, CodeEntry>>,
+): string {
+  const componentMeta = meta[name] || {};
+  const lines: string[] = [];
+  const title = componentMeta.title || name;
+  lines.push(`# ${title}`);
+  if (componentMeta.description) {
+    lines.push('');
+    lines.push(compactParagraph(componentMeta.description));
+  }
+
+  const metaList: string[] = [];
+  metaList.push(`- Canonical name: \`${name}\``);
+  if (componentMeta.status) metaList.push(`- Status: ${componentMeta.status}`);
+  if (componentMeta.since) metaList.push(`- Since: ${componentMeta.since}`);
+  if (componentMeta.category) metaList.push(`- Category: ${componentMeta.category}`);
+  const componentTags = formatTagList(componentMeta.tags);
+  if (componentTags) metaList.push(`- Tags: ${componentTags}`);
+  if (metaList.length) {
+    lines.push('');
+    lines.push('## Metadata');
+    lines.push('');
+    lines.push(...metaList);
+  }
+
+  lines.push('');
+  lines.push('## Props');
+  lines.push('');
+  lines.push(buildPropsTable(propsMap[name] || []));
+
+  const demos = (demosMap.get(name) || []).filter(d => !d.hidden);
+  if (demos.length) {
+    lines.push('');
+    lines.push('## Examples');
+    lines.push('');
+    demos.forEach((demo, index) => {
+      if (index > 0) lines.push('');
+      const codeEntry = codeMap[name]?.[demo.id] || codeMap[name]?.[`${name}.${demo.demo}`] || codeMap[name]?.[`${demo.component}.${demo.demo}`];
+      lines.push(formatDemoMarkdown(demo, codeEntry));
+    });
+  }
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 function generate() {
   ensureDir(OUTPUT_DIR);
+  ensureDir(COMPONENT_MARKDOWN_DIR);
   const { demos, codeByComponent, componentMeta, propsMeta, warningCounts, componentWarnings } = collectDemos();
+  const { hooks, codeByHook, hookMeta } = collectHooks();
+
   // Sort metadata
   demos.sort((a, b) => a.component.localeCompare(b.component) || a.order - b.order || a.title.localeCompare(b.title));
+  hooks.sort((a, b) => a.component.localeCompare(b.component) || a.order - b.order || a.title.localeCompare(b.title));
 
-  // Filter out hidden components from componentMeta
+  // Filter out hidden entities from metadata shards
   const visibleComponentMeta = Object.fromEntries(
     Object.entries(componentMeta).filter(([comp, meta]) => meta.hidden !== true)
   );
+  const visibleHookMeta = Object.fromEntries(
+    Object.entries(hookMeta).filter(([hook, meta]) => meta?.hidden !== true)
+  );
+
+  const demosByComponent = new Map<string, DemoMeta[]>();
+  for (const demo of demos) {
+    if (!demosByComponent.has(demo.component)) {
+      demosByComponent.set(demo.component, []);
+    }
+    demosByComponent.get(demo.component)!.push(demo);
+  }
 
   writeJsonPretty(path.join(OUTPUT_DIR, 'demos.json'), { demos, components: visibleComponentMeta });
   // Standalone component meta shard for global navigation/search facets
@@ -650,17 +985,44 @@ function generate() {
   }
   writeJsonPretty(existingPropsPath, propsMeta);
 
+  // Hooks metadata shards
+  writeJsonPretty(path.join(OUTPUT_DIR, 'hooks.json'), { hooks });
+  writeJsonPretty(path.join(OUTPUT_DIR, 'hooks-meta.json'), visibleHookMeta);
+
   // Write per-component code shards
   for (const comp of Object.keys(codeByComponent)) {
     const shardPath = path.join(OUTPUT_DIR, `demo-code-${comp}.json`);
     writeJsonPretty(shardPath, codeByComponent[comp]);
   }
 
-  // Simple search index combining component names, titles, and demo titles
+  const componentNames = new Set<string>([
+    ...Object.keys(componentMeta),
+    ...Object.keys(propsMeta),
+    ...Object.keys(codeByComponent),
+    ...demos.map(d => d.component),
+  ]);
+  const sortedComponentNames = Array.from(componentNames).sort((a, b) => a.localeCompare(b));
+
+  const markdownIndex: Record<string, string> = {};
+  for (const name of sortedComponentNames) {
+    if (visibleComponentMeta[name]?.hidden === true) continue;
+    const markdown = buildComponentMarkdown(name, componentMeta, propsMeta, demosByComponent, codeByComponent);
+    markdownIndex[name] = markdown;
+    const filePath = path.join(COMPONENT_MARKDOWN_DIR, `${name}.md`);
+    writeTextFile(filePath, markdown);
+  }
+  writeJsonPretty(path.join(OUTPUT_DIR, 'component-markdown.json'), markdownIndex);
+
+  // Write per-hook code shards
+  for (const hook of Object.keys(codeByHook)) {
+    const shardPath = path.join(OUTPUT_DIR, `hook-code-${hook}.json`);
+    writeJsonPretty(shardPath, codeByHook[hook]);
+  }
+
+  // Simple search index combining component and hook names, titles, and demo titles
   const searchEntries: any[] = [];
   for (const comp of Object.keys(componentMeta)) {
     const meta = componentMeta[comp] || {};
-    // Skip hidden components
     if (meta.hidden === true) continue;
 
     searchEntries.push({
@@ -672,6 +1034,21 @@ function generate() {
       keywords: [comp, ...(meta.tags || [])]
     });
   }
+
+  for (const hookName of Object.keys(hookMeta)) {
+    const meta = hookMeta[hookName] || {};
+    if (meta.hidden === true) continue;
+
+    searchEntries.push({
+      id: `hook:${hookName}`,
+      type: 'hook',
+      title: meta.title || hookName,
+      description: meta.description?.slice(0, 140) || '',
+      category: meta.category || 'hook',
+      keywords: [hookName, ...(meta.tags || [])]
+    });
+  }
+
   for (const demo of demos) {
     searchEntries.push({
       id: `demo:${demo.id}`,
@@ -679,6 +1056,17 @@ function generate() {
       title: demo.title,
       description: (demo.description || '').slice(0, 140),
       category: demo.category || 'demo',
+      keywords: [demo.component, ...(demo.tags || [])]
+    });
+  }
+
+  for (const demo of hooks) {
+    searchEntries.push({
+      id: `hook-demo:${demo.id}`,
+      type: 'hook-demo',
+      title: demo.title,
+      description: (demo.description || '').slice(0, 140),
+      category: demo.category || 'hook-demo',
       keywords: [demo.component, ...(demo.tags || [])]
     });
   }
@@ -717,6 +1105,38 @@ function generate() {
     fs.writeFileSync(manifestPath, manifestContent, 'utf8');
   }
 
+  // Hook manifest for demo components
+  const hookManifestLines: string[] = [];
+  hookManifestLines.push('/* AUTO-GENERATED: hook demo manifest */');
+  hookManifestLines.push('// NOTE: This file is regenerated by scripts/generate-demos.ts – do not edit manually.');
+  hookManifestLines.push('// Exports:');
+  hookManifestLines.push('//   HOOK_DEMO_MODULES: async dynamic imports for hook demos');
+  hookManifestLines.push('//   HOOK_DEMO_STATIC: dev-only synchronous require map');
+  hookManifestLines.push('');
+  hookManifestLines.push('export const HOOK_DEMO_MODULES = {');
+  for (const hook of Object.keys(codeByHook)) {
+    for (const [id, entry] of Object.entries(codeByHook[hook])) {
+      hookManifestLines.push(`  '${id}': () => import('${entry.importPath}'),`);
+    }
+  }
+  hookManifestLines.push('};');
+  if (!isProd) {
+    hookManifestLines.push('');
+    hookManifestLines.push('// Dev eager map for hook demos (omitted in production)');
+    hookManifestLines.push('export const HOOK_DEMO_STATIC = {');
+    for (const hook of Object.keys(codeByHook)) {
+      for (const [id, entry] of Object.entries(codeByHook[hook])) {
+        hookManifestLines.push(`  '${id}': () => require('${entry.importPath}'),`);
+      }
+    }
+    hookManifestLines.push('};');
+  }
+  const hookManifestPath = path.join(OUTPUT_DIR, 'hook-manifest.ts');
+  const hookManifestContent = hookManifestLines.join('\n') + '\n';
+  if (!fs.existsSync(hookManifestPath) || fs.readFileSync(hookManifestPath, 'utf8') !== hookManifestContent) {
+    fs.writeFileSync(hookManifestPath, hookManifestContent, 'utf8');
+  }
+
   // Generate code loader map for web bundling compatibility
   const codeLoaderLines: string[] = [];
   codeLoaderLines.push('/* AUTO-GENERATED: demo code loaders */');
@@ -741,7 +1161,33 @@ function generate() {
     fs.writeFileSync(codeLoaderPath, codeLoaderContent, 'utf8');
   }
 
-  console.log(`[generate-demos] Indexed ${demos.length} demos across ${Object.keys(codeByComponent).length} components.`);
+  // Hook code loader map
+  const hookCodeLoaderLines: string[] = [];
+  hookCodeLoaderLines.push('/* AUTO-GENERATED: hook demo code loaders */');
+  hookCodeLoaderLines.push('// NOTE: This file is regenerated by scripts/generate-demos.ts – do not edit manually.');
+  hookCodeLoaderLines.push('// Static imports for hook demo code JSON files to avoid web bundling issues');
+  hookCodeLoaderLines.push('');
+  hookCodeLoaderLines.push('const HOOK_CODE_MAPS: Record<string, any> = {};');
+  hookCodeLoaderLines.push('');
+
+  for (const hook of Object.keys(codeByHook).sort()) {
+    hookCodeLoaderLines.push(`try { HOOK_CODE_MAPS.${hook} = require('../hook-code-${hook}.json'); } catch { /* ignore */ }`);
+  }
+
+  hookCodeLoaderLines.push('');
+  hookCodeLoaderLines.push('export function loadHookCodeMap(hook: string): Record<string, any> | null {');
+  hookCodeLoaderLines.push('  return HOOK_CODE_MAPS[hook] || null;');
+  hookCodeLoaderLines.push('}');
+
+  const hookCodeLoaderPath = path.join(OUTPUT_DIR, 'hookCodeLoader.ts');
+  const hookCodeLoaderContent = hookCodeLoaderLines.join('\n') + '\n';
+  if (!fs.existsSync(hookCodeLoaderPath) || fs.readFileSync(hookCodeLoaderPath, 'utf8') !== hookCodeLoaderContent) {
+    fs.writeFileSync(hookCodeLoaderPath, hookCodeLoaderContent, 'utf8');
+  }
+
+  const componentCount = Object.keys(codeByComponent).length;
+  const hookCount = Object.keys(codeByHook).length;
+  console.log(`[generate-demos] Indexed ${demos.length} component demos across ${componentCount} components and ${hooks.length} hook demos across ${hookCount} hooks.`);
   if (Object.keys(warningCounts).length) {
     console.log('[generate-demos] Warning summary:');
     for (const k of Object.keys(warningCounts)) console.log(`  - ${k}: ${warningCounts[k]}`);

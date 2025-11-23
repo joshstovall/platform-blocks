@@ -1,14 +1,12 @@
 ---
 title: Colors
-category: usage
+category: theming
 order: 30
-tags: [colors, theming]
+tags: [palette]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-showCode: true
-showCodeToggle: false
 ---
 
-Custom color themes for Rating components with different color schemes.
+Derive filled, hover, and empty colors from the theme palette to align ratings with product semantics.

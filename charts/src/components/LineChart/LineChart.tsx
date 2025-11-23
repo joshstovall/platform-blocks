@@ -268,6 +268,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   }
   const setSharedCrosshair = interaction?.setCrosshair;
   const sharedConfig = interaction?.config;
+  const wantsSharedCrosshair = React.useMemo(() => !!(props.enableCrosshair || sharedConfig?.multiTooltip), [props.enableCrosshair, sharedConfig?.multiTooltip]);
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
@@ -386,8 +387,20 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
     }
   }, [initializeDomains, xDomain, yDomain, interaction?.domains]);
 
-  // Chart dimensions
-  const padding = { top: 40, right: 20, bottom: 60, left: 80 };
+  // Chart dimensions - adjust padding based on legend position to prevent overlap
+  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const legendPadding = React.useMemo(() => {
+    if (!legend?.show) return basePadding;
+    const position = legend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [legend?.show, legend?.position]);
+  const padding = legendPadding;
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
@@ -480,11 +493,25 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   React.useEffect(() => {
     if (!registerSeries) return;
     chartSeriesData.forEach((s, i) => {
+      const points = s.chartPoints?.map((point: any, idx: number) => {
+        const raw = s.data[idx];
+        return {
+          x: point.x,
+          y: point.y,
+          pixelX: point.chartX,
+          pixelY: point.chartY,
+          meta: {
+            ...raw,
+            chartX: point.chartX,
+            chartY: point.chartY,
+          },
+        };
+      }) ?? s.data.map((p) => ({ x: p.x, y: p.y, meta: p }));
       registerSeries({
         id: s.id ?? i,
         name: s.name || `Series ${i + 1}`,
         color: s.color,
-        points: s.data.map(p => ({ x: p.x, y: p.y, meta: p })),
+        points,
         visible: s.visible !== false,
       });
     });
@@ -493,7 +520,31 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   // Handle chart interaction
   const nearestPoint = useNearestPoint(chartSeriesData as any, xDomain, yDomain, plotWidth, plotHeight);
 
+  const pointerToDataX = React.useCallback((chartX: number) => {
+    if (plotWidth <= 0) return xDomain[0];
+    const clamped = Math.max(0, Math.min(plotWidth, chartX));
+    const span = xDomain[1] - xDomain[0];
+    if (props.xScaleType === 'log') {
+      const safeMin = Math.max(xDomain[0], 1e-12);
+      const safeMax = Math.max(xDomain[1], 1e-12);
+      const logMin = Math.log(safeMin);
+      const logMax = Math.log(safeMax);
+      if (logMax === logMin) return safeMin;
+      const ratio = clamped / Math.max(plotWidth, 1);
+      return Math.exp(logMin + (logMax - logMin) * ratio);
+    }
+    return xDomain[0] + (span === 0 ? 0 : (clamped / Math.max(plotWidth, 1)) * span);
+  }, [plotWidth, props.xScaleType, xDomain]);
+
+  const updateCrosshairFromPointer = React.useCallback((chartX: number) => {
+    if (!wantsSharedCrosshair || !setSharedCrosshair) return;
+    const dataX = pointerToDataX(chartX);
+    const clampedX = Math.max(0, Math.min(plotWidth, chartX));
+    setSharedCrosshair({ dataX, pixelX: clampedX });
+  }, [pointerToDataX, plotWidth, setSharedCrosshair, wantsSharedCrosshair]);
+
   const evaluateNearestPoint = useCallback((chartX: number, chartY: number, nativeEvent?: any, fireCallbacks: boolean = false) => {
+    updateCrosshairFromPointer(chartX);
     const closestPoint = nearestPoint(chartX, chartY, 30) as any;
     if (closestPoint) {
       const dp = closestPoint.dataPoint;
@@ -510,7 +561,6 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         const pointerChanged = !highlightPoint || highlightPoint.chartX !== resolved.chartX || highlightPoint.chartY !== resolved.chartY;
         if (pointerChanged) {
           setPointer?.({ x: resolved.chartX, y: resolved.chartY, inside: true });
-          setSharedCrosshair?.({ dataX: dp.x, pixelX: resolved.chartX });
           setHighlightPoint(resolved);
         }
       }
@@ -525,13 +575,12 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         onDataPointPress?.(dp, interactionEvent);
       }
     } else if (fireCallbacks) {
-      setSharedCrosshair?.(null);
       if (interaction?.pointer) {
         setPointer?.({ ...interaction.pointer, inside: true });
       }
       setHighlightPoint(null);
     }
-  }, [nearestPoint, onDataPointPress, interaction?.pointer, chartSeriesData, highlightPoint]);
+  }, [nearestPoint, onDataPointPress, interaction?.pointer, chartSeriesData, highlightPoint, updateCrosshairFromPointer]);
 
   const handlePress = (event: any) => {
     if (disabled) return;
@@ -599,7 +648,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
       if (typeof locationX === 'number' && typeof locationY === 'number') {
         setLastPan({ x: locationX, y: locationY });
         panZoom.startPan(locationX, locationY);
-        if (props.liveTooltip) {
+        if (props.liveTooltip || sharedConfig?.multiTooltip || props.enableCrosshair) {
           evaluateNearestPoint(locationX - padding.left, locationY - padding.top, e, false);
         }
         setPointer?.({ x: locationX - padding.left, y: locationY - padding.top, inside: true });
@@ -633,7 +682,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         if (typeof locationX === 'number' && typeof locationY === 'number') {
           panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
           setLastPan({ x: locationX, y: locationY });
-          if (props.liveTooltip) {
+          if (props.liveTooltip || sharedConfig?.multiTooltip || props.enableCrosshair) {
             evaluateNearestPoint(locationX - padding.left, locationY - padding.top, evt, false);
           }
           setPointer?.({ x: locationX - padding.left, y: locationY - padding.top, inside: true });
@@ -641,7 +690,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         return;
       }
       // Live tooltip only
-      if (props.liveTooltip && activeTouches === 1) {
+      if ((props.liveTooltip || sharedConfig?.multiTooltip || props.enableCrosshair) && activeTouches === 1) {
         const { locationX, locationY } = native;
         if (typeof locationX === 'number' && typeof locationY === 'number') {
           evaluateNearestPoint(locationX - padding.left, locationY - padding.top, evt, false);
@@ -704,8 +753,21 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
     scale.domain = () => [...xDomain];
     scale.range = () => [...range];
     scale.ticks = () => (xTicks.length ? xTicks : [xDomain[0], xDomain[1]]);
+    scale.invert = (pixel: number) => {
+      const [domainMin, domainMax] = xDomain;
+      if (range[1] === range[0]) return domainMin;
+      const clamped = Math.max(range[0], Math.min(range[1], pixel));
+      const ratio = (clamped - range[0]) / (range[1] - range[0]);
+      if (props.xScaleType === 'log') {
+        const logMin = Math.log(Math.max(domainMin, 1e-12));
+        const logMax = Math.log(Math.max(domainMax, 1e-12));
+        if (logMax === logMin) return Math.exp(logMin);
+        return Math.exp(logMin + (logMax - logMin) * ratio);
+      }
+      return domainMin + (domainMax - domainMin) * ratio;
+    };
     return scale;
-  }, [plotWidth, xScaleFn, xDomain, xTicks]);
+  }, [plotWidth, xScaleFn, xDomain, xTicks, props.xScaleType]);
 
   const axisScaleY = React.useMemo<Scale<number>>(() => {
     const range: [number, number] = [Math.max(plotHeight, 0), 0];
@@ -715,6 +777,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
     scale.ticks = () => (yTicks.length ? yTicks : [yDomain[0], yDomain[1]]);
     return scale;
   }, [plotHeight, yScaleFn, yDomain, yTicks]);
+
 
   const xAxisTickSize = xAxis?.tickLength ?? 4;
   const yAxisTickSize = yAxis?.tickLength ?? 4;

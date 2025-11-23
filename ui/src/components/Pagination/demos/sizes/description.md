@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different size variants for pagination controls.
+Use the `size` prop (`xs` through `lg`) to match pagination density to its container without changing behavior.

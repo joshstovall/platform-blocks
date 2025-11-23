@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Input, Column, Text } from '@platform-blocks/ui';
+import { Column, Input, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [dynamicText, setDynamicText] = useState('');
@@ -7,9 +7,11 @@ export default function Demo() {
   const [limitedText, setLimitedText] = useState('');
 
   return (
-    <Column gap={24}>
-      <Column gap={8}>
-        <Text weight="medium">Dynamic Multiline (Auto-expanding)</Text>
+    <Column gap="lg">
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Dynamic multiline (auto-expanding)
+        </Text>
         <Input
           label="Dynamic Input"
           value={dynamicText}
@@ -22,8 +24,10 @@ export default function Demo() {
         />
       </Column>
 
-      <Column gap={8}>
-        <Text weight="medium">Fixed Multiline (3 lines)</Text>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Fixed multiline (3 lines)
+        </Text>
         <Input
           label="Fixed Size Input"
           value={fixedText}
@@ -35,8 +39,10 @@ export default function Demo() {
         />
       </Column>
 
-      <Column gap={8}>
-        <Text weight="medium">Limited Auto-expanding (1-3 lines)</Text>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Limited auto-expanding (1-3 lines)
+        </Text>
         <Input
           label="Limited Dynamic Input"
           value={limitedText}
@@ -49,14 +55,12 @@ export default function Demo() {
         />
       </Column>
 
-      <Column gap={8}>
-        <Text weight="medium">Demo Content</Text>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Demo content
+        </Text>
         <Text size="sm" colorVariant="secondary">
-          Try typing multiline content like:{'\n'}
-          • URLs{'\n'}
-          • Addresses{'\n'}
-          • Code snippets{'\n'}
-          • Long descriptions
+          Try typing multiline content like:{'\n'}• URLs{'\n'}• Addresses{'\n'}• Code snippets{'\n'}• Long descriptions
         </Text>
       </Column>
     </Column>

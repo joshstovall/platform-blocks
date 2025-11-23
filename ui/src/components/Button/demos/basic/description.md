@@ -1,12 +1,12 @@
 ---
-title: Basic
+title: Basics
 category: basics
 order: 10
-tags: [basic, getting-started]
+tags: [buttons]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic Button usage with a title prop.
+Invokes a primary action and surfaces feedback through a toast helper.

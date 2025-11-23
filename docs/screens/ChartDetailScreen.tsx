@@ -8,6 +8,7 @@ import { hasNewDemosArtifacts, getNewDemos, attachDemoCode, loadDemoComponentNew
 import { getChartDoc, getRelatedCharts, CHART_CATEGORIES } from '../config/charts';
 import { useRouter } from 'expo-router';
 import { GITHUB_REPO } from 'config/urls';
+import { DOCS_CHART_INTERACTION_CONFIG } from '../config/chartInteraction';
 
 // Lightweight meta loader – chart meta mirrors component meta file naming: /charts/src/{ChartName}/meta/component.md
 // For now we lazy import markdown meta similarly to component detail (future: consolidate loaders)
@@ -61,7 +62,7 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
   if (loading) {
     return (
       <PageLayout>
-        <View style={styles.container}><Loader size="lg" /><Text variant="body" style={{ marginTop: 16 }}>Loading chart docs…</Text></View>
+        <View style={styles.container}><Loader size="lg" /><Text variant="p" style={{ marginTop: 16 }}>Loading chart docs…</Text></View>
       </PageLayout>
     );
   }
@@ -183,18 +184,21 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
               if (DemoComp) {
                 try {
                   preview = (
-                    <GlobalChartsRoot style={{ width: '100%' }}>
+                    <GlobalChartsRoot
+                      style={{ width: '100%' }}
+                      config={DOCS_CHART_INTERACTION_CONFIG}
+                    >
                       <DemoComp />
                     </GlobalChartsRoot>
                   );
                 } catch {
-                  preview = <Text variant="body" colorVariant="error">Demo failed to render.</Text>;
+                  preview = <Text variant="p" colorVariant="error">Demo failed to render.</Text>;
                 }
               } else {
                 preview = (
                   <Flex direction="row" align="center" gap={8}>
                     <Loader size="sm" />
-                    <Text variant="body" colorVariant="muted">Loading demo…</Text>
+                    <Text variant="p" colorVariant="muted">Loading demo…</Text>
                   </Flex>
                 );
               }
@@ -210,7 +214,7 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
                     </View>
                   {/* </Card> */}
                   {demo.description && (
-                    <Text variant="caption" colorVariant="muted" style={{ marginTop: 8 }}>{demo.description}</Text>
+                    <Text variant="small" colorVariant="muted" style={{ marginTop: 8 }}>{demo.description}</Text>
                   )}
                 </View>
               );
@@ -228,7 +232,7 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
   return (
     <PageLayout>
       <View style={styles.container}>
-        <Tabs items={tabs} color='secondary'/>
+        <Tabs items={tabs} color="secondary"/>
       </View>
     </PageLayout>
   );

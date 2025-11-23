@@ -1,12 +1,12 @@
 ---
 title: States
-category: usage
+category: behavior
 order: 40
-tags: [states, disabled, loading]
+tags: [state, disabled, validation]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different switch states including disabled, loading, and error states.
+Present interactive, disabled, and validation states by combining `checked`, `disabled`, `required`, and `error` props.

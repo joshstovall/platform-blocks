@@ -8,15 +8,21 @@ import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
 import { DemoRenderer } from '../components/DemoRenderer';
 import { PropTable } from '../components/PropTable';
 import { PageLayout } from '../components/PageLayout';
+import { CopyPageMenu } from '../components/CopyPageMenu';
 import {
   hasNewDemosArtifacts,
   getNewDemos,
   attachDemoCode,
   loadDemoComponentNew,
   getComponentMeta as getNewComponentMeta,
-  getComponentProps
+  getComponentProps,
+  getComponentMarkdown,
+  type ComponentMeta,
+  type PlaygroundMeta
 } from '../utils/demosLoader';
 import { GITHUB_REPO } from 'config/urls';
+import { ComponentPlayground } from '../components/playground/ComponentPlayground';
+import { getPlaygroundConfig, type ComponentPlaygroundConfig } from '../components/playground/registry';
 
 interface ComponentDetailScreenProps { component?: string }
 
@@ -55,7 +61,7 @@ function DemoSection({ demo, preview, description }: DemoSectionProps) {
             checked={mode === 'code'}
             onChange={(value: boolean) => setMode(value ? 'code' : 'preview')}
             size="sm"
-            label={<Text variant="caption">View code</Text>}
+            label={<Text variant="small">View code</Text>}
             labelPosition="left"
           />
         ) : undefined}
@@ -77,7 +83,7 @@ function DemoSection({ demo, preview, description }: DemoSectionProps) {
 
   if (description) {
     sectionChildren.push(
-      <View key="description" style={{ opacity: 0.5, marginBottom: 16 }}>
+      <View key="description" style={{ opacity: 0.5 }}>
         <Markdown>{description}</Markdown>
       </View>
     );
@@ -93,8 +99,19 @@ function DemoSection({ demo, preview, description }: DemoSectionProps) {
     </View>
   );
 }
-
 // Extract content rendering into a separate component for reuse
+const DOCS_CHART_INTERACTION_CONFIG = {
+  enableCrosshair: true,
+  multiTooltip: true,
+  liveTooltip: true,
+  popoverFollowMode: 'crosshair' as const,
+  popoverPortal: true,
+  stickyCrosshair: true,
+  pointerPixelThreshold: 3,
+  crosshairPixelThreshold: 2,
+  aggregatorMaxSeries: 8,
+};
+
 function ComponentContent({
   component,
   newMeta,
@@ -105,10 +122,13 @@ function ComponentContent({
   hasProps,
   componentProps,
   loadedDemoComponents,
-  getLocalizedDescription
+  getLocalizedDescription,
+  playgroundMeta,
+  playgroundConfig,
+  componentMarkdown,
 }: {
   component: string;
-  newMeta: any;
+  newMeta: ComponentMeta | null;
   breadcrumbItems: Array<{ label: string; href?: string }>;
   handleGitHubPress: () => void;
   effectiveDemos: any[];
@@ -117,15 +137,141 @@ function ComponentContent({
   componentProps: any[];
   loadedDemoComponents: Record<string, React.ComponentType>;
   getLocalizedDescription: (demo: any) => string;
+  playgroundMeta: PlaygroundMeta | null;
+  playgroundConfig: ComponentPlaygroundConfig | null;
+  componentMarkdown: string | null;
 }) {
+  const tabItems: Array<{ key: string; label: string; content: React.ReactNode; subLabel?: string }> = [];
+
+  tabItems.push({
+    key: 'demos',
+    label: 'Examples',
+    subLabel: hasDemos ? `(${effectiveDemos.length})` : undefined,
+    content: hasDemos ? (
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ gap: 24 }}>
+          {effectiveDemos.map(demo => {
+            const DemoComp = loadedDemoComponents[demo.id];
+            // Runtime validation to prevent React from trying to render a non-component value
+            let preview: React.ReactNode;
+            if (DemoComp) {
+              const isCallable = typeof DemoComp === 'function';
+              const looksComponent = isCallable && /function|=>/.test(String(DemoComp));
+              if (!isCallable) {
+                // Log once per demo id if invalid
+                if (!(globalThis as any).__demoInvalidLogged) (globalThis as any).__demoInvalidLogged = new Set();
+                const set = (globalThis as any).__demoInvalidLogged as Set<string>;
+                if (!set.has(demo.id)) {
+                  set.add(demo.id);
+                  // eslint-disable-next-line no-console
+                  console.error('[DemoLoader] Loaded demo is not a function component', {
+                    id: demo.id,
+                    type: typeof DemoComp,
+                    value: DemoComp
+                  });
+                }
+                preview = (
+                  <Text variant="p" colorVariant="error">
+                    Demo "{demo.id}" failed: not a component export.
+                  </Text>
+                );
+              } else {
+                try {
+                  const rendered = <DemoComp />;
+                  preview = newMeta?.category === 'charts'
+                    ? (
+                      // <GlobalChartsRoot
+                      //   style={{ width: '100%' }}
+                      //   config={DOCS_CHART_INTERACTION_CONFIG}
+                      // >
+                      <>
+                        {rendered}</>
+                      // </GlobalChartsRoot>
+                    )
+                    : rendered;
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.error('[DemoLoader] Error rendering demo', demo.id, err);
+                  preview = (
+                    <Text variant="p" colorVariant="error">
+                      Demo "{demo.id}" threw during render.
+                    </Text>
+                  );
+                }
+              }
+            } else {
+              preview = (
+                <Flex direction="row" align="center" gap={8}>
+                  <Loader size="sm" />
+                  <Text variant="p" colorVariant="muted">Loading demo…</Text>
+                </Flex>
+              );
+            }
+            return (
+              <DemoSection
+                key={demo.id}
+                demo={demo}
+                preview={preview}
+                description={getLocalizedDescription(demo)}
+              />
+            );
+          })}
+        </View>
+      </ScrollView>
+    ) : (
+      <Card style={{ padding: 32, alignItems: 'center' }}>
+        <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>No examples available for this component.</Text>
+      </Card>
+    )
+  });
+
+  tabItems.push({
+    key: 'props',
+    label: 'Properties',
+    subLabel: hasProps ? `(${componentProps.length})` : undefined,
+    content: hasProps ? <PropTable props={componentProps} /> : (
+      <Card style={{ padding: 32, alignItems: 'center' }}>
+        <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>No documented props yet.</Text>
+      </Card>
+    )
+  });
+
+  if (playgroundMeta) {
+    tabItems.push({
+      key: 'playground',
+      label: playgroundMeta.label || 'Playground',
+      content: (
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <View style={{ gap: 16 }}>
+            {playgroundMeta.description && (
+              <Markdown>{playgroundMeta.description}</Markdown>
+            )}
+            {playgroundConfig ? (
+              <ComponentPlayground
+                component={component}
+                propsMeta={componentProps || []}
+                config={playgroundConfig}
+              />
+            ) : (
+              <Card style={{ padding: 24 }}>
+                <Text variant="p">
+                  Playground "{playgroundMeta.id}" is declared in metadata but missing a configuration entry.
+                </Text>
+              </Card>
+            )}
+          </View>
+        </ScrollView>
+      )
+    });
+  }
+
   return (
     <>
-      {/* Breadcrumbs */}
-      <Breadcrumbs
+      {/* <Breadcrumbs
         items={breadcrumbItems}
         style={{ marginBottom: 16 }}
         size="sm"
-      />
+      /> */}
 
       <Title
         variant="h1"
@@ -133,13 +279,13 @@ function ComponentContent({
         weight="bold"
         order={1}
         afterline
-      // action={
-      //   <BrandButton
-      //     brand='github'
-      //     title='View Source'
-      //     onPress={handleGitHubPress}              
-      //   />
-      // }
+        action={(
+          <CopyPageMenu
+            pageTitle={newMeta?.title || component}
+            targetSelector={`#main-content-${component}`}
+            markdown={componentMarkdown || undefined}
+          />
+        )}
       >
         {newMeta?.title || component}
       </Title>
@@ -153,99 +299,8 @@ function ComponentContent({
       </View>
 
       <Tabs
-        variant='chip'
-        items={[
-          {
-            key: 'demos',
-            label: "Examples",
-            subLabel: hasDemos ? `(${effectiveDemos.length})` : undefined,
-            content: hasDemos ? (
-              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {/* <Title order={2} size={24} weight="semibold" style={{ marginBottom: 16, marginTop: 8 }}>
-                  Examples
-                </Title> */}
-                <View style={{ gap: 24 }}>
-                  {effectiveDemos.map(demo => {
-                    const DemoComp = loadedDemoComponents[demo.id];
-                    // Runtime validation to prevent React from trying to render a non-component value
-                    let preview: React.ReactNode;
-                    if (DemoComp) {
-                      const isCallable = typeof DemoComp === 'function';
-                      const looksComponent = isCallable && /function|=>/.test(String(DemoComp));
-                      if (!isCallable) {
-                        // Log once per demo id if invalid
-                        if (!(globalThis as any).__demoInvalidLogged) (globalThis as any).__demoInvalidLogged = new Set();
-                        const set = (globalThis as any).__demoInvalidLogged as Set<string>;
-                        if (!set.has(demo.id)) {
-                          set.add(demo.id);
-                          // eslint-disable-next-line no-console
-                          console.error('[DemoLoader] Loaded demo is not a function component', {
-                            id: demo.id,
-                            type: typeof DemoComp,
-                            value: DemoComp
-                          });
-                        }
-                        preview = (
-                          <Text variant="body" colorVariant="error">
-                            Demo "{demo.id}" failed: not a component export.
-                          </Text>
-                        );
-                      } else {
-                        try {
-                          const rendered = <DemoComp />;
-                          preview = newMeta?.category === 'charts'
-                            ? (
-                              <GlobalChartsRoot style={{ width: '100%' }}>
-                                {rendered}
-                              </GlobalChartsRoot>
-                            )
-                            : rendered;
-                        } catch (err) {
-                          // eslint-disable-next-line no-console
-                          console.error('[DemoLoader] Error rendering demo', demo.id, err);
-                          preview = (
-                            <Text variant="body" colorVariant="error">
-                              Demo "{demo.id}" threw during render.
-                            </Text>
-                          );
-                        }
-                      }
-                    } else {
-                      preview = (
-                        <Flex direction="row" align="center" gap={8}>
-                          <Loader size="sm" />
-                          <Text variant="body" colorVariant="muted">Loading demo…</Text>
-                        </Flex>
-                      );
-                    }
-                    return (
-                      <DemoSection
-                        key={demo.id}
-                        demo={demo}
-                        preview={preview}
-                        description={getLocalizedDescription(demo)}
-                      />
-                    );
-                  })}
-                </View>
-              </ScrollView>
-            ) : (
-              <Card style={{ padding: 32, alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>No examples available for this component.</Text>
-              </Card>
-            )
-          },
-          {
-            key: 'props',
-            label: 'Properties',
-            subLabel: hasProps ? `(${componentProps.length})` : undefined,
-            content: hasProps ? <PropTable props={componentProps} /> : (
-              <Card style={{ padding: 32, alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>No documented props yet.</Text>
-              </Card>
-            )
-          }
-        ]}
+        variant="chip"
+        items={tabItems}
         style={{ flex: 1 }}
       />
     </>
@@ -290,13 +345,13 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
     if (!component) { setLoading(false); return; }
     setLoading(false);
 
-    // Authoritative new demos system (legacy removed)
+    // Authoritative demos system
     if (hasNewDemosArtifacts()) {
       const demos = attachDemoCode(component, getNewDemos(component));
       setNewDemos(demos);
       // Incremental streaming load: do not block first paint on all demos
       let cancelled = false;
-  demos.forEach(async (d: any) => {
+      demos.forEach(async (d: any) => {
         try {
           const mod = await loadDemoComponentNew(component, d.id);
           if (!cancelled && mod) {
@@ -314,6 +369,9 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
   const componentProps = getComponentProps(component);
   const hasProps = componentProps.length > 0;
   const newMeta = hasNewDemosArtifacts() ? getNewComponentMeta(component) : null;
+  const componentMarkdown = hasNewDemosArtifacts() ? getComponentMarkdown(component) : null;
+  const playgroundMeta = newMeta?.playground || null;
+  const playgroundConfig = playgroundMeta ? getPlaygroundConfig(playgroundMeta.id) : null;
 
   if (loading) {
     return (
@@ -321,7 +379,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
         <View style={styles.container}>
           <View style={styles.content}>
             <Loader size="lg" />
-            <Text variant="body" style={{ marginTop: 16 }}>Loading component documentation...</Text>
+            <Text variant="p" style={{ marginTop: 16 }}>Loading component documentation...</Text>
           </View>
         </View>
       </PageLayout>
@@ -334,7 +392,7 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
         <View style={styles.container}>
           <View style={styles.content}>
             <Text variant="h3" style={{ marginBottom: 16 }}>Component not found</Text>
-            <Text variant="body" style={{ marginBottom: 24 }}>The component "{component}" could not be found in the documentation.</Text>
+            <Text variant="p" style={{ marginBottom: 24 }}>The component "{component}" could not be found in the documentation.</Text>
             <Button title="Back to Components" onPress={() => router.push('/components')} />
           </View>
         </View>
@@ -344,7 +402,11 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
 
   const handleGitHubPress = () => {
     const githubUrl = GITHUB_REPO + `/tree/main/ui/src/components/${component}`;
-    (typeof window !== 'undefined') ? window.open(githubUrl, '_blank') : Linking.openURL(githubUrl);
+    if (typeof window !== 'undefined') {
+      window.open(githubUrl, '_blank');
+    } else {
+      Linking.openURL(githubUrl);
+    }
   };
 
   const breadcrumbItems = [
@@ -370,6 +432,9 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
               componentProps={componentProps}
               loadedDemoComponents={loadedDemoComponents}
               getLocalizedDescription={getLocalizedDescription}
+              playgroundMeta={playgroundMeta}
+              playgroundConfig={playgroundConfig}
+              componentMarkdown={componentMarkdown}
             />
           </View>
           <View style={styles.sidebarContainer}>
@@ -406,6 +471,9 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
               componentProps={componentProps}
               loadedDemoComponents={loadedDemoComponents}
               getLocalizedDescription={getLocalizedDescription}
+              playgroundMeta={playgroundMeta}
+              playgroundConfig={playgroundConfig}
+              componentMarkdown={componentMarkdown}
             />
           </View>
         </>

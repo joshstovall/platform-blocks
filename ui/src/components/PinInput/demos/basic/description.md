@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Basic PIN input for entering 4-digit codes with automatic focus management.
+Controlled 4-digit PIN input with automatic focus handoff and live preview.

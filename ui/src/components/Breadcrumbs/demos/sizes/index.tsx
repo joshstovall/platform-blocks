@@ -1,37 +1,41 @@
-import { Breadcrumbs, Text, Flex, Card } from '@platform-blocks/ui';
+import { Breadcrumbs, Column, Text } from '@platform-blocks/ui';
 
-export default function SizesBreadcrumbsDemo() {
-  const breadcrumbItems = [
-    { label: 'Home', onPress: () => console.log('Home') },
-    { label: 'Category', onPress: () => console.log('Category') },
-    { label: 'Product' }
-  ];
+const ITEMS = [
+  { label: 'Home', href: '/' },
+  { label: 'Category', href: '/category' },
+  { label: 'Product' },
+];
 
+export default function Demo() {
   return (
-    <Card>
-      <Flex direction="column" gap={24}>
-        <Text size="lg" weight="semibold">Breadcrumb Sizes</Text>
-        
-        <Flex direction="column" gap={8}>
-          <Text size="sm" weight="medium">Extra Small (xs)</Text>
-          <Breadcrumbs items={breadcrumbItems} size="xs" />
-        </Flex>
-        
-        <Flex direction="column" gap={8}>
-          <Text size="sm" weight="medium">Small (sm)</Text>
-          <Breadcrumbs items={breadcrumbItems} size="sm" />
-        </Flex>
-        
-        <Flex direction="column" gap={8}>
-          <Text size="sm" weight="medium">Medium (md) - Default</Text>
-          <Breadcrumbs items={breadcrumbItems} size="md" />
-        </Flex>
-        
-        <Flex direction="column" gap={8}>
-          <Text size="sm" weight="medium">Large (lg)</Text>
-          <Breadcrumbs items={breadcrumbItems} size="lg" />
-        </Flex>
-      </Flex>
-    </Card>
+    <Column gap="md">
+      <Column gap="xs">
+        <Text variant="p" weight="medium">
+          Extra small
+        </Text>
+        <Breadcrumbs items={ITEMS} size="xs" />
+      </Column>
+
+      <Column gap="xs">
+        <Text variant="p" weight="medium">
+          Small
+        </Text>
+        <Breadcrumbs items={ITEMS} size="sm" />
+      </Column>
+
+      <Column gap="xs">
+        <Text variant="p" weight="medium">
+          Medium
+        </Text>
+        <Breadcrumbs items={ITEMS} size="md" />
+      </Column>
+
+      <Column gap="xs">
+        <Text variant="p" weight="medium">
+          Large
+        </Text>
+        <Breadcrumbs items={ITEMS} size="lg" />
+      </Column>
+    </Column>
   );
 }

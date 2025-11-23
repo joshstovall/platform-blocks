@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Tree, TreeNode, Text, Button, Flex, Alert } from '../../../..';
+import { useState } from 'react';
+
+import { Block, Button, Column, Row, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const treeData: TreeNode[] = [
   {
@@ -38,20 +38,22 @@ const treeData: TreeNode[] = [
   },
 ];
 
-export default function SelectionTreeDemo() {
+export default function Demo() {
   const [selectionMode, setSelectionMode] = useState<'single' | 'multiple'>('single');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   return (
-    <View style={{ gap: 16 }}>
-      <Flex direction="row" gap="md" align="center">
-        <Text size="sm" weight="bold">Selection Mode:</Text>
+    <Block gap="sm" fullWidth>
+      <Row gap="xs" align="center" wrap="wrap">
+        <Text size="sm" weight="semibold">
+          Selection mode
+        </Text>
         <Button
           size="sm"
           variant={selectionMode === 'single' ? 'filled' : 'outline'}
           onPress={() => {
             setSelectionMode('single');
-            setSelectedIds(selectedIds.slice(0, 1)); // Keep only first selection
+            setSelectedIds((ids) => (ids.length > 0 ? [ids[0]] : []));
           }}
         >
           Single
@@ -63,11 +65,11 @@ export default function SelectionTreeDemo() {
         >
           Multiple
         </Button>
-      </Flex>
+      </Row>
 
       {selectionMode === 'multiple' && (
-        <Text size="xs" color="secondary" style={{ marginTop: -8 }}>
-          💡 Try shift-clicking to select ranges or ctrl/cmd-clicking for individual selection
+        <Text size="xs" colorVariant="secondary">
+          Hold Shift for ranges or Cmd/Ctrl-click to toggle individual items.
         </Text>
       )}
 
@@ -75,21 +77,20 @@ export default function SelectionTreeDemo() {
         data={treeData}
         selectionMode={selectionMode}
         selectedIds={selectedIds}
-        onSelectionChange={(ids, node) => {
+        onSelectionChange={(ids) => {
           setSelectedIds(ids);
-          console.log('Selected:', ids, 'Last selected:', node.label);
         }}
         expandAll
       />
-      
-      <Alert style={{ padding: 12, borderRadius: 8 }}>
-        <Text size="sm" weight="bold" mb="xs">
-          Selected ({selectionMode} mode):
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Selected ({selectionMode})
         </Text>
-        <Text size="xs" color="secondary">
+        <Text size="xs" colorVariant="secondary">
           {selectedIds.length === 0 ? 'None selected' : selectedIds.join(', ')}
         </Text>
-      </Alert>
-    </View>
+      </Column>
+    </Block>
   );
 }

@@ -1,8 +1,9 @@
 import { View, ViewStyle } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { SizeValue } from '../../core/theme/sizes';
+import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
-export interface RatingProps extends SpacingProps {
+export interface RatingProps extends SpacingProps, DisclaimerSupport {
   /** Current rating value */
   value?: number;
   /** Initial rating value for uncontrolled component */

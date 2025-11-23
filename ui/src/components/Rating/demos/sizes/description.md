@@ -1,18 +1,12 @@
 ---
 title: Sizes
-category: usage
+category: layout
 order: 20
-tags: [sizes]
+tags: [size]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: true
 ---
 
-Different size variants for Rating components from extra small to 2x large.
+Compare the available `size` tokens side by side to pick the right scale for your scene.

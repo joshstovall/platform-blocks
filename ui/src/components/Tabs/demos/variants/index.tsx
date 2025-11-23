@@ -1,43 +1,64 @@
-import { Tabs, Text, Column } from '@platform-blocks/ui';
+import type { ComponentProps } from 'react';
+import { Column, Tabs, Text } from '@platform-blocks/ui';
 
-export default function VariantsTabsDemo() {
+type Variant = NonNullable<ComponentProps<typeof Tabs>['variant']>;
+
+const VARIANT_DEMOS: Array<{
+  heading: string;
+  variant: Variant;
+  helper: string;
+  items: Array<{ key: string; label: string; description: string }>;
+}> = [
+  {
+    heading: 'Line variant',
+    variant: 'line',
+    helper: 'Minimal underline style aligns with primary navigation patterns.',
+    items: [
+      { key: 'documents', label: 'Documents', description: 'Underline emphasizes the active document view.' },
+      { key: 'images', label: 'Images', description: 'Great for media browsers with subtle hierarchy.' },
+      { key: 'videos', label: 'Videos', description: 'Pairs well with narrow tab bars and dense content.' }
+    ]
+  },
+  {
+    heading: 'Chip variant',
+    variant: 'chip',
+    helper: 'Rounded pills feel tactile and work well for filters or secondary navigation.',
+    items: [
+      { key: 'overview', label: 'Overview', description: 'Pills highlight the selected state with a filled background.' },
+      { key: 'details', label: 'Details', description: 'Suitable for segmented controls or inline filters.' },
+      { key: 'settings', label: 'Settings', description: 'Works nicely for preference toggles.' }
+    ]
+  },
+  {
+    heading: 'Folder variant',
+    variant: 'folder',
+    helper: 'Raised folder styling evokes classic tabbed interfaces.',
+    items: [
+      { key: 'overview-folder', label: 'Overview', description: 'Ideal for dashboards with nested content.' },
+      { key: 'details-folder', label: 'Details', description: 'Tabs feel like document dividers for data-heavy views.' },
+      { key: 'settings-folder', label: 'Settings', description: 'Keeps controls organized in admin interfaces.' }
+    ]
+  }
+];
+
+export default function Demo() {
   return (
-    <Column gap={24}>
-      <Column gap={8}>
-        <Text variant="subtitle">Line Variant</Text>
-        <Tabs
-          variant="line"
-          items={[
-            { key: 'tab1', label: 'Documents', content: <Text>Line variant with clean underline style</Text> },
-            { key: 'tab2', label: 'Images', content: <Text>Simple and minimal design</Text> },
-            { key: 'tab3', label: 'Videos', content: <Text>Perfect for content navigation</Text> }
-          ]}
-        />
-      </Column>
-      
-      <Column gap={8}>
-        <Text variant="subtitle">Pill Variant</Text>
-        <Tabs
-          variant="chip"
-          items={[
-            { key: 'tab1', label: 'Overview', content: <Text>Pill variant with rounded background</Text> },
-            { key: 'tab2', label: 'Details', content: <Text>Modern and sleek appearance</Text> },
-            { key: 'tab3', label: 'Settings', content: <Text>Great for settings interfaces</Text> }
-          ]}
-        />
-      </Column>
-
-      <Column gap={8}>
-        <Text variant="subtitle">Folder Variant</Text>
-        <Tabs
-          variant="folder"
-          items={[
-            { key: 'tab1', label: 'Overview', content: <Text>Folder variant with tab-like appearance</Text> },
-            { key: 'tab2', label: 'Details', content: <Text>Classic folder tab styling</Text> },
-            { key: 'tab3', label: 'Settings', content: <Text>Great for organizing content</Text> }
-          ]}
-        />
-      </Column>
+    <Column gap="xl">
+      {VARIANT_DEMOS.map(({ heading, variant, helper, items }) => (
+        <Column key={variant} gap="xs">
+          <Text weight="medium">{heading}</Text>
+          <Tabs
+            variant={variant}
+            items={items.map(({ description, ...item }) => ({
+              ...item,
+              content: <Text>{description}</Text>
+            }))}
+          />
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
     </Column>
   );
 }

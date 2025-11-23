@@ -1,6 +1,12 @@
-----
-title: Basic Number Input
-description: Simple numeric input with step controls and formatting.
-----
+---
+title: Formats
+category: usage
+order: 20
+tags: [currency, percent, formatting]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
+---
 
-Basic example of a `NumberInput` component with step controls for incrementing and decrementing the value, along with custom formatting to display the number as currency.
+Showcases currency formatting, percentage suffixes, and a derived total.

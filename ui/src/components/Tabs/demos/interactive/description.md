@@ -1,7 +1,12 @@
 ---
-title: Interactive Tabs
-description: Controlled tabs with external state management and emoji icons for enhanced UX.
-tags: ["interactive", "controlled", "state", "icons", "emojis"]
+title: Controlled state
+category: behavior
+order: 40
+tags: [tabs, controlled]
+highlightLines: [22-27]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Shows controlled tab behavior where the active tab state is managed externally. Includes emoji icons in tab labels and demonstrates how to handle tab changes programmatically for complex applications.
+Demonstrates controlled tabs that surface the active label and rely on external state updates via `onTabChange`.

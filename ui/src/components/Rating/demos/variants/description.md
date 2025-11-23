@@ -1,12 +1,12 @@
 ---
 title: Variants
-category: usage
+category: behavior
 order: 50
-tags: [variants, styles]
+tags: [interactive, read-only]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different visual variants for Rating components including filled and outline styles.
+Contrast interactive, read-only, and tooltip-enabled ratings to decide which fits your feedback flow.

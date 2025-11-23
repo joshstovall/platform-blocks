@@ -1,25 +1,25 @@
 import { Blockquote } from '@platform-blocks/ui';
 
-export default function BlockquoteTestimonialDemo() {
+export default function Demo() {
   return (
     <Blockquote
       variant="testimonial"
+      shadow
       author={{
-        name: 'John Smith',
-        title: 'CEO',
-        organization: 'Tech Corp',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John'
+        name: 'Priya Shah',
+        title: 'CTO',
+        organization: 'Northwind Labs',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
       }}
       rating={{ value: 5, max: 5, showValue: true }}
       source={{
         name: 'Google Business',
-        brand: 'google'
+        brand: 'google',
       }}
-      date="2024-03-15"
+      date="2024-06-12"
       verified
-      shadow
     >
-      Outstanding service and incredible results. The team exceeded all our expectations and delivered on time. Highly recommended!
+      Platform Blocks helped us ship an entirely new settings experience in a single sprint. The components feel native on every platform.
     </Blockquote>
   );
 }

@@ -14,6 +14,11 @@ export const FIGMA_DESIGN = 'https://www.figma.com/design/ivU2pHuGhdMIloWGw4PsBr
 export const DISCORD_INVITE = 'https://discord.gg/kbHjwzgXbc';
 
 /**
+ * Twitter / X profile link
+ */
+export const TWITTER_PROFILE = 'https://x.com/platform_blocks';
+
+/**
  * NPM package link
  */
 export const NPM_PACKAGE = 'https://www.npmjs.com/package/@platform-blocks/ui';

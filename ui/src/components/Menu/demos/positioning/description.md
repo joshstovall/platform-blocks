@@ -1,6 +1,12 @@
 ---
-title: Menu Positioning
-description: Different menu positions relative to the trigger.
+title: Placement Presets
+category: layout
+order: 30
+tags: [menu, position]
+highlightLines: [16-34]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing various menu positioning options including top, bottom, start, center, and end alignments.
+Adjust the `position` prop to pin dropdown content to any edge of the trigger.

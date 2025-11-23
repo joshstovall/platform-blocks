@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-AsyncComplete with asynchronous data loading and loading states.
+Simulated remote search with debounced queries and highlighted matches.

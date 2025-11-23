@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Input, Text, Card, Column, Row } from '@platform-blocks/ui';
+
+import { Column, Input, Row, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [firstName, setFirstName] = useState('');
@@ -8,80 +9,70 @@ export default function Demo() {
   const [message, setMessage] = useState('');
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Input Layout Options</Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Form Layout Example</Text>
-          
-          <Row gap={12}>
+    <Column gap="lg">
+      <Text weight="semibold">Input layout options</Text>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Form layout example
+        </Text>
+        <Row gap="sm" wrap="wrap">
+          <Column grow={1} minWidth={220}>
             <Input
-              label="First Name"
+              label="First name"
               placeholder="Enter first name"
               value={firstName}
               onChangeText={setFirstName}
-              style={{ flex: 1 }}
+              fullWidth
             />
+          </Column>
+          <Column grow={1} minWidth={220}>
             <Input
-              label="Last Name"
+              label="Last name"
               placeholder="Enter last name"
               value={lastName}
               onChangeText={setLastName}
-              style={{ flex: 1 }}
+              fullWidth
             />
-          </Row>
-          
-          <Input
-            type="email"
-            label="Email Address"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            fullWidth
-          />
-          
-          <Input
-            label="Message"
-            placeholder="Enter your message"
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            numberOfLines={4}
-            fullWidth
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Width Controls</Text>
-          
-          <Input
-            label="Default Width"
-            placeholder="Default width input"
-          />
-          
-          <Input
-            label="Full Width"
-            placeholder="Full width input"
-            fullWidth
-          />
-          
-          <Input
-            label="Custom Width"
-            placeholder="300px width"
-            style={{ width: 300 }}
-          />
-          
-          <Input
-            label="Full Width with Max"
-            placeholder="Full width but max 400px"
-            fullWidth
-            style={{ maxWidth: 400 }}
-          />
-        </Column>
-      </Card>
+          </Column>
+        </Row>
+        <Input
+          type="email"
+          label="Email address"
+          placeholder="Enter your email"
+          value={email}
+          onChangeText={setEmail}
+          fullWidth
+        />
+        <Input
+          label="Message"
+          placeholder="Enter your message"
+          value={message}
+          onChangeText={setMessage}
+          multiline
+          numberOfLines={4}
+          fullWidth
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Width controls
+        </Text>
+        <Input label="Default width" placeholder="Default width input" />
+        <Input label="Full width" placeholder="Full width input" fullWidth />
+        <Input
+          label="Custom width"
+          placeholder="300px width"
+          style={{ width: 300 }}
+        />
+        <Input
+          label="Full width with max"
+          placeholder="Full width but max 400px"
+          fullWidth
+          style={{ maxWidth: 400 }}
+        />
+      </Column>
     </Column>
   );
 }

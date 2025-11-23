@@ -1,39 +1,35 @@
-import { ToggleButton, ToggleGroup, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, Text, ToggleButton, ToggleGroup } from '@platform-blocks/ui';
 
-export default function SizesToggleDemo() {
+const sizes = [
+  { label: 'Small', value: 'sm' as const },
+  { label: 'Medium', value: 'md' as const },
+  { label: 'Large', value: 'lg' as const },
+];
+
+export default function Demo() {
   return (
-    <Card>
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Toggle Sizes</Text>
-        <Flex direction="column" gap={12} align="flex-start">
-          <Flex direction="column" gap={8} align="flex-start">
-            <Text size="sm" weight="semibold">Small</Text>
-            <ToggleGroup size="sm">
+    <Column gap="md">
+      <Column gap="xs">
+        <Text weight="semibold">Size variants</Text>
+        <Text size="xs" colorVariant="secondary">
+          Adjust the `size` prop to scale the toggle buttons.
+        </Text>
+      </Column>
+
+      <Column gap="sm">
+        {sizes.map(({ label, value }) => (
+          <Column key={value} gap="xs">
+            <Text size="sm" weight="semibold">
+              {label}
+            </Text>
+            <ToggleGroup size={value}>
               <ToggleButton value="left">Left</ToggleButton>
               <ToggleButton value="center">Center</ToggleButton>
               <ToggleButton value="right">Right</ToggleButton>
             </ToggleGroup>
-          </Flex>
-          
-          <Flex direction="column" gap={8} align="flex-start">
-            <Text size="sm" weight="semibold">Medium</Text>
-            <ToggleGroup size="md">
-              <ToggleButton value="left">Left</ToggleButton>
-              <ToggleButton value="center">Center</ToggleButton>
-              <ToggleButton value="right">Right</ToggleButton>
-            </ToggleGroup>
-          </Flex>
-          
-          <Flex direction="column" gap={8} align="flex-start">
-            <Text size="sm" weight="semibold">Large</Text>
-            <ToggleGroup size="lg">
-              <ToggleButton value="left">Left</ToggleButton>
-              <ToggleButton value="center">Center</ToggleButton>
-              <ToggleButton value="right">Right</ToggleButton>
-            </ToggleGroup>
-          </Flex>
-        </Flex>
-      </Flex>
-    </Card>
+          </Column>
+        ))}
+      </Column>
+    </Column>
   );
 }

@@ -7,9 +7,8 @@ export default function Demo() {
   const [rangeValue, setRangeValue] = useState<[number, number]>([20, 80]);
 
   return (
-    <Card>
+    <Block fullWidth gap={16}>
       <Block gap={24}>
-        <Text size="lg" weight="semibold">Full Width Sliders</Text>
         
         {/* Regular width vs full width comparison */}
         <Block gap={12}>
@@ -63,7 +62,6 @@ export default function Demo() {
           <View style={{ 
             width: '60%', 
             padding: 16, 
-            backgroundColor: '#f5f5f5', 
             borderRadius: 8 
           }}>
             <Block gap={8}>
@@ -123,6 +121,6 @@ export default function Demo() {
           </Block>
         </Block>
       </Block>
-    </Card>
+    </Block>
   );
 }

@@ -18,6 +18,7 @@ module.exports = {
     ...rnPreset.moduleNameMapper,
     '\\.(png|jpg|jpeg)$': '<rootDir>/__mocks__/fileMock.js',
     '\\.(svg)$': '<rootDir>/__mocks__/svgMock.js',
+    'ViewConfigIgnore(?:\\.js)?$': '<rootDir>/__mocks__/ViewConfigIgnore.js',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

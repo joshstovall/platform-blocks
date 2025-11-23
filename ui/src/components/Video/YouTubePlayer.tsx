@@ -264,7 +264,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
         return;
       }
 
-      console.log('[YouTubePlayer] Received message:', data.eventType, data.data);
+      // console.log('[YouTubePlayer] Received message:', data.eventType, data.data);
 
       switch (data.eventType) {
         case 'playerReady':

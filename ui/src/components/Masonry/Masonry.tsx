@@ -91,7 +91,7 @@ export const Masonry = factory<Factory<{ props: MasonryProps; ref: View }>>(
     if (data.length === 0) {
       const defaultEmptyContent = (
         <View style={{ justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-          <Text variant="body" style={{ color: '#888' }}>No items to display</Text>
+          <Text variant="p" style={{ color: '#888' }}>No items to display</Text>
         </View>
       );
 

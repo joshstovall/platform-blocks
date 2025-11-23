@@ -9,6 +9,10 @@ const StatusBar = resolveOptionalModule<any>('expo-status-bar', {
   devWarning: 'expo-status-bar not found, status bar will not render',
 });
 
+const NavigationBar = resolveOptionalModule<any>('expo-navigation-bar', {
+  devWarning: 'expo-navigation-bar not found, navigation bar will not be styled',
+});
+
 interface StatusBarManagerProps extends StatusBarConfig {
   children?: React.ReactNode;
 }
@@ -29,6 +33,20 @@ export const StatusBarManager: React.FC<StatusBarManagerProps> = ({
   const resolvedBackgroundColor = backgroundColor || (
     Platform.OS === 'android' ? theme.backgrounds.base : 'transparent'
   );
+
+  React.useEffect(() => {
+    if (Platform.OS !== 'android' || !NavigationBar) {
+      return;
+    }
+
+    NavigationBar.setBackgroundColorAsync(resolvedBackgroundColor).catch(() => {
+      /* noop */
+    });
+
+    NavigationBar.setButtonStyleAsync(resolvedStyle === 'light' ? 'light' : 'dark').catch(() => {
+      /* noop */
+    });
+  }, [resolvedBackgroundColor, resolvedStyle]);
 
   return (
     <>

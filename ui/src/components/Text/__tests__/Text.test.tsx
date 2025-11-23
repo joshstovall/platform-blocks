@@ -6,7 +6,6 @@
  * 
  * Coverage:
  * - HTMLTextVariant types (22 variants)
- * - LegacyTextVariant types (6 variants)
  * - ColorVariant types (9 variants)
  * - Weight types (numeric + named)
  * - Size types (tokens + numbers)
@@ -179,38 +178,6 @@ describe('Text - Type Safety and Prop Validation', () => {
     it('should accept cite variant', () => {
       const { getByText } = render(<Text variant="cite">Citation</Text>);
       expect(getByText('Citation')).toBeTruthy();
-    });
-  });
-
-  describe('LegacyTextVariant Types', () => {
-    it('should accept heading1 variant', () => {
-      const { getByText } = render(<Text variant="heading1">Heading 1</Text>);
-      expect(getByText('Heading 1')).toBeTruthy();
-    });
-
-    it('should accept heading2 variant', () => {
-      const { getByText } = render(<Text variant="heading2">Heading 2</Text>);
-      expect(getByText('Heading 2')).toBeTruthy();
-    });
-
-    it('should accept heading3 variant', () => {
-      const { getByText } = render(<Text variant="heading3">Heading 3</Text>);
-      expect(getByText('Heading 3')).toBeTruthy();
-    });
-
-    it('should accept subtitle variant', () => {
-      const { getByText } = render(<Text variant="subtitle">Subtitle</Text>);
-      expect(getByText('Subtitle')).toBeTruthy();
-    });
-
-    it('should accept body variant', () => {
-      const { getByText } = render(<Text variant="body">Body</Text>);
-      expect(getByText('Body')).toBeTruthy();
-    });
-
-    it('should accept caption variant', () => {
-      const { getByText } = render(<Text variant="caption">Caption</Text>);
-      expect(getByText('Caption')).toBeTruthy();
     });
   });
 

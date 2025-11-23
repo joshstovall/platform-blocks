@@ -1,59 +1,58 @@
 import { useState } from 'react';
-import { PinInput, Text, Card, Column } from '@platform-blocks/ui';
+
+import { Column, PinInput, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [fourDigit, setFourDigit] = useState('');
   const [sixDigit, setSixDigit] = useState('');
   const [eightDigit, setEightDigit] = useState('');
 
+  const lengthExamples = [
+    {
+      length: 4,
+      title: '4-digit PIN (default)',
+      helper: 'Common for ATM and device security codes.',
+      label: '4-digit PIN',
+      value: fourDigit,
+      setValue: setFourDigit,
+    },
+    {
+      length: 6,
+      title: '6-digit verification',
+      helper: 'Typical for SMS-based one-time codes.',
+      label: 'Verification code',
+      value: sixDigit,
+      setValue: setSixDigit,
+    },
+    {
+      length: 8,
+      title: '8-digit code',
+      helper: 'Use for longer recovery or backup codes.',
+      label: 'Security code',
+      value: eightDigit,
+      setValue: setEightDigit,
+    },
+  ];
+
   return (
-    <Column gap={24}>
-      <Text variant="h6">PIN Input Lengths</Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">4-Digit PIN (Default)</Text>
-          <Text variant="caption" colorVariant="secondary">
-            Common for ATM PINs and security codes
+    <Column gap="lg">
+      <Text weight="semibold">PIN input lengths</Text>
+      {lengthExamples.map((example) => (
+        <Column gap="sm" key={example.length}>
+          <Text size="sm" weight="semibold">
+            {example.title}
+          </Text>
+          <Text size="sm" colorVariant="secondary">
+            {example.helper}
           </Text>
           <PinInput
-            value={fourDigit}
-            onChange={setFourDigit}
-            length={4}
-            label="4-Digit PIN"
+            value={example.value}
+            onChange={example.setValue}
+            length={example.length}
+            label={example.label}
           />
         </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">6-Digit Verification</Text>
-          <Text variant="caption" colorVariant="secondary">
-            Common for SMS verification codes
-          </Text>
-          <PinInput
-            value={sixDigit}
-            onChange={setSixDigit}
-            length={6}
-            label="Verification Code"
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">8-Digit Code</Text>
-          <Text variant="caption" colorVariant="secondary">
-            For longer security codes or passwords
-          </Text>
-          <PinInput
-            value={eightDigit}
-            onChange={setEightDigit}
-            length={8}
-            label="Security Code"
-          />
-        </Column>
-      </Card>
+      ))}
     </Column>
   );
 }

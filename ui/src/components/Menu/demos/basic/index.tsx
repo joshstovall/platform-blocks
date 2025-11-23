@@ -1,24 +1,45 @@
-import { Menu, MenuItem, MenuDivider, MenuDropdown, Button, Icon } from '@platform-blocks/ui';
+import {
+  Button,
+  Card,
+  Column,
+  Icon,
+  Menu,
+  MenuDivider,
+  MenuDropdown,
+  MenuItem,
+  Text,
+} from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Menu>
-      <Button variant="filled">Open Menu</Button>
-      <MenuDropdown>
-        <MenuItem leftSection={<Icon name="user" />}>
-          Profile
-        </MenuItem>
-        <MenuItem leftSection={<Icon name="settings" />}>
-          Settings
-        </MenuItem>
-        <MenuItem leftSection={<Icon name="info" />}>
-          Help & Support
-        </MenuItem>
-        <MenuDivider />
-        <MenuItem leftSection={<Icon name="arrow-left" />}>
-          Logout
-        </MenuItem>
-      </MenuDropdown>
-    </Menu>
-  )
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="sm">
+          <Text size="sm" colorVariant="secondary">
+            Wrap a trigger and dropdown in `Menu` to present grouped actions.
+          </Text>
+          <Menu>
+            <Button size="sm" variant="outline">
+              Open menu
+            </Button>
+            <MenuDropdown>
+              <MenuItem startSection={<Icon name="user" size="sm" />}>
+                Profile
+              </MenuItem>
+              <MenuItem startSection={<Icon name="settings" size="sm" />}>
+                Settings
+              </MenuItem>
+              <MenuItem startSection={<Icon name="info" size="sm" />}>
+                Help & Support
+              </MenuItem>
+              <MenuDivider />
+              <MenuItem startSection={<Icon name="arrow-left" size="sm" />}>
+                Logout
+              </MenuItem>
+            </MenuDropdown>
+          </Menu>
+        </Column>
+      </Card>
+    </Column>
+  );
 }

@@ -56,6 +56,8 @@ export interface InteractionConfig {
   popoverFollowMode?: 'pointer' | 'crosshair' | 'snap';
   /** Minimum pixel delta before crosshair update (after threshold). */
   crosshairPixelThreshold?: number;
+  /** Keep the last crosshair visible while the pointer remains inside the chart even if no point is targeted. Default true. */
+  stickyCrosshair?: boolean;
 }
 
 /**
@@ -68,6 +70,10 @@ export interface RegisteredSeriesPoint {
   y: number;
   /** Optional metadata associated with the point */
   meta?: any;
+  /** Optional pixel X coordinate (relative to the chart container) */
+  pixelX?: number;
+  /** Optional pixel Y coordinate (relative to the chart container) */
+  pixelY?: number;
 }
 
 /**
@@ -91,7 +97,7 @@ export interface RegisteredSeries {
  */
 interface InteractionState {
   /** Current pointer/mouse position */
-  pointer: { x: number; y: number; inside: boolean; pageX?: number; pageY?: number; data?: any } | null;
+  pointer: { x: number; y: number; inside: boolean; insideX?: boolean; insideY?: boolean; pageX?: number; pageY?: number; data?: any } | null;
   /** Current crosshair position */
   crosshair: { dataX: number; pixelX: number } | null;
   /** Points selected by the crosshair */
@@ -223,24 +229,43 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
   // rAF crosshair throttling
   const crosshairRAFRef = useRef<number | null>(null);
   const pendingCrosshair = useRef<InteractionState['crosshair'] | null>(null);
+  const hasPendingCrosshair = useRef(false);
+
+  const resolveCrosshairValue = useCallback((prev: InteractionState, next: InteractionState['crosshair']) => {
+    if (next !== null) return next;
+    if (config.stickyCrosshair === false) return null;
+    const pointerActive = prev.pointer?.inside || prev.pointer?.insideX;
+    if (pointerActive) return prev.crosshair;
+    return null;
+  }, [config.stickyCrosshair]);
+
+  const applyCrosshairUpdate = useCallback((next: InteractionState['crosshair']) => {
+    setState(prev => {
+      const resolved = resolveCrosshairValue(prev, next);
+      if (resolved === prev.crosshair) return prev;
+      return { ...prev, crosshair: resolved };
+    });
+  }, [resolveCrosshairValue]);
+
   const flushCrosshair = () => {
     crosshairRAFRef.current = null;
-    if (pendingCrosshair.current) {
-      const next = pendingCrosshair.current;
-      pendingCrosshair.current = null;
-      setState(prev => ({ ...prev, crosshair: next }));
-    }
+    if (!hasPendingCrosshair.current) return;
+    hasPendingCrosshair.current = false;
+    const next = pendingCrosshair.current;
+    pendingCrosshair.current = null;
+    applyCrosshairUpdate(next);
   };
   const setCrosshair = useCallback((c: InteractionState['crosshair']) => {
     if (!config.crosshairRAF) {
-      setState(prev => ({ ...prev, crosshair: c }));
+      applyCrosshairUpdate(c);
       return;
     }
     pendingCrosshair.current = c;
+    hasPendingCrosshair.current = true;
     if (crosshairRAFRef.current == null && typeof window !== 'undefined') {
       crosshairRAFRef.current = window.requestAnimationFrame(flushCrosshair);
     }
-  }, [config.crosshairRAF]);
+  }, [config.crosshairRAF, applyCrosshairUpdate]);
   const initializeDomains = useCallback((initial: DomainPair) => setState(prev => ({ ...prev, domains: { initial, current: initial } })), []);
   const setDomains = useCallback((d: any) => setState(prev => {
     if (!prev.domains) return prev;

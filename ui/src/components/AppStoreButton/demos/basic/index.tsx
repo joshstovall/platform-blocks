@@ -1,55 +1,51 @@
+import type { AppStoreButtonProps } from '@platform-blocks/ui';
 import { AppStoreButton, Column, Row, Text } from '@platform-blocks/ui';
 
-export default function AppStoreButtonBasicDemo() {
-  const handlePress = (store: string) => {
-    console.log(`Pressed ${store} button`);
-    // In a real app, you would navigate to the respective app store
+type StoreName = AppStoreButtonProps['store'];
+
+const storeGroups: { title: string; stores: { store: StoreName; label: string }[] }[] = [
+  {
+    title: 'Popular app stores',
+    stores: [
+      { store: 'app-store', label: 'App Store' },
+      { store: 'google-play', label: 'Google Play' },
+      { store: 'microsoft-store', label: 'Microsoft Store' },
+    ],
+  },
+  {
+    title: 'Alternative storefronts',
+    stores: [
+      { store: 'amazon-appstore', label: 'Amazon Appstore' },
+      { store: 'mac-app-store', label: 'Mac App Store' },
+      { store: 'f-droid', label: 'F-Droid' },
+    ],
+  },
+];
+
+export default function Demo() {
+  const handlePress = (label: string) => {
+    console.log(`Open ${label}`);
   };
 
   return (
-    <Column gap="2xl" p="lg">
-      <Column gap="md">
-        <Text weight="semibold" size="lg">App Store Indicators</Text>
-        <Text colorVariant="secondary" size="sm">
-          Pre-styled app store download buttons with proper branding and localization support.
-        </Text>
-      </Column>
+    <Column gap="lg">
+      {storeGroups.map(({ title, stores }) => (
+        <Column key={title} gap="xs">
+          <Text size="sm" weight="medium">
+            {title}
+          </Text>
 
-      <Column gap="lg">
-        <Text weight="medium" size="md">Popular App Stores</Text>
-        <Row gap="md" wrap="wrap">
-          <AppStoreButton
-            store="app-store"
-            onPress={() => handlePress('App Store')}
-          />
-          <AppStoreButton
-            store="google-play"
-            onPress={() => handlePress('Google Play')}
-          />
-          <AppStoreButton
-            store="microsoft-store"
-            onPress={() => handlePress('Microsoft Store')}
-          />
-        </Row>
-      </Column>
-
-      <Column gap="lg">
-        <Text weight="medium" size="md">Alternative Stores</Text>
-        <Row gap="md" wrap="wrap">
-          <AppStoreButton
-            store="amazon-appstore"
-            onPress={() => handlePress('Amazon Appstore')}
-          />
-          <AppStoreButton
-            store="mac-app-store"
-            onPress={() => handlePress('Mac App Store')}
-          />
-          <AppStoreButton
-            store="f-droid"
-            onPress={() => handlePress('F-Droid')}
-          />
-        </Row>
-      </Column>
+          <Row gap="md" wrap="wrap">
+            {stores.map(({ store, label }) => (
+              <AppStoreButton
+                key={store}
+                store={store}
+                onPress={() => handlePress(label)}
+              />
+            ))}
+          </Row>
+        </Column>
+      ))}
     </Column>
   );
 }

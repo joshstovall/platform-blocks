@@ -1,41 +1,41 @@
-import { CodeBlock, Flex, Text } from '@platform-blocks/ui';
+import { CodeBlock, Column, Text } from '@platform-blocks/ui';
+
+const sample = `// Example showcasing highlighted lines
+import React from 'react';
+import { View, Text } from 'react-native';
+
+interface User {
+  id: number;
+  name: string; // highlighted
+  active: boolean;
+}
+
+export function UserCard({ user }: { user: User }) {
+  if (!user.active) {
+    return null; // early return highlighted
+  }
+  return (
+    <View style={{ padding: 8 }}>
+      <Text>{user.name}</Text>
+    </View>
+  );
+}
+
+// Utility function (range highlighted)
+export function filterActive(users: User[]) {
+  return users.filter((u) => u.active);
+}`;
 
 export default function Demo() {
-  const sample = `// Example showcasing highlighted lines\n` +
-`import React from 'react';\n` +
-`import { View, Text } from 'react-native';\n\n` +
-`interface User {\n` +
-`  id: number;\n` +
-`  name: string; // highlighted\n` +
-`  active: boolean;\n` +
-`}\n\n` +
-`export function UserCard({ user }: { user: User }) {\n` +
-`  if (!user.active) {\n` +
-`    return null; // early return highlighted\n` +
-`  }\n` +
-`  return (\n` +
-`    <View style={{ padding: 8 }}>\n` +
-`      <Text>{user.name}</Text>\n` +
-`    </View>\n` +
-`  );\n` +
-`}\n\n` +
-`// Utility function (range highlighted)\n` +
-`export function filterActive(users: User[]) {\n` +
-`  return users.filter(u => u.active);\n` +
-`}\n`;
-
   return (
-    <Flex direction="column" gap={16}>
-      <Text variant="body" colorVariant="secondary">
-        This demo shows how to highlight specific single lines and ranges using the <code>highlightLines</code> prop.
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Highlighted lines</Text>
+      <Text size="sm" colorVariant="secondary">
+        Combine individual lines and ranges in the highlightLines prop to emphasize key logic.
       </Text>
-      <CodeBlock
-        title="Highlighted Lines"
-        showLineNumbers
-        highlightLines={['1', '5-9', '11-14', '22-24']}
-      >
+  <CodeBlock title="Highlighted lines" showLineNumbers highlightLines={['1', '5-9', '11-14', '20-22']}>
         {sample}
       </CodeBlock>
-    </Flex>
+    </Column>
   );
 }

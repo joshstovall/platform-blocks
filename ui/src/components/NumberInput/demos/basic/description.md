@@ -1,6 +1,12 @@
 ---
-title: Basic Number Input
-description: Simple numeric input with step controls and formatting.
+title: Basic
+category: usage
+order: 10
+tags: [basic, numeric, step]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Basic example of a `NumberInput` component with step controls for incrementing and decrementing the value, along with custom formatting to display the number as currency.
+Controlled number input with simple step controls and live value preview.

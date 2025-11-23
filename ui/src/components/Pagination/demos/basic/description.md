@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Basic pagination with numbered pages and navigation controls.
+Provide `current`, `total`, and an `onChange` handler to keep numbered pagination in sync with surrounding state.

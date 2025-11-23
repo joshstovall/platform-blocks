@@ -1,20 +1,12 @@
 ---
-title: Basic Usage
-category: usage
+title: Core variants
+category: basics
 order: 10
-tags: [basic, variants]
+tags: [variants, getting-started]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-renderStyle: code_flex
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: true
-githubUrl: "https://github.com"
 ---
 
-Basic chip variants showing default, filled, outline, and light styles.
+Use the `variant` prop to switch between the default, `filled`, `outline`, `light`, and `subtle` Badge styles without touching any other props.

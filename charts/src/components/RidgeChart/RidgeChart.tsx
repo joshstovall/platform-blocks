@@ -61,7 +61,8 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
   statsMarkers,
 }) => {
   const theme = useChartTheme();
-  const padding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const padding = basePadding;
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
   const count = Math.max(series.length, 1);

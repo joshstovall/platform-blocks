@@ -1,1 +1,12 @@
-Controlled popover state managed from the parent. Useful when the trigger and dropdown need to respond to shared form state or external shortcuts.
+---
+title: Controlled State
+category: behavior
+order: 20
+tags: [popover, state]
+highlightLines: [12-34]
+status: stable
+since: 1.0.0
+hidden: false
+---
+
+Control the `opened` prop and respond to `onChange` when the popover needs to sync with surrounding form state.

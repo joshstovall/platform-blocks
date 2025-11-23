@@ -1,54 +1,45 @@
 import { useState } from 'react';
-import { Radio, RadioGroup, Text, Column, Card } from '@platform-blocks/ui';
+import { Column, Radio, RadioGroup, Text } from '@platform-blocks/ui';
+
+const TEAMS = ['Falcons', 'Tigers', 'Sharks'] as const;
 
 export default function Demo() {
-  const [selectedRadio, setSelectedRadio] = useState('');
-  const [selectedGroup, setSelectedGroup] = useState('option2');
+  const [favoriteTeam, setFavoriteTeam] = useState<string>('Tigers');
+  const [ticketType, setTicketType] = useState<string>('reserved');
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Radio Components</Text>
-      
-      <Card padding={16}>
-        <Column gap={12}>
-          <Text variant="body" weight="medium">Individual Radio Buttons</Text>
-          <Column gap={8}>
+    <Column gap="lg">
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Standalone radios
+        </Text>
+        <Column gap="xs">
+          {TEAMS.map((team) => (
             <Radio
-              value="radio1"
-              checked={selectedRadio === 'radio1'}
-              onChange={setSelectedRadio}
-              label="First option"
+              key={team}
+              value={team}
+              checked={favoriteTeam === team}
+              onChange={setFavoriteTeam}
+              label={team}
             />
-            <Radio
-              value="radio2"
-              checked={selectedRadio === 'radio2'}
-              onChange={setSelectedRadio}
-              label="Second option"
-            />
-            <Radio
-              value="radio3"
-              checked={selectedRadio === 'radio3'}
-              onChange={setSelectedRadio}
-              label="Third option"
-            />
-          </Column>
+          ))}
         </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={12}>
-          <Text variant="body" weight="medium">Radio Group</Text>
-          <RadioGroup
-            value={selectedGroup}
-            onChange={setSelectedGroup}
-            options={[
-              { label: 'Option 1', value: 'option1' },
-              { label: 'Option 2', value: 'option2' },
-              { label: 'Option 3', value: 'option3' },
-            ]}
-          />
-        </Column>
-      </Card>
+      </Column>
+
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Grouped selection
+        </Text>
+        <RadioGroup
+          value={ticketType}
+          onChange={setTicketType}
+          options={[
+            { label: 'General admission', value: 'general' },
+            { label: 'Reserved seating', value: 'reserved' },
+            { label: 'VIP hospitality', value: 'vip' }
+          ]}
+        />
+      </Column>
     </Column>
   );
 }

@@ -1,25 +1,62 @@
-import React, { useState } from 'react';
-import { Tabs, Flex, Text, Card } from '@platform-blocks/ui';
+import { useState } from 'react';
+import { Block, Column, Tabs, Text, useTheme } from '@platform-blocks/ui';
 
-export default function TabsDisabledDemo() {
-  const [active, setActive] = useState('overview');
+const PANELS = [
+  {
+    key: 'overview',
+    label: 'Overview',
+    body: 'High-level snapshot of product activity and health.'
+  },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    body: 'Dive into usage metrics, adoption trends, and retention.'
+  },
+  {
+    key: 'billing',
+    label: 'Billing',
+    body: 'Billing is temporarily disabled while invoices reconcile.',
+    disabled: true
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    body: 'Manage workspace preferences and security controls.'
+  }
+];
+
+export default function Demo() {
+  const theme = useTheme();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [lastAttempt, setLastAttempt] = useState<string | null>(null);
+
   return (
-    <Flex direction="column" gap={16}>
+    <Column gap="sm">
       <Tabs
-        items={[
-          { key: 'overview', label: 'Overview', content: <Card style={{ padding: 16 }}><Text>Overview content</Text></Card> },
-          { key: 'analytics', label: 'Analytics', content: <Card style={{ padding: 16 }}><Text>Analytics content</Text></Card> },
-          { key: 'billing', label: 'Billing', disabled: true, content: <Card style={{ padding: 16 }}><Text>Billing (disabled)</Text></Card> },
-          { key: 'settings', label: 'Settings', content: <Card style={{ padding: 16 }}><Text>Settings content</Text></Card> },
-        ]}
-        activeTab={active}
-        onTabChange={setActive}
-        onDisabledTabPress={(k) => console.log('Disabled tab pressed:', k)}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setLastAttempt(null);
+        }}
+        onDisabledTabPress={(key) => {
+          const label = PANELS.find((panel) => panel.key === key)?.label ?? key;
+          setLastAttempt(`${label} is currently disabled.`);
+        }}
         variant="line"
         size="md"
-        color="primary"
+        items={PANELS.map(({ body, ...panel }) => ({
+          ...panel,
+          content: (
+            <Block bg={theme.backgrounds.surface} borderColor={theme.backgrounds.border} radius="lg" p="md">
+              <Text>{body}</Text>
+            </Block>
+          )
+        }))}
       />
-      <Text size="xs" colorVariant="muted">Billing tab is disabled. Pressing it logs an event via onDisabledTabPress.</Text>
-    </Flex>
+      <Text variant="small" colorVariant="muted">
+        Disable sensitive tabs while keeping the `onDisabledTabPress` callback to track attempted access.
+        {lastAttempt ? ` ${lastAttempt}` : ''}
+      </Text>
+    </Column>
   );
 }

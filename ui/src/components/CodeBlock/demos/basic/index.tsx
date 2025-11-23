@@ -1,17 +1,23 @@
-import { CodeBlock } from '../../index';
+import { CodeBlock, Column, Text } from '@platform-blocks/ui';
 
-export default function BasicCodeBlockDemo() {
-  return (
-    <CodeBlock>
-      {`import { View, Text } from 'react-native';
+const sample = `import { View, Text } from 'react-native';
 
-export const HelloWorld = () => {
+export function HelloWorld() {
   return (
     <View>
       <Text>Hello, World!</Text>
     </View>
   );
-};`}
-    </CodeBlock>
+}`;
+
+export default function Demo() {
+  return (
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Basic code block</Text>
+      <Text size="sm" colorVariant="secondary">
+        The default CodeBlock renders formatted code with copy support and automatic language detection.
+      </Text>
+      <CodeBlock language="tsx">{sample}</CodeBlock>
+    </Column>
   );
 }

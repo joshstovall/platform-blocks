@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileInput, Flex, Text, Card } from '@platform-blocks/ui';
+
+import { Column, FileInput, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
 
 export default function Demo() {
@@ -8,38 +9,64 @@ export default function Demo() {
   const [videoFiles, setVideoFiles] = useState<FileInputFile[]>([]);
 
   return (
-    <Flex direction="column" gap={16}>
-      <Text size="lg" weight="semibold">File Type Restrictions</Text>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Images Only</Text>
+    <Column gap="lg" fullWidth>
+      <Column gap="sm">
+        <Text weight="semibold">File type restrictions</Text>
+        <Text size="sm" colorVariant="secondary">
+          Limit accepted file types per uploader using MIME types, extensions, and size caps.
+        </Text>
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Images only
+        </Text>
         <FileInput
           accept={['image/*']}
           helperText="Only image files are allowed"
           onFilesChange={setImageFiles}
           multiple
         />
-      </Card>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Documents Only</Text>
+        {imageFiles.length > 0 && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {imageFiles.map((file) => file.name).join(', ')}
+          </Text>
+        )}
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Documents only
+        </Text>
         <FileInput
           accept={['.pdf', '.doc', '.docx', '.txt']}
           helperText="PDF, Word documents, and text files only"
           onFilesChange={setDocumentFiles}
           multiple
         />
-      </Card>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Videos (Max 50MB)</Text>
+        {documentFiles.length > 0 && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {documentFiles.map((file) => file.name).join(', ')}
+          </Text>
+        )}
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Videos (max 50MB)
+        </Text>
         <FileInput
           accept={['video/*']}
           maxSize={50 * 1024 * 1024}
           helperText="Video files up to 50MB"
           onFilesChange={setVideoFiles}
         />
-      </Card>
-    </Flex>
+        {videoFiles.length > 0 && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {videoFiles.map((file) => file.name).join(', ')}
+          </Text>
+        )}
+      </Column>
+    </Column>
   );
 }

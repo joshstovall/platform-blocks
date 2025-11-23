@@ -11,7 +11,7 @@ Keyboard recommendations (web):
 - (Future) Arrow Up/Down to move focus between headers; Home / End jump to first / last
 
 ### Performance
-Height animation uses Reanimated where available; falls back to LayoutAnimation otherwise. Measurement is unified through `useMeasuredHeight` and only happens once per panel. Persistence (optional) stores expanded keys keyed by a stable fast hash.
+Expansion height is now driven by the shared `Collapse` primitive, giving us deterministic Animated-based transitions (honoring the `animated` prop for duration/easing) without bespoke measurement logic per item. We still measure each panel once to persist height, and expanded keys can optionally persist via the fast hash store.
 
 ### Theming
 Variant + density token maps allow theme overrides. Supports size, radius, spacing, density (compact/comfortable/spacious) and chevron position.

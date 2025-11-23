@@ -1,12 +1,12 @@
 ---
 title: Sizes
-category: usage
+category: layout
 order: 20
-tags: [sizes]
+tags: [size]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different size variants for Loader components from extra small to extra large.
+Set the `size` token to align loaders with other controls, from `xs` indicators up to `xl` spinners.

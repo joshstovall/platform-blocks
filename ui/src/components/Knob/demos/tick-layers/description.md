@@ -1,0 +1,1 @@
+Showcases stacked tick layers with line, dot, and custom renderers alongside split progress for panning scenarios.

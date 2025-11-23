@@ -1,7 +1,12 @@
 ---
-title: Basic Toggle Group
-description: Simple toggle group with three options and default settings.
-tags: ["basic", "group", "selection", "simple"]
+title: Basic Group
+category: basics
+order: 10
+tags: [toggle, alignment]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-A basic toggle group implementation showing three options with default settings. Demonstrates the fundamental usage pattern of grouped toggle buttons.
+Render a simple `ToggleGroup` and listen for `onChange` to track the active value.

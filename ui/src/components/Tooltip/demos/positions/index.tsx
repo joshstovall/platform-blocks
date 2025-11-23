@@ -1,40 +1,37 @@
-import { Tooltip, Button, Column } from '@platform-blocks/ui';
+import { Card, Column, Row, Tooltip, Button, Text } from '@platform-blocks/ui';
 
-export default function PositionsTooltipDemo() {
+export default function Demo() {
   return (
-    <Column gap={20} align="center" style={{ padding: 40 }}>
-      <Tooltip label="Top tooltip" position="top">
-        <Button title="Top" variant="outline" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Bottom tooltip" position="bottom">
-        <Button title="Bottom" variant="outline" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Left tooltip" position="left">
-        <Button title="Left" variant="outline" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Right tooltip" position="right">
-        <Button title="Right" variant="outline" onPress={() => {}} />
-      </Tooltip>
-
-      {/* With arrows */}
-      <Tooltip label="Top with arrow" position="top" withArrow>
-        <Button title="Top Arrow" variant="gradient" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Bottom with arrow" position="bottom" withArrow>
-        <Button title="Bottom Arrow" variant="gradient" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Left with arrow" position="left" withArrow>
-        <Button title="Left Arrow" variant="secondary" onPress={() => {}} />
-      </Tooltip>
-      
-      <Tooltip label="Right with arrow" position="right" withArrow>
-        <Button title="Right Arrow" variant="secondary" onPress={() => {}} />
-      </Tooltip>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="sm">
+          <Text size="sm" colorVariant="secondary">
+            Pass a `position` value to choose where the tooltip appears.
+          </Text>
+          <Row gap="md" justify="center" wrap="wrap">
+            <Tooltip label="Appears above the target" position="top" withArrow>
+              <Button size="sm" variant="outline">
+                Top
+              </Button>
+            </Tooltip>
+            <Tooltip label="Appears below the target" position="bottom" withArrow>
+              <Button size="sm" variant="outline">
+                Bottom
+              </Button>
+            </Tooltip>
+            <Tooltip label="Anchors to the left" position="left" withArrow>
+              <Button size="sm" variant="outline">
+                Left
+              </Button>
+            </Tooltip>
+            <Tooltip label="Anchors to the right" position="right" withArrow>
+              <Button size="sm" variant="outline">
+                Right
+              </Button>
+            </Tooltip>
+          </Row>
+        </Column>
+      </Card>
     </Column>
   );
 }

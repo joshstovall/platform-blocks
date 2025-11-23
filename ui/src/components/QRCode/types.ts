@@ -70,12 +70,6 @@ export interface QRCodeProps extends SpacingProps, LayoutProps {
   
   /** Callback when QR code finishes loading */
   onLoadEnd?: () => void;
-  /**
-   * Which QR engine to use.
-   * - internal: new in-house full spec implementation.
-   * - legacy: bundled fallback port (qr-code-ts) for comparative testing.
-   */
-  engine?: 'internal' | 'legacy';
   /** If true (or object), tapping the QR copies the value (or provided value). */
   copyOnPress?: boolean | { value?: string };
   /** Show a floating copy button overlay */

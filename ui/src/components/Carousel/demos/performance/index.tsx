@@ -1,71 +1,90 @@
-import React, { memo, useMemo } from 'react';
-import { Platform } from 'react-native';
-import { Carousel, Block, Text } from '@platform-blocks/ui';
+import { Carousel, Column, Text } from '@platform-blocks/ui';
 
-// Memoized slide component for optimal performance
-const PerformanceSlide = memo(({ index, color }: { index: number; color: string }) => (
-  <Block
-    direction="column"
-    grow
-    bg={color}
-    radius="xl"
-    justify="center"
-    align="center"
-    gap="sm"
-    p="xl"
-    m="xs"
-  >
-    <Text size={24} weight="bold" color="white" mb="xs">
-      Slide {index + 1}
-    </Text>
-    <Text size={14} color="rgba(255,255,255,0.9)" align="center">
-      Optimized for performance with memoization and reduced motion
-    </Text>
-  </Block>
-));
-
-export default function PerformanceCarouselDemo() {
-  // Generate a large number of slides to test performance
-  const slides = useMemo(() => {
-    const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
-      '#DDA0DD', '#FF8C94', '#FFD93D', '#6BCF7F', '#4ECDC4',
-      '#A8E6CF', '#FFB6C1', '#87CEEB', '#DEB887', '#F0E68C',
-      '#FFA07A', '#20B2AA', '#778899', '#B0C4DE', '#FFCCCB'
-    ];
-    
-    return Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      color: colors[i % colors.length]
-    }));
-  }, []);
-
+export default function Demo() {
   return (
-    <Block w="100%" py="sm">
+    <Column gap="md" w="100%">
       <Carousel
         height={200}
         loop
-        autoPlay={false} // Disabled for performance testing
-        itemsPerPage={1}
+        autoPlay={false}
         showArrows
-        showDots={false} // Disabled for performance with many slides
-        // Performance optimizations
-        windowSize={10} // Only render 10 items at a time
-        reducedMotion={Platform.OS === 'web'} // Reduce motion on web for better performance
-        slideGap={8}
+        showDots={false}
+        windowSize={6}
+        reducedMotion
+        slideGap={12}
       >
-        {slides.map((slide) => (
-          <PerformanceSlide 
-            key={slide.id} 
-            index={slide.id} 
-            color={slide.color} 
-          />
-        ))}
+        <Column
+          gap="sm"
+          bg="#1E3A8A"
+          radius="lg"
+          p="lg"
+          justify="center"
+          align="center"
+          minHeight={180}
+        >
+          <Text variant="h4" color="white">
+            Caching layer
+          </Text>
+          <Text color="rgba(255,255,255,0.85)" align="center">
+            Trim animations with `reducedMotion` when throughput matters more than flair.
+          </Text>
+        </Column>
+
+        <Column
+          gap="sm"
+          bg="#047857"
+          radius="lg"
+          p="lg"
+          justify="center"
+          align="center"
+          minHeight={180}
+        >
+          <Text variant="h4" color="white">
+            Log streaming
+          </Text>
+          <Text color="rgba(255,255,255,0.85)" align="center">
+            Set `windowSize` so virtualization only renders the next few slides.
+          </Text>
+        </Column>
+
+        <Column
+          gap="sm"
+          bg="#9333EA"
+          radius="lg"
+          p="lg"
+          justify="center"
+          align="center"
+          minHeight={180}
+        >
+          <Text variant="h4" color="white">
+            Metrics digest
+          </Text>
+          <Text color="rgba(255,255,255,0.85)" align="center">
+            Disable dots on dense feeds to reduce re-render work.
+          </Text>
+        </Column>
+
+        <Column
+          gap="sm"
+          bg="#B91C1C"
+          radius="lg"
+          p="lg"
+          justify="center"
+          align="center"
+          minHeight={180}
+        >
+          <Text variant="h4" color="white">
+            Incident updates
+          </Text>
+          <Text color="rgba(255,255,255,0.85)" align="center">
+            Keep manual arrows available so responders can move at their own pace.
+          </Text>
+        </Column>
       </Carousel>
-      
-      <Text align="center" mt="md" size="xs" colorVariant="secondary">
-        50 slides with virtualization (windowSize: 10) and memoized components
+
+      <Text align="center" size="sm" colorVariant="secondary">
+        This setup renders four slides but only keeps six in memory at once for smooth scrolling.
       </Text>
-    </Block>
+    </Column>
   );
 }

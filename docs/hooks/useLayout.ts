@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform, Dimensions } from 'react-native';
 import { usePathname } from 'expo-router';
-import { NAVIGATION_ITEMS } from '../config/navigationConfig';
+import { NAV_SECTIONS } from '../config/navigationConfig';
 
 // Utility to read current mobile status without state churn on every resize
 export function useIsMobile() {
@@ -53,7 +53,7 @@ export function usePageTitle() {
   const pathname = usePathname();
 
   return useCallback(() => {
-    for (const section of NAVIGATION_ITEMS) {
+    for (const section of NAV_SECTIONS) {
       const item = section.items.find(item => item.route === pathname);
       if (item) return item.label;
     }

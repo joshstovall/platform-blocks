@@ -12,7 +12,8 @@ const repoRoot = path.resolve(__dirname, '..');
 const uiDir = path.join(repoRoot, 'ui');
 const docsDir = path.join(repoRoot, 'docs');
 const generatedDir = path.join(docsDir, 'data', 'generated');
-const outputPath = path.join(uiDir, 'LLMs.md');
+const publicDir = path.join(docsDir, 'public');
+const outputPathTxt = path.join(publicDir, 'llms.txt');
 
 const allowedDocExtensions = new Set(['.md', '.mdx', '.ts', '.tsx', '.json']);
 const ignoredDirectories = new Set(['node_modules', '.expo', '.next', 'dist', 'build', 'lib', '.turbo', '.git', 'generated']);
@@ -380,11 +381,12 @@ async function main() {
 	const docSections = await gatherDocsSections();
 	sections.push(...docSections);
 
-	await fs.writeFile(outputPath, sections.join('\n\n') + '\n', 'utf8');
-	console.log(`LLMs.md updated at ${outputPath}`);
+	await fs.mkdir(publicDir, { recursive: true });
+	await fs.writeFile(outputPathTxt, sections.join('\n\n') + '\n', 'utf8');
+	console.log(`llms.txt updated at ${outputPathTxt}`);
 }
 
 main().catch(error => {
-	console.error('Failed to generate LLMs.md', error);
+	console.error('Failed to generate llms.txt', error);
 	process.exitCode = 1;
 });

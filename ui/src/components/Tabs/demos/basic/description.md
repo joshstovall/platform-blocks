@@ -1,7 +1,12 @@
 ---
-title: Basic Tabs
-description: Simple tab navigation with three sections and default styling.
-tags: ["basic", "navigation", "content-switching"]
+title: Basics
+category: basics
+order: 10
+tags: [tabs]
+highlightLines: [18-23]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-A basic tabs implementation showing the fundamental usage pattern with simple content switching between three tabs. Uses the default styling and horizontal orientation.
+Render the default tabs experience with inline content and a short caption explaining the pattern.

@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@expo/eslint-config",
+    "expo",
     "plugin:@typescript-eslint/recommended"
   ],
   "plugins": [
@@ -18,22 +18,19 @@
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-explicit-any": "warn"
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-require-imports": "off",
+    "import/namespace": "off",
+    "import/no-unresolved": "off",
+    "no-undef": "off"
   },
-  "overrides": [
-    {
-      "files": ["examples/components/**/*.demo.*.tsx"],
-      "plugins": ["./scripts/eslint-plugin"],
-      "rules": {
-        "./scripts/eslint-plugin/demo-structure": "error"
-      }
-    }
-  ],
+  "overrides": [],
   "ignorePatterns": [
     "node_modules/",
     "dist/",
     "build/",
     ".expo/",
-    "data/"
+    "data/",
+    "*.js"
   ]
 }

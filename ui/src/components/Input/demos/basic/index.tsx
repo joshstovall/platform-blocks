@@ -1,26 +1,25 @@
 import { useState } from 'react';
-import { Input, Text, Card, Column } from '@platform-blocks/ui';
+
+import { Column, Input, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [value, setValue] = useState('');
 
   return (
-    <Card padding={16}>
-      <Column gap={16}>
-        <Text variant="h6">Basic Text Input</Text>
-        <Input
-          label="Full Name"
-          placeholder="Enter your full name"
-          value={value}
-          onChangeText={setValue}
-        />
-        {value && (
-          <Text variant="caption" colorVariant="secondary">
-            Current value: {value}
-          </Text>
-        )}
-      </Column>
-    </Card>
+    <Column gap="sm">
+      <Text weight="semibold">Basic text input</Text>
+      <Input
+        label="Full name"
+        placeholder="Enter your full name"
+        value={value}
+        onChangeText={setValue}
+      />
+      {value && (
+        <Text size="xs" colorVariant="secondary">
+          Current value: {value}
+        </Text>
+      )}
+    </Column>
   );
 }
 

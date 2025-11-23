@@ -24,7 +24,7 @@ The `HoverCard` component displays rich content when users hover (web) or tap/cl
   withArrow
 >
   <Text weight="semibold">Card title</Text>
-  <Text variant="caption" colorVariant="muted" style={{ marginTop: 4 }}>Supplemental detail</Text>
+  <Text variant="small" colorVariant="muted" style={{ marginTop: 4 }}>Supplemental detail</Text>
 </HoverCard>
 ```
 

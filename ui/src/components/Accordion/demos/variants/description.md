@@ -1,21 +1,12 @@
 ---
-title: Variants
+title: Visual Variants
 category: appearance
 order: 30
-tags: [variants, appearance]
-highlightLines: []
+tags: [accordion, appearance]
+highlightLines: [44-52]
 status: stable
-since: 0.4.0
+since: 1.0.0
 hidden: false
-renderStyle: auto
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: false
-
 ---
 
-Playgrounds different visual variants of the Accordion component.
+Switch between `default`, `separated`, and `bordered` variants to adjust emphasis.

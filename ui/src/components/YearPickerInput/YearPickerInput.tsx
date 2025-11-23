@@ -38,7 +38,7 @@ export const YearPickerInput = forwardRef<View, YearPickerInputProps>(function Y
 
   const {
     required = false,
-    rightSection,
+    endSection,
     onFocus,
     onBlur,
     style,
@@ -122,7 +122,7 @@ export const YearPickerInput = forwardRef<View, YearPickerInputProps>(function Y
           withAsterisk={showAsterisk}
           clearable={shouldShowClear}
           onClear={shouldShowClear ? handleClear : undefined}
-          rightSection={rightSection ?? <Icon name="calendar" size={16} />}
+          endSection={endSection ?? <Icon name="calendar" size={16} />}
           onFocus={onFocus}
           onBlur={onBlur}
           style={style}

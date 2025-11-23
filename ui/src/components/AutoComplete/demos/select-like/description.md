@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-AutoComplete that behaves like a Select dropdown when focused - shows all available options before typing, then filters as you type.
+Behaves like a Select by opening with every option visible before filtering on input.

@@ -1,40 +1,51 @@
-import React, { useState, useRef } from 'react';
-import { Column, Text, Card, Flex, Button, Alert, Strong } from '@platform-blocks/ui';
-import { Video } from '../../Video';
+import { useMemo, useRef, useState } from 'react';
+import { Button, Card, Column, Row, Text, Video } from '@platform-blocks/ui';
 import type { VideoRef } from '../../types';
 
-export default function VideoYouTubeDemo() {
+const SOURCE = {
+  url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+} as const;
+
+export default function Demo() {
+  const videoRef = useRef<VideoRef>(null);
   const [status, setStatus] = useState('Ready');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const videoRef = useRef<VideoRef>(null);
+
+  const actions = useMemo(
+    () => [
+      { label: 'Play', onPress: () => videoRef.current?.play() },
+      { label: 'Pause', onPress: () => videoRef.current?.pause() },
+      { label: 'Skip to 30s', onPress: () => videoRef.current?.seek(30) },
+      { label: 'Volume 50%', onPress: () => videoRef.current?.setVolume(0.5) },
+  { label: 'Mute', onPress: () => videoRef.current?.setVolume(0) },
+  { label: 'Unmute', onPress: () => videoRef.current?.setVolume(1) },
+      { label: '1.5× speed', onPress: () => videoRef.current?.setPlaybackRate(1.5) },
+      { label: 'Reset status', onPress: () => setStatus('Ready') },
+    ],
+    []
+  );
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const mins = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0');
+    const secs = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${mins}:${secs}`;
   };
 
   return (
     <Column gap="lg">
-      <Text variant="h4">Normal Video</Text>
-
-      <Text variant="body">
-        This demo shows YouTube video playback using iframe on web and WebView on native platforms.
-        The player supports all standard video controls and YouTube-specific features.
-      </Text>
-
-      <Card>
+      <Card p="md">
         <Column gap="md">
-          <Text variant="h6">Rick Astley - Never Gonna Give You Up</Text>
-
-
+          <Text size="sm" colorVariant="secondary">
+            Combine default transport controls with imperative helpers to script playback, adjust volume, and toggle captions from surrounding UI.
+          </Text>
           <Video
             ref={videoRef}
-            source={{
-              url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-
-            }}
+            source={SOURCE}
             width="100%"
             height={300}
             controls={{
@@ -49,102 +60,33 @@ export default function VideoYouTubeDemo() {
               autoHide: true,
               autoHideTimeout: 3000,
             }}
-            youtubeOptions={{
-              modestbranding: true,
-              rel: false,
-              start: 10, // Start at 10 seconds
-            }}
             onPlay={() => setStatus('Playing')}
             onPause={() => setStatus('Paused')}
-            onTimeUpdate={(state) => setCurrentTime(state.currentTime)}
-            onDurationChange={(dur) => setDuration(dur)}
-            onBuffer={(isBuffering) => setStatus(isBuffering ? 'Buffering…' : 'Playing')}
-            onError={(error) => setStatus(`Error: ${error}`)}
             onLoad={() => setStatus('Loaded')}
+            onBuffer={(buffering) => setStatus(buffering ? 'Buffering…' : 'Playing')}
+            onTimeUpdate={(state) => setCurrentTime(state.currentTime)}
+            onDurationChange={(value) => setDuration(value)}
+            onError={(error) => setStatus(`Error: ${error}`)}
           />
+          <Column gap="xs">
+            <Text size="xs" colorVariant="secondary">
+              Status: {status}
+            </Text>
+            {duration > 0 && (
+              <Text size="xs" colorVariant="secondary">
+                Progress: {formatTime(currentTime)} / {formatTime(duration)}
+              </Text>
+            )}
+          </Column>
+          <Row gap="sm" wrap="wrap">
+            {actions.map((action) => (
+              <Button key={action.label} size="xs" variant="outline" onPress={action.onPress}>
+                {action.label}
+              </Button>
+            ))}
+          </Row>
         </Column>
       </Card>
-
-      <Alert icon="info">
-        <Column gap="md">
-          <Flex align="center" justify="space-between">
-            <Text variant="h6">Playback Status</Text>
-            <Text variant="caption" style={{ fontFamily: 'monospace' }}>{status}</Text>
-          </Flex>
-          {duration > 0 && (
-            <Flex align="center" justify="space-between">
-              <Text variant="body">Progress</Text>
-              <Text variant="caption" style={{ fontFamily: 'monospace' }}>
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </Text>
-            </Flex>
-          )}
-          <Text variant="body">
-            This YouTube player works across all platforms using your hosted iframe API.
-            It supports real-time synchronization with React Native controls including play/pause,
-            seeking, volume control, mute/unmute, playback rate, and more. All YouTube iframe API
-            events are properly forwarded to maintain perfect sync between the player and UI.
-          </Text>
-          <Flex gap="sm" style={{ flexWrap: 'wrap' }}>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.play()}
-            >
-              Play
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.pause()}
-            >
-              Pause
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.seek(30)}
-            >
-              Skip to 30s
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.setVolume(0.5)}
-            >
-              50% Volume
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.mute()}
-            >
-              Mute
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.unmute()}
-            >
-              Unmute
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => videoRef.current?.setPlaybackRate(1.5)}
-            >
-              1.5x Speed
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => setStatus('Reset')}
-            >
-              Reset Status
-            </Button>
-          </Flex>
-        </Column>
-      </Alert>
     </Column>
   );
 }

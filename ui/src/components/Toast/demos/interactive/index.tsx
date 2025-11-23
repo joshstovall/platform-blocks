@@ -1,4 +1,4 @@
-import { Button, Text, Column, Card, useToast } from '@platform-blocks/ui';
+import { Button, Column, useToast } from '@platform-blocks/ui';
 
 export default function Demo() {
   const toast = useToast();
@@ -7,35 +7,48 @@ export default function Demo() {
     toast.show({
       title: 'File uploaded',
       message: 'Your file has been uploaded successfully.',
+      actions: [
+        {
+          label: 'Undo',
+          onPress: () => toast.info('Upload reverted'),
+        },
+      ],
     });
   };
 
   const showPersistentToast = () => {
-    toast.show({
-      title: 'Important Notice',
-      message: 'This toast will not auto-dismiss.',
-      color: 'orange',
+    let toastId = '';
+    toastId = toast.show({
+      title: 'Important notice',
+      message: 'This toast stays visible until dismissed.',
+      persistent: true,
+      actions: [
+        {
+          label: 'Dismiss',
+          onPress: () => toast.hide(toastId),
+        },
+      ],
     });
   };
 
   const showTimedToast = () => {
     toast.show({
-      title: 'Quick Message',
-      message: 'This will disappear quickly.',
+      title: 'Quick message',
+      message: 'This one hides after two seconds.',
+      autoHide: 2000,
     });
   };
 
   return (
-    <Card>
-      <Column gap={16}>
-        <Text size="lg" weight="semibold">Interactive Toasts</Text>
-        <Column gap={8}>
-          <Button title="Toast with Action" onPress={showActionToast} />
-          <Button title="Persistent Toast" onPress={showPersistentToast} />
-          <Button title="Quick Toast (2s)" onPress={showTimedToast} />
-        </Column>
-      </Column>
-    </Card>
+    <Column gap="sm">
+      <Button onPress={showActionToast}>Toast with action</Button>
+      <Button variant="outline" onPress={showPersistentToast}>
+        Persistent toast
+      </Button>
+      <Button variant="outline" onPress={showTimedToast}>
+        Quick toast (2s)
+      </Button>
+    </Column>
   );
 }
 

@@ -1,38 +1,55 @@
-import { QRCode, Row, Text, Column } from '@platform-blocks/ui';
+import { Column, QRCode, Row, Text, useTheme } from '@platform-blocks/ui';
 
 export default function Demo() {
+  const theme = useTheme();
+
+  const gradients = [
+    {
+      label: 'Linear blend',
+      value: 'https://platform-blocks.com/linear',
+      gradient: {
+        from: theme.colors.primary[6],
+        to: theme.colors.highlight[5],
+        type: 'linear' as const,
+        rotation: 45
+      },
+      moduleShape: 'rounded' as const,
+      cornerRadius: 0.4
+    },
+    {
+      label: 'Radial bloom',
+      value: 'https://platform-blocks.com/radial',
+      gradient: {
+        from: theme.colors.success[5],
+        to: theme.colors.primary[4],
+        type: 'radial' as const
+      },
+      moduleShape: 'diamond' as const,
+      cornerRadius: undefined
+    }
+  ] as const;
+
   return (
-    <Column gap={16}>
-      <Text variant="h6">QR Code Gradients</Text>
-      <Row gap={24} wrap="wrap" align="center">
-        <Column align="center" gap={8}>
-          <QRCode
-            value="https://platform-blocks.com/linear"
-            size={160}
-            gradient={{ 
-              from: '#4f46e5', 
-              to: '#ec4899', 
-              type: 'linear', 
-              rotation: 45 
-            }}
-            moduleShape="rounded"
-            cornerRadius={0.5}
-          />
-          <Text variant="caption">Linear Gradient</Text>
-        </Column>
-        <Column align="center" gap={8}>
-          <QRCode
-            value="https://platform-blocks.com/radial"
-            size={160}
-            gradient={{ 
-              from: '#06b6d4', 
-              to: '#3b82f6', 
-              type: 'radial' 
-            }}
-            moduleShape="diamond"
-          />
-          <Text variant="caption">Radial Gradient</Text>
-        </Column>
+    <Column gap="lg">
+      <Text variant="small" colorVariant="muted">
+        Gradient fills
+      </Text>
+      <Row gap="lg" wrap="wrap" justify="center">
+        {gradients.map(({ label, value, gradient, moduleShape, cornerRadius }) => (
+          <Column key={label} gap="xs" align="center">
+            <QRCode
+              value={value}
+              size={160}
+              gradient={gradient}
+              moduleShape={moduleShape}
+              cornerRadius={cornerRadius}
+              quietZone={2}
+            />
+            <Text variant="small" colorVariant="muted">
+              {label}
+            </Text>
+          </Column>
+        ))}
       </Row>
     </Column>
   );

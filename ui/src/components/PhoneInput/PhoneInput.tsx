@@ -2,6 +2,8 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { PhoneInputProps, PhoneFormat } from './types';
 import { TextInputBase } from '../Input/InputBase';
+import { Flex } from '../Flex';
+import { Text } from '../Text';
 
 // Predefined phone formats with mask patterns
 const PHONE_FORMATS: Record<string, PhoneFormat> = {
@@ -229,8 +231,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
     showCountryCode = true,
     mask: customMask,
     placeholder,
-    leftSection,
-    rightSection,
+    startSection,
+    endSection,
     size = 'md',
     ...base
   } = props;
@@ -273,35 +275,24 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
 
   const formatInfo = useMemo(() => formatDigitsWithMask(internalValue, maskPattern), [internalValue, maskPattern]);
 
-  const prefix = useMemo(() => {
-    if (showCountryCode && currentFormat.countryCode && currentFormat.countryCode !== '+') {
-      return `${currentFormat.countryCode} `;
-    }
-    return '';
-  }, [showCountryCode, currentFormat.countryCode]);
-
-  const displayValue = useMemo(() => {
-    if (!formatInfo.formatted.length) {
+  const countryCodeText = useMemo(() => {
+    if (!showCountryCode || !currentFormat.countryCode) {
       return '';
     }
+    return currentFormat.countryCode.trim();
+  }, [showCountryCode, currentFormat.countryCode]);
 
-    if (prefix) {
-      return `${prefix}${formatInfo.formatted}`;
-    }
-
-    return formatInfo.formatted;
-  }, [formatInfo.formatted, prefix]);
+  const displayValue = formatInfo.formatted;
 
   const handleChangeText = useCallback((text: string) => {
-    const textWithoutPrefix = prefix && text.startsWith(prefix) ? text.slice(prefix.length) : text;
-    const rawDigits = extractDigits(textWithoutPrefix);
+    const rawDigits = extractDigits(text);
     let nextDigits = rawDigits.slice(0, maxDigits);
 
     const prevFormatted = formatInfo.formatted;
-    const isDeleting = textWithoutPrefix.length < prevFormatted.length;
+    const isDeleting = text.length < prevFormatted.length;
 
     if (nextDigits === internalValue && isDeleting && prevFormatted.length > 0) {
-      const diffIndex = findFirstDifferenceIndex(prevFormatted, textWithoutPrefix);
+      const diffIndex = findFirstDifferenceIndex(prevFormatted, text);
       nextDigits = removeDigitForDeletion(internalValue, formatInfo.mapping, diffIndex);
     }
 
@@ -311,9 +302,10 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
 
     const formattedResult = formatDigitsWithMask(nextDigits, maskPattern);
     let formattedDisplay = formattedResult.formatted;
-
-    if (formattedDisplay && prefix) {
-      formattedDisplay = `${prefix}${formattedDisplay}`;
+    if (countryCodeText) {
+      formattedDisplay = formattedDisplay
+        ? `${countryCodeText} ${formattedDisplay}`
+        : countryCodeText;
     }
 
     setInternalValue(nextDigits);
@@ -321,7 +313,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
     if (onChange) {
       onChange(nextDigits, formattedDisplay);
     }
-  }, [prefix, maxDigits, formatInfo, internalValue, maskPattern, onChange]);
+  }, [countryCodeText, maxDigits, formatInfo, internalValue, maskPattern, onChange]);
 
   const effectivePlaceholder = useMemo(() => {
     if (placeholder) {
@@ -332,14 +324,35 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
       return customMask.replace(DIGIT_PLACEHOLDER_REGEX, '0');
     }
 
-    let placeholderText = currentFormat.placeholder || 'Enter phone number';
+    return currentFormat.placeholder || 'Enter phone number';
+  }, [placeholder, customMask, currentFormat]);
 
-    if (showCountryCode && currentFormat.countryCode !== '+') {
-      placeholderText = `${currentFormat.countryCode} ${placeholderText}`;
+  const startSectionContent = useMemo(() => {
+    if (!countryCodeText && !startSection) {
+      return undefined;
     }
 
-    return placeholderText;
-  }, [placeholder, customMask, currentFormat, showCountryCode]);
+    if (countryCodeText && startSection) {
+      return (
+        <Flex direction="row" align="center" gap="xs">
+          <Text size="sm" weight="semibold" colorVariant="secondary">
+            {countryCodeText}
+          </Text>
+          {startSection}
+        </Flex>
+      );
+    }
+
+    if (countryCodeText) {
+      return (
+        <Text size="sm" weight="semibold" colorVariant="secondary">
+          {countryCodeText}
+        </Text>
+      );
+    }
+
+    return startSection;
+  }, [countryCodeText, startSection]);
 
   return (
     <TextInputBase
@@ -348,8 +361,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = (props) => {
       onChangeText={handleChangeText}
       placeholder={effectivePlaceholder}
       size={size as any}
-      leftSection={leftSection}
-      rightSection={rightSection}
+      startSection={startSectionContent}
+      endSection={endSection}
       textInputProps={{
         keyboardType: Platform.OS === 'ios' ? 'number-pad' : 'phone-pad',
         autoComplete: 'tel',

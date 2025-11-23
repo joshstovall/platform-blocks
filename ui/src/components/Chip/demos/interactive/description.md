@@ -1,20 +1,12 @@
 ---
-title: Interactive
-category: usage
-order: 40
+title: Removable tags
+category: interactions
+order: 60
 tags: [interactive, removable]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-renderStyle: code_flex
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: true
-githubUrl: "https://github.com"
 ---
 
-Interactive chips with remove functionality for creating tag-like interfaces.
+Provide an `onRemove` handler to turn Chips into editable tags; the component renders a dismiss icon and calls your callback with no extra wiring.

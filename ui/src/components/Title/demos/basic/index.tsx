@@ -1,12 +1,16 @@
-import { Title, Card, Flex, Text } from '@platform-blocks/ui';
+import { Card, Column, Text, Title } from '@platform-blocks/ui';
 
-export default function BasicTitleDemo() {
+export default function Demo() {
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={12}>
-        <Title>Default Title (h2)</Title>
-        <Text size="sm" colorVariant="secondary">Uses order=2 mapping to Text variant h2</Text>
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="xs">
+          <Title>Default section heading</Title>
+          <Text size="sm" colorVariant="secondary">
+            Titles default to order 2, making them a natural choice for section headings.
+          </Text>
+        </Column>
+      </Card>
+    </Column>
   );
 }

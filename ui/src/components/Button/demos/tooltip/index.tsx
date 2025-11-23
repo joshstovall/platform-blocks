@@ -1,42 +1,34 @@
-import { Button, Row, Column } from '@platform-blocks/ui';
+import { Button, Column, Row } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap="2xl">
-      <Row gap="lg" align="flex-start">
-        <Button 
-          title="Save" 
-          tooltip="Save your current work"
-        />
-        <Button 
-          title="Delete" 
-          variant="outline" 
-          tooltip="Permanently delete this item"
+    <Column gap="lg">
+      <Row gap="md" wrap="wrap" align="flex-start">
+        <Button tooltip="Save your current work.">Save</Button>
+        <Button
+          variant="outline"
+          tooltip="Permanently delete this item."
           tooltipPosition="bottom"
-        />
-        <Button 
-          title="Help" 
-          variant="ghost" 
-          tooltip="Get help and support"
+        >
+          Delete
+        </Button>
+        <Button
+          variant="ghost"
+          tooltip="Get help and support resources."
           tooltipPosition="right"
-        />
+        >
+          Help
+        </Button>
       </Row>
-      
-      <Row gap="lg" align="flex-start">
-        <Button 
-          title="Download" 
-          tooltip="Download file to your device"
-          tooltipPosition="left"
-        />
-        <Button 
-          icon="⚙️" 
-          tooltip="Open settings panel"
-        />
-        <Button 
-          title="Upload" 
-          disabled
-          tooltip="Feature not available in demo mode"
-        />
+
+      <Row gap="md" wrap="wrap" align="flex-start">
+        <Button tooltip="Download the file to your device." tooltipPosition="left">
+          Download
+        </Button>
+        <Button icon="⚙️" tooltip="Open the settings panel." accessibilityLabel="Open settings" />
+        <Button disabled tooltip="Feature not available in demo mode.">
+          Upload
+        </Button>
       </Row>
     </Column>
   );

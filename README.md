@@ -9,6 +9,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/joshstovall/platform-blocks/blob/HEAD/LICENSE)
 [![npm](https://img.shields.io/npm/v/platform-blocks)](https://www.npmjs.com/package/@platform-blocks/ui)
 [![Discord](https://img.shields.io/badge/Chat%20on-Discord-%235865f2)](https://discord.gg/kbHjwzgXbc)
+[![X](https://img.shields.io/badge/Follow-%40platform__blocks-000000?logo=x&logoColor=white)](https://x.com/platform_blocks)
 
 </div>
 

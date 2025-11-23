@@ -1,5 +1,5 @@
 ---
-title: TextArea Sizes
+title: Sizes
 category: styling
 order: 30
 tags: [sizes, dimensions, height]
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different sizes for TextArea components to match your design needs.
+Walks through xs to xl text areas with guidance on when each size fits best.

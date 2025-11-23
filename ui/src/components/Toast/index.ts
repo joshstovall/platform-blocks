@@ -19,6 +19,5 @@ export {
   SeverityToastOptions,
   ToastMessage,
   ToastShortcut,
-  toast,
   onToastsRequested
 } from './ToastProvider';

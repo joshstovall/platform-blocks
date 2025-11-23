@@ -1,13 +1,43 @@
-import { Text, Space, Column } from '@platform-blocks/ui';
+import { Block, Column, Space, Text, useTheme } from '@platform-blocks/ui';
 
-export default function BasicSpaceDemo() {
+const EXAMPLES = [
+  {
+    label: 'Token spacing (md)',
+    gap: 'md' as const,
+    helper: 'Use theme tokens for consistent rhythm between related content.'
+  },
+  {
+    label: 'Token spacing (xl)',
+    gap: 'xl' as const,
+    helper: 'Larger tokens create breathing room for grouped sections.'
+  },
+  {
+    label: 'Numeric spacing (24px)',
+    gap: 24,
+    helper: 'Fallback to numeric values when a token does not fit the layout.'
+  }
+] as const;
+
+export default function Demo() {
+  const theme = useTheme();
+
   return (
-    <Column>
-      <Text>First line</Text>
-      <Space h="md" />
-      <Text>Second line</Text>
-      <Space h={32} />
-      <Text>Custom numeric spacing</Text>
+    <Column gap="xl">
+      {EXAMPLES.map(({ label, gap, helper }) => (
+        <Column key={label} gap="xs">
+          <Text weight="medium">{label}</Text>
+          <Block bg={theme.backgrounds.subtle} radius="lg" p="md">
+            <Column>
+              <Text>First line</Text>
+              <Space h={gap} />
+              <Text>Second line</Text>
+            </Column>
+          </Block>
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
     </Column>
   );
 }

@@ -1,45 +1,49 @@
-import { Timeline, Text, Card, Column, Row, Block } from '@platform-blocks/ui'
+import { Column, Text, Timeline } from '@platform-blocks/ui';
+
+const phases = ['Start', 'Plan', 'Build'];
+
+const variantExamples = [
+  { label: 'Solid (default)', variant: undefined },
+  { label: 'Dashed', variant: 'dashed' as const },
+  { label: 'Dotted', variant: 'dotted' as const },
+];
+
+const releaseFlow = [
+  { title: 'Planning', variant: 'solid' as const },
+  { title: 'Design', variant: 'dashed' as const },
+  { title: 'Development', variant: 'dotted' as const },
+  { title: 'QA', variant: 'dashed' as const },
+  { title: 'Launch', variant: 'solid' as const },
+];
 
 export default function Demo() {
   return (
-    <Block gap={24}>
-      <Text variant="h6">Connector Line Variants</Text>
+    <Column gap="lg">
+      <Text size="sm" colorVariant="secondary">
+        Change the connector pattern for individual steps with the `lineVariant` prop.
+      </Text>
 
-      <Card padding={16}>
-        <Block direction="row" wrap gap={24}>
-          <Text weight="600">Solid (default)</Text>
-          <Timeline>
-            <Timeline.Item title="Start" />
-            <Timeline.Item title="Middle" />
-            <Timeline.Item title="End" />
-          </Timeline>
+      <Column gap="md">
+        {variantExamples.map((example) => (
+          <Column key={example.label} gap="sm">
+            <Text weight="semibold">{example.label}</Text>
+            <Timeline>
+              {phases.map((title) => (
+                <Timeline.Item key={`${example.label}-${title}`} title={title} lineVariant={example.variant} />
+              ))}
+            </Timeline>
+          </Column>
+        ))}
+      </Column>
 
-          <Text weight="600">Dashed</Text>
-          <Timeline>
-            <Timeline.Item title="Phase 1" lineVariant="dashed" />
-            <Timeline.Item title="Phase 2" lineVariant="dashed" />
-            <Timeline.Item title="Phase 3" lineVariant="dashed" />
-          </Timeline>
-
-          <Text weight="600">Dotted</Text>
-          <Timeline>
-            <Timeline.Item title="Alpha" lineVariant="dotted" />
-            <Timeline.Item title="Beta" lineVariant="dotted" />
-            <Timeline.Item title="Release" lineVariant="dotted" />
-          </Timeline>
-        </Block>
-      </Card>
-
-      <Card padding={16}>
-        <Text weight="600">Mixed Variants</Text>
+      <Column gap="sm">
+        <Text weight="semibold">Mix variants within the same flow</Text>
         <Timeline>
-          <Timeline.Item title="Planning" lineVariant="solid" />
-          <Timeline.Item title="Design" lineVariant="dashed" />
-          <Timeline.Item title="Development" lineVariant="dotted" />
-          <Timeline.Item title="QA" lineVariant="dashed" />
-          <Timeline.Item title="Launch" lineVariant="solid" />
+          {releaseFlow.map((step) => (
+            <Timeline.Item key={step.title} title={step.title} lineVariant={step.variant} />
+          ))}
         </Timeline>
-      </Card>
-    </Block>
-  )
+      </Column>
+    </Column>
+  );
 }

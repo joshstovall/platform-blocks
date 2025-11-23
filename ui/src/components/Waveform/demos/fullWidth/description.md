@@ -1,8 +1,13 @@
+description: Demonstrates the fullWidth prop for responsive waveform display.
 ---
 title: Full Width
-description: Demonstrates the fullWidth prop for responsive waveform display.
-tags: ["full-width", "responsive", "layout"]
-showCode: false
+category: layout
+order: 20
+tags: [responsive, fullWidth]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Shows how the waveform can take the full width of its container, making it responsive and suitable for different screen sizes.
+Enable the `fullWidth` prop to let the waveform stretch to its container; wrap it in a constrained parent when you need a fixed width.

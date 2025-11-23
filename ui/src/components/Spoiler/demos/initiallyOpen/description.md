@@ -1,6 +1,12 @@
 ---
-title: Initially Open
-description: Control initial expansion state with initiallyOpen prop.
+title: Initial State
+category: behavior
+order: 20
+tags: [spoiler, state, initially-open]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing the difference between spoilers that start expanded vs collapsed using the initiallyOpen prop.
+Flip the `initiallyOpen` prop to choose whether content renders expanded on mount or waits for user interaction.

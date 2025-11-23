@@ -4,6 +4,7 @@ import type {
   ChartAxis,
   ChartGrid,
   ChartInteractionCallbacks,
+  ChartLegend,
   ChartTooltip,
 } from '../../types/base';
 
@@ -79,6 +80,8 @@ export interface HistogramChartProps
   yAxis?: ChartAxis;
   /** Grid line configuration */
   grid?: ChartGrid;
+  /** Legend configuration */
+  legend?: ChartLegend;
   /** Render annotation markers (thresholds, targets) */
   annotations?: ChartAnnotation[];
   /** Highlight value ranges with background fills */

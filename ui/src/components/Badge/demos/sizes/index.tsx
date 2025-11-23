@@ -2,7 +2,7 @@ import { Badge, Column } from '@platform-blocks/ui'
 
 export default function Demo() {
   return (
-    <Column wrap="wrap" >
+    <Column gap="sm">
       <Badge size="xs">Extra Small</Badge>
       <Badge size="sm">Small</Badge>
       <Badge size="md">Medium</Badge>

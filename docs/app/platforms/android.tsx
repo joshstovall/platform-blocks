@@ -50,19 +50,19 @@ export default function AndroidPlatformScreen() {
             <Text variant="h6" >
               Native Android Experience
             </Text>
-            <Text variant="body" colorVariant="secondary" mb="md" style={{ lineHeight: 24 }}>
+            <Text variant="p" colorVariant="secondary" mb="md" style={{ lineHeight: 24 }}>
               Platform Blocks delivers native Android components with Material Design integration,
               ensuring your apps feel at home on Android devices while maintaining cross-platform consistency.
             </Text>
             <Flex direction="row" wrap="wrap" gap="xs">
               <Flex px="md" py="xs" style={{ backgroundColor: '#3DDC8415', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#3DDC84' }}>API 23+</Text>
+                <Text variant="small" style={{ color: '#3DDC84' }}>API 23+</Text>
               </Flex>
               <Flex px="md" py="xs" style={{ backgroundColor: '#4285F415', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#4285F4' }}>Material Design</Text>
+                <Text variant="small" style={{ color: '#4285F4' }}>Material Design</Text>
               </Flex>
               <Flex px="md" py="xs" style={{ backgroundColor: '#FF670015', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#FF6700' }}>Kotlin Ready</Text>
+                <Text variant="small" style={{ color: '#FF6700' }}>Kotlin Ready</Text>
               </Flex>
             </Flex>
           </Card>
@@ -72,13 +72,13 @@ export default function AndroidPlatformScreen() {
           <Flex direction="column" gap="md">
             <Text variant="h6">Installation</Text>
             <Card variant="filled" p="md">
-              <Text variant="caption" weight="semibold" mb="xs" style={{ color: '#666' }}>
+              <Text variant="small" weight="semibold" mb="xs" style={{ color: '#666' }}>
                 NPM
               </Text>
               <CodeBlock>
                 npm install platform-blocks
               </CodeBlock>
-              <Text variant="caption" colorVariant="secondary">
+              <Text variant="small" colorVariant="secondary">
                 For Android-specific setup instructions, see our installation guide.
               </Text>
             </Card>
@@ -88,13 +88,13 @@ export default function AndroidPlatformScreen() {
           <Flex direction="column" gap="md">
             <Text variant="h6">Android Configuration</Text>
             <Card variant="outline" p="md">
-              <Text variant="body" >
+              <Text variant="p" >
                 Configure your Android project for Platform Blocks:
               </Text>
 
               <Flex direction="column" gap="md">
                 <Flex direction="column">
-                  <Text variant="body" weight="semibold">
+                  <Text variant="p" weight="semibold">
                     1. Gradle Configuration
                   </Text>
                   <CodeBlock>
@@ -104,19 +104,19 @@ export default function AndroidPlatformScreen() {
                 </Flex>
 
                 <Flex direction="column">
-                  <Text variant="body" weight="semibold" >
+                  <Text variant="p" weight="semibold" >
                     2. Permissions Setup
                   </Text>
-                  <Text variant="caption" colorVariant="secondary" mb="xs">
+                  <Text variant="small" colorVariant="secondary" mb="xs">
                     Add required permissions to your AndroidManifest.xml
                   </Text>
                 </Flex>
 
                 <Flex direction="column">
-                  <Text variant="body" weight="semibold" >
+                  <Text variant="p" weight="semibold" >
                     3. ProGuard Configuration
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Configure ProGuard rules for production builds
                   </Text>
                 </Flex>

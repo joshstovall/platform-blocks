@@ -9,7 +9,7 @@ export const MobileBottomBar: React.FC = () => {
   const theme = useTheme();
   const pathname = usePathname();
   const { openNavbar } = useAppShellApi();
-  if (Platform.OS === 'web') return null;
+  
   // Stable press handlers and color tokens
   const pushTo = React.useCallback((route: string) => router.push(route), []);
   const gray6 = `${theme.colors.gray[6]}`;
@@ -45,5 +45,8 @@ export const MobileBottomBar: React.FC = () => {
     const match = baseItems.find(i => pathname === i.key || (i.key !== '/' && pathname.startsWith(i.key as string)));
     return match?.key;
   }, [baseItems, pathname]);
+  
+  if (Platform.OS === 'web') return null;
+  
   return <AppShell.BottomAppBar items={items} activeKey={activeKey} variant="solid" showLabels />;
 };

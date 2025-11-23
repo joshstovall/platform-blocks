@@ -1,33 +1,50 @@
-import { Spotlight, useSpotlightStoreInstance, Text, Button, Flex, Card } from '@platform-blocks/ui';
+import { Button, Card, Column, Spotlight, Text, useSpotlightStoreInstance, type SpotlightProps } from '@platform-blocks/ui';
 
-const SPOTLIGHT_ACTIONS = [
+const actions: SpotlightProps['actions'] = [
   {
     group: 'Navigation',
     actions: [
-      { id: 'home', label: 'Home', icon: 'home', onPress: () => console.log('home') },
-      { id: 'dashboard', label: 'Dashboard', description: 'Main metrics overview', icon: 'star', onPress: () => console.log('dashboard') },
-    ]
+      { id: 'home', label: 'Home', icon: 'home', onPress: () => console.log('navigate: home') },
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        description: 'Jump to the analytics overview',
+        icon: 'star',
+        onPress: () => console.log('navigate: dashboard'),
+      },
+    ],
   },
   {
     group: 'Settings',
     actions: [
-      { id: 'profile', label: 'Profile', icon: 'user', onPress: () => console.log('profile') },
-      { id: 'billing', label: 'Billing Settings', description: 'Manage payment methods', icon: 'settings', onPress: () => console.log('billing') },
-    ]
-  }
+      { id: 'profile', label: 'Profile', icon: 'user', onPress: () => console.log('navigate: profile') },
+      {
+        id: 'billing',
+        label: 'Billing settings',
+        description: 'Manage payment methods',
+        icon: 'settings',
+        onPress: () => console.log('navigate: billing'),
+      },
+    ],
+  },
 ];
 
 export default function Demo() {
   const [store] = useSpotlightStoreInstance();
-  
+
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="lg" weight="semibold" mb={8}>Grouped Actions</Text>
-        <Text size="sm" color="dimmed" mb={12}>Actions organized under logical group headers.</Text>
-        <Button title="Open Spotlight" variant="secondary" onPress={() => store.open()} />
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Group actions to create semantic sections inside the results list. Each group renders a header before its nested actions.
+          </Text>
+          <Button variant="secondary" onPress={() => store.open()}>
+            Open spotlight
+          </Button>
+        </Column>
       </Card>
-      <Spotlight actions={SPOTLIGHT_ACTIONS as any} store={store} />
-    </Flex>
+      <Spotlight actions={actions} store={store} />
+    </Column>
   );
 }

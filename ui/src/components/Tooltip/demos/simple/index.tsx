@@ -1,46 +1,42 @@
-import { View } from 'react-native';
-import { Tooltip, Button } from '@platform-blocks/ui';
+import { Card, Column, Row, Tooltip, Button, Text } from '@platform-blocks/ui';
 
-export default function SimpleTooltipDemo() {
+export default function Demo() {
   return (
-    <View style={{ padding: 40, gap: 20 }}>
-      {/* Basic tooltip */}
-      <Tooltip label="This is a simple tooltip">
-        <Button onPress={() => {}}>Hover me!</Button>
-      </Tooltip>
-
-      {/* Different positions */}
-      <View style={{ flexDirection: 'row', gap: 20, justifyContent: 'center' }}>
-        <Tooltip label="Top tooltip" position="top">
-          <Button onPress={() => {}}>Top</Button>
-        </Tooltip>
-        
-        <Tooltip label="Bottom tooltip" position="bottom">
-          <Button onPress={() => {}}>Bottom</Button>
-        </Tooltip>
-        
-        <Tooltip label="Left tooltip" position="left">
-          <Button onPress={() => {}}>Left</Button>
-        </Tooltip>
-        
-        <Tooltip label="Right tooltip" position="right">
-          <Button onPress={() => {}}>Right</Button>
-        </Tooltip>
-      </View>
-
-      {/* With arrow */}
-      <Tooltip label="Tooltip with arrow" withArrow>
-        <Button onPress={() => {}}>With Arrow</Button>
-      </Tooltip>
-
-      {/* Multiline */}
-      <Tooltip 
-        label="This is a much longer tooltip text that should wrap to multiple lines" 
-        multiline 
-        width={200}
-      >
-        <Button onPress={() => {}}>Multiline</Button>
-      </Tooltip>
-    </View>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Adjust the `events` prop to control which interactions display the tooltip.
+          </Text>
+          <Column gap="sm">
+            <Row gap="sm" align="center">
+              <Tooltip label="Default hover and focus behavior">
+                <Button size="sm">Hover or focus</Button>
+              </Tooltip>
+            </Row>
+            <Row gap="sm" align="center">
+              <Tooltip
+                label="Only appears when the button receives focus"
+                events={{ hover: false, focus: true, touch: false }}
+              >
+                <Button size="sm" variant="outline">
+                  Focus only
+                </Button>
+              </Tooltip>
+            </Row>
+            <Row gap="sm" align="center">
+              <Tooltip
+                label="Shows on touch interactions"
+                events={{ hover: false, focus: false, touch: true }}
+              >
+                <Button size="sm" variant="ghost">
+                  Touch only
+                </Button>
+              </Tooltip>
+            </Row>
+          </Column>
+        </Column>
+      </Card>
+    </Column>
   );
 }

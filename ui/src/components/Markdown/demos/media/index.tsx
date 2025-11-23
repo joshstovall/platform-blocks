@@ -1,11 +1,11 @@
-import { Markdown, Flex, Card } from '@platform-blocks/ui';
+import { Markdown } from '@platform-blocks/ui';
 
 export default function Demo() {
   const content = `# Media in Markdown
 
 ## Images
 
-![PlatformBlocks Logo](https://via.placeholder.com/400x200/6366F1/FFFFFF?text=PlatformBlocks+UI)
+![PlatformBlocks Logo](https://github.com/joshstovall/platform-blocks/raw/main/docs/assets/favicon.png)
 
 ## Links
 
@@ -30,11 +30,5 @@ Content above the line.
 Content below the line.
 `;
 
-  return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Markdown>{content}</Markdown>
-      </Card>
-    </Flex>
-  );
+  return <Markdown>{content}</Markdown>
 }

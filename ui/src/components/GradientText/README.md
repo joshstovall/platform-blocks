@@ -6,11 +6,12 @@ A powerful React Native component for rendering text with gradient colors. Suppo
 
 ✨ **Multiple Color Support** - Use 2 or more colors in your gradient  
 🎨 **Custom Angles** - Control gradient direction from 0-360 degrees  
-🎬 **Animated Gradients** - Auto-animating gradients (web only)  
 📱 **Cross-Platform** - Works on Web, iOS, and Android  
 ⚡ **High Performance** - Optimized rendering and animations  
 🎯 **Controlled Position** - Manually control gradient position (0.0-1.0)  
 ♿ **Accessible** - Inherits all Text accessibility features  
+
+> Need shimmering or animated sweeps? Use the dedicated [`ShimmerText`](../ShimmerText/README.md) component instead.
 
 ## Installation
 
@@ -69,19 +70,6 @@ function App() {
 </GradientText>
 ```
 
-### Animated Gradient (Web Only)
-
-```tsx
-<GradientText 
-  colors={['#FF0080', '#7928CA', '#4F46E5']}
-  animate
-  animationDuration={3000}
-  animationLoop="loop"
->
-  Animated Gradient
-</GradientText>
-```
-
 ### Controlled Position
 
 ```tsx
@@ -121,8 +109,6 @@ function ControlledExample() {
     '#0080FF',
     '#8000FF'
   ]}
-  animate
-  animationDuration={5000}
 >
   Rainbow Text
 </GradientText>
@@ -150,14 +136,7 @@ All props from the `Text` component are supported, plus:
 |------|------|---------|-------------|
 | `position` | `number` | `0` | Gradient position (0-1) |
 
-#### Animation (Web Only)
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `animate` | `boolean` | `false` | Enable auto-animation |
-| `animationDuration` | `number` | `2000` | Duration in ms |
-| `animationLoop` | `'loop' \| 'reverse' \| 'once'` | `'loop'` | Loop behavior |
-| `animationDelay` | `number` | `0` | Delay in ms |
+> ℹ️ GradientText now renders static gradients only. For shimmering sweeps or looping animations, pair it with [`ShimmerText`](../ShimmerText/README.md) which exposes richer animation controls across platforms.
 
 ### Gradient Angles
 
@@ -186,19 +165,16 @@ Values outside 0-1 will wrap the gradient.
 
 ### Web ✅
 - Full gradient support with CSS `background-clip`
-- Animated gradients using requestAnimationFrame
 - Hardware accelerated rendering
-- Smooth 60fps animations
+- Programmatic control via the `position` prop (hook it up to your own animation controller if needed)
 
 ### iOS ✅
 - Static gradients supported
-- Uses LinearGradient component
-- Animation not yet supported (planned)
+- Uses LinearGradient component for masking
 
 ### Android ✅
 - Static gradients supported
-- Uses LinearGradient component  
-- Animation not yet supported (planned)
+- Uses LinearGradient component for masking
 
 ## TypeScript
 
@@ -211,7 +187,6 @@ const MyGradient: React.FC = () => {
   const gradientProps: GradientTextProps = {
     colors: ['#FF0080', '#7928CA'],
     angle: 45,
-    animate: true,
   };
   
   return <GradientText {...gradientProps}>Hello</GradientText>;
@@ -264,23 +239,20 @@ GradientText maintains full accessibility:
 
 ### Animation not working
 
-- Animation is web-only currently
-- Check that `animate={true}` is set
-- Verify no `position` prop is set (conflicts with animate)
+- Built-in animation has been moved to `ShimmerText`. Use that component for shimmer effects or animate the `position` prop manually.
 
 ### Performance issues
 
 - Reduce number of colors
-- Increase animation duration
-- Disable animation if not needed
-- Check for unnecessary re-renders
+- Memoize expensive child content to avoid re-renders
+- If animating the `position` prop manually, throttle updates or use `useAnimatedValue`
+- Prefer `ShimmerText` for sweeping highlights
 
 ## Examples & Demos
 
 Check the `/demos` directory for more examples:
 
 - `basic` - Simple gradient examples
-- `animated` - Animated gradient examples (web)
 - `angles` - Different gradient directions
 - `controlled` - Controlled position examples
 

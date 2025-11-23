@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
-import { Select, Flex, Text } from '@platform-blocks/ui';
+import { useState } from 'react'
 
-export default function NoCloseOnSelectDemo() {
-  const [value, setValue] = useState<string | null>(null);
-  const options = [
-    { label: 'Alpha', value: 'alpha' },
-    { label: 'Beta', value: 'beta' },
-    { label: 'Gamma', value: 'gamma' },
-    { label: 'Delta', value: 'delta' },
-  ];
-  
+import { Column, Select, Text } from '@platform-blocks/ui'
+
+const options = [
+  { label: 'Alpha', value: 'alpha' },
+  { label: 'Beta', value: 'beta' },
+  { label: 'Gamma', value: 'gamma' },
+  { label: 'Delta', value: 'delta' },
+]
+
+export default function Demo() {
+  const [value, setValue] = useState<string | null>(null)
+
   return (
-    <Flex direction="column" gap={12}>
+    <Column gap="sm">
+      <Text weight="semibold">Persistent menu</Text>
       <Text size="sm" colorVariant="secondary">
-        Menu stays open after selecting so you can quickly compare or change.
+        Keep the menu open after a selection to compare other options quickly.
       </Text>
       <Select
-        label="Persistent Menu"
+        label="Persistent menu"
         options={options}
-        value={value || undefined}
+        value={value ?? undefined}
         onChange={(val) => setValue(val as string)}
         closeOnSelect={false}
       />
-      {value && <Text size="sm" colorVariant="secondary">Last picked: {value}</Text>}
-    </Flex>
-  );
+      {value && (
+        <Text size="xs" colorVariant="secondary">
+          Last picked: {value}
+        </Text>
+      )}
+    </Column>
+  )
 }

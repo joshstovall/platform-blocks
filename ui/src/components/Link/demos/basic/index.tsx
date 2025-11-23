@@ -1,20 +1,29 @@
-import { Link, Column } from '@platform-blocks/ui';
+import { Card, Column, Link, Text } from '@platform-blocks/ui';
+
+const resources = [
+  { href: '#brand', label: 'brand guidelines' },
+  { href: '#voice', label: 'voice and tone guide' },
+  { href: '#releases', label: 'release checklist' },
+];
+
+const [brandGuide, voiceGuide, releaseChecklist] = resources;
 
 export default function Demo() {
   return (
-    <Column gap={8}>
-      <Link href="#" color="primary">
-        Primary link
-      </Link>
-      <Link href="#" color="secondary">
-        Secondary link
-      </Link>
-      <Link href="#" color="success">
-        Success link
-      </Link>
-      <Link href="#" color="error">
-        Error link
-      </Link>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Use `Link` inline with body copy to direct readers to additional guidance without breaking the flow of text.
+          </Text>
+          <Text size="sm">
+            Before publishing, review the{' '}
+            <Link href={brandGuide.href}>{brandGuide.label}</Link>, consult our{' '}
+            <Link href={voiceGuide.href}>{voiceGuide.label}</Link>, and confirm each launch in the{' '}
+            <Link href={releaseChecklist.href}>{releaseChecklist.label}</Link>.
+          </Text>
+        </Column>
+      </Card>
     </Column>
   );
 }

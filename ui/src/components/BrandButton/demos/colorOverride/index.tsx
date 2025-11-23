@@ -4,12 +4,12 @@ export default function ColorOverrideBrandButtonDemo() {
   return (
       <Flex direction="column" gap="lg">
         <Text variant="h6">Brand Icon Color Override</Text>
-        <Text variant="body" colorVariant="secondary">
+        <Text variant="p" colorVariant="secondary">
           Use the color prop to override default brand colors with a single color
         </Text>
         
         <Flex direction="column" gap="md">
-          <Text variant="caption" weight="600">Default Colors:</Text>
+          <Text variant="small" weight="600">Default Colors:</Text>
           <Flex direction="row" gap="sm" wrap="wrap">
             <BrandButton brand="google" title="Google" />
             <BrandButton brand="github" title="GitHub" />
@@ -19,7 +19,7 @@ export default function ColorOverrideBrandButtonDemo() {
         </Flex>
 
         <Flex direction="column" gap="md">
-          <Text variant="caption" weight="600">Custom Color (#666666):</Text>
+          <Text variant="small" weight="600">Custom Color (#666666):</Text>
           <Flex direction="row" gap="sm" wrap="wrap">
             <BrandButton brand="google" title="Google" color="#666666" />
             <BrandButton brand="github" title="GitHub" color="#666666" />
@@ -29,7 +29,7 @@ export default function ColorOverrideBrandButtonDemo() {
         </Flex>
 
         <Flex direction="column" gap="md">
-          <Text variant="caption" weight="600">Red Override (#E53E3E):</Text>
+          <Text variant="small" weight="600">Red Override (#E53E3E):</Text>
           <Flex direction="row" gap="sm" wrap="wrap">
             <BrandButton brand="google" title="Google" color="#E53E3E" />
             <BrandButton brand="github" title="GitHub" color="#E53E3E" />
@@ -39,7 +39,7 @@ export default function ColorOverrideBrandButtonDemo() {
         </Flex>
 
         <Flex direction="column" gap="md">
-          <Text variant="caption" weight="600">Outline Variant with Color Override:</Text>
+          <Text variant="small" weight="600">Outline Variant with Color Override:</Text>
           <Flex direction="row" gap="sm" wrap="wrap">
             <BrandButton brand="google" title="Google" variant="outline" color="#8B5CF6" />
             <BrandButton brand="github" title="GitHub" variant="outline" color="#8B5CF6" />

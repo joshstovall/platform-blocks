@@ -119,8 +119,8 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
     disabled,
     active,
     danger,
-    leftSection,
-    rightSection,
+    startSection,
+    endSection,
     style,
     textStyle,
     ...rest
@@ -175,9 +175,9 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
         ]}
         {...rest as any}
       >
-        {leftSection && (
+        {startSection && (
           <View style={isRTL ? { marginLeft: sectionSpacing } : { marginRight: sectionSpacing }}>
-            {leftSection}
+            {startSection}
           </View>
         )}
         <Text
@@ -186,9 +186,9 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
         >
           {children}
         </Text>
-        {rightSection && (
+        {endSection && (
           <View style={isRTL ? { marginRight: 'auto' } : { marginLeft: 'auto' }}>
-            {rightSection}
+            {endSection}
           </View>
         )}
       </Pressable>
@@ -197,9 +197,9 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
 
   return (
     <View style={[itemStyle, style]} ref={ref} {...rest}>
-      {leftSection && (
+      {startSection && (
         <View style={isRTL ? { marginLeft: sectionSpacing } : { marginRight: sectionSpacing }}>
-          {leftSection}
+          {startSection}
         </View>
       )}
       <Text
@@ -208,9 +208,9 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
       >
         {children}
       </Text>
-      {rightSection && (
+      {endSection && (
         <View style={isRTL ? { marginRight: 'auto' } : { marginLeft: 'auto' }}>
-          {rightSection}
+          {endSection}
         </View>
       )}
     </View>

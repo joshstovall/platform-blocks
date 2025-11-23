@@ -44,19 +44,19 @@ export default function WebPlatformScreen() {
             <Text variant="h6" style={{ marginBottom: 12 }}>
               Modern Web Experience
             </Text>
-            <Text variant="body" colorVariant="secondary" style={{ marginBottom: 16, lineHeight: 24 }}>
+            <Text variant="p" colorVariant="secondary" style={{ marginBottom: 16, lineHeight: 24 }}>
               Platform Blocks brings React Native's component model to the web with optimized rendering,
               responsive design, and progressive web app capabilities while maintaining native mobile consistency.
             </Text>
             <Flex direction="row" wrap="wrap" gap={8}>
               <View style={{ backgroundColor: '#61DAFB15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#61DAFB' }}>React 18+</Text>
+                <Text variant="small" style={{ color: '#61DAFB' }}>React 18+</Text>
               </View>
               <View style={{ backgroundColor: '#FF6B6B15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#FF6B6B' }}>Responsive</Text>
+                <Text variant="small" style={{ color: '#FF6B6B' }}>Responsive</Text>
               </View>
               <View style={{ backgroundColor: '#4ECDC415', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#4ECDC4' }}>PWA Ready</Text>
+                <Text variant="small" style={{ color: '#4ECDC4' }}>PWA Ready</Text>
               </View>
             </Flex>
           </Card>
@@ -69,10 +69,10 @@ export default function WebPlatformScreen() {
               <Flex direction="row" align="flex-start" gap="sm">
                 <Icon name="check" size={20} color="#4ECDC4" style={{ marginTop: 2 }} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     Server-Side Rendering
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Built-in SSR support for better SEO and initial load performance
                   </Text>
                 </View>
@@ -83,10 +83,10 @@ export default function WebPlatformScreen() {
               <Flex direction="row" align="flex-start" gap="sm">
                 <Icon name="check" size={20} color="#4ECDC4" style={{ marginTop: 2 }} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     Responsive Design
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Automatically adapts to desktop, tablet, and mobile screen sizes
                   </Text>
                 </View>
@@ -97,10 +97,10 @@ export default function WebPlatformScreen() {
               <Flex direction="row" align="flex-start" gap="sm">
                 <Icon name="check" size={20} color="#4ECDC4" style={{ marginTop: 2 }} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     Web Accessibility
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     WCAG 2.1 AA compliance with keyboard navigation and screen reader support
                   </Text>
                 </View>
@@ -111,10 +111,10 @@ export default function WebPlatformScreen() {
               <Flex direction="row" align="flex-start" gap="sm">
                 <Icon name="check" size={20} color="#4ECDC4" style={{ marginTop: 2 }} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     Progressive Web App
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Offline support, app-like experience, and installable web apps
                   </Text>
                 </View>
@@ -126,7 +126,7 @@ export default function WebPlatformScreen() {
           <View style={{ gap: 16 }}>
             <Text variant="h6">Installation</Text>
             <Card variant="filled" style={{ padding: 16 }}>
-              <Text variant="caption" weight="semibold" style={{ marginBottom: 8, color: '#666' }}>
+              <Text variant="small" weight="semibold" style={{ marginBottom: 8, color: '#666' }}>
                 NPM
               </Text>
               <View style={{
@@ -141,7 +141,7 @@ export default function WebPlatformScreen() {
                   npm install platform-blocks react-native-web
                 </Text>
               </View>
-              <Text variant="caption" colorVariant="secondary">
+              <Text variant="small" colorVariant="secondary">
                 React Native Web is required for web platform compatibility.
               </Text>
             </Card>
@@ -151,13 +151,13 @@ export default function WebPlatformScreen() {
           <View style={{ gap: 16 }}>
             <Text variant="h6">Web Configuration</Text>
             <Card variant="outline" style={{ padding: 16 }}>
-              <Text variant="body" style={{ marginBottom: 12 }}>
+              <Text variant="p" style={{ marginBottom: 12 }}>
                 Setup Platform Blocks for web development:
               </Text>
 
               <View style={{ gap: 12 }}>
                 <View>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     1. Webpack Configuration
                   </Text>
                   <View style={{
@@ -180,19 +180,19 @@ export default function WebPlatformScreen() {
                 </View>
 
                 <View>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     2. Babel Configuration
                   </Text>
-                  <Text variant="caption" colorVariant="secondary" style={{ marginBottom: 8 }}>
+                  <Text variant="small" colorVariant="secondary" style={{ marginBottom: 8 }}>
                     Configure Babel to transpile React Native components for web
                   </Text>
                 </View>
 
                 <View>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     3. CSS and Fonts
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Setup custom fonts and CSS preprocessing for your web app
                   </Text>
                 </View>
@@ -204,26 +204,26 @@ export default function WebPlatformScreen() {
           <View style={{ gap: 16 }}>
             <Text variant="h6">Browser Support</Text>
             <Card variant="outline" style={{ padding: 16 }}>
-              <Text variant="body" style={{ marginBottom: 16 }}>
+              <Text variant="p" style={{ marginBottom: 16 }}>
                 Platform Blocks supports all modern browsers:
               </Text>
 
               <View style={{ gap: 8 }}>
                 <Flex direction="row" align="center" gap="sm">
                   <Icon name="check" size={16} color="#34C759" />
-                  <Text variant="body">Chrome 90+</Text>
+                  <Text variant="p">Chrome 90+</Text>
                 </Flex>
                 <Flex direction="row" align="center" gap="sm">
                   <Icon name="check" size={16} color="#34C759" />
-                  <Text variant="body">Firefox 88+</Text>
+                  <Text variant="p">Firefox 88+</Text>
                 </Flex>
                 <Flex direction="row" align="center" gap="sm">
                   <Icon name="check" size={16} color="#34C759" />
-                  <Text variant="body">Safari 14+</Text>
+                  <Text variant="p">Safari 14+</Text>
                 </Flex>
                 <Flex direction="row" align="center" gap="sm">
                   <Icon name="check" size={16} color="#34C759" />
-                  <Text variant="body">Edge 90+</Text>
+                  <Text variant="p">Edge 90+</Text>
                 </Flex>
               </View>
             </Card>

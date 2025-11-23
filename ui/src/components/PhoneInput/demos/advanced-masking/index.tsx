@@ -1,51 +1,61 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { PhoneInput } from '../../PhoneInput';
+import { useState } from 'react';
 
-// Simple test to verify the PhoneInput with new masking works
-export default function PhoneInputMaskTest() {
-  const [value, setValue] = useState('');
-  const [formatted, setFormatted] = useState('');
+import { Column, PhoneInput, Text } from '@platform-blocks/ui';
+
+export default function Demo() {
+  const [intlRaw, setIntlRaw] = useState('');
+  const [intlFormatted, setIntlFormatted] = useState('');
+  const [extensionRaw, setExtensionRaw] = useState('');
+  const [extensionFormatted, setExtensionFormatted] = useState('');
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Advanced Phone Input Masking Test</Text>
-      
-      <PhoneInput
-        label="US Phone (React-IMask Style)"
-        value={value}
-        onChange={(raw: string, fmt: string) => {
-          setValue(raw);
-          setFormatted(fmt);
-          console.log('Phone input:', { raw, formatted: fmt });
-        }}
-        country="US"
-        showCountryCode={true}
-        placeholder="Enter phone number"
-      />
-      
-      <View style={styles.output}>
-        <Text>Raw: {value}</Text>
-        <Text>Formatted: {formatted}</Text>
-      </View>
-    </View>
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Advanced masking</Text>
+      <Text size="sm" colorVariant="secondary">
+        Apply custom mask patterns to control formatting for international numbers and extension fields.
+      </Text>
+
+      <Column gap="xs">
+        <PhoneInput
+          label="International format"
+          value={intlRaw}
+          onChange={(raw, formatted) => {
+            setIntlRaw(raw);
+            setIntlFormatted(formatted);
+          }}
+          autoDetect={false}
+          showCountryCode={false}
+          mask="+00 (000) 000-0000"
+          placeholder="+44 (7911) 123-456"
+        />
+        <Text size="xs" colorVariant="secondary">
+          Raw digits: {intlRaw || '—'}
+        </Text>
+        <Text size="xs" colorVariant="secondary">
+          Formatted: {intlFormatted || '—'}
+        </Text>
+      </Column>
+
+      <Column gap="xs">
+        <PhoneInput
+          label="North America with extension"
+          value={extensionRaw}
+          onChange={(raw, formatted) => {
+            setExtensionRaw(raw);
+            setExtensionFormatted(formatted);
+          }}
+          autoDetect={false}
+          showCountryCode={false}
+          mask="000-000-0000 x0000"
+          placeholder="555-123-4567 x1234"
+        />
+        <Text size="xs" colorVariant="secondary">
+          Raw digits: {extensionRaw || '—'}
+        </Text>
+        <Text size="xs" colorVariant="secondary">
+          Formatted: {extensionFormatted || '—'}
+        </Text>
+      </Column>
+    </Column>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 16,
-    padding: 20,
-  },
-  output: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginTop: 16,
-    padding: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  }
-});

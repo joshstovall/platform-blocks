@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { View, Pressable, FlatList, Text as RNText, Platform, Modal } from 'react-native';
+import { View, Pressable, FlatList, Text as RNText, Modal } from 'react-native';
 
 import { factory } from '../../core/factory/factory';
 import { FieldHeader } from '../_internal/FieldHeader';
@@ -18,6 +18,7 @@ import { Text } from '../Text';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import { handleSelectionComplete } from '../../core/keyboard/selection';
 import { useDropdownPositioning } from '../../core/hooks/useDropdownPositioning';
+import { useOverlayMode } from '../../hooks';
 import type { PlacementType } from '../../core/utils/positioning-enhanced';
 
 import type { SelectOption, SelectProps } from './Select.types';
@@ -59,6 +60,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
   } = otherProps as SelectProps;
 
   const theme = useTheme();
+  const { shouldUseModal, shouldUseOverlay } = useOverlayMode();
   const menuStyles = useMenuStyles();
   const { isRTL } = useDirection();
 
@@ -78,7 +80,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     hideOverlay,
     updatePosition,
   } = useDropdownPositioning({
-    isOpen: open && Platform.OS === 'web',
+    isOpen: open && shouldUseOverlay,
     placement: 'bottom-start',
     flip: true,
     shift: true,
@@ -161,7 +163,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
   }, [hideOverlay, keyboardManager]);
 
   const measureTrigger = useCallback(() => {
-    if (Platform.OS === 'web') return;
+    if (shouldUseOverlay) return;
     if (!triggerRef.current) return;
 
     try {
@@ -171,7 +173,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     } catch {
       /* native measurement failures can be ignored safely */
     }
-  }, []);
+  }, [shouldUseOverlay]);
 
   const toggle = useCallback(() => {
     if (disabled) return;
@@ -179,7 +181,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     setOpen(prev => {
       const next = !prev;
       if (next) {
-        if (Platform.OS !== 'web') {
+        if (shouldUseModal) {
           measureTrigger();
         }
       } else {
@@ -188,10 +190,10 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       }
       return next;
     });
-  }, [disabled, measureTrigger, hideOverlay, keyboardManager]);
+  }, [disabled, measureTrigger, hideOverlay, keyboardManager, shouldUseModal]);
 
   const handleDropdownLayout = useCallback(() => {
-    if (Platform.OS !== 'web' || !open) {
+    if (!shouldUseOverlay || !open) {
       return;
     }
 
@@ -206,10 +208,10 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     }
 
     runUpdate();
-  }, [open, updatePosition]);
+  }, [open, updatePosition, shouldUseOverlay]);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (!shouldUseOverlay) {
       return;
     }
 
@@ -224,7 +226,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       }
       return width;
     });
-  }, [position]);
+  }, [position, shouldUseOverlay]);
 
   const resolvedDropdownWidth = useMemo(() => {
     if (position?.finalWidth && position.finalWidth > 0) {
@@ -300,10 +302,10 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
                 return <View>{renderOption(item, false, selected)}</View>;
               }
 
-              const successPalette = theme.colors.success || [];
+              const primaryPalette = theme.colors.primary || [];
               const highlightColor = theme.colorScheme === 'dark'
-                ? successPalette[4] || successPalette[5] || '#30D158'
-                : successPalette[6] || successPalette[5] || '#2f9e44';
+                ? primaryPalette[2] || primaryPalette[3] || theme.text.onPrimary || theme.text.primary
+                : primaryPalette[6] || primaryPalette[5] || theme.colors.secondary?.[6] || '#6941C6';
               const baseTextColor = item.disabled ? theme.text.disabled : theme.text.primary;
               const accentTextColor = item.disabled ? theme.text.disabled : highlightColor;
 
@@ -312,8 +314,9 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
                   onPress={() => handleSelect(item)}
                   disabled={!!item.disabled}
                   active={selected}
-                  tone={selected ? 'success' : 'default'}
-                  hoverTone="success"
+                  tone={selected ? 'primary' : 'default'}
+                  hoverTone="primary"
+                  activeTone="primary"
                   textColor={baseTextColor}
                   hoverTextColor={accentTextColor}
                   activeTextColor={accentTextColor}
@@ -332,10 +335,10 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
         </ListGroup>
       </View>
     );
-  }, [resolvedDropdownWidth, listMaxHeight, menuStyles.dropdown, options, value, renderOption, theme.colors.success, theme.colorScheme, theme.text.disabled, theme.text.primary, handleSelect]);
+  }, [resolvedDropdownWidth, listMaxHeight, menuStyles.dropdown, options, value, renderOption, theme.colors.primary, theme.colors.secondary, theme.colorScheme, theme.text.disabled, theme.text.primary, theme.text.onPrimary, handleSelect]);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (!shouldUseOverlay) {
       return () => {};
     }
 
@@ -373,8 +376,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     });
 
     // return () => hideOverlay();
-  }, [open, 
-    position, resolvedDropdownWidth, resolvedDropdownMaxHeight, popoverRef, handleDropdownLayout, menu, showOverlay, hideOverlay
+  }, [open,
+    position, resolvedDropdownWidth, resolvedDropdownMaxHeight, popoverRef, handleDropdownLayout, menu, showOverlay, hideOverlay, shouldUseOverlay
   ]);
 
   useEffect(() => {
@@ -459,7 +462,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       {error && <RNText style={inputStyles.error}>{error}</RNText>}
       {!error && helperText && <RNText style={inputStyles.helperText}>{helperText}</RNText>}
 
-      {open && Platform.OS !== 'web' && (
+      {open && shouldUseModal && (
         <Modal transparent animationType="fade" visible onRequestClose={close}>
           <Pressable
             style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)', padding: 24, justifyContent: 'center' }}

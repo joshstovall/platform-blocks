@@ -1,15 +1,12 @@
 ---
-title: Basic
-description: Basic skeleton placeholders for common UI elements.
-tags: [skeleton, loading, placeholder]
+title: Basics
 category: basics
 order: 10
-highlightLines: [4-6, 8-13]
+tags: [loading, placeholder]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic skeleton placeholders showing common loading states for various UI elements.
-
-Use this pattern to maintain visual continuity while content is loading, providing users with a sense of structure and progress.
+Stack text, avatar, and block placeholders to preview the structure of incoming content while data loads.

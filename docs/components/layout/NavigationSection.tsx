@@ -70,7 +70,7 @@ export const NavigationSection: React.FC<NavigationSectionProps> = ({
                 style={{
                   width: 48,
                   height: 48,
-                  borderRadius: 999,
+                  // borderRadius: 999,
                   backgroundColor: isActive ? theme.colors.primary[1] : 'transparent',
                   justifyContent: 'center',
                   alignItems: 'center',

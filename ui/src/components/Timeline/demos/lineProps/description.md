@@ -1,12 +1,12 @@
 ---
-title: Line Props
-category: usage
+title: Line Styling
+category: appearance
 order: 40
-tags: [lines, styling, customization]
+tags: [timeline, appearance]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Customization of timeline lines including colors, styles, and thickness.
+Demonstrate how `color`, `colorVariant`, and `lineWidth` affect the connector line.

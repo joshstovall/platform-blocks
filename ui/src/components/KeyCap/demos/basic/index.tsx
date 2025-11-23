@@ -1,15 +1,17 @@
-import { KeyCap, Row } from '@platform-blocks/ui';
+import { Column, KeyCap, Row } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Row gap={8} wrap="wrap">
-      <KeyCap>A</KeyCap>
-      <KeyCap>Enter</KeyCap>
-      <KeyCap>Space</KeyCap>
-      <KeyCap>⌘</KeyCap>
-      <KeyCap>Ctrl</KeyCap>
-      <KeyCap>⇧</KeyCap>
-    </Row>
+    <Column gap="sm" align="flex-start">
+      <Row gap="sm" wrap="wrap">
+        <KeyCap>A</KeyCap>
+        <KeyCap>Enter</KeyCap>
+        <KeyCap>Space</KeyCap>
+        <KeyCap>⌘</KeyCap>
+        <KeyCap>Ctrl</KeyCap>
+        <KeyCap>⇧</KeyCap>
+      </Row>
+    </Column>
   );
 }
 

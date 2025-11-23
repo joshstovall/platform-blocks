@@ -1,36 +1,32 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ShimmerText } from '../..';
-import { Text } from '../../../Text';
-import { Slider } from '../../../Slider';
-import { Switch } from '../../../Switch';
+import { useState } from 'react';
+import { Column, Row, ShimmerText, Slider, Switch, Text } from '@platform-blocks/ui';
 
-export default function ControlsDemo() {
+const MIN_SPREAD = 1;
+const MAX_SPREAD = 4;
+const SPREAD_STEP = 0.1;
+
+export default function Demo() {
   const [spread, setSpread] = useState(2);
   const [repeat, setRepeat] = useState(true);
   const [once, setOnce] = useState(false);
 
-  const handleRepeatChange = useCallback((value: boolean) => {
+  const handleRepeatChange = (value: boolean) => {
     setRepeat(value);
     if (value) {
       setOnce(false);
     }
-  }, []);
+  };
 
-  const handleOnceChange = useCallback((value: boolean) => {
+  const handleOnceChange = (value: boolean) => {
     setOnce(value);
     if (value) {
       setRepeat(false);
     }
-  }, []);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text variant="small" colorVariant="muted">
-        Adjust the toggles and slider to see the shimmer respond in real time.
-      </Text>
-
-      <ShimmerText 
+    <Column gap="lg" align="flex-start" w="100%">
+      <ShimmerText
         spread={spread}
         repeat={repeat}
         once={once}
@@ -43,42 +39,29 @@ export default function ControlsDemo() {
         Interactive shimmer headline
       </ShimmerText>
 
-      <View style={styles.controlGroup}>
+      <Column gap="md" w="100%">
         <Text variant="small" weight="medium">
           Spread: {spread.toFixed(1)}
         </Text>
         <Slider
           value={spread}
           onChange={setSpread}
-          min={1}
-          max={4}
-          step={0.1}
+          min={MIN_SPREAD}
+          max={MAX_SPREAD}
+          step={SPREAD_STEP}
         />
-      </View>
+      </Column>
 
-      <View style={styles.toggleRow}>
-        <Text variant="small">Repeat animation</Text>
-        <Switch checked={repeat} onChange={handleRepeatChange} />
-      </View>
-
-      <View style={styles.toggleRow}>
-        <Text variant="small">Single pass</Text>
-        <Switch checked={once} onChange={handleOnceChange} />
-      </View>
-    </View>
+      <Column gap="sm" w="100%">
+        <Row align="center" justify="space-between">
+          <Text variant="small">Repeat animation</Text>
+          <Switch checked={repeat} onChange={handleRepeatChange} />
+        </Row>
+        <Row align="center" justify="space-between">
+          <Text variant="small">Run once</Text>
+          <Switch checked={once} onChange={handleOnceChange} />
+        </Row>
+      </Column>
+    </Column>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 16,
-  },
-  controlGroup: {
-    gap: 8,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-});

@@ -10,22 +10,22 @@ import {
 
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
 import {
-  InputPlayground,
-  MediaPlayground,
-  TypographyPlayground,
-  ChartPlayground,
-  DataPlayground,
-  DatesPlayground,
-  TogglePlayground,
-  ButtonPlayground,
-  SwitchPlayground,
-  CheckboxPlayground,
-  SkeletonPlayground,
-  LayoutPlayground,
-} from '../components/playground';
-import { SliderPlayground } from 'components/playground/SliderPlayground';
+  InputShowcase,
+  MediaShowcase,
+  TypographyShowcase,
+  ChartShowcase,
+  DataShowcase,
+  DatesShowcase,
+  ToggleShowcase,
+  ButtonShowcase,
+  SwitchShowcase,
+  CheckboxShowcase,
+  SkeletonShowcase,
+  LayoutShowcase,
+} from '../components/showcase';
+import { SliderPlayground as SliderShowcase } from 'components/showcase/SliderShowcase';
 import { PageLayout } from 'components';
-import { EverythingPlayground } from 'components/playground/EverythingPlayground';
+import { EverythingPlayground as EverythingShowcase } from 'components/showcase/EverythingShowcase';
 
 
 export default function HomeScreen() {
@@ -39,13 +39,13 @@ export default function HomeScreen() {
   return (
     <PageLayout >
       <Block style={{ width: '100%', marginBottom: 12 }} wrap>
-        <Title variant='h1' size={48} weight='bold' afterline
+        <Title variant="h1" size={48} weight="bold" afterline
           underlineStroke={4}
           // action={<CodeBlock variant='hacker'>npm install @platform-blocks/ui</CodeBlock>}
           subtitle="A modern React Native component library with theme support and consistent design tokens."
         >Platform Blocks</Title>
       </Block>
-      <Block direction='row' gap="md" wrap>
+      <Block direction="row" gap="md" wrap>
         {/* <Button title="Get Started" variant="gradient" onPress={() => router.push('/getting-started')} /> */}
         <Button title="100+ Components" variant="gradient" onPress={() => router.push('/components')} />
         <Button title="Get Inspired" variant="secondary" onPress={() => router.push('/examples')} />
@@ -54,15 +54,15 @@ export default function HomeScreen() {
       <Space h="lg" />
 
       <Tabs
-        variant='chip'
-        color='tertiary'
+        variant="chip"
+        color="tertiary"
         items={[
           {
-            key: 'all',
-            label: 'All',
+            key: 'overview',
+            label: 'Overview',
             content: (
               <View>
-                <EverythingPlayground />
+                <EverythingShowcase />
               </View>
             )
           }, {
@@ -70,48 +70,48 @@ export default function HomeScreen() {
             label: 'Actions',
             content: (
               <View>
-                <TogglePlayground />
-                <ButtonPlayground />
-                <SwitchPlayground />
-                <CheckboxPlayground />
-                <SkeletonPlayground />
-                <SliderPlayground />
+                <ToggleShowcase />
+                <ButtonShowcase />
+                <SwitchShowcase />
+                <CheckboxShowcase />
+                <SkeletonShowcase />
+                <SliderShowcase />
               </View>
             )
           },
           {
             key: 'layout',
             label: 'Layout',
-            content: <LayoutPlayground />
+            content: <LayoutShowcase />
           },
           {
             key: 'inputs',
             label: 'Inputs',
-            content: <InputPlayground />
+            content: <InputShowcase />
           }, {
             key: 'typography',
             label: 'Typography',
-            content: <TypographyPlayground />
+            content: <TypographyShowcase />
           },
           {
             key: 'media',
             label: 'Media',
-            content: <MediaPlayground />
+            content: <MediaShowcase />
           },
           {
             key: 'data',
             label: 'Data',
-            content: <DataPlayground />,
+            content: <DataShowcase />,
           },
           {
             key: 'dates',
             label: 'Dates',
-            content: <DatesPlayground />,
+            content: <DatesShowcase />,
           },
           {
             key: 'charts',
             label: 'Charts',
-            content: <ChartPlayground />
+            content: <ChartShowcase />
           }
         ]}
         scrollable={isSmall}

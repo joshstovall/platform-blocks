@@ -1,7 +1,7 @@
 import { ScrollView, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { PageLayout } from '../../components/PageLayout';
-import { Text, Button, Card, Flex, Alert, Title, Chip, BrandIcon, Grid, GridItem } from '@platform-blocks/ui';
+import { Text, Button, Card, Flex, Notice, Title, Chip, BrandIcon, Grid, GridItem } from '@platform-blocks/ui';
 import { AVAILABLE_BRANDS, PLATFORMS, TAG_CONFIG, getTagConfig, type TagType } from '../../config/platforms';
 import { useBrowserTitle, formatPageTitle } from 'hooks/useBrowserTitle';
 
@@ -33,7 +33,7 @@ export default function PlatformsScreen() {
         <Flex direction="column" p="lg" gap="xl" >
           <Flex direction="column" gap="xs" fullWidth>
             <Title weight="black" size={40} afterline> Platforms</Title>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               One component model. Native feel everywhere.
             </Text>
           </Flex>
@@ -46,16 +46,16 @@ export default function PlatformsScreen() {
                     <GridItem span={{ base: 4, md: 6 }}>
                       <Flex direction="column" gap="sm">
                         <Flex direction="row" align="center" gap="sm" wrap="wrap">
-                          <BrandIcon brand={platform.brand as any} size='xl' />
+                          <BrandIcon brand={platform.brand as any} size="xl" />
                           <Text variant="h6" weight="semibold">{platform.label}</Text>
-                          <Text variant="caption" colorVariant="secondary">({platform.note})</Text>
+                          <Text variant="small" colorVariant="secondary">({platform.note})</Text>
                         </Flex>
                         {!!platform.tags?.length && (
                           <Flex direction="row" wrap="wrap">
                             {platform.tags.map(renderTagChip)}
                           </Flex>
                         )}
-                        <Text variant="body" colorVariant="secondary">
+                        <Text variant="p" colorVariant="secondary">
                           {platform.description}
                         </Text>
                       </Flex>
@@ -83,17 +83,17 @@ export default function PlatformsScreen() {
             ))}
           </Grid>
 
-          <Alert variant="filled" color="info" p="lg">
+          <Notice variant="filled" color="info" p="lg">
             <Text variant="h6" mb="xs">
               Universal Component Architecture
             </Text>
-            <Text variant="body" mb="md">
+            <Text variant="p" mb="md">
               Fully typed. Consistent spacing, theming, motion & accessibility across targets.
             </Text>
-            <Text variant="caption" colorVariant="secondary">
+            <Text variant="small" colorVariant="secondary">
               Ship once—no per-platform forks for core UI building blocks.
             </Text>
-          </Alert>
+          </Notice>
 
 
         </Flex>

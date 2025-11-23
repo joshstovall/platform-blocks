@@ -1,22 +1,56 @@
-import { Flex, Text, Avatar, Indicator, Card, Block } from '@platform-blocks/ui';
+import { Avatar, Block, Column, Indicator, Text } from '@platform-blocks/ui';
 
-export default function IndicatorBasicDemo() {
+export default function Demo() {
   return (
-    <Flex direction="column" gap={20} p={16} >
-      <Text size="sm" weight="semibold">Corner Indicator</Text>
-      <Card variant="filled">
-        <Text size="xs">Panel</Text>
-        <Indicator placement="top-right" />
-      </Card>
-      <Text size="sm" weight="semibold">Avatar Status (online)</Text>
-      <Avatar size="lg" fallback="JS" backgroundColor="#6366F1" online />
-      <Text size="sm" weight="semibold">Numeric Counter</Text>
-      <Block style={{ width: 56, height: 56, backgroundColor: '#ddd', borderRadius: 12, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-        <Text size="xs">Inbox</Text>
-        <Indicator placement="top-right" size={20} offset={3}>
-          <Text size="xs" weight="bold" color="white">5</Text>
-        </Indicator>
-      </Block>
-    </Flex>
+    <Column gap="lg">
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Corner indicator
+        </Text>
+
+        <Block bg="#f5f5f7" radius="lg" p="lg" position="relative">
+          <Text size="xs" colorVariant="secondary">
+            Panel
+          </Text>
+          <Indicator placement="top-right" />
+        </Block>
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Avatar status
+        </Text>
+
+        <Block position="relative" w={72} h={72} align="center" justify="center">
+          <Avatar size="lg" fallback="JS" backgroundColor="#6366F1" />
+          <Indicator placement="bottom-right" size="md" color="#22c55e" offset={2} />
+        </Block>
+      </Column>
+
+      <Column gap="xs">
+        <Text size="sm" weight="medium">
+          Numeric counter
+        </Text>
+
+        <Block
+          w={72}
+          h={72}
+          bg="#e5e7eb"
+          radius="lg"
+          position="relative"
+          align="center"
+          justify="center"
+        >
+          <Text size="xs" colorVariant="secondary">
+            Inbox
+          </Text>
+          <Indicator placement="top-right" size={20} offset={4}>
+            <Text size="xs" weight="bold" color="white">
+              5
+            </Text>
+          </Indicator>
+        </Block>
+      </Column>
+    </Column>
   );
 }

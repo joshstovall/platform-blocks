@@ -1,12 +1,12 @@
 ---
 title: Colors
-category: usage
+category: theming
 order: 30
-tags: [colors, theming]
+tags: [color, theme]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different color variants for Loader components with custom theming.
+Pull palette values from `useTheme()` and pass them to the `color` prop to align loaders with your semantic colors.

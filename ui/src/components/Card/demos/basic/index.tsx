@@ -1,17 +1,23 @@
-import { Card, Text, Button } from '@platform-blocks/ui';
+import { Card, Column, Text, Button } from '@platform-blocks/ui';
 
-export default function BasicCardDemo() {
+export default function Demo() {
   return (
-    <Card maxWidth={280}>
-      <Text variant="h6" mb="sm">
-        Simple Card
-      </Text>
-      <Text mb="lg">
-        This is a basic card with some content and a button.
-      </Text>
-      <Button size="sm" variant="gradient" onPress={() => console.log('Button pressed!')}>
-        Action
-      </Button>
+    <Card p="lg" radius="lg" shadow="md" maxWidth={320}>
+      <Column gap="md">
+        <Column gap="xs">
+          <Text variant="small" colorVariant="muted">
+            Upcoming match
+          </Text>
+          <Text variant="h6">Falcons at Bears</Text>
+        </Column>
+        <Text colorVariant="muted">
+          Kickoff is set for 7:30 PM with rain in the forecast. Review the lineup and
+          travel logistics before departure.
+        </Text>
+  <Button size="sm" variant="filled" onPress={() => {}}>
+          View itinerary
+        </Button>
+      </Column>
     </Card>
   );
 }

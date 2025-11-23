@@ -48,7 +48,7 @@ export const PreviewFile: React.FC<PreviewFileProps> = ({ file, style }) => {
       {isVideoMp4 && (
         <View style={{ width: '100%', aspectRatio: 16/9, borderRadius: 8, overflow: 'hidden', backgroundColor: theme.colors.gray[isDark ? 8 : 1], alignItems: 'center', justifyContent: 'center' }}>
           {Platform.OS === 'web' ? (
-            // @ts-ignore - raw video tag for web
+            // @ts-expect-error - raw video tag for web
             <video style={{ width: '100%', height: '100%', objectFit: 'cover' }} controls>
               <source src={file.uri} type={file.mime} />
               Your browser does not support the video tag.

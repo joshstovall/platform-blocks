@@ -51,6 +51,9 @@ export interface RadioProps extends BaseComponentProps {
 
   /** Optional icon displayed alongside the label */
   icon?: React.ReactNode | string;
+
+  /** Key handler for accessibility/keyboard support */
+  onKeyDown?: (event: any) => void;
 }
 
 export interface RadioGroupProps extends BaseComponentProps {

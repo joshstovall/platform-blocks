@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Platform } from 'react-native';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { Text } from '../Text';
@@ -40,6 +40,7 @@ export const Radio = factory<{
     testID,
     style,
     icon,
+    onKeyDown,
     ...spacingProps
   } = props;
 
@@ -84,12 +85,16 @@ export const Radio = factory<{
     return null;
   }, [icon, size, disabled, theme]);
 
+  // react-native-web exposes onKeyDown, but core RN types omit it so we inject it conditionally
+  const webKeyEvents = Platform.OS === 'web' && onKeyDown ? { onKeyDown } : undefined;
+
   const radioElement = (
     <View style={styles.radioContainer}>
       <Pressable
         ref={ref}
         style={[styles.radio, style]}
         onPress={handlePress}
+        {...(webKeyEvents as any)}
         disabled={disabled}
         testID={testID}
         hitSlop={12} // Increase hitbox by 12px on all sides
@@ -184,6 +189,41 @@ export const RadioGroup = factory<{
     onChange?.(optionValue);
   }, [disabled, onChange]);
 
+  const handleKeyNavigation = useCallback((event: any, currentIndex: number) => {
+    if (disabled) return;
+
+    const key = event?.nativeEvent?.key || event?.key;
+    if (!key) return;
+
+    const forwardKeys = ['ArrowRight', 'ArrowDown'];
+    const backwardKeys = ['ArrowLeft', 'ArrowUp'];
+
+    let step = 0;
+    if (forwardKeys.includes(key)) {
+      step = 1;
+    } else if (backwardKeys.includes(key)) {
+      step = -1;
+    } else {
+      return;
+    }
+
+    event?.preventDefault?.();
+
+    const total = options.length;
+    for (let offset = 1; offset <= total; offset += 1) {
+      const nextIndex = (currentIndex + step * offset + total) % total;
+      if (nextIndex === currentIndex) {
+        break;
+      }
+
+      const option = options[nextIndex];
+      if (!(disabled || option.disabled)) {
+        handleChange(option.value);
+        break;
+      }
+    }
+  }, [disabled, options, handleChange]);
+
   const gapValue = typeof gap === 'number' ? gap : 
     theme.spacing[gap as keyof typeof theme.spacing] ? 
     parseInt(theme.spacing[gap as keyof typeof theme.spacing]) : 8;
@@ -232,6 +272,7 @@ export const RadioGroup = factory<{
             value={option.value}
             checked={value === option.value}
             onChange={handleChange}
+            onKeyDown={(event: any) => handleKeyNavigation(event, index)}
             name={name}
             size={size}
             color={color}

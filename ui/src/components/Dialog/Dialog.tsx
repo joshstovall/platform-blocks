@@ -520,6 +520,7 @@ export function Dialog({
       >
         {backdrop && backdropClosable && (
           <Pressable
+            testID="dialog-backdrop"
             style={StyleSheet.absoluteFill}
             onPress={handleBackdropPress}
           />

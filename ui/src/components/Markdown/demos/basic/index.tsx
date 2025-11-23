@@ -1,4 +1,4 @@
-import { Markdown, Flex, Card } from '@platform-blocks/ui';
+import { Markdown } from '@platform-blocks/ui';
 
 export default function Demo() {
   const content = `# Hello Markdown
@@ -13,12 +13,5 @@ This is a **bold** statement and this is _italic_.
 
 Inline code: \`const x = 42;\`
 `;
-
-  return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Markdown>{content}</Markdown>
-      </Card>
-    </Flex>
-  );
+  return <Markdown>{content}</Markdown>
 }

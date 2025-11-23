@@ -1,13 +1,6 @@
-import { CodeBlock, Flex } from '@platform-blocks/ui';
+import { CodeBlock, Column, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  return (
-    <Flex direction="column" gap={16}>
-      <CodeBlock 
-        title="With Title and Line Numbers"
-        showLineNumbers={true}
-      >
-        {`function fibonacci(n) {
+const fibonacciExample = `function fibonacci(n) {
   if (n <= 1) {
     return n;
   }
@@ -16,43 +9,67 @@ export default function Demo() {
 
 // Calculate the 10th Fibonacci number
 const result = fibonacci(10);
-console.log(\`Fibonacci(10) = \${result}\`);`}
-      </CodeBlock>
+console.log(\`Fibonacci(10) = \${result}\`);`;
 
-      <CodeBlock 
-        title="Full Width Example"
-        fullWidth
-        language="javascript"
-      >
-        {`// This code block spans the full width of its container
+const fullWidthExample = `// This code block spans the full width of its container
 const data = [
   { id: 1, name: 'Alice', age: 30, city: 'New York' },
   { id: 2, name: 'Bob', age: 25, city: 'San Francisco' },
   { id: 3, name: 'Charlie', age: 35, city: 'Los Angeles' }
 ];
 
-const processData = (data) => {
-  return data
-    .filter(person => person.age >= 30)
-    .map(person => ({
+const processData = (rows) => {
+  return rows
+    .filter((person) => person.age >= 30)
+    .map((person) => ({
       ...person,
       isAdult: true,
       displayName: \`\${person.name} (\${person.age})\`
     }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((left, right) => left.name.localeCompare(right.name));
 };
 
-console.log(processData(data));`}
-      </CodeBlock>
+console.log(processData(data));`;
 
-      <CodeBlock 
-        showCopyButton={false}
-        title="No Copy Button"
-      >
-        {`// This example has the copy button disabled
+const disabledCopyExample = `// This example has the copy button disabled
 const message = "Hello, World!";
-console.log(message);`}
-      </CodeBlock>
-    </Flex>
+console.log(message);`;
+
+export default function Demo() {
+  return (
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Feature highlights</Text>
+      <Text size="sm" colorVariant="secondary">
+        Combine titles, line numbers, full-width layouts, and copy controls to match different documentation needs.
+      </Text>
+      <Column gap="lg">
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Title with line numbers
+          </Text>
+          <CodeBlock title="With title and line numbers" showLineNumbers>
+            {fibonacciExample}
+          </CodeBlock>
+        </Column>
+
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Full-width layout
+          </Text>
+          <CodeBlock title="Full width example" fullWidth language="javascript">
+            {fullWidthExample}
+          </CodeBlock>
+        </Column>
+
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Copy button disabled
+          </Text>
+          <CodeBlock title="No copy button" showCopyButton={false}>
+            {disabledCopyExample}
+          </CodeBlock>
+        </Column>
+      </Column>
+    </Column>
   );
 }

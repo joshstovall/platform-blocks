@@ -1,6 +1,6 @@
 {
   "name": "platform-blocks",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "private": true,
   "workspaces": [
     "ui",
@@ -18,6 +18,7 @@
     "charts:build": "npm run build --workspace=charts",
     "charts:test": "npm run test --workspace=charts",
     "charts:lint": "npm run lint --workspace=charts",
+    "docs:lint": "cd docs && npx expo lint",
     "clean": "npm run clean --workspace=ui",
     "i18n:scan": "tsx scripts/scan-i18n-keys.ts",
     "demos:generate": "npx --yes tsx scripts/generate-demos.ts",
@@ -28,7 +29,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "docs:baseline": "npm run build-web --workspace=docs && npx playwright test --config=playwright.config.ts",
-    "release": "tsx scripts/publish-release.ts"
+    "verify:packages": "npm run lint --workspace=ui && npm run test --workspace=ui && npm run lint --workspace=charts && npm run test --workspace=charts",
+    "verify:packages:build": "npm run build --workspace=ui && npm run build --workspace=charts",
+    "release": "npm run verify:packages && npm run verify:packages:build && tsx scripts/publish-release.ts"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",

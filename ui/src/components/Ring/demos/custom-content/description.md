@@ -1,6 +1,12 @@
 ---
 title: Custom Center Content
-description: Render custom React nodes in the center by passing children as a function or element.
+category: customization
+order: 30
+tags: [ring]
+highlightLines: [64-76]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates the `Ring` component with custom center content.
+Showcase the render-prop API for injecting icons, text, or status badges inside the ring.

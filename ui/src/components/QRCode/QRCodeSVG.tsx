@@ -25,7 +25,6 @@ export function QRCodeSVG(props: QRCodeProps) {
     testID,
     accessibilityLabel,
     onError,
-    engine = 'internal',
     moduleShape = 'square',
     finderShape = 'square',
     cornerRadius = 0.25,
@@ -121,7 +120,7 @@ export function QRCodeSVG(props: QRCodeProps) {
         error: error as Error,
       };
     }
-  }, [value, size, errorCorrectionLevel, quietZone, onError, engine, moduleShape, cornerRadius]);
+  }, [value, size, errorCorrectionLevel, quietZone, onError, moduleShape, cornerRadius]);
 
   const containerStyle = [
     {

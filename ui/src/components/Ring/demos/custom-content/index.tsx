@@ -1,37 +1,83 @@
-import React from 'react';
-import { Column, Text, Icon, Badge, Block } from '@platform-blocks/ui';
-import { Ring } from '../../Ring';
+import type { ComponentProps, ReactNode } from 'react';
+import { Badge, Card, Column, Icon, Ring, Row, Text, type RingRenderContext } from '@platform-blocks/ui';
+
+type ProjectRing = {
+  key: string;
+  label: string;
+  renderContent?: (context: RingRenderContext) => ReactNode;
+  ringProps: ComponentProps<typeof Ring>;
+};
+
+const projectRings: ProjectRing[] = [
+  {
+    key: 'pipeline',
+    label: 'Active pipeline',
+    ringProps: {
+      value: 86,
+      size: 120,
+      thickness: 14,
+      caption: 'Pipeline',
+      colorStops: [
+        { value: 0, color: '#60a5fa' },
+        { value: 50, color: '#2563eb' },
+        { value: 80, color: '#0ea5e9' },
+      ],
+    },
+    renderContent: ({ percent }) => (
+      <Column align="center" gap="xs">
+  <Icon name="rocket" size="lg" color="primary" />
+        <Text weight="700">{Math.round(percent)}%</Text>
+      </Column>
+    ),
+  },
+  {
+    key: 'design-system',
+    label: 'Paused initiative',
+    ringProps: {
+      value: 0,
+      neutral: true,
+      size: 110,
+      label: 'Design system',
+      subLabel: '--',
+      caption: (
+        <Badge variant="outline" color="gray">
+          Paused
+        </Badge>
+      ),
+    },
+    renderContent: () => (
+      <Column align="center" gap="xs">
+  <Icon name="clock" size="lg" color="gray" />
+        <Text size="xs" colorVariant="secondary">
+          On hold
+        </Text>
+      </Column>
+    ),
+  },
+];
 
 export default function Demo() {
   return (
-    <Block direction="row" gap="xl">
-      <Ring
-        value={86}
-        size={120}
-        thickness={14}
-        caption="Pipeline"
-        colorStops={[
-          { value: 0, color: '#60a5fa' },
-          { value: 50, color: '#2563eb' },
-          { value: 80, color: '#0ea5e9' },
-        ]}
-      >
-        {({ percent }) => (
-          <Column align="center" gap={4}>
-            <Icon name="Rocket" size={24} color="#2563eb" />
-            <Text weight="700">{Math.round(percent)}%</Text>
-          </Column>
-        )}
-      </Ring>
-      <Ring
-        value={0}
-        neutral
-        size={110}
-        caption={<Badge color="#64748b">Paused</Badge>}
-        label="Design System"
-        subLabel="--"
-  progressColor="rgba(148, 163, 184, 0.4)"
-      />
-    </Block>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Pass a render function as children to display contextual metrics or status badges inside the ring.
+          </Text>
+          <Row gap="lg" justify="center" wrap="wrap">
+            {projectRings.map((project) => (
+              <Column key={project.key} gap="xs" align="center">
+                <Ring {...project.ringProps}>
+                  {project.renderContent ? (context) => project.renderContent(context) : undefined}
+                </Ring>
+                <Text size="xs" colorVariant="secondary">
+                  {project.label}
+                </Text>
+              </Column>
+            ))}
+          </Row>
+        </Column>
+      </Card>
+    </Column>
   );
 }

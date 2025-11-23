@@ -1,12 +1,12 @@
 ---
-title: Sizes
-category: usage
+title: Size Tokens
+category: appearance
 order: 50
-tags: [sizes, scale, spacing]
+tags: [timeline, sizing]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different size variants for timeline components from extra small to extra large.
+Compare bullet, connector, and text scaling across the available `size` tokens.

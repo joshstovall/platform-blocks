@@ -1,8 +1,12 @@
 ---
 title: Sizes
-tags: [segmented-control, sizes]
-order: 15
-status: beta
+category: layout
+order: 30
+tags: [segmented-control, sizes, density]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Available sizes from xs to xl to fit different UI contexts.
+Use the `size` prop to match dense toolbars or spacious layouts without changing the underlying data.

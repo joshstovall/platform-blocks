@@ -36,7 +36,7 @@ export {
   useTitleRegistry,
   useTitleRegistryOptional,
   type TitleItem
-} from './contexts';
+} from './hooks/useTitleRegistration/contexts';
 
 // Core utilities (separate exports for better tree-shaking)
 export {
@@ -51,7 +51,6 @@ export {
   throttle,
   measurePerformance,
   measureAsyncPerformance,
-  calculateOverlayPosition,
   calculateOverlayPositionEnhanced,
   getViewport,
   measureElement,
@@ -107,7 +106,6 @@ export {
 // =============================================================================
 
 // Layout Components
-export { Container } from './components/Container';
 export { KeyboardAwareLayout } from './components/KeyboardAwareLayout';
 export { Flex } from './components/Flex';
 export { Grid, GridItem } from './components/Grid';
@@ -228,7 +226,7 @@ export { Block } from './components/Block';
 export { Card } from './components/Card';
 export { Chip } from './components/Chip';
 export { DataTable } from './components/DataTable';
-export { Disclaimer, ComponentWithDisclaimer, useDisclaimer, withDisclaimer, extractDisclaimerProps } from './components/Disclaimer';
+export { Disclaimer, ComponentWithDisclaimer, useDisclaimer, withDisclaimer, extractDisclaimerProps } from './components/_internal/Disclaimer';
 export { Table } from './components/Table';
 export { Timeline } from './components/Timeline';
 export { ListGroup, ListGroupItem, ListGroupDivider, ListGroupBody } from './components/ListGroup';
@@ -236,7 +234,7 @@ export { TableOfContents } from './components/TableOfContents';
 export { Tree } from './components/Tree';
 
 // Feedback Components
-export { Alert } from './components/Alert';
+export { Notice } from './components/Notice';
 export { Progress } from './components/Progress';
 export { Skeleton } from './components/Skeleton';
 export { Loader } from './components/Loader';
@@ -247,7 +245,6 @@ export {
   Toast,
   ToastProvider, useToast,
   useToastApi,
-  toast,
   onToastsRequested
 
 
@@ -310,6 +307,7 @@ export { Video } from './components/Video';
 export { Waveform } from './components/Waveform';
 
 // Utility Components
+export { Collapse } from './components/Collapse';
 export { Divider } from './components/Divider';
 export { Space } from './components/Space';
 export { Link } from './components/Link';
@@ -318,7 +316,7 @@ export { CopyButton } from './components/CopyButton/CopyButton';
 export { QRCode } from './components/QRCode';
 export { KeyCap } from './components/KeyCap';
 export { Spoiler } from './components/Spoiler';
-export { PressAnimation, withPressAnimation, AnimatedPressable } from './components/PressAnimation/PressAnimation';
+export { PressAnimation, withPressAnimation, AnimatedPressable } from './components/_internal/PressAnimation/PressAnimation';
 
 // Specialized Components
 export { Accordion } from './components/Accordion';
@@ -356,7 +354,6 @@ export type { ShimmerTextProps } from './components/ShimmerText';
 export type { HighlightProps } from './components/Highlight';
 export type { OverlayProps } from './components/Overlay';
 export type { TitleProps } from './components/Title/types';
-export type { ContainerProps } from './components/Container';
 export type { KeyboardAwareLayoutProps } from './components/KeyboardAwareLayout';
 export type { FlexProps } from './components/Flex';
 export type { GridProps, GridItemProps } from './components/Grid';
@@ -401,11 +398,11 @@ export type { IndicatorProps } from './components/Indicator';
 export type { CardProps } from './components/Card';
 export type { ChipProps } from './components/Chip';
 export type { DataTableProps, DataTableColumn, DataTableSort, DataTablePagination } from './components/DataTable';
-export type { DisclaimerProps, WithDisclaimerProps, ComponentWithDisclaimerProps, DisclaimerSupport } from './components/Disclaimer';
+export type { DisclaimerProps, WithDisclaimerProps, ComponentWithDisclaimerProps, DisclaimerSupport } from './components/_internal/Disclaimer';
 export type { TableProps } from './components/Table';
 export type { TimelineProps } from './components/Timeline';
 export type { TableOfContentsProps } from './components/TableOfContents';
-export type { AlertProps } from './components/Alert';
+export type { NoticeProps } from './components/Notice';
 export type { ProgressProps } from './components/Progress';
 export type { SkeletonProps } from './components/Skeleton';
 export type { LoaderProps } from './components/Loader';
@@ -436,9 +433,11 @@ export type {
   UsePermissionsOptions
 } from './components/Can';
 export type { BrandIconProps, BrandName } from './components/BrandIcon';
+export type { CollapseProps } from './components/Collapse';
 export type { IconButtonProps } from './components/IconButton';
 export type { CarouselProps } from './components/Carousel';
 export type { GalleryProps, GalleryItem } from './components/Gallery';
+export type { ImageProps } from './components/Image';
 export type { LottieProps } from './components/Lottie';
 export type { WaveformProps } from './components/Waveform';
 export type { DividerProps } from './components/Divider';
@@ -450,7 +449,7 @@ export type { QRCodeProps } from './components/QRCode';
 export type { KeyCapProps } from './components/KeyCap';
 export type { SpoilerProps } from './components/Spoiler';
 export type { FloatingActionsProps, FloatingActionItem } from './components/FloatingActions';
-export type { PressAnimationProps } from './components/PressAnimation/PressAnimation';
+export type { PressAnimationProps } from './components/_internal/PressAnimation/PressAnimation';
 export type { AccordionProps } from './components/Accordion';
 export type { MarkdownProps, MarkdownComponentMap } from './components/Markdown';
 export type { AppShellProps } from './components/AppShell';

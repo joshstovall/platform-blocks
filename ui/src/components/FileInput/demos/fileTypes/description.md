@@ -1,6 +1,12 @@
 ---
 title: File Type Restrictions
-description: File inputs with different accepted file types.
+category: features
+order: 30
+tags: [accept, validation, upload]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Examples showing how to restrict file uploads to specific types like images, documents, or videos with size limits.
+Configure different file inputs with MIME filters, extension lists, and size limits.

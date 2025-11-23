@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ToggleButton, ToggleGroup, Text, Flex, Card } from '@platform-blocks/ui';
 
-export default function ExclusiveToggleDemo() {
+import { Column, Text, ToggleButton, ToggleGroup } from '@platform-blocks/ui';
+
+export default function Demo() {
   const [alignment, setAlignment] = useState('center');
 
   const handleChange = (value: string | number | (string | number)[]) => {
@@ -12,24 +13,24 @@ export default function ExclusiveToggleDemo() {
   };
 
   return (
-    <Card>
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Exclusive Selection</Text>
-        <Text size="sm" color="#666">Only one option can be selected at a time</Text>
-        
-        <ToggleGroup
-          value={alignment}
-          exclusive
-          onChange={handleChange}
-        >
-          <ToggleButton value="left">Left</ToggleButton>
-          <ToggleButton value="center">Center</ToggleButton>
-          <ToggleButton value="right">Right</ToggleButton>
-          <ToggleButton value="justify">Justify</ToggleButton>
-        </ToggleGroup>
-        
-        <Text size="sm">Selected: {alignment || 'None'}</Text>
-      </Flex>
-    </Card>
+    <Column gap="sm">
+      <Column gap="xs">
+        <Text weight="semibold">Exclusive selection</Text>
+        <Text size="xs" colorVariant="secondary">
+          Set `exclusive` to enforce a single active value at a time.
+        </Text>
+      </Column>
+
+      <ToggleGroup value={alignment} exclusive onChange={handleChange}>
+        <ToggleButton value="left">Left</ToggleButton>
+        <ToggleButton value="center">Center</ToggleButton>
+        <ToggleButton value="right">Right</ToggleButton>
+        <ToggleButton value="justify">Justify</ToggleButton>
+      </ToggleGroup>
+
+      <Text size="xs" colorVariant="secondary">
+        Active option: {alignment}
+      </Text>
+    </Column>
   );
 }

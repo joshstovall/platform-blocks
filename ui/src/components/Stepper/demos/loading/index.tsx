@@ -1,41 +1,62 @@
-import { useState } from 'react';
-import { Stepper, Text, Flex, Card, Button } from '@platform-blocks/ui';
+import { useEffect, useRef, useState } from 'react';
+import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+
+const totalSteps = 3;
 
 export default function Demo() {
-  const [active, setActive] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const simulateLoading = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setActive(2);
+  const handleStepChange = (nextIndex: number) => {
+    if (nextIndex < 0 || nextIndex >= totalSteps) {
+      return;
+    }
+    setActiveStep(nextIndex);
+  };
+
+  const simulateProcessing = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsLoading(true);
+    timeoutRef.current = setTimeout(() => {
+      setIsLoading(false);
+      handleStepChange(2);
     }, 2000);
   };
 
-  return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Loading State</Text>
-        
-        <Stepper active={active} onStepClick={setActive}>
-          <Stepper.Step label="Step 1" description="Complete form">
-            Step 1: Fill out the registration form with your details.
-          </Stepper.Step>
-          <Stepper.Step label="Step 2" description="Processing" loading={loading}>
-            Step 2: Processing your information... Please wait.
-          </Stepper.Step>
-          <Stepper.Step label="Step 3" description="Success">
-            Step 3: Registration complete! Welcome to the platform.
-          </Stepper.Step>
-        </Stepper>
+  useEffect(() => () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, []);
 
-        <Flex justify="center" style={{ marginTop: 16 }}>
-          <Button onPress={simulateLoading} disabled={loading}>
-            {loading ? 'Processing...' : 'Simulate Processing'}
-          </Button>
-        </Flex>
-      </Flex>
-    </Card>
+  return (
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Apply the `loading` prop to a step when a background task is running to replace the icon with a spinner.
+          </Text>
+          <Stepper active={activeStep} onStepClick={handleStepChange}>
+            <Stepper.Step label="Collect details" description="Complete form">
+              Share your project information to kick off the workflow.
+            </Stepper.Step>
+            <Stepper.Step label="Processing" description="Sync data" loading={isLoading}>
+              We are syncing your data and preparing the workspace.
+            </Stepper.Step>
+            <Stepper.Step label="Ready" description="Launch">
+              Setup is complete and the workspace is ready for collaborators.
+            </Stepper.Step>
+          </Stepper>
+          <Row justify="center">
+            <Button onPress={simulateProcessing} disabled={isLoading}>
+              {isLoading ? 'Processing...' : 'Simulate processing'}
+            </Button>
+          </Row>
+        </Column>
+      </Card>
+    </Column>
   );
 }

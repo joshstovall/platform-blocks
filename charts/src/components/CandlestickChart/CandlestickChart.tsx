@@ -39,7 +39,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
     width = 400,
     height = 300,
     title, subtitle,
-    xAxis, yAxis, grid,
+    xAxis, yAxis, grid, legend,
     animationDuration,
     style,
     enableCrosshair,
@@ -141,7 +141,18 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
     return [min, max];
   }, [flattened]);
 
-  const padding = { top: 40, right: 20, bottom: volumeEnabled ? 72 : 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: volumeEnabled ? 72 : 60, left: 80 };
+  const padding = React.useMemo(() => {
+    if (!legend?.show) return basePadding;
+    const position = legend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [legend?.show, legend?.position, volumeEnabled]);
   const volumeGap = volumeEnabled ? 16 : 0;
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const availableHeight = Math.max(0, height - padding.top - padding.bottom - volumeGap);
@@ -440,18 +451,22 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
 
   const handlePointerUpdate = React.useCallback((px: number, py: number, meta?: { pageX?: number; pageY?: number }) => {
     if (!setPointer || plotWidth <= 0 || plotHeight <= 0 || disabled) return;
-    const inside = px >= 0 && py >= 0 && px <= plotWidth && py <= plotHeight;
+    const withinX = px >= 0 && px <= plotWidth;
+    const withinY = py >= 0 && py <= plotHeight;
+    const inside = withinX && withinY;
     const payload = inside ? resolvePointerPayload(px) : undefined;
     setPointer({
       x: px,
       y: py,
       inside,
+      insideX: withinX,
+      insideY: withinY,
       pageX: meta?.pageX,
       pageY: meta?.pageY,
       data: payload,
     });
     if (!enableCrosshair) return;
-    if (inside) {
+    if (withinX) {
       const dataX = axisScaleX.invert ? axisScaleX.invert(px) : xDomain[0] + (plotWidth ? (px / plotWidth) * (xDomain[1] - xDomain[0]) : 0);
       setCrosshair?.({ dataX, pixelX: px });
     } else {

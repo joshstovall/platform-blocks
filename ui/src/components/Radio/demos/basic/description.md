@@ -1,12 +1,12 @@
 ---
 title: Basic Usage
-category: usage
+category: basics
 order: 10
-tags: [basic, radio, selection]
+tags: [Radio, RadioGroup]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic radio button usage with individual radios and radio groups for single selection.
+Use standalone `Radio` components for custom layouts or pass an `options` array to `RadioGroup` for quick single-selection forms.

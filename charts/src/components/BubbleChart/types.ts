@@ -75,8 +75,6 @@ export interface BubbleChartProps<T extends Record<string, any> = Record<string,
   yAxis?: ChartAxis;
   /** Height alias (matches Mantine API). */
   h?: number;
-  /** Optional per-point opacity override (legacy). */
-  opacity?: number;
 }
 
 // Backward compatibility alias

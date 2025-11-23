@@ -3,7 +3,7 @@ title: Basic Usage
 category: usage
 order: 10
 tags: [basic, keyboard]
-highlightLines: []
+highlightLines: [7-12]
 status: stable
 since: 1.0.0
 hidden: false

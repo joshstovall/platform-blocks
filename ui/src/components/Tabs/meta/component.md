@@ -4,6 +4,7 @@ description: A tab navigation component for organizing content into switchable s
 source: "@platform-blocks/ui"
 status: "stable"
 category: "Navigation"
+playground: true
 accessibility: "Supports keyboard navigation, ARIA attributes, and screen readers with proper tab management"
 variants:
   - name: "basic"

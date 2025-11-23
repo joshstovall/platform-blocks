@@ -1,19 +1,27 @@
 import { useState } from 'react'
 import { Chip, Column } from '@platform-blocks/ui'
+
+const initialSports = [
+  { label: 'Soccer', emoji: '⚽' },
+  { label: 'Basketball', emoji: '🏀' },
+  { label: 'Tennis', emoji: '🎾' },
+]
+
 export default function Demo() {
-  const [chips, setChips] = useState(['JavaScript', 'C++', 'Pascal'])
+  const [chips, setChips] = useState(initialSports)
+
   const handleRemove = (chipToRemove: string) => {
-    setChips(chips.filter(chip => chip !== chipToRemove))
+    setChips((current) => current.filter((chip) => chip.label !== chipToRemove))
   }
+
   return (
-    <Column>
+    <Column gap="sm">
       {chips.map((chip) => (
         <Chip
-          key={chip}
-          onRemove={() => handleRemove(chip)}
-          removePosition="left"
+          key={chip.label}
+          onRemove={() => handleRemove(chip.label)}
         >
-          {chip}
+          {`${chip.emoji} ${chip.label}`}
         </Chip>
       ))}
     </Column>

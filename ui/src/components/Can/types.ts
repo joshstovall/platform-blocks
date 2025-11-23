@@ -9,7 +9,9 @@ export type Action = string;
 /**
  * Subject type - can be string, class, or object
  */
-export type Subject = string | Function | object;
+type SubjectClass = abstract new (...args: any[]) => unknown;
+type SubjectObject = Record<string, unknown> | object;
+export type Subject = string | SubjectClass | SubjectObject;
 
 /**
  * Field within a subject
@@ -98,15 +100,13 @@ export interface CanProps {
  */
 export interface CanWithConditionsProps extends Omit<CanProps, 'a'> {
   /** Subject instance with data for condition checking */
-  this: object;
+  this: Subject;
 }
 
 /**
  * Cannot component props (inverse of Can)
  */
-export interface CannotProps extends CanProps {
-  /** This component renders when permission is NOT granted */
-}
+export type CannotProps = CanProps;
 
 /**
  * Permission gate props for route-level protection

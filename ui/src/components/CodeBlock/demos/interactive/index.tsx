@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
-import { CodeBlock, Button, Text, Flex } from '@platform-blocks/ui';
+import { useEffect, useRef, useState } from 'react';
 
-export default function Demo() {
-  const [copiedCode, setCopiedCode] = useState('');
+import { Button, CodeBlock, Column, Text } from '@platform-blocks/ui';
 
-  const handleCopy = (code: string) => {
-    setCopiedCode(code);
-    // In a real app, you might use Clipboard API or show a toast
-    setTimeout(() => setCopiedCode(''), 2000);
-  };
-
-  const sampleCode = `const greeting = "Hello, World!";
+const sampleCode = `const greeting = "Hello, World!";
 console.log(greeting);
 
 // A simple function
@@ -21,27 +13,45 @@ function add(a, b) {
 const result = add(5, 3);
 console.log(\`5 + 3 = \${result}\`);`;
 
+export default function Demo() {
+  const [copiedLength, setCopiedLength] = useState<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = (code: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setCopiedLength(code.length);
+    timeoutRef.current = setTimeout(() => {
+      setCopiedLength(null);
+      timeoutRef.current = null;
+    }, 2000);
+  };
+
   return (
-    <Flex direction="column" gap={16}>
-      {copiedCode && (
-        <Text color="success">
-          Copied code to clipboard! (Length: {copiedCode.length} characters)
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Interactive copy</Text>
+      <Text size="sm" colorVariant="secondary">
+        Attach an onCopy handler to trigger custom feedback and reuse it outside the CodeBlock controls.
+      </Text>
+      {copiedLength !== null && (
+        <Text size="xs" colorVariant="success">
+          Copied {copiedLength} characters to the clipboard.
         </Text>
       )}
-      
-      <CodeBlock 
-        language="javascript"
-        title="Interactive Copy Example"
-        onCopy={handleCopy}
-      >
+      <CodeBlock language="javascript" title="Interactive copy example" onCopy={handleCopy}>
         {sampleCode}
       </CodeBlock>
-
-      <Button 
-        title="Copy Code Manually" 
-        variant="outline" 
-        onPress={() => handleCopy(sampleCode)} 
-      />
-    </Flex>
+      <Button title="Copy code manually" variant="outline" onPress={() => handleCopy(sampleCode)} />
+    </Column>
   );
 }

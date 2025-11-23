@@ -1,13 +1,18 @@
-import { Title, Card, Flex } from '@platform-blocks/ui';
+import { Card, Column, Title } from '@platform-blocks/ui';
 
-export default function LevelsTitleDemo() {
+export default function Demo() {
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={8}>
-        {[1,2,3,4,5,6].map(l => (
-          <Title key={l} order={l as 1|2|3|4|5|6}>Heading Level {l}</Title>
-        ))}
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="xs">
+          <Title order={1}>Page heading (order=1)</Title>
+          <Title order={2}>Section heading (order=2)</Title>
+          <Title order={3}>Subsection heading (order=3)</Title>
+          <Title order={4}>Fourth-level heading (order=4)</Title>
+          <Title order={5}>Fifth-level heading (order=5)</Title>
+          <Title order={6}>Sixth-level heading (order=6)</Title>
+        </Column>
+      </Card>
+    </Column>
   );
 }

@@ -1,12 +1,10 @@
----
 title: Interactive
-category: usage
-order: 40
-tags: [interactive, controls, seeking]
+category: advanced
+order: 50
+tags: [interactive, onSeek, progress]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
----
 
-Interactive waveform with seeking capabilities and playback controls.
+Turn on the `interactive` prop and handle `onSeek`/drag callbacks to update shared playback progress as the user scrubs the waveform.

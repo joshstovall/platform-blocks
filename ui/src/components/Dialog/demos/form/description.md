@@ -1,15 +1,12 @@
 ---
 title: Form Dialog
-description: Dialog containing form inputs for data collection.
-tags: [form, input, validation]
 category: patterns
 order: 40
-highlightLines: [16-25, 35-43]
+tags: [dialog, forms, validation]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Dialog containing form inputs with validation and submission handling.
-
-Use this pattern for collecting user input in a focused modal interface. Includes form validation and proper error handling.
+Embed inputs in the dialog `content`, collect values via controlled callbacks, and validate before resolving the promise or calling `closeDialog`.

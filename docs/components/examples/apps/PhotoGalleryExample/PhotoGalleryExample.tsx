@@ -68,7 +68,7 @@ export function PhotoGalleryExample() {
           onEndReachedThreshold: 0.6,
           ListFooterComponent: isLoadingMore ? (
             <Block p="md" align="center" gap={8}>
-              <Loader size='xl' />
+              <Loader size="xl" />
               <Small color="muted">Loading more photos…</Small>
             </Block>
           ) : null,

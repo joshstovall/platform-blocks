@@ -12,7 +12,7 @@ import {
   useI18n,
 } from '@platform-blocks/ui';
 import { BrandIcon, MenuItemButton } from 'platform-blocks/components';
-import { NAVIGATION_ITEMS, type NavigationSection, type NavigationItem } from '../../config/navigationConfig';
+import { NAV_SECTIONS, type NavSection, type NavItem } from '../../config/navigationConfig';
 import { GITHUB_REPO, NPM_PACKAGE } from '../../config/urls';
 import { Icon } from '@platform-blocks/ui';
 
@@ -65,7 +65,7 @@ export function AppNavigation({ onNavigate }: AppNavigationProps) {
           width: '100%', 
           margin: railCollapsed ? 'auto' : undefined 
         }}>
-          {NAVIGATION_ITEMS.map((section) => (
+          {NAV_SECTIONS.map((section) => (
             <NavigationSection
               key={section.section}
               section={section}
@@ -88,7 +88,7 @@ export function AppNavigation({ onNavigate }: AppNavigationProps) {
 
 // Extract navigation section to its own component
 interface NavigationSectionProps {
-  section: NavigationSection;
+  section: NavSection;
   showLabels: boolean;
   railCollapsed: boolean;
   rail: boolean;
@@ -117,7 +117,7 @@ function NavigationSection({
           {section.section.toUpperCase()}
         </Text>
       )}
-      {section.items.map((item: NavigationItem) => {
+      {section.items.map((item: NavItem) => {
         const isActive = pathname === item.route || (item.route === '/' && pathname === '/');
         const iconColor = isActive ? theme.colors.primary[6] : theme.text.primary;
         

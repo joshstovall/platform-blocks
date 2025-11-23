@@ -1,18 +1,12 @@
 ---
 title: Tree Selection
-category: usage
+category: behavior
 order: 30
-tags: [selection, single, multiple, highlight]
-highlightLines: [6, 7, 12]
+tags: [tree, selection]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Tree with single and multiple selection modes. Shows how to handle user selection and visual feedback.
-
-Features demonstrated:
-- Single selection mode
-- Multiple selection mode
-- Selection callbacks
-- Visual selection highlighting
+Toggle `selectionMode` between `single` and `multiple` to manage how many nodes can be active at once.

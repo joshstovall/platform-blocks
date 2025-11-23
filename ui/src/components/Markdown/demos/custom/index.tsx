@@ -1,4 +1,4 @@
-import { Markdown, Flex, Card, Text } from '@platform-blocks/ui';
+import { Markdown, Card, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const customComponents = {
@@ -37,11 +37,5 @@ This paragraph uses custom styling and components.
 Regular paragraph text with default styling.
 `;
 
-  return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Markdown components={customComponents}>{content}</Markdown>
-      </Card>
-    </Flex>
-  );
+  return <Markdown components={customComponents}>{content}</Markdown>
 }

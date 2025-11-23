@@ -198,6 +198,15 @@ const main = () => {
   warnIfDirty(options.dryRun);
   ensureNpmAuth(options.dryRun);
 
+  // Generate SEO files (sitemap.xml and llms.txt) before publishing
+  console.log('Generating SEO files...');
+  try {
+    runCommand('npm run generate-seo --workspace=docs', ROOT, options.dryRun);
+    console.log('SEO files generated successfully.');
+  } catch (error) {
+    console.warn('Warning: Failed to generate SEO files. Continuing with publish...');
+  }
+
   const backups: { path: string; content: string }[] = [];
 
   try {

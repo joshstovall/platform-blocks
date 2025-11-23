@@ -22,7 +22,7 @@ export default function Demo() {
   return (
     <Column gap={24}>
       <Text variant="h5">Unified Styling Migration Demo</Text>
-      <Text variant="body" colorVariant="secondary">
+      <Text variant="p" colorVariant="secondary">
         Testing components that have been migrated to use the new unified styling system
       </Text>
       
@@ -94,19 +94,19 @@ export default function Demo() {
       <Card variant="filled" padding={16}>
         <Column gap={16}>
           <Text variant="h6">Card Variants</Text>
-          <Text variant="body">
+          <Text variant="p">
             This card uses the "filled" variant with design token spacing and shadows.
           </Text>
           
           <Card variant="outline" padding={12}>
-            <Text variant="body">Nested card with "outline" variant</Text>
+            <Text variant="p">Nested card with "outline" variant</Text>
           </Card>
         </Column>
       </Card>
 
       <Column gap={8}>
         <Text variant="h6">Consistency Test</Text>
-        <Text variant="body" colorVariant="secondary">
+        <Text variant="p" colorVariant="secondary">
           All clear buttons should be the same size (14px icons with consistent padding).
           All components of the same size should have matching heights and padding.
           Design tokens ensure visual consistency across the library.

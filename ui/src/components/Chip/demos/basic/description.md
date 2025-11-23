@@ -1,20 +1,12 @@
 ---
-title: Basic Usage
-category: usage
+title: Core styles
+category: basics
 order: 10
-tags: [basic, variants]
+tags: [variants, getting-started]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-renderStyle: code_flex
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: true
-githubUrl: "https://github.com"
 ---
 
-Basic chip variants showing default, filled, outline, and light styles.
+Toggle the `variant` prop between the default, `filled`, `outline`, `light`, and `subtle` styles when you need different emphasis levels for the same Chip content.

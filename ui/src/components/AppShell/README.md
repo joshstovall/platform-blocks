@@ -48,7 +48,7 @@ A customizable header component with built-in menu button support.
   title="My Application"
   withMenuButton
   onMenuPress={() => setDrawerOpen(true)}
-  rightSection={
+  endSection={
     <Button>Action</Button>
   }
 />
@@ -135,8 +135,8 @@ function MyComponent() {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `title` | `string` | - | Header title |
-| `leftSection` | `React.ReactNode` | - | Left side content |
-| `rightSection` | `React.ReactNode` | - | Right side content |
+| `startSection` | `React.ReactNode` | - | Left side content |
+| `endSection` | `React.ReactNode` | - | Right side content |
 | `withMenuButton` | `boolean` | `false` | Whether to show menu button |
 | `onMenuPress` | `() => void` | - | Menu button press callback |
 | `backgroundColor` | `string` | - | Background color override |
@@ -226,11 +226,11 @@ function MainContent() {
   };
 
   return (
-    <Container p="xl">
+    <Block p="xl">
       <Button onPress={handleAction}>
         Perform Action
       </Button>
-    </Container>
+    </Block>
   );
 }
 ```
@@ -242,7 +242,7 @@ function MainContent() {
   title="Advanced App"
   withMenuButton
   onMenuPress={handleMenuPress}
-  rightSection={
+  endSection={
     <Flex direction="row" gap="sm">
       <Button variant="ghost" size="sm">
         <Icon name="search" />

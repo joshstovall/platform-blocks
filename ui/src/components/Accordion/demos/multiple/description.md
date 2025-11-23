@@ -1,12 +1,12 @@
 ---
-title: Multiple
-category: usage
+title: Multiple Expansion
+category: behavior
 order: 20
-tags: [multiple, advanced]
-highlightLines: []
+tags: [accordion, controlled]
+highlightLines: [45-55]
 status: stable
-since: 0.4.0
+since: 1.0.0
 hidden: false
 ---
 
-Demonstrates multiple Accordion items expanded independently.
+Control the `expanded` keys to keep several accordion items open at the same time.

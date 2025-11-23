@@ -19,7 +19,7 @@ import { ToggleButton, ToggleGroup } from '../Toggle';
 import { Pagination } from '../Pagination';
 import { Table, TableTh, TableTd, TableTr } from '../Table';
 import { Icon } from '../Icon';
-import { Reveal } from '../Reveal';
+import { Collapse } from '../Collapse';
 import { useRowSelection } from './hooks/useRowSelection';
 import { useDataTableState } from './hooks/useDataTableState';
 import { useColumnSettings } from './hooks/useColumnSettings';
@@ -34,7 +34,7 @@ import type {
   FilterType,
   ColumnDataType
 } from './types';
-import { ComponentWithDisclaimer } from '../Disclaimer';
+import { ComponentWithDisclaimer } from '../_internal/Disclaimer';
 import { Row } from '../Layout';
 export type { DataTableProps, DataTableColumn, DataTableFilter, DataTableSort, DataTablePagination, SortDirection, FilterType, ColumnDataType } from './types';
 
@@ -472,7 +472,7 @@ export const DataTable = <T,>({
       <Flex gap={DESIGN_TOKENS.spacing.md} align="center">
         {selectedRows.length > 0 && bulkActions.length > 0 && (
           <Flex gap={8}>
-            <Text variant="caption" colorVariant="muted">
+            <Text variant="small" colorVariant="muted">
               {selectedRows.length} selected
             </Text>
             {bulkActions.map(action => (
@@ -514,7 +514,7 @@ export const DataTable = <T,>({
             </Popover.Target>
             <Popover.Dropdown>
               <Flex direction="column" gap={DESIGN_TOKENS.spacing.md} style={{ width: 320 }}>
-                <Text variant="caption" weight="semibold">
+                <Text variant="small" weight="semibold">
                   Search & Filter
                 </Text>
 
@@ -527,14 +527,14 @@ export const DataTable = <T,>({
                     }}
                   >
                     <Flex direction="column" gap={DESIGN_TOKENS.spacing.xs}>
-                      <Text variant="caption" weight="semibold">
+                      <Text variant="small" weight="semibold">
                         Search
                       </Text>
                       <Input
                         placeholder={searchPlaceholder}
                         value={searchValue}
                         onChangeText={handleSearchChange}
-                        leftSection={<Icon name="menu" size={16} />}
+                        startSection={<Icon name="menu" size={16} />}
                         size="sm"
                       />
                     </Flex>
@@ -544,7 +544,7 @@ export const DataTable = <T,>({
                 {columns.some(c => c.filterable) && (
                   <Flex direction="column" gap={DESIGN_TOKENS.spacing.sm}>
                     <Flex direction="row" justify="space-between" align="center">
-                      <Text variant="caption" weight="semibold">
+                      <Text variant="small" weight="semibold">
                         Filters
                       </Text>
                       {activeFilters.length > 0 && (
@@ -582,7 +582,7 @@ export const DataTable = <T,>({
                                 gap: DESIGN_TOKENS.spacing.xs
                               }}
                             >
-                              <Text variant="caption" style={{ color: theme.colors.primary[7] }}>
+                              <Text variant="small" style={{ color: theme.colors.primary[7] }}>
                                 {column?.header || filter.column}: {filter.operator} "{filter.value}"
                               </Text>
                               <Pressable
@@ -718,7 +718,7 @@ export const DataTable = <T,>({
 
     return (
       <Text
-        variant="body"
+        variant="p"
         style={{ textAlign: column.align || 'left', color: theme.text.primary }}
       >
         {formatValue(value, column.dataType)}
@@ -849,7 +849,7 @@ export const DataTable = <T,>({
                 style={{ flexDirection: 'row', alignItems: 'center' }}
               >
                 <Text
-                  variant="body"
+                  variant="p"
                   weight="semibold"
                   style={{
                     color: theme.text.primary,
@@ -902,7 +902,7 @@ export const DataTable = <T,>({
                     {typeof column.header === 'string' ? column.header : 'Column'}
                   </MenuLabel>
                   <MenuItem
-                    leftSection={<Icon name="eye" size={14} color={theme.colors.gray[7]} />}
+                    startSection={<Icon name="eye" size={14} color={theme.colors.gray[7]} />}
                     disabled={visibleColumns.length === 1}
                     onPress={() => {
                       if (visibleColumns.length === 1) return;
@@ -913,7 +913,7 @@ export const DataTable = <T,>({
                   </MenuItem>
                   {column.sortable && (
                     <MenuItem
-                      leftSection={<Icon name="chevron-up" size={14} color={theme.colors.gray[7]} />}
+                      startSection={<Icon name="chevron-up" size={14} color={theme.colors.gray[7]} />}
                       onPress={() =>
                         onSortChange && onSortChange([{ column: column.key, direction: 'asc' }])
                       }
@@ -923,7 +923,7 @@ export const DataTable = <T,>({
                   )}
                   {column.sortable && (
                     <MenuItem
-                      leftSection={<Icon name="chevron-down" size={14} color={theme.colors.gray[7]} />}
+                      startSection={<Icon name="chevron-down" size={14} color={theme.colors.gray[7]} />}
                       onPress={() =>
                         onSortChange && onSortChange([{ column: column.key, direction: 'desc' }])
                       }
@@ -933,7 +933,7 @@ export const DataTable = <T,>({
                   )}
                   <MenuDivider />
                   <MenuItem
-                    leftSection={<Icon name="knobs" size={14} color={theme.colors.gray[7]} />}
+                    startSection={<Icon name="knobs" size={14} color={theme.colors.gray[7]} />}
                     onPress={() => {
                       if (onColumnSettings) {
                         onColumnSettings(column.key);
@@ -1036,7 +1036,7 @@ export const DataTable = <T,>({
             No Data Available
           </Text>
           <Text
-            variant="body"
+            variant="p"
             colorVariant="muted"
             style={{ textAlign: 'center', maxWidth: 280 }}
           >
@@ -1187,9 +1187,9 @@ export const DataTable = <T,>({
               colSpan={totalColumns}
               style={{ padding: 0, backgroundColor: theme.colors.gray[0] }}
             >
-              <Reveal isRevealed={isExpanded} duration={250}>
+              <Collapse isCollapsed={isExpanded} duration={250}>
                 <View style={{ padding: 16 }}>{expandableRowRender(row, rowIndex)}</View>
-              </Reveal>
+              </Collapse>
             </TableTd>
           </TableTr>
         )}
@@ -1321,7 +1321,7 @@ export const DataTable = <T,>({
           <Text variant="h6" color={theme.colors.error[7]} style={{ marginBottom: 8 }}>
             Error Loading Data
           </Text>
-          <Text variant="body" colorVariant="muted" style={{ textAlign: 'center' }}>
+          <Text variant="p" colorVariant="muted" style={{ textAlign: 'center' }}>
             {error}
           </Text>
         </View>
@@ -1408,7 +1408,7 @@ export const DataTable = <T,>({
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: DESIGN_TOKENS.spacing.md, flexWrap: 'wrap' }}>
             {showRowsPerPageControl && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: DESIGN_TOKENS.spacing.md }}>
-                <Text variant="body" colorVariant="muted" style={{ fontSize: DESIGN_TOKENS.typography.fontSize.sm }}>Rows per page:</Text>
+                <Text variant="p" colorVariant="muted" style={{ fontSize: DESIGN_TOKENS.typography.fontSize.sm }}>Rows per page:</Text>
                 <Menu position="top-start" offset={4}>
                   <MenuDropdown>
                     <MenuLabel>Rows per page</MenuLabel>
@@ -1424,7 +1424,7 @@ export const DataTable = <T,>({
                           newPage = 1;
                           onPaginationChange({ ...pagination, page: newPage, pageSize: size });
                         }}
-                        leftSection={size === pagination.pageSize ? <Icon name="check" size={14} color={theme.colors.primary[6]} /> : undefined}
+                        startSection={size === pagination.pageSize ? <Icon name="check" size={14} color={theme.colors.primary[6]} /> : undefined}
                       >{size}</MenuItem>
                     ))}
                     {!rowsPerPageOptions.includes(pagination.pageSize) && (
@@ -1458,7 +1458,7 @@ export const DataTable = <T,>({
               />
             </View>
             
-            <Text variant="caption" colorVariant="muted" style={{ 
+            <Text variant="small" colorVariant="muted" style={{ 
               fontSize: DESIGN_TOKENS.typography.fontSize.xs,
               color: theme.colors.gray[6]
             }}>

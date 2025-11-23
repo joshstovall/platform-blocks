@@ -4,8 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Animated,
-  PanResponder,
   Platform,
   Image,
 } from 'react-native';
@@ -82,7 +80,6 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
   const theme = useTheme();
   const [files, setFiles] = useState<FileInputFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const dragOpacity = useRef(new Animated.Value(1)).current;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<any>(null);
 
@@ -350,14 +347,9 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       
       if (!isDragOver) {
         setIsDragOver(true);
-        Animated.timing(dragOpacity, {
-          toValue: 0.8,
-          duration: DESIGN_TOKENS.motion.duration.normal,
-          useNativeDriver: true,
-        }).start();
       }
     }
-  }, [enableDragDrop, isDragOver, dragOpacity]);
+  }, [enableDragDrop, isDragOver]);
 
   const handleDragLeave = useCallback((event: any) => {
     if (!enableDragDrop || Platform.OS !== 'web') return;
@@ -372,13 +364,8 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
     
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       setIsDragOver(false);
-      Animated.timing(dragOpacity, {
-        toValue: 1,
-        duration: DESIGN_TOKENS.motion.duration.normal,
-        useNativeDriver: true,
-      }).start();
     }
-  }, [enableDragDrop, dragOpacity]);
+  }, [enableDragDrop]);
 
   const handleDragEnter = useCallback((event: any) => {
     if (!enableDragDrop || Platform.OS !== 'web') return;
@@ -399,17 +386,12 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
     event.stopPropagation();
     
     setIsDragOver(false);
-    Animated.timing(dragOpacity, {
-      toValue: 1,
-      duration: DESIGN_TOKENS.motion.duration.normal,
-      useNativeDriver: true,
-    }).start();
 
     const files = event.dataTransfer && event.dataTransfer.files;
     if (files && files.length > 0) {
       processFiles(files);
     }
-  }, [enableDragDrop, processFiles, dragOpacity]);
+  }, [enableDragDrop, processFiles]);
 
   // Set up drag and drop event listeners for the dropzone
   useEffect(() => {
@@ -434,28 +416,6 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       }
     }
   }, [enableDragDrop, handleDragOver, handleDragEnter, handleDragLeave, handleDrop]);
-
-  // Legacy PanResponder for mobile platforms (kept for compatibility)
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => enableDragDrop && Platform.OS !== 'web',
-    onMoveShouldSetPanResponder: () => enableDragDrop && Platform.OS !== 'web',
-    onPanResponderGrant: () => {
-      setIsDragOver(true);
-      Animated.timing(dragOpacity, {
-        toValue: 0.8,
-        duration: DESIGN_TOKENS.motion.duration.normal,
-        useNativeDriver: true,
-      }).start();
-    },
-    onPanResponderRelease: () => {
-      setIsDragOver(false);
-      Animated.timing(dragOpacity, {
-        toValue: 1,
-        duration: DESIGN_TOKENS.motion.duration.normal,
-        useNativeDriver: true,
-      }).start();
-    },
-  });
 
   const formatFileSize = useCallback((bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -571,8 +531,6 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
       disabled && styles.disabled,
     ];
 
-    const panProps = Platform.OS !== 'web' && enableDragDrop ? panResponder.panHandlers : {};
-
     const content = children || (
       <View style={styles.dropZoneContent}>
         <Icon
@@ -605,7 +563,6 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
           disabled={disabled}
           style={dropZoneStyle}
           onPress={handleBrowseFiles}
-          {...panProps}
         >
           {content}
         </TouchableOpacity>
@@ -613,13 +570,12 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
     }
 
     return (
-      <Animated.View
+      <View
         ref={dropZoneRef}
-        style={[dropZoneStyle, { opacity: dragOpacity }]}
-        {...panProps}
+        style={dropZoneStyle}
       >
         {content}
-      </Animated.View>
+      </View>
     );
   };
 

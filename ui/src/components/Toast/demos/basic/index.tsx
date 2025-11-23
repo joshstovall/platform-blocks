@@ -1,24 +1,15 @@
-import { Button, useToast } from '@platform-blocks/ui'
+import { Button, useToast } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const toast = useToast()
+  const toast = useToast();
 
-  const showBasicToast = () => {
-    toast.show({
+  const handlePress = () => {
+    toast.success({
       title: 'Success!',
-      message: 'Your action was completed successfully.',
-      actions: [
-        { label: 'Action', onPress: () => alert('Action action') }
-      ],
-      sev: 'success',
-      autoHide: 5000,
+      message: 'The operation finished without issues.',
+      autoHide: 4000,
     });
   };
 
-  return (
-    <Button
-      title="Show Basic Toast"
-      onPress={showBasicToast}
-    />
-  )
+  return <Button onPress={handlePress}>Show success toast</Button>;
 }

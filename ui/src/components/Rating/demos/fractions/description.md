@@ -1,12 +1,12 @@
 ---
-title: Fractional Ratings
-category: usage
+title: Fractions
+category: features
 order: 40
-tags: [fractions, precision, decimal]
+tags: [precision]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Precise fractional ratings with decimal values and custom precision settings.
+Enable fractional ratings with configurable `precision` values to capture nuanced feedback.

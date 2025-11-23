@@ -1,38 +1,57 @@
-import React, { memo } from 'react';
-import { Carousel, H2, Text, Block } from '@platform-blocks/ui';
+import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 
-const SLIDES = [
-	{ id: 1, color: '#FF6B6B', title: 'Slide 1', content: 'First slide content' },
-	{ id: 2, color: '#4ECDC4', title: 'Slide 2', content: 'Second slide content' },
-	{ id: 3, color: '#45B7D1', title: 'Slide 3', content: 'Third slide content' },
-	{ id: 4, color: '#96CEB4', title: 'Slide 4', content: 'Fourth slide content' },
-];
-
-const CarouselSlide = memo(({ slide }: { slide: typeof SLIDES[0] }) => (
-	<Block
-		direction="column"
-		grow
-		bg={slide.color}
-		radius="xl"
-		justify="center"
-		align="center"
-		gap="sm"
-		p="xl"
-	>
-		<H2>{slide.title}</H2>
-		<Text>{slide.content}</Text>
-	</Block>
-));
-
-export default function BasicCarouselDemo() {
+export default function Demo() {
 	return (
-		<Block w={300}>
-			<Carousel autoPlay loop>
-				{SLIDES.map((slide) => (
-					<CarouselSlide key={slide.id} slide={slide} />
-				))}
+		<Block gap="md" fullWidth>
+			<Carousel height={220} width={400} loop autoPlay autoPlayInterval={4500} showDots>
+				<Column
+					gap="sm"
+					bg="#4C1D95"
+					radius="xl"
+					p="xl"
+					justify="center"
+					minHeight={220}
+				>
+					<Text variant="h3" color="white">
+						Weekly highlights
+					</Text>
+					<Text color="rgba(255,255,255,0.85)">
+						Rotate through featured stories without building pagination controls.
+					</Text>
+				</Column>
+
+				<Column
+					gap="sm"
+					bg="#155E75"
+					radius="xl"
+					p="xl"
+					justify="center"
+					minHeight={220}
+				>
+					<Text variant="h3" color="white">
+						Product updates
+					</Text>
+					<Text color="rgba(255,255,255,0.85)">
+						Enable `autoPlay` and `loop` to keep the carousel moving hands-free.
+					</Text>
+				</Column>
+
+				<Column
+					gap="sm"
+					bg="#166534"
+					radius="xl"
+					p="xl"
+					justify="center"
+					minHeight={220}
+				>
+					<Text variant="h3" color="white">
+						Team spotlights
+					</Text>
+					<Text color="rgba(255,255,255,0.85)">
+						Add a few slides to share wins, announcements, or campaign promos.
+					</Text>
+				</Column>
 			</Carousel>
 		</Block>
 	);
 }
- 

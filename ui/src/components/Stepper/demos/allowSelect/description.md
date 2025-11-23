@@ -1,6 +1,12 @@
 ---
-title: Allow Step Select
-description: Stepper with selective step navigation based on visited steps.
+title: Visited Step Selection
+category: behavior
+order: 20
+tags: [stepper, selection]
+highlightLines: [49-63]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing how to control which steps can be clicked based on whether they've been visited before.
+Limit navigation to completed steps using `allowStepSelect`, while preserving forward progress through the flow.

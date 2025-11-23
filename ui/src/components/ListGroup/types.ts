@@ -25,8 +25,8 @@ export interface ListGroupItemProps {
   disabled?: boolean;
   active?: boolean;
   danger?: boolean;
-  leftSection?: React.ReactNode;
-  rightSection?: React.ReactNode;
+  startSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
 }

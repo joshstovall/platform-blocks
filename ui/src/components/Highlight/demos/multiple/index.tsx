@@ -7,7 +7,7 @@ const SENTENCE = 'Platform Blocks brings patterns, blocks, and building tools to
 export default function HighlightMultipleDemo() {
   return (
     <View>
-      <Text variant="subtitle">Multiple values</Text>
+      <Text variant="h5">Multiple values</Text>
       <Highlight highlight={['blocks', 'tools']}>{SENTENCE}</Highlight>
     </View>
   );

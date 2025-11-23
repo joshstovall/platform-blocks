@@ -1,18 +1,12 @@
 ---
 title: Tree Filtering
-category: usage
+category: behavior
 order: 40
-tags: [filtering, search, highlight, query]
-highlightLines: [5, 6, 7]
+tags: [tree, filtering]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Tree with search/filter functionality that can hide non-matching nodes or highlight matching text.
-
-Features demonstrated:
-- Text-based filtering
-- Highlight matching text
-- Hide filtered vs show all with highlights
-- Custom no results fallback
+Provide `filterQuery`, `hideFiltered`, and a `highlight` renderer to add search to the tree with a custom empty state.

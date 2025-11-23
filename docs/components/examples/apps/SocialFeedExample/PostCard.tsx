@@ -86,7 +86,7 @@ export const PostCard: React.FC<PostCardProps> = React.memo(function PostCard({
           <Flex direction="column" gap={2}>
             <Flex direction="row" align="center" gap={4}>
               <Text weight="semibold">{user.handle}</Text>
-              {user.verified && <Icon name="success" size={14} color={theme.colors.primary[6]} variant='filled'/>}
+              {user.verified && <Icon name="success" size={14} color={theme.colors.primary[6]} variant="filled"/>}
             </Flex>
             <Text size="xs" colorVariant="muted">{timeAgo(post.createdAt)}</Text>
           </Flex>
@@ -100,11 +100,11 @@ export const PostCard: React.FC<PostCardProps> = React.memo(function PostCard({
             style={{ padding: 4, minWidth: undefined }}
           />
           <MenuDropdown>
-            <MenuItem onPress={() => console.log('Share post', post.id)} leftSection={<Icon name="share" size={14} color={theme.colors.gray[7]} />}>Share</MenuItem>
-            <MenuItem onPress={() => console.log('Copy link', post.id)} leftSection={<Icon name="link" size={14} color={theme.colors.gray[7]} />}>Copy Link</MenuItem>
-            <MenuItem onPress={() => console.log('Bookmark', post.id)} leftSection={<Icon name="bookmark" size={14} color={theme.colors.gray[7]} />}>Bookmark</MenuItem>
+            <MenuItem onPress={() => console.log('Share post', post.id)} startSection={<Icon name="share" size={14} color={theme.colors.gray[7]} />}>Share</MenuItem>
+            <MenuItem onPress={() => console.log('Copy link', post.id)} startSection={<Icon name="link" size={14} color={theme.colors.gray[7]} />}>Copy Link</MenuItem>
+            <MenuItem onPress={() => console.log('Bookmark', post.id)} startSection={<Icon name="bookmark" size={14} color={theme.colors.gray[7]} />}>Bookmark</MenuItem>
             <MenuDivider />
-            <MenuItem color="danger" onPress={() => console.log('Report post', post.id)} leftSection={<Icon name="trash" size={14} color={theme.colors.error[6]} />}>Report</MenuItem>
+            <MenuItem color="danger" onPress={() => console.log('Report post', post.id)} startSection={<Icon name="trash" size={14} color={theme.colors.error[6]} />}>Report</MenuItem>
           </MenuDropdown>
         </Menu>
       </Flex>
@@ -177,7 +177,7 @@ export const PostCard: React.FC<PostCardProps> = React.memo(function PostCard({
           />
         </Pressable>
       </Flex>
-      <Flex px={12} pb={14} gap={6} direction='column'>
+      <Flex px={12} pb={14} gap={6} direction="column">
 
         <Flex direction="row" align="center" justify="space-between" gap={8} fullWidth>
         <Text weight="semibold">{formatLikes(post.likeCount, liked)}</Text>

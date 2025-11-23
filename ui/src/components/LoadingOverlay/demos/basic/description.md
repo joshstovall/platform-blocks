@@ -1,7 +1,12 @@
 ---
-title: Basic Loading Overlay
-description: Toggle a centered loader over form fields to indicate a pending background action.
-tags: ["overlay", "loading", "loader", "feedback"]
+title: Form blocking
+category: feedback
+order: 20
+tags: [overlays, loading]
+highlightLines: [23-69]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Wrap any container with `position: 'relative'` and render `LoadingOverlay` when asynchronous work begins. Customize the dimming layer via `overlayProps` and the spinner via `loaderProps`.
+Locks a simple form while background work finishes and keeps the loader aligned with the card container.

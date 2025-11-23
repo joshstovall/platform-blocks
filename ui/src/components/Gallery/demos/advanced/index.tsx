@@ -63,10 +63,10 @@ export default function Demo() {
       </Text>
 
       <Card variant="outline" style={{ marginBottom: 24, padding: 16 }}>
-        <Text variant="subtitle" style={{ marginBottom: 12 }}>
+        <Text variant="h5" style={{ marginBottom: 12 }}>
           📱 Minimal Gallery
         </Text>
-        <Text variant="body" style={{ marginBottom: 16, color: '#666' }}>
+        <Text variant="p" style={{ marginBottom: 16, color: '#666' }}>
           Clean interface with no thumbnails or metadata
         </Text>
         <Button
@@ -77,10 +77,10 @@ export default function Demo() {
       </Card>
 
       <Card variant="outline" style={{ marginBottom: 24, padding: 16 }}>
-        <Text variant="subtitle" style={{ marginBottom: 12 }}>
+        <Text variant="h5" style={{ marginBottom: 12 }}>
           💾 Custom Download Handler
         </Text>
-        <Text variant="body" style={{ marginBottom: 16, color: '#666' }}>
+        <Text variant="p" style={{ marginBottom: 16, color: '#666' }}>
           Gallery with custom download confirmation dialog
         </Text>
         <Button

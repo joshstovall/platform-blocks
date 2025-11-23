@@ -9,7 +9,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
   const theme = useTheme();
   const { universalProps, componentProps } = extractUniversalProps(props);
   const shouldHide = shouldHideComponent(universalProps, theme.colorScheme);
-  if (shouldHide)  return null;
+  if (shouldHide) return null;
 
   const {
     brand,
@@ -29,7 +29,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
 
   const brandIcon = (() => {
     // TODO: pull this list from BrandIcon directly
-  const supportedBrands = ['google', 'facebook', 'discord', 'android', 'apple', 'app-store', 'chrome', 'spotify', 'github', 'x', 'microsoft', 'linkedin', 'slack', 'youtube', 'meta', 'signal', 'telegram', 'whatsapp', 'pinterest', 'paypal', 'netflix', 'medium', 'kaggle', 'instagram', 'github-alt', 'dribbble', 'discord-alt', 'devto', 'behance', 'npm', 'twitch', 'reddit', 'amazon'] as const;
+    const supportedBrands = ['google', 'facebook', 'discord', 'android', 'apple', 'app-store', 'chrome', 'spotify', 'github', 'x', 'microsoft', 'linkedin', 'slack', 'youtube', 'meta', 'signal', 'telegram', 'whatsapp', 'pinterest', 'paypal', 'netflix', 'medium', 'kaggle', 'instagram', 'github-alt', 'dribbble', 'discord-alt', 'devto', 'behance', 'npm', 'twitch', 'reddit', 'amazon'] as const;
 
     // Map button sizes to icon sizes (BrandIcon only supports sm, md, lg, xl)
     const iconSize: 'sm' | 'md' | 'lg' | 'xl' =
@@ -38,12 +38,12 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
           typeof size === 'number' ? 'md' :
             ['sm', 'md', 'lg', 'xl'].includes(size) ? size as 'sm' | 'md' | 'lg' | 'xl' : 'md';
 
-  if ((supportedBrands as readonly string[]).includes(brand)) {
+    if ((supportedBrands as readonly string[]).includes(brand)) {
       // BrandIcon supports multi-color brand logos with color override
-      return <BrandIcon brand={brand as any} size={iconSize} 
-      color={iconColor} 
-    
-      variant={iconVariant}/>;
+      return <BrandIcon brand={brand as any} size={iconSize}
+        color={iconColor}
+
+        variant={iconVariant} />;
     } else {
       return <>error loading icon</>
     }
@@ -68,15 +68,15 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
         };
       case 'link':
         return { backgroundColor: 'transparent', borderColor: 'transparent' };
-        case 'plain':
-          return {
-            backgroundColor: 'white',
-            borderColor: 'transparent',
-            paddingHorizontal: 0,
-            minWidth: 0,
-            height: 'auto',
-            color: 'black'
-          };
+      case 'plain':
+        return {
+          backgroundColor: 'white',
+          borderColor: 'transparent',
+          paddingHorizontal: 0,
+          minWidth: 0,
+          height: 'auto',
+          color: 'black'
+        };
       default: // primary/filled/secondary/gradient etc treat as filled brand color
         return {
           backgroundColor: brandConfig.backgroundColor,
@@ -85,12 +85,14 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
     }
   })();
 
-  // Compute textColor override: outline/ghost/link use brand color, filled-like use contrasting light text
-  const textColor = 
-  effectiveVariant === 'plain' ? 'black' :
-  (effectiveVariant === 'outline' || effectiveVariant === 'ghost' || effectiveVariant === 'link')
-    ? (brandConfig.borderColor || brandConfig.backgroundColor)
-    : brandConfig.textColor;
+  // Compute textColor override: outline/link use brand color, ghost uses default text color, filled-like use contrasting light text
+  const textColor =
+    effectiveVariant === 'plain' ? 'black' :
+      effectiveVariant === 'ghost'
+        ? theme.text.primary
+        : (effectiveVariant === 'outline' || effectiveVariant === 'link')
+          ? (brandConfig.borderColor || brandConfig.backgroundColor)
+          : brandConfig.textColor;
 
   return (
     <Button
@@ -102,7 +104,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
       colorVariant="secondary"
       startIcon={iconPosition === 'left' ? (icon || brandIcon) : undefined}
       endIcon={iconPosition === 'right' ? (icon || brandIcon) : undefined}
-      style={[brandStyles, style, {width: 'auto'}]}
+      style={[brandStyles, style, { width: 'auto' }]}
     />
   );
 };

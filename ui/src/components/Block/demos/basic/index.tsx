@@ -1,78 +1,55 @@
-import { Text } from '../../../Text';
-import { Block } from '../../Block';
+import { Block, Column, Text } from '@platform-blocks/ui';
 
-export default function BlockBasicDemo() {
+export default function Demo() {
   return (
-    <Block direction="column" gap="md" p="lg">
-      {/* Basic styling */}
-      <Block bg="#89abc1ff" p="md" radius="md">
-        <Text>Basic Block with background, padding, and radius</Text>
+    <Column gap="lg" w="100%" maxWidth={420}>
+      <Block bg="#111827" radius="lg" p="lg">
+        <Column gap="sm">
+          <Text weight="semibold" color="white">
+            Release summary
+          </Text>
+          <Text size="sm" color="rgba(255,255,255,0.75)">
+            Apply `bg`, `p`, and `radius` props on `Block` to build a card without custom stylesheets.
+          </Text>
+        </Column>
       </Block>
 
-      {/* Flexbox layout */}
-      <Block direction="row" gap="sm" mt="md">
-        <Block bg="#cc5454ff" p="sm" radius="sm" grow>
-          <Text>Flexible item 1</Text>
+      <Block direction="row" gap="sm">
+        <Block grow bg="#2563eb" radius="md" p="md">
+          <Text weight="semibold" color="white">
+            Velocity
+          </Text>
+          <Text size="sm" color="rgba(255,255,255,0.8)">
+            Use `grow` so sibling Blocks share remaining space.
+          </Text>
         </Block>
-        <Block bg="#28ab4fff" p="sm" radius="sm" w={100}>
-          <Text>Fixed width</Text>
-        </Block>
-        <Block bg="#a89137ff" p="sm" radius="sm" grow>
-          <Text>Flexible item 2</Text>
+        <Block w={140} bg="#f9fafb" radius="md" p="md">
+          <Text weight="semibold">Backlog</Text>
+          <Text size="sm" colorVariant="muted">
+            Combine fixed widths with flexible layouts via the `w` prop.
+          </Text>
         </Block>
       </Block>
 
-      {/* Polymorphic usage */}
-      <Block direction="row" gap="sm" mt="md">
-        <Block 
+      <Block direction="row" gap="sm">
+        <Block component="button" bg="#2563eb" radius="md" px="lg" py="sm">
+          <Text color="white" weight="semibold">
+            Create project
+          </Text>
+        </Block>
+        <Block
           component="button"
-          bg="#3b82f6" 
-          px="md" 
-          py="sm" 
           radius="md"
+          px="lg"
+          py="sm"
+          borderWidth={1}
+          borderColor="#2563eb"
         >
-          <Text color="white">Button Block</Text>
+          <Text color="#2563eb" weight="semibold">
+            View roadmap
+          </Text>
         </Block>
       </Block>
-    </Block>
+    </Column>
   );
 }
-
-export const code = `import { Block, Text } from '@platform-blocks/ui';
-
-export default function BlockBasicDemo() {
-  return (
-    <Block direction="column" gap="md" p="lg">
-      {/* Basic styling */}
-      <Block bg="#f0f9ff" p="md" radius="md">
-        <Text>Basic Block with background, padding, and radius</Text>
-      </Block>
-
-      {/* Flexbox layout */}
-      <Block direction="row" gap="sm" mt="md">
-        <Block bg="#fef2f2" p="sm" radius="sm" grow>
-          <Text>Flexible item 1</Text>
-        </Block>
-        <Block bg="#f0fdf4" p="sm" radius="sm" w={100}>
-          <Text>Fixed width</Text>
-        </Block>
-        <Block bg="#fffbeb" p="sm" radius="sm" grow>
-          <Text>Flexible item 2</Text>
-        </Block>
-      </Block>
-
-      {/* Polymorphic usage */}
-      <Block direction="row" gap="sm" mt="md">
-        <Block 
-          component="button"
-          bg="#3b82f6" 
-          px="md" 
-          py="sm" 
-          radius="md"
-        >
-          <Text color="white">Button Block</Text>
-        </Block>
-      </Block>
-    </Block>
-  );
-}`;

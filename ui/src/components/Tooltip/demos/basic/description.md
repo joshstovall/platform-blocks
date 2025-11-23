@@ -1,7 +1,15 @@
----
 title: Basic Tooltip
 description: Simple tooltip display on hover/press with different trigger events.
 tags: ["basic", "events", "hover", "focus", "touch", "triggers"]
 ---
+title: Basic Usage
+category: usage
+order: 10
+tags: [tooltip]
+highlightLines: [9-15]
+status: stable
+since: 1.0.0
+hidden: false
+---
 
-Demonstrates the fundamental tooltip functionality with different trigger events. Shows how to configure tooltips to respond to hover, focus, or touch events independently for different interaction patterns.
+Wrap a control in `Tooltip` to display concise helper text on hover, focus, or touch.

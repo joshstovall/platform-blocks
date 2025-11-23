@@ -1,38 +1,63 @@
 import { useState } from 'react';
-import { Stepper, Button, Text, Flex, Card } from '@platform-blocks/ui';
+import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+
+const steps = [
+  {
+    label: 'Profile',
+    description: 'Add personal details',
+    details: 'Upload a profile photo and update your bio so teammates recognize you.',
+  },
+  {
+    label: 'Preferences',
+    description: 'Select defaults',
+    details: 'Set notification and language defaults for a consistent experience.',
+  },
+  {
+    label: 'Explore',
+    description: 'Review next steps',
+    details: 'Bookmark key resources and invite collaborators to the workspace.',
+  },
+];
+
+const totalSteps = steps.length;
 
 export default function Demo() {
-  const [active, setActive] = useState(1);
-  
-  const nextStep = () => setActive((current) => (current < 2 ? current + 1 : current));
-  const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
+  const [activeStep, setActiveStep] = useState(1);
+
+  const handleStepChange = (nextIndex: number) => {
+    if (nextIndex < 0 || nextIndex >= totalSteps) {
+      return;
+    }
+    setActiveStep(nextIndex);
+  };
+
+  const goPrevious = () => handleStepChange(activeStep - 1);
+  const goNext = () => handleStepChange(activeStep + 1);
 
   return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Vertical Stepper</Text>
-        
-        <Stepper active={active} onStepClick={setActive} orientation="vertical">
-          <Stepper.Step label="Step 1" description="Setup your profile">
-            Complete your profile information including name, photo, and bio.
-          </Stepper.Step>
-          <Stepper.Step label="Step 2" description="Configure preferences">
-            Choose your notification settings and privacy preferences.
-          </Stepper.Step>
-          <Stepper.Step label="Step 3" description="Start exploring">
-            You're all set! Begin using the platform and discover new features.
-          </Stepper.Step>
-        </Stepper>
-        
-        <Flex direction="row" gap={12} justify="center" style={{ marginTop: 16 }}>
-          <Button variant="outline" onPress={prevStep} disabled={active === 0}>
-            Back
-          </Button>
-          <Button onPress={nextStep} disabled={active === 2}>
-            Next step
-          </Button>
-        </Flex>
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Switch to `orientation="vertical"` when steps need additional room for supporting copy.
+          </Text>
+          <Stepper active={activeStep} onStepClick={handleStepChange} orientation="vertical">
+            {steps.map((step, index) => (
+              <Stepper.Step key={step.label} label={step.label} description={step.description}>
+                {step.details}
+              </Stepper.Step>
+            ))}
+          </Stepper>
+          <Row gap="sm" justify="center">
+            <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
+              Back
+            </Button>
+            <Button onPress={goNext} disabled={activeStep === totalSteps - 1}>
+              Next step
+            </Button>
+          </Row>
+        </Column>
+      </Card>
+    </Column>
   );
 }

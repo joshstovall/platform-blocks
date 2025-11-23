@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Multi-select AutoComplete allowing users to select multiple options with tag display.
+Multi-select AutoComplete that toggles genres and renders removable chips.

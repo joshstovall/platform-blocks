@@ -1,12 +1,12 @@
 ---
-title: Bullets
-category: usage
+title: Bullet Customization
+category: appearance
 order: 30
-tags: [bullets, customization, icons]
+tags: [timeline, customization]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Custom bullet styles and icons for timeline items.
+Swap bullet content or adjust bullet sizing using the `bullet` and `bulletSize` props.

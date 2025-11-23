@@ -137,13 +137,12 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
     label,
     valueFormatter,
     withTooltip = true,
-  tooltip,
+    tooltip,
     minBubbleSize,
     maxBubbleSize,
     bubbleOpacity: bubbleOpacityProp,
     bubbleStrokeColor = 'rgba(0,0,0,0.12)',
     bubbleStrokeWidth = 1,
-    opacity: legacyOpacity,
     title,
     subtitle,
     onPress,
@@ -190,7 +189,7 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
   }, [legendItemsSignature, legend?.items]);
 
   const resolvedHeight = h ?? height ?? 300;
-  const resolvedBubbleOpacity = bubbleOpacityProp ?? (typeof legacyOpacity === 'number' ? legacyOpacity : 0.85);
+  const resolvedBubbleOpacity = bubbleOpacityProp ?? 0.85;
 
   const padding = React.useMemo(() => {
     const baseTop = (title || subtitle) ? 72 : 48;
@@ -510,10 +509,10 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
         bubbleColor = getColorFromScheme(index, theme.colors.accentPalette ?? colorSchemes.default);
       }
 
-  const labelValue = dataKey.label ? (item as any)[dataKey.label] : rawX;
-  const legendKey = rawColorValue != null ? String(rawColorValue) : undefined;
-  const legendLabel = legendKey ?? (labelValue != null ? String(labelValue) : String(rawX ?? index + 1));
-  const idValue = dataKey.id ? (item as any)[dataKey.id] : (item as any).id ?? index;
+      const labelValue = dataKey.label ? (item as any)[dataKey.label] : rawX;
+      const legendKey = rawColorValue != null ? String(rawColorValue) : undefined;
+      const legendLabel = legendKey ?? (labelValue != null ? String(labelValue) : String(rawX ?? index + 1));
+      const idValue = dataKey.id ? (item as any)[dataKey.id] : (item as any).id ?? index;
 
       const dataXNumeric = xState.isNumeric
         ? (typeof rawX === 'number' && Number.isFinite(rawX) ? rawX : Number(rawX) || index)
@@ -790,8 +789,8 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
       disabled={disabled}
       style={style}
       animationDuration={animationDuration}
-  interactionConfig={tooltipEnabled ? { multiTooltip: true, enableCrosshair: true, pointerRAF: true } : { multiTooltip: false, enableCrosshair: false }}
-  suppressPopover={!tooltipEnabled}
+      interactionConfig={tooltipEnabled ? { multiTooltip: true, enableCrosshair: true, pointerRAF: true } : { multiTooltip: false, enableCrosshair: false }}
+      suppressPopover={!tooltipEnabled}
       {...rest}
     >
       {(title || subtitle) && (
@@ -974,43 +973,43 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
         pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
         {...(isWeb
           ? {
-              // @ts-ignore react-native-web pointer events
-              onPointerMove: (event: any) => {
-                handlePointer(mapWebPointerEvent(event));
-              },
-              // @ts-ignore react-native-web pointer events
-              onPointerDown: (event: any) => {
-                event.preventDefault?.();
-                event.currentTarget?.setPointerCapture?.(event.pointerId);
-                handlePointer(mapWebPointerEvent(event));
-              },
-              // @ts-ignore react-native-web pointer events
-              onPointerUp: (event: any) => {
-                event.currentTarget?.releasePointerCapture?.(event.pointerId);
-                handlePointer(mapWebPointerEvent(event), true);
-                handlePointerEnd();
-              },
-              // @ts-ignore react-native-web pointer events
-              onPointerLeave: () => {
-                handlePointerEnd();
-              },
-              // @ts-ignore react-native-web pointer events
-              onPointerCancel: () => {
-                handlePointerEnd();
-              },
-            }
+            // @ts-ignore react-native-web pointer events
+            onPointerMove: (event: any) => {
+              handlePointer(mapWebPointerEvent(event));
+            },
+            // @ts-ignore react-native-web pointer events
+            onPointerDown: (event: any) => {
+              event.preventDefault?.();
+              event.currentTarget?.setPointerCapture?.(event.pointerId);
+              handlePointer(mapWebPointerEvent(event));
+            },
+            // @ts-ignore react-native-web pointer events
+            onPointerUp: (event: any) => {
+              event.currentTarget?.releasePointerCapture?.(event.pointerId);
+              handlePointer(mapWebPointerEvent(event), true);
+              handlePointerEnd();
+            },
+            // @ts-ignore react-native-web pointer events
+            onPointerLeave: () => {
+              handlePointerEnd();
+            },
+            // @ts-ignore react-native-web pointer events
+            onPointerCancel: () => {
+              handlePointerEnd();
+            },
+          }
           : {
-              onStartShouldSetResponder: () => !disabled,
-              onMoveShouldSetResponder: () => !disabled,
-              onResponderGrant: (e: any) => handlePointer(e.nativeEvent),
-              onResponderMove: (e: any) => handlePointer(e.nativeEvent),
-              onResponderRelease: (e: any) => {
-                handlePointer(e.nativeEvent, true);
-                handlePointerEnd();
-              },
-              onResponderTerminate: handlePointerEnd,
-              onResponderTerminationRequest: () => true,
-            })}
+            onStartShouldSetResponder: () => !disabled,
+            onMoveShouldSetResponder: () => !disabled,
+            onResponderGrant: (e: any) => handlePointer(e.nativeEvent),
+            onResponderMove: (e: any) => handlePointer(e.nativeEvent),
+            onResponderRelease: (e: any) => {
+              handlePointer(e.nativeEvent, true);
+              handlePointerEnd();
+            },
+            onResponderTerminate: handlePointerEnd,
+            onResponderTerminationRequest: () => true,
+          })}
       />
 
       {legend?.show && legendItems.length > 0 && (

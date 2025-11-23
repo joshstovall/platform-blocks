@@ -1,12 +1,12 @@
 ---
-title: External Links
+title: External Destinations
 category: usage
 order: 20
-tags: [external, target, new-tab]
-highlightLines: []
+tags: [link, external]
+highlightLines: [18-20]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-External links that open in new tabs with visual indicators.
+Use the `external` prop when pointing to destinations outside the current shell.

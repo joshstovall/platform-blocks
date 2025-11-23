@@ -78,11 +78,11 @@ export function useMenuStyles() {
     // marginVertical: 4,
   };
 
-  const leftSection: ViewStyle = {
+  const startSection: ViewStyle = {
     marginRight: 8,
   };
 
-  const rightSection: ViewStyle = {
+  const endSection: ViewStyle = {
     marginLeft: 'auto',
     paddingLeft: 12,
   };
@@ -96,7 +96,7 @@ export function useMenuStyles() {
     itemDangerPressed,
     label,
     divider,
-    leftSection,
-    rightSection,
+    startSection,
+    endSection,
   };
 }

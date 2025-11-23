@@ -1,18 +1,28 @@
 import { useState } from 'react';
-import { FileInput, Card } from '@platform-blocks/ui';
+
+import { Column, FileInput, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [files, setFiles] = useState<FileInputFile[]>([]);
 
   return (
-    <Card p={16} variant="outline">
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Basic file input</Text>
+      <Text size="sm" colorVariant="secondary">
+        Select one or more files to upload and review the selection below.
+      </Text>
       <FileInput
-        label="Upload Files"
-        helperText="Select one or more files to upload"
+        label="Upload files"
+        helperText="Choose files from your device"
         onFilesChange={setFiles}
         multiple
       />
-    </Card>
+      {files.length > 0 && (
+        <Text size="xs" colorVariant="secondary">
+          Selected: {files.map((file) => file.name).join(', ')}
+        </Text>
+      )}
+    </Column>
   );
 }

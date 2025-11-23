@@ -4,6 +4,7 @@ description: A contextual information overlay that appears on hover, focus, or p
 source: "@platform-blocks/ui"
 status: "stable"
 category: "Overlay"
+playground: true
 accessibility: "Supports keyboard navigation, ARIA attributes, focus management, and screen readers"
 variants:
   - name: "simple"

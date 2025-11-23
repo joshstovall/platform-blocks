@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Checkbox } from '../..';
-import { Text } from '../../../Text';
+import { useState } from 'react';
+import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
-export default function CheckboxSizesDemo() {
-  const [values, setValues] = useState({ xs: false, sm: true, md: true, lg: false });
-  const toggle = (key: keyof typeof values) => setValues(v => ({ ...v, [key]: !v[key] }));
+const SIZES = [
+  { key: 'xs', label: 'Extra small', description: 'Dense tables and compact lists.' },
+  { key: 'sm', label: 'Small', description: 'Standard data tables.' },
+  { key: 'md', label: 'Medium', description: 'Default for forms and settings.' },
+  { key: 'lg', label: 'Large', description: 'Touch-heavy or marketing layouts.' }
+] as const;
+
+export default function Demo() {
+  const [values, setValues] = useState<Record<string, boolean>>({ xs: false, sm: true, md: true, lg: false });
+
+  const toggle = (size: string) => {
+    setValues((current) => ({
+      ...current,
+      [size]: !current[size]
+    }));
+  };
+
   return (
-    <View style={{ gap: 12 }}>
-      <Text weight="bold">Sizes</Text>
-      <Checkbox size="xs" label="Extra small" checked={values.xs} onChange={() => toggle('xs')} />
-      <Checkbox size="sm" label="Small" checked={values.sm} onChange={() => toggle('sm')} />
-      <Checkbox size="md" label="Medium" checked={values.md} onChange={() => toggle('md')} />
-      <Checkbox size="lg" label="Large" checked={values.lg} onChange={() => toggle('lg')} />
-    </View>
+    <Column gap="sm">
+      <Text weight="medium">Size tokens</Text>
+      <Column gap="xs">
+        {SIZES.map(({ key, label, description }) => (
+          <Column key={key} gap="xs">
+            <Checkbox
+              size={key}
+              label={label}
+              checked={Boolean(values[key])}
+              onChange={() => toggle(key)}
+            />
+            <Text variant="small" colorVariant="muted">
+              {description}
+            </Text>
+          </Column>
+        ))}
+      </Column>
+    </Column>
   );
 }

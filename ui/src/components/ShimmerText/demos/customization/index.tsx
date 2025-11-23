@@ -1,20 +1,13 @@
-import { View, StyleSheet } from 'react-native';
-import { ShimmerText } from '../..';
-import { Text } from '../../../Text';
+import { Column, ShimmerText } from '@platform-blocks/ui';
 
-export default function CustomizationDemo() {
+export default function Demo() {
   return (
-    <View style={styles.container}>
-      <Text variant="small" colorVariant="muted">
-        Tweak the shimmer color, width, direction, and loop cadence.
-      </Text>
-
-      <ShimmerText  shimmerColor="#facc15" spread={3} weight="bold" size="lg">
+    <Column gap="lg" align="flex-start">
+      <ShimmerText shimmerColor="#facc15" spread={3} weight="bold" size="xl">
         Golden spotlight offer
       </ShimmerText>
-
-      <ShimmerText 
-        color="#94a3b8"
+      <ShimmerText
+        color="#475569"
         shimmerColor="#38bdf8"
         spread={1.2}
         duration={1.2}
@@ -22,18 +15,12 @@ export default function CustomizationDemo() {
       >
         Fast pulse notification
       </ShimmerText>
-
-      <ShimmerText  direction="rtl" repeatDelay={0.8} text="RTL shimmer direction" />
-
-      <ShimmerText  once repeat={false} delay={0.5}>
+      <ShimmerText direction="rtl" repeatDelay={0.8}>
+        Shimmer sweeps from right to left
+      </ShimmerText>
+      <ShimmerText once repeat={false} delay={0.5}>
         Single pass announcement
       </ShimmerText>
-    </View>
+    </Column>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 16,
-  },
-});

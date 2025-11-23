@@ -1,20 +1,12 @@
 ---
-title: Shadow
-category: usage
-order: 40
-tags: [interactive, removable]
+title: Shadow depth
+category: appearance
+order: 50
+tags: [shadow, emphasis]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
-renderStyle: code_flex
-codeCopy: true
-codeLineNumbers: true
-codeSpoiler: false
-codeSpoilerMaxHeight: true
-previewCenter: true
-codeFirst: true
-githubUrl: "https://github.com"
 ---
 
-Interactive chips with shadow
+Use the `shadow` prop from `none` to `xl` when a Chip needs extra elevation to stand out from nearby content.

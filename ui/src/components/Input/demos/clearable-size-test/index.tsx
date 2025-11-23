@@ -1,113 +1,78 @@
-import React, { useState } from 'react';
-import { Input, Text, Card, Column } from '@platform-blocks/ui';
+import { useState } from 'react';
+
+import { Column, Input, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [inputValue, setInputValue] = useState('Test input with clearable button');
+  const sizeTokens = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Clearable Button Size Test</Text>
-      <Text variant="body" colorVariant="secondary">
-        All inputs below have clearable enabled. The clear button should be small enough 
-        that it doesn't increase the input height beyond its intended size.
+    <Column gap="lg">
+      <Text weight="semibold">Clearable button sizing</Text>
+      <Text size="xs" colorVariant="secondary">
+        Compare how the dismiss icon fits across input sizes and alongside other adornments.
       </Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Input Component (Different Sizes)</Text>
-          
-          <Input
-            label="Extra Small Input (xs)"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            size="xs"
-            helperText="minHeight: 32px - Clear button should fit within this height"
-          />
-          
-          <Input
-            label="Small Input (sm)"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            size="sm"
-            helperText="minHeight: 36px - Clear button should fit within this height"
-          />
-          
-          <Input
-            label="Medium Input (md)"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            size="md"
-            helperText="minHeight: 40px - Clear button should fit within this height"
-          />
-          
-          <Input
-            label="Large Input (lg)"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            size="lg"
-            helperText="minHeight: 44px - Clear button should fit within this height"
-          />
-          
-          <Input
-            label="Extra Large Input (xl)"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            size="xl"
-            helperText="minHeight: 48px - Clear button should fit within this height"
-          />
-        </Column>
-      </Card>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">With Right Section + Clear Button</Text>
-          
-          <Input
-            label="Input with Right Section + Clear"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            rightSection={<Text style={{ fontSize: 12, color: '#666' }}>@domain.com</Text>}
-            helperText="Clear button should coexist with right section content without growing height"
-          />
-          
-          <Input
-            label="Password Input with Clear"
-            type="password"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            helperText="Password input with both visibility toggle and clear button"
-          />
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Size tokens
+        </Text>
+        <Column gap="xs">
+          {sizeTokens.map((token) => (
+            <Input
+              key={token}
+              label={`Input size ${token}`}
+              value={inputValue}
+              onChangeText={setInputValue}
+              clearable
+              size={token}
+              helperText={`Dismiss icon fits within the ${token.toUpperCase()} trim.`}
+            />
+          ))}
         </Column>
-      </Card>
+      </Column>
 
-      <Card padding={16}>
-        <Column gap={16}>
-          <Text variant="body" weight="medium">Comparison: With vs Without Clear Button</Text>
-          
-          <Input
-            label="Without Clear Button"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable={false}
-            helperText="Standard input height (baseline)"
-          />
-          
-          <Input
-            label="With Clear Button"
-            value={inputValue}
-            onChangeText={setInputValue}
-            clearable
-            helperText="Should be exactly the same height as above"
-          />
-        </Column>
-      </Card>
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Clearable with extras
+        </Text>
+        <Input
+          label="Email alias"
+          value={inputValue}
+          onChangeText={setInputValue}
+          clearable
+          endSection={<Text size="xs" colorVariant="secondary">@domain.com</Text>}
+          helperText="Clear button and right content share the same height."
+        />
+        <Input
+          label="Password"
+          type="password"
+          value={inputValue}
+          onChangeText={setInputValue}
+          clearable
+          helperText="Visibility toggle coexists with the dismiss control."
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Height comparison
+        </Text>
+        <Input
+          label="Baseline"
+          value={inputValue}
+          onChangeText={setInputValue}
+          clearable={false}
+          helperText="Standard input height without additional controls."
+        />
+        <Input
+          label="With clear button"
+          value={inputValue}
+          onChangeText={setInputValue}
+          clearable
+          helperText="Remains the same height when dismissal is enabled."
+        />
+      </Column>
     </Column>
   );
 }

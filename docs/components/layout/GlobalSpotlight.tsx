@@ -60,7 +60,7 @@ export const GlobalSpotlight: React.FC = () => {
                 <Spotlight.ActionsGroup key={`group-${groupIdx}`} label={item.group}>
                   {item.actions.map(action => {
                     const isSelected = flatIdx === selectedIndex; flatIdx++; return (
-                      <Spotlight.Action key={action.id} label={action.label} description={action.description} selected={isSelected} leftSection={action.icon ? (<Icon name={action.icon as any} size="md" />) : undefined} highlightQuery={state.query} onPress={() => {
+                      <Spotlight.Action key={action.id} label={action.label} description={action.description} selected={isSelected} startSection={action.icon ? (<Icon name={action.icon as any} size="md" />) : undefined} highlightQuery={state.query} onPress={() => {
                         console.log('=== SPOTLIGHT ACTION ONPRESS CALLED ===');
                         console.log('Action from render:', action);
                         console.log('Action onPress function:', action.onPress);
@@ -75,7 +75,7 @@ export const GlobalSpotlight: React.FC = () => {
               );
             } else {
               const isSelected = flatIdx === selectedIndex; flatIdx++; return (
-                <Spotlight.Action key={item.id} label={item.label} description={item.description} selected={isSelected} leftSection={item.icon ? (<Icon name={item.icon as any} size="md" />) : undefined} highlightQuery={state.query} onPress={() => {
+                <Spotlight.Action key={item.id} label={item.label} description={item.description} selected={isSelected} startSection={item.icon ? (<Icon name={item.icon as any} size="md" />) : undefined} highlightQuery={state.query} onPress={() => {
                   console.log('=== SPOTLIGHT ACTION ONPRESS CALLED ===');
                   console.log('Item from render:', item);
                   console.log('Item onPress function:', item.onPress);

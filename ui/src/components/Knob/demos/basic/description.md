@@ -1,1 +1,12 @@
-Provides a controlled knob that renders the formatted percentage inside the dial and mirrors the value below.
+---
+title: Basic
+category: basics
+order: 10
+tags: [basic, knob, control]
+highlightLines: []
+status: experimental
+since: 1.0.0
+hidden: false
+---
+
+Controlled knob with percentage formatting and a mirrored readout below the dial.

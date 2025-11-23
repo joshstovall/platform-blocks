@@ -3,11 +3,12 @@ import { Dialog } from '../Dialog';
 import { Icon } from '../Icon/Icon';
 import { Text } from '../Text/Text';
 import { Highlight } from '../Highlight';
-import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions, Platform, Keyboard } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions, Keyboard } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useSpotlightStore, setDefaultSpotlightStore } from './SpotlightStore';
 import { useGlobalHotkeys } from '../../hooks/useHotkeys';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
+import { useOverlayMode } from '../../hooks';
 import {
   SpotlightActionData,
   SpotlightActionGroupData,
@@ -51,11 +52,11 @@ function SpotlightRoot({
 }: SpotlightRootProps) {
   const theme = useTheme();
   const { width: screenWidth } = useWindowDimensions();
+  const { shouldUseModal } = useOverlayMode();
   const horizontalMargin = 32;
   const targetWidth = Math.min(560, Math.max(280, screenWidth - horizontalMargin));
   // (Hotkey registration moved to main Spotlight component for access to store.toggle())
-  const isMobile = Platform.OS !== 'web';
-  const fullscreen = isMobile; // auto fullscreen on native
+  const fullscreen = shouldUseModal;
 
   return (
     <Dialog
@@ -94,7 +95,7 @@ function SpotlightRoot({
 function SpotlightSearch({
   value,
   onChangeText,
-  leftSection,
+  startSection,
   placeholder = 'Search...',
   onNavigateUp,
   onNavigateDown,
@@ -107,7 +108,8 @@ function SpotlightSearch({
   const theme = useTheme();
   const inputRef = useRef<TextInput | null>(null);
   const [isFocused, setIsFocused] = React.useState(false);
-  const isMobile = Platform.OS !== 'web';
+  const { isMobileExperience } = useOverlayMode();
+  const isMobile = isMobileExperience;
   let effectivePlaceholder = placeholder;
   if (isMobile) {
     const verbosePattern = /components,\s*demos,\s*documentation/i;
@@ -172,7 +174,7 @@ function SpotlightSearch({
       }
     ]}>
       <View style={styles.searchInputWrapper}>
-        {leftSection || <Icon name="search" size="md" color={theme.text.secondary} />}
+        {startSection || <Icon name="search" size="md" color={theme.text.secondary} />}
         <TextInput
           ref={assignInputRef}
           value={value}
@@ -257,8 +259,8 @@ function SpotlightActionsList({
 function SpotlightAction({
   label,
   description,
-  leftSection,
-  rightSection,
+  startSection,
+  endSection,
   onPress,
   disabled = false,
   selected = false,
@@ -333,9 +335,9 @@ function SpotlightAction({
       {...webHoverProps}
     >
       <Block direction="row" align="center" style={styles.actionContent}>
-        {leftSection && (
+        {startSection && (
           <View style={styles.actionLeftSection}>
-            {leftSection}
+            {startSection}
           </View>
         )}
         <Block direction="column" style={{ flex: 1 }}>
@@ -357,9 +359,9 @@ function SpotlightAction({
           ) : null}
           {children}
         </Block>
-        {rightSection ? (
+        {endSection ? (
           <View style={styles.actionRightSection}>
-            {rightSection}
+            {endSection}
           </View>
         ) : null}
       </Block>
@@ -645,7 +647,7 @@ export function Spotlight({
             innerRef={(el: any) => { itemRefs.current[flatIndex - 1] = el; }}
             onLayout={(e: any) => { itemLayouts.current[flatIndex - 1] = { y: e.nativeEvent.layout.y, height: e.nativeEvent.layout.height }; setLayoutVersion(v => v + 1); }}
             highlightQuery={highlightValue}
-            leftSection={
+            startSection={
               typeof item.icon === 'string' ? (
                 <Icon name={item.icon} size="md"
                   color="pink" />
@@ -681,7 +683,7 @@ export function Spotlight({
                   innerRef={(el: any) => { itemRefs.current[flatIndex - 1] = el; }}
                   onLayout={(e: any) => { itemLayouts.current[flatIndex - 1] = { y: e.nativeEvent.layout.y, height: e.nativeEvent.layout.height }; setLayoutVersion(v => v + 1); }}
                   highlightQuery={highlightValue}
-                  leftSection={
+                  startSection={
                     typeof action.icon === 'string' ? (
                       <Icon name={action.icon} size="md" />
                     ) : (

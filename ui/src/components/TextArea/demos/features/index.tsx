@@ -1,69 +1,109 @@
 import { useState } from 'react';
-import { Text, Card, Column, TextArea } from '@platform-blocks/ui';
+
+import { Column, Text, TextArea } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [autoResizeValue, setAutoResizeValue] = useState('Type more text to see auto-resize in action...\n\nAdd multiple lines to see how the textarea grows and shrinks automatically based on content.');
+  const [autoResizeValue, setAutoResizeValue] = useState(
+    'Type more text to see auto-resize in action...\n\nAdd multiple lines to watch the text area grow and shrink with content.'
+  );
   const [counterValue, setCounterValue] = useState('');
   const [errorValue, setErrorValue] = useState('');
 
   return (
-    <Card padding={16}>
-      <Column gap={20}>
-        <Text variant="h6">TextArea Features</Text>
-        
-        {/* Auto Resize */}
+    <Column gap="lg" fullWidth>
+      <Text weight="semibold">Text area feature showcase</Text>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Auto-resizing field
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Adjusts height between two and six rows based on content.
+        </Text>
         <TextArea
-          label="Auto Resize"
-          description="Automatically adjusts height based on content"
-          placeholder="Start typing to see auto-resize..."
+          label="Auto-resize message"
+          placeholder="Start typing to watch the height adjust"
           value={autoResizeValue}
           onChangeText={setAutoResizeValue}
-          autoResize={true}
+          autoResize
           minRows={2}
           maxRows={6}
+          fullWidth
         />
+      </Column>
 
-        {/* Character Counter */}
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Character counter
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Enforces a maximum length while surfacing a live counter.
+        </Text>
         <TextArea
-          label="With Character Counter"
-          placeholder="Type to see character count (max 100 characters)"
+          label="Support message"
+          placeholder="Type to see the counter (max 100 characters)"
           value={counterValue}
           onChangeText={setCounterValue}
           maxLength={100}
-          showCharCounter={true}
+          showCharCounter
           rows={3}
-          helperText="Try typing more than 100 characters to see the limit in action"
-        />
-
-        {/* Error State */}
-        <TextArea
-          label="Error State"
-          placeholder="This textarea has an error"
-          value={errorValue}
-          onChangeText={setErrorValue}
-          error={errorValue.length > 0 ? undefined : 'This field is required'}
-          required={true}
-          rows={3}
-        />
-
-        {/* Disabled State */}
-        <TextArea
-          label="Disabled TextArea"
-          placeholder="This textarea is disabled"
-          value="This textarea is disabled and cannot be edited"
-          disabled={true}
-          rows={2}
-        />
-
-        {/* Required Field */}
-        <TextArea
-          label="Required Field"
-          placeholder="This field is required"
-          required={true}
-          rows={2}
-          helperText="Required fields are marked with an asterisk (*)"
+          helperText="Helpful for concise feedback or short-form inputs."
+          fullWidth
         />
       </Column>
-    </Card>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Error and required states
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Show validation messaging when the field is empty.
+        </Text>
+        <TextArea
+          label="Required response"
+          placeholder="This field cannot be empty"
+          value={errorValue}
+          onChangeText={setErrorValue}
+          error={errorValue.length > 0 ? undefined : 'A response is required before submission.'}
+          required
+          rows={3}
+          fullWidth
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Disabled field
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Communicates when editing is not allowed.
+        </Text>
+        <TextArea
+          label="Disabled text area"
+          placeholder="Disabled state"
+          value="This text area is disabled and cannot be edited."
+          disabled
+          rows={2}
+          fullWidth
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Required helper copy
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Pair helper text with the required badge to give extra guidance.
+        </Text>
+        <TextArea
+          label="Required with helper"
+          placeholder="Add details"
+          required
+          rows={2}
+          helperText="Required fields display an asterisk and supporting guidance."
+          fullWidth
+        />
+      </Column>
+    </Column>
   );
 }

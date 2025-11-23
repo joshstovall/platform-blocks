@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Grouped AutoComplete with options organized into categories and sections.
+Organizes countries into regional group headers for faster scanning.

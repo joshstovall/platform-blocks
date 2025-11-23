@@ -1,12 +1,12 @@
 ---
 title: Basic Usage
-category: usage
+category: basics
 order: 10
-tags: [basic, switch, toggle]
+tags: [controlled, label]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic switch usage for toggling between on/off states.
+Control a `Switch` with local state and surface its status with supporting text and the `description` prop.

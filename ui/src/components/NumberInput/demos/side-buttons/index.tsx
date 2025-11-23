@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Card, Column, Flex, NumberInput, Text } from '@platform-blocks/ui';
+
+import { Column, NumberInput, Row, Text } from '@platform-blocks/ui';
 
 const EnhancedNumberInput = NumberInput as any;
 
@@ -9,10 +10,13 @@ export default function Demo() {
   const effectiveStep = useMemo(() => step || 1, [step]);
 
   return (
-    <Card padding={24} shadow="md" style={{ width: 320 }}>
-      <Column gap="md">
-        <Text size="lg" weight="600">Fine + coarse control</Text>
+    <Column gap="lg" style={{ maxWidth: 360 }}>
+      <Text weight="semibold">Side buttons and shift multiplier</Text>
+      <Text size="sm" colorVariant="secondary">
+        Combine side buttons with the default controls to support coarse and fine adjustments.
+      </Text>
 
+      <Column gap="sm">
         <EnhancedNumberInput
           label="Playback speed"
           value={value}
@@ -29,12 +33,23 @@ export default function Demo() {
             }
           }}
         />
+        <Row justify="space-between" align="center">
+          <Text size="xs" colorVariant="secondary">
+            Current speed: {value}%
+          </Text>
+          <Text size="xs" colorVariant="secondary">
+            Shift-click = ±{effectiveStep * 10}
+          </Text>
+        </Row>
+      </Column>
 
-        <Flex align="center" justify="space-between">
-          <Text size="sm" color="gray.6">Current: {value}%</Text>
-          <Text size="sm" color="gray.6">Shift-click = ±{effectiveStep * 10}</Text>
-        </Flex>
-
+      <Column gap="sm">
+        <Text size="sm" weight="semibold">
+          Adjust the base step
+        </Text>
+        <Text size="sm" colorVariant="secondary">
+          Update the increment to see how the multiplier scales.
+        </Text>
         <EnhancedNumberInput
           label="Base step"
           value={step}
@@ -49,6 +64,6 @@ export default function Demo() {
           }}
         />
       </Column>
-    </Card>
+    </Column>
   );
 }

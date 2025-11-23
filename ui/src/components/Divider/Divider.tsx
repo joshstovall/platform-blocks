@@ -74,7 +74,12 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
     // If label is a string, wrap it in Text component
     if (typeof label === 'string') {
       return (
-        <Text size="sm" color="muted" weight="medium">
+        <Text
+          size="sm"
+          color="muted"
+          weight="medium"
+          align={orientation === 'vertical' ? 'center' : undefined}
+        >
           {label}
         </Text>
       );
@@ -96,13 +101,15 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
     }
   };
 
+  const borderStyle = getBorderStyle();
+
   const getDividerStyles = (): ViewStyle => {
     if (orientation === 'vertical') {
       return {
-        width: dividerSize,
         borderLeftWidth: dividerSize,
         borderLeftColor: dividerColor,
-        alignSelf: 'stretch'
+        borderStyle,
+        alignSelf: 'center'
       };
     }
 
@@ -110,12 +117,21 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
       height: dividerSize,
       borderTopWidth: dividerSize,
       borderTopColor: dividerColor,
+      borderStyle,
       width: '100%'
     };
   };
 
   const renderWithLabel = () => {
     const dividerStyles = getDividerStyles();
+
+    const labelContainerStyle: ViewStyle = orientation === 'vertical'
+      ? {
+          paddingVertical: labelSpacing,
+          alignItems: 'center',
+          alignSelf: 'center',
+        }
+      : { paddingHorizontal: labelSpacing };
 
     if (orientation === 'vertical') {
       return (
@@ -128,7 +144,7 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
         >
           <View style={[dividerStyles, { flex: labelPosition === 'left' ? 0.2 : 1 }]} />
           {label && (
-            <View style={{ paddingVertical: labelSpacing }}>
+            <View style={labelContainerStyle}>
               {renderLabel()}
             </View>
           )}
@@ -147,7 +163,7 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
       >
         <View style={[dividerStyles, { flex: labelPosition === 'left' ? 0.2 : 1 }]} />
         {label && (
-          <View style={{ paddingHorizontal: labelSpacing }}>
+          <View style={labelContainerStyle}>
             {renderLabel()}
           </View>
         )}

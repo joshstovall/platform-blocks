@@ -1,11 +1,12 @@
 ---
-title: Custom Masks
+title: Country Formats
 category: features
 order: 30
-tags: [mask, pattern]
+tags: [formatting, country, phone]
+highlightLines: []
 status: experimental
 since: 1.0.0
 hidden: false
 ---
 
-Examples using custom mask strings.
+Showcase of built-in country presets with their localized masks and raw digit output.

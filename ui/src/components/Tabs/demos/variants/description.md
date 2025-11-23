@@ -1,7 +1,12 @@
 ---
-title: Tab Variants
-description: Different visual styles: line, chip, and folder variants for diverse design needs.
-tags: ["variants", "styling", "line", "chip", "folder", "visual"]
+title: Variants
+category: styling
+order: 80
+tags: [tabs, variants]
+highlightLines: [39-50]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates the three main visual variants of tabs: line (underline style), chip (rounded background), and folder (classic tab appearance). Each variant serves different design aesthetics and use cases.
+Compare the `line`, `chip`, and `folder` visual variants to match tabs with different design aesthetics.

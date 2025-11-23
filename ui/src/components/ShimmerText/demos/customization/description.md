@@ -1,5 +1,11 @@
 ---
-title: Customizing The Shimmer
-tags: [text, shimmer, animation, gradient]
+title: Customization options
+category: theming
+order: 30
+tags: [color, timing]
+highlightLines: []
+status: stable
+since: 0.3.0
+hidden: false
 ---
-Demonstrates altering shimmer color, spread, direction, and timing.
+Combine custom color stops, timing tweaks, and direction to align the shimmer with your brand voice.

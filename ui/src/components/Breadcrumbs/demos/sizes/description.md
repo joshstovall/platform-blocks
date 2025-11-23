@@ -1,9 +1,9 @@
 ---
 title: Sizes
-category: styling
+category: navigation
 order: 20
-tags: [sizes, xs, sm, md, lg]
-highlightLines: []
+tags: [breadcrumbs, sizes]
+highlightLines: [16, 23, 30, 37]
 status: stable
 since: 1.0.0
 hidden: false

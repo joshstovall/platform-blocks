@@ -1,46 +1,50 @@
-import { Divider, Row, Column, Text, Icon } from '@platform-blocks/ui';
+import { Block, Column, Divider, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap={24}>
-      <Row gap={16} align="center" style={{ height: 100 }}>
-        <Column gap={8} align="center">
-          <Text variant="h4">Profile</Text>
-          <Text variant="body" colorVariant="secondary">View Profile</Text>
+    <Column gap="lg">
+      <Block gap="lg" align="center" direction="row" h={100}>
+        <Column gap="xs" align="center">
+          <Text variant="p" weight="medium">
+            Profile
+          </Text>
+          <Text variant="small" colorVariant="muted">
+            View details
+          </Text>
         </Column>
-        
+
         <Divider orientation="vertical" />
-        
-        <Column gap={8} align="center">
-          <Text variant="h4">Settings</Text>
-          <Text variant="body" colorVariant="secondary">Preferences</Text>
+
+        <Column gap="xs" align="center">
+          <Text variant="p" weight="medium">
+            Settings
+          </Text>
+          <Text variant="small" colorVariant="muted">
+            Preferences
+          </Text>
         </Column>
-        
-        <Divider 
-          orientation="vertical" 
-          label={<Icon name="star" />}
-          color="#28a745"
-        />
-        
-        <Column gap={8} align="center">
-          <Text variant="h4">Help</Text>
-          <Text variant="body" colorVariant="secondary">Support</Text>
+
+        <Divider orientation="vertical" label="Pro" colorVariant="success" />
+
+        <Column gap="xs" align="center">
+          <Text variant="p" weight="medium">
+            Support
+          </Text>
+          <Text variant="small" colorVariant="muted">
+            Help center
+          </Text>
         </Column>
-      </Row>
-      
-      <Row gap={12} align="center" style={{ padding: 12, borderRadius: 8 }}>
-        <Text variant="body">Home</Text>
-        <Divider orientation="vertical"    color="#28a745"/>
-        <Text variant="body">Products</Text>
-          <Divider 
-          orientation="vertical" 
-          label={<Icon name="star" />}
-          color="#28a745"
-        />
-         <Text variant="body">About</Text>
+      </Block>
+
+      <Block gap="md" align="center" wrap="wrap" direction="row" h={100}>
+        <Text variant="p">Home</Text>
         <Divider orientation="vertical" />
-        <Text variant="body">Contact</Text>
-      </Row>
+        <Text variant="p">Fixtures</Text>
+        <Divider orientation="vertical" colorVariant="primary" />
+        <Text variant="p">Standings</Text>
+        <Divider orientation="vertical" label="Live" colorVariant="warning" />
+        <Text variant="p">Highlights</Text>
+      </Block>
     </Column>
   );
 }

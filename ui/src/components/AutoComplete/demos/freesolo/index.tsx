@@ -1,34 +1,38 @@
-import React, { useState } from 'react';
-import { AutoComplete, Flex, Text } from '@platform-blocks/ui';
-import type { AutoCompleteOption } from '../../types';
+import { useState } from 'react'
 
-export default function FreeSoloAutoCompleteDemo() {
-  const [inputValue, setInputValue] = useState('');
-  
-  const suggestions: AutoCompleteOption[] = [
-    { label: 'Apple', value: 'apple' },
-    { label: 'Banana', value: 'banana' },
-    { label: 'Orange', value: 'orange' },
-    { label: 'Grape', value: 'grape' },
-  ];
-  
+import { AutoComplete, Column, Text } from '@platform-blocks/ui'
+import type { AutoCompleteOption } from '../../types'
+
+const fruitSuggestions: AutoCompleteOption[] = [
+  { label: 'Apple', value: 'apple' },
+  { label: 'Banana', value: 'banana' },
+  { label: 'Orange', value: 'orange' },
+  { label: 'Grape', value: 'grape' },
+]
+
+export default function Demo() {
+  const [value, setValue] = useState('')
+
   return (
-    <Flex direction="column" gap={12}>
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Free-form entry</Text>
+      <Text size="sm" colorVariant="secondary">
+        Suggests fruits but allows any custom value to be submitted.
+      </Text>
       <AutoComplete
-        placeholder="Type anything... suggestions or custom values"
-        data={suggestions}
-        value={inputValue}
-        onChangeText={setInputValue}
-        onSelect={(item) => setInputValue(item.label)}
+        label="Favorite fruit"
+        placeholder="Type anything..."
+        data={fruitSuggestions}
+        value={value}
+        onChangeText={setValue}
+        onSelect={(item) => setValue(item.label)}
         freeSolo
         minSearchLength={0}
+        fullWidth
       />
-      <Text size="sm" color="muted">
-        Current value: {inputValue || '(empty)'}
+      <Text size="xs" colorVariant="secondary">
+        Current value: {value || '(empty)'}
       </Text>
-      <Text size="xs" color="muted">
-        You can type custom values or select from suggestions.
-      </Text>
-    </Flex>
-  );
+    </Column>
+  )
 }

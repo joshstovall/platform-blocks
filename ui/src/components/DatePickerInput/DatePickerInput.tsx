@@ -45,7 +45,7 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
     label,
     error,
     required = false,
-    rightSection,
+    endSection,
     ...restInputProps
   } = inputProps;
 
@@ -240,7 +240,7 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
         required={required}
         withAsterisk={showAsterisk}
         size={size}
-        rightSection={rightSection ?? <Icon name="calendar" size={16} />}
+        endSection={endSection ?? <Icon name="calendar" size={16} />}
         clearable={clearable}
         onClear={handleClear}
         onFocus={onFocus}

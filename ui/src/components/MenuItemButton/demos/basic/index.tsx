@@ -5,16 +5,16 @@ export default function Demo() {
     <Menu>
       <Button variant="filled">Open Menu</Button>
       <MenuDropdown>
-        <MenuItem leftSection={<Icon name="user" />}>
+        <MenuItem startSection={<Icon name="user" />}>
           Profile
         </MenuItem>
-        <MenuItem leftSection={<Icon name="settings" />}>
+        <MenuItem startSection={<Icon name="settings" />}>
           Settings
         </MenuItem>
-        <MenuItem leftSection={<Icon name="info" />}>
+        <MenuItem startSection={<Icon name="info" />}>
           Help & Support
         </MenuItem>
-        <MenuItem leftSection={<Icon name="arrow-left" />}>
+        <MenuItem startSection={<Icon name="arrow-left" />}>
           Logout
         </MenuItem>
       </MenuDropdown>

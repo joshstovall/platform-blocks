@@ -1,103 +1,64 @@
 import {
-  GooglePlayButton,
+  AmazonAppstoreButton,
   AppleAppStoreButton,
+  Block,
+  Column,
+  FDroidButton,
+  GooglePlayButton,
   MacAppStoreButton,
   MicrosoftStoreButton,
-  AmazonAppstoreButton,
-  FDroidButton,
-  Column,
   Row,
   Text,
-  Block,
 } from '@platform-blocks/ui';
 
-export default function AppStoreButtonConvenienceDemo() {
-  const handleDownload = (store: string) => {
-    console.log(`Opening ${store}...`);
-    // In a real app, you would open the respective app store URL
+const helperButtons = [
+  { label: 'Apple App Store', ButtonComponent: AppleAppStoreButton },
+  { label: 'Google Play', ButtonComponent: GooglePlayButton },
+  { label: 'Mac App Store', ButtonComponent: MacAppStoreButton },
+  { label: 'Microsoft Store', ButtonComponent: MicrosoftStoreButton },
+  { label: 'Amazon Appstore', ButtonComponent: AmazonAppstoreButton },
+  { label: 'F-Droid', ButtonComponent: FDroidButton },
+];
+
+export default function Demo() {
+  const handleDownload = (label: string) => {
+    console.log(`Open ${label}`);
   };
 
   return (
-    <Column gap="2xl" p="lg">
+    <Column gap="lg">
       <Column gap="sm">
-        <Text weight="semibold" size="lg">Convenience Components</Text>
-        <Text colorVariant="secondary" size="sm">
-          Pre-configured components for each app store. No need to specify the 'store' prop.
+        <Text size="sm" weight="medium">
+          One-line helpers
         </Text>
-      </Column>
 
-      <Column gap="lg">
-        <Text weight="medium" size="md">Individual Store Buttons</Text>
-        <Column gap="md">
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">Apple App Store:</Text>
-            </Block>
-            <AppleAppStoreButton onPress={() => handleDownload('App Store')} />
-          </Row>
-          
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">Google Play:</Text>
-            </Block>
-            <GooglePlayButton onPress={() => handleDownload('Google Play')} />
-          </Row>
-          
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">Mac App Store:</Text>
-            </Block>
-            <MacAppStoreButton onPress={() => handleDownload('Mac App Store')} />
-          </Row>
-          
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">Microsoft Store:</Text>
-            </Block>
-            <MicrosoftStoreButton onPress={() => handleDownload('Microsoft Store')} />
-          </Row>
-          
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">Amazon Appstore:</Text>
-            </Block>
-            <AmazonAppstoreButton onPress={() => handleDownload('Amazon Appstore')} />
-          </Row>
-          
-          <Row align="center" gap="md">
-            <Block minW={120}>
-              <Text size="sm">F-Droid:</Text>
-            </Block>
-            <FDroidButton onPress={() => handleDownload('F-Droid')} />
-          </Row>
+        <Column gap="sm">
+          {helperButtons.map(({ label, ButtonComponent }) => (
+            <Row key={label} align="center" gap="md" wrap="wrap">
+              <Block minW={140}>
+                <Text size="sm" colorVariant="secondary">
+                  {label}
+                </Text>
+              </Block>
+              <ButtonComponent onPress={() => handleDownload(label)} />
+            </Row>
+          ))}
         </Column>
       </Column>
 
-      <Column gap="lg">
-        <Text weight="medium" size="md">Different Sizes</Text>
+      <Column gap="sm">
+        <Text size="sm" weight="medium">
+          Sizes and locales
+        </Text>
+
         <Row gap="md" wrap="wrap" align="center">
           <GooglePlayButton size="sm" onPress={() => handleDownload('Google Play')} />
           <AppleAppStoreButton size="md" onPress={() => handleDownload('App Store')} />
           <MicrosoftStoreButton size="lg" onPress={() => handleDownload('Microsoft Store')} />
+          <AmazonAppstoreButton locale="es" onPress={() => handleDownload('Amazon Appstore')} />
+          <MacAppStoreButton locale="fr" onPress={() => handleDownload('Mac App Store')} />
+          <FDroidButton locale="de" onPress={() => handleDownload('F-Droid')} />
         </Row>
-      </Column>
-
-      <Column gap="lg">
-        <Text weight="medium" size="md">Localized Buttons</Text>
-        <Row gap="md" wrap="wrap">
-          <GooglePlayButton locale="es" onPress={() => handleDownload('Google Play')} />
-          <AppleAppStoreButton locale="fr" onPress={() => handleDownload('App Store')} />
-          <MicrosoftStoreButton locale="de" onPress={() => handleDownload('Microsoft Store')} />
-        </Row>
-      </Column>
-
-      <Column gap="sm">
-        <Text weight="medium" size="sm">Usage</Text>
-        <Block bg="#f5f5f5" radius="sm" p="sm">
-          <Text size="xs" colorVariant="secondary" fontFamily="monospace">
-            {`<GooglePlayButton onPress={handleDownload} />\n<AppleAppStoreButton size="lg" locale="es" />\n<MicrosoftStoreButton disabled />`}
-          </Text>
-        </Block>
       </Column>
     </Column>
   );

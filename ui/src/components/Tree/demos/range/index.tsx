@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Tree, TreeNode, Text, Button, Flex, Card } from '../../../..';
+import { useMemo, useState } from 'react';
+
+import { Block, Button, Column, Row, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const finderData: TreeNode[] = [
   {
@@ -61,111 +61,73 @@ const finderData: TreeNode[] = [
   },
 ];
 
-export default function FinderRangeSelectionDemo() {
+const collectAllIds = (nodes: TreeNode[]): string[] => {
+  const ids: string[] = [];
+  const walk = (nodeList: TreeNode[]) => {
+    nodeList.forEach((node) => {
+      ids.push(node.id);
+      if (node.children) {
+        walk(node.children);
+      }
+    });
+  };
+  walk(nodes);
+  return ids;
+};
+
+export default function Demo() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const allIds = useMemo(() => collectAllIds(finderData), []);
 
   const handleClearSelection = () => {
     setSelectedIds([]);
   };
 
   const handleSelectAll = () => {
-    // Get all visible node IDs
-    const getAllNodeIds = (nodes: TreeNode[]): string[] => {
-      const ids: string[] = [];
-      const walk = (nodeList: TreeNode[]) => {
-        nodeList.forEach(node => {
-          ids.push(node.id);
-          if (node.children) {
-            walk(node.children);
-          }
-        });
-      };
-      walk(nodes);
-      return ids;
-    };
-    
-    setSelectedIds(getAllNodeIds(finderData));
+    setSelectedIds(allIds);
   };
 
   return (
-    <View style={{ gap: 16 }}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="bold" mb="sm">
-          Finder-style Range Selection
+    <Block gap="sm" fullWidth>
+      <Column gap="xs">
+        <Text weight="semibold">Finder-style range selection</Text>
+        <Text size="xs" colorVariant="secondary">
+          Click to toggle individual items or hold Shift to capture ranges.
         </Text>
-        <Text size="xs" color="secondary" mb="md">
-          Try shift-clicking to select ranges of items. Click individual items to toggle selection.
-        </Text>
-        
-        <Flex direction="row" gap="sm" mb="md">
-          <Button
-            size="sm"
-            variant="outline"
-            onPress={handleClearSelection}
-            disabled={selectedIds.length === 0}
-          >
-            Clear Selection
+        <Row gap="xs" wrap="wrap">
+          <Button size="sm" variant="outline" onPress={handleClearSelection} disabled={selectedIds.length === 0}>
+            Clear selection
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onPress={handleSelectAll}
-          >
-            Select All
+          <Button size="sm" variant="outline" onPress={handleSelectAll}>
+            Select all
           </Button>
-        </Flex>
-      </Card>
+        </Row>
+      </Column>
 
       <Tree
         data={finderData}
         selectionMode="multiple"
         selectedIds={selectedIds}
-        onSelectionChange={(ids, node) => {
+        onSelectionChange={(ids) => {
           setSelectedIds(ids);
-          console.log('Selected:', ids.length, 'items. Last selected:', node.label);
         }}
         expandAll
-        style={{
-          backgroundColor: '#fafafa',
-          padding: 12,
-          borderRadius: 8,
-          borderWidth: 1,
-          borderColor: '#e0e0e0',
-        }}
+        striped
       />
-      
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="bold" mb="xs">
-          Selection Summary:
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Selection summary
         </Text>
-        <Text size="xs" color="secondary" mb="sm">
+        <Text size="xs" colorVariant="secondary">
           {selectedIds.length === 0 ? 'No items selected' : `${selectedIds.length} item(s) selected`}
         </Text>
         {selectedIds.length > 0 && (
-          <View style={{ 
-            maxHeight: 120, 
-            backgroundColor: '#f8f9fa', 
-            padding: 8, 
-            borderRadius: 6,
-            borderWidth: 1,
-            borderColor: '#e9ecef'
-          }}>
-            <Text size="xs" color="secondary" style={{ fontFamily: 'monospace' }}>
-              {selectedIds.join(', ')}
-            </Text>
-          </View>
+          <Text size="xs" colorVariant="secondary">
+            {selectedIds.join(', ')}
+          </Text>
         )}
-      </Card>
-      
-      <Card p={16} variant="filled">
-        <Text size="xs" color="secondary">
-          <Text weight="bold">Usage Tips:</Text>{'\n'}
-          • Click any item to select/deselect it{'\n'}
-          • Hold Shift and click to select a range{'\n'}
-          • Use Ctrl/Cmd + click for individual multi-selection{'\n'}
-          • Range selection works across expanded/collapsed branches
-        </Text>
-      </Card>
-    </View>
+      </Column>
+    </Block>
   );
 }

@@ -6,7 +6,7 @@ import type { NewDemo } from '../utils/demosLoader';
 export interface DemoRendererProps {
   demo: NewDemo & { code?: string };
   preview: React.ReactNode;
-  mode?: 'preview' | 'code';
+  mode?: 'preview' | 'code' | 'preview-code';
 }
 
 /**
@@ -17,10 +17,10 @@ export interface DemoRendererProps {
  */
 export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode = 'preview' }) => {
   const {
-    renderStyle ='auto',
+    renderStyle = 'auto',
     code,
     codeCopy,
-    codeLineNumbers,
+    codeLineNumbers = false,
     codeSpoiler,
     codeSpoilerMaxHeight,
     previewCenter = true,
@@ -29,8 +29,10 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
     githubUrl
   } = demo as any;
 
-  const shouldShowCode = mode === 'code' && Boolean(code);
-  const shouldShowPreview = mode !== 'code' || !code;
+  const showBoth = mode === 'preview-code';
+  const effectiveCodeFirst = showBoth ? false : codeFirst;
+  const shouldShowCode = (mode === 'code' || showBoth) && Boolean(code);
+  const shouldShowPreview = (mode !== 'code' || showBoth) || !code;
 
   const codeBlock = shouldShowCode && code ? (
     <CodeBlock
@@ -40,8 +42,10 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
       highlightLines={highlightLines as any}
       spoiler={codeSpoiler}
       spoilerMaxHeight={codeSpoilerMaxHeight}
-      language='tsx'
+      language="tsx"
+      wrap={false}
       // githubUrl prop added to frontmatter in demo description.md files
+      // TODO: test this
       githubUrl={githubUrl}
       // title prop added to frontmatter in demo description.md files
       // Future: wire demo.fileName / demo.fileIcon if added to generator
@@ -79,7 +83,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
             justifyContent: previewCenter ? 'center' : undefined
           }}
         >
-          {codeFirst ? (
+          {effectiveCodeFirst ? (
             <>
               {codeBlock && (
                 <Card variant="outline" style={{ flex: 1, minWidth: 260, padding: 0 }}>
@@ -117,11 +121,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
                   {preview}
                 </Card>
               )}
-              {codeBlock && (
-                <Card variant="outline" style={{ flex: 1, minWidth: 260, padding: 0 }}>
-                  {codeBlock}
-                </Card>
-              )}
+              {codeBlock && {codeBlock}}
             </>
           )}
         </Block>
@@ -131,8 +131,8 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
 
   // auto (default)
   return (
-    <Card variant="outline" style={{ padding: 16 }}>
-      {!codeFirst && shouldShowPreview && (
+   <Block>
+      {!effectiveCodeFirst && shouldShowPreview && (
         <View
           style={{
             marginBottom: shouldShowCode ? 12 : 0,
@@ -144,8 +144,9 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
         </View>
       )}
       {codeBlock}
-      {codeFirst && shouldShowPreview && (
-        <View
+      {effectiveCodeFirst && shouldShowPreview && (
+       <Card variant="outline">
+    <View
           style={{
             marginTop: shouldShowCode ? 12 : 0,
             alignItems: previewCenter ? 'center' : undefined,
@@ -154,7 +155,8 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
         >
           {preview}
         </View>
-      )}
     </Card>
+      )}
+    </Block>
   );
 };

@@ -1,12 +1,12 @@
 ---
 title: Forms
-category: usage
+category: advanced
 order: 40
-tags: [forms, validation, integration]
+tags: [form, validation]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Radio integration with forms including validation and error states.
+Pair `RadioGroup` with `required` and `error` messaging to validate selections before submitting a form workflow.

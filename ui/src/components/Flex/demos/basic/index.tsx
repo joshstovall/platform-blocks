@@ -5,13 +5,13 @@ export default function BasicFlexDemo() {
     <Card variant="outline" p="md">
       <Flex gap="md">
         <Card p="sm">
-          <Text variant="body">Item 1</Text>
+          <Text variant="p">Item 1</Text>
         </Card>
         <Card p="sm">
-          <Text variant="body">Item 2</Text>
+          <Text variant="p">Item 2</Text>
         </Card>
         <Card p="sm">
-          <Text variant="body">Item 3</Text>
+          <Text variant="p">Item 3</Text>
         </Card>
       </Flex>
     </Card>

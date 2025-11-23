@@ -1,20 +1,19 @@
-import { Button, Text, Row, Column, Card, useToast } from '@platform-blocks/ui';
+import { Button, Column, Row, Text, useToast } from '@platform-blocks/ui';
 
 export default function Demo() {
   const toast = useToast();
 
   const showSuccessToast = () => {
-    toast.show({
-      title: 'Success!',
-      message: 'Operation completed successfully.',
-      color: 'green',
+    toast.success({
+      title: 'Success',
+      message: 'The request completed correctly.',
     });
   };
 
   const showWarningToast = () => {
-    toast.warn({
+    toast.warning({
       title: 'Warning',
-      message: 'Please check your input.',
+      message: 'Double-check the highlighted fields.',
     });
   };
 
@@ -28,22 +27,30 @@ export default function Demo() {
   const showInfoToast = () => {
     toast.info({
       title: 'Info',
-      message: 'Here is some information.',
+      message: 'Here is some additional context.',
     });
   };
 
   return (
-    <Card>
-      <Column gap={16}>
-        <Text size="lg" weight="semibold">Toast Variants</Text>
-        <Row gap={8} wrap="wrap">
-          <Button title="Success" onPress={showSuccessToast} colorVariant="green" />
-          <Button title="Warning" onPress={showWarningToast} colorVariant="yellow" />
-          <Button title="Error" onPress={showErrorToast} colorVariant="red" />
-          <Button title="Info" onPress={showInfoToast} colorVariant="blue" />
-        </Row>
-      </Column>
-    </Card>
+    <Column gap="sm">
+      <Text size="xs" colorVariant="secondary">
+        Use the severity helpers to render consistent styling for each toast type.
+      </Text>
+      <Row gap="xs" wrap="wrap">
+        <Button onPress={showSuccessToast} colorVariant="success.5">
+          Success
+        </Button>
+        <Button onPress={showWarningToast} colorVariant="warning.5">
+          Warning
+        </Button>
+        <Button onPress={showErrorToast} colorVariant="error.5">
+          Error
+        </Button>
+        <Button onPress={showInfoToast} variant="outline">
+          Info
+        </Button>
+      </Row>
+    </Column>
   );
 }
 

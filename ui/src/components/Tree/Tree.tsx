@@ -5,6 +5,7 @@ import { Text } from '../Text';
 import { Icon } from '../Icon';
 import { useTheme } from '../../core/theme';
 import { Checkbox } from '../Checkbox';
+import { Collapse } from '../Collapse';
 import type { TreeNode, TreeProps } from './types';
 export type { TreeNode, TreeProps } from './types';
 
@@ -70,12 +71,12 @@ const getVisibleNodeIds = (nodes: TreeNode[], openState: InternalNodeState): str
 const getNodeRange = (visibleIds: string[], startId: string, endId: string): string[] => {
   const startIndex = visibleIds.indexOf(startId);
   const endIndex = visibleIds.indexOf(endId);
-  
+
   if (startIndex === -1 || endIndex === -1) return [];
-  
+
   const minIndex = Math.min(startIndex, endIndex);
   const maxIndex = Math.max(startIndex, endIndex);
-  
+
   return visibleIds.slice(minIndex, maxIndex + 1);
 };
 
@@ -107,6 +108,7 @@ export const Tree: React.FC<TreeProps> = ({
   noResultsFallback = <Text size="sm" color="gray">No results</Text>,
   highlight,
   striped = false,
+  useAnimations = true,
 }) => {
   const theme = useTheme?.() as any;
   const isDark = theme?.colorScheme === 'dark';
@@ -129,6 +131,15 @@ export const Tree: React.FC<TreeProps> = ({
     setUncontrolledOpen(prev => (typeof value === 'function' ? (value as (state: InternalNodeState) => InternalNodeState)(prev) : value));
   }, [expandedIds]);
 
+  const [mountedBranches, setMountedBranches] = useState<Record<string, boolean>>({});
+  const ensureBranchMounted = useCallback((id: string) => {
+    if (!useAnimations) return;
+    setMountedBranches(prev => {
+      if (prev[id]) return prev;
+      return { ...prev, [id]: true };
+    });
+  }, [useAnimations]);
+
   const [internalSelected, setInternalSelected] = useState<string[]>(defaultSelectedIds);
   const [internalChecked, setInternalChecked] = useState<string[]>(defaultCheckedIds);
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
@@ -144,6 +155,9 @@ export const Tree: React.FC<TreeProps> = ({
     if (expandedIds) {
       const willOpen = !open[node.id];
       onToggle?.(node, willOpen);
+      if (willOpen) {
+        ensureBranchMounted(node.id);
+      }
       return;
     }
 
@@ -155,16 +169,28 @@ export const Tree: React.FC<TreeProps> = ({
       }
       next[node.id] = willOpen;
       onToggle?.(node, willOpen);
+      if (willOpen) {
+        ensureBranchMounted(node.id);
+      }
       return next;
     });
-  }, [collapsible, accordion, onToggle, expandedIds, open]);
+  }, [collapsible, accordion, onToggle, expandedIds, open, ensureBranchMounted]);
+
+  useEffect(() => {
+    if (!useAnimations) return;
+    Object.keys(open).forEach(id => {
+      if (open[id]) {
+        ensureBranchMounted(id);
+      }
+    });
+  }, [open, ensureBranchMounted, useAnimations]);
 
   const setSelected = (ids: string[], node: TreeNode) => {
     if (selectedIds === undefined) setInternalSelected(ids);
     onSelectionChange?.(ids, node);
-  const primaryId = ids[0];
-  const primaryNode = primaryId ? findNode(data, primaryId) || null : null;
-  onActiveNodeChange?.(primaryNode, ids);
+    const primaryId = ids[0];
+    const primaryNode = primaryId ? findNode(data, primaryId) || null : null;
+    onActiveNodeChange?.(primaryNode, ids);
   };
 
   const setChecked = (ids: string[], node: TreeNode) => {
@@ -190,22 +216,22 @@ export const Tree: React.FC<TreeProps> = ({
         setLastSelectedId(node.id);
       } else if (effectiveSelectionMode === 'multiple') {
         const exists = effectiveSelected.includes(node.id);
-        
+
         // Check for modifier keys on web platforms
         const isShiftClick = Platform.OS === 'web' && event?.nativeEvent?.shiftKey;
         const isCtrlClick = Platform.OS === 'web' && (event?.nativeEvent?.ctrlKey || event?.nativeEvent?.metaKey);
-        
+
         if (isShiftClick && lastSelectedId && lastSelectedId !== node.id) {
           // Range selection
           const visibleIds = getVisibleNodeIds(data, open);
           const rangeIds = getNodeRange(visibleIds, lastSelectedId, node.id);
-          
+
           // Filter out any nodes that are not selectable
           const selectableRangeIds = rangeIds.filter(id => {
             const foundNode = findNode(data, id);
             return foundNode && (foundNode.selectable ?? true) && !foundNode.disabled;
           });
-          
+
           // Merge with existing selection, removing duplicates
           const newSelection = Array.from(new Set([...effectiveSelected, ...selectableRangeIds]));
           setSelected(newSelection, node);
@@ -332,21 +358,23 @@ export const Tree: React.FC<TreeProps> = ({
       if (!normalizedQuery || !highlight) return base;
       return highlight(base, normalizedQuery);
     })();
+    const shouldRenderChildren = useAnimations ? (isOpen || mountedBranches[node.id]) : isOpen;
+
     return (
       <View key={node.id} style={{}}>
-    <Pressable
+        <Pressable
           onPress={(event) => handleRowPress(node, isBranch, event)}
           style={({ pressed }) => ({
-      paddingVertical: 4,
-      paddingRight: 8,
-      paddingLeft: 6 + leftPad,
-      borderRadius: 6,
-  backgroundColor: selected ? selectionBgStrong : pressed ? selectionBg : stripedBg,
-      borderWidth: selected ? 1 : 0,
-      borderColor: selected ? selectionBorder : 'transparent',
+            paddingVertical: 4,
+            paddingRight: 8,
+            paddingLeft: 6 + leftPad,
+            borderRadius: 6,
+            backgroundColor: selected ? selectionBgStrong : pressed ? selectionBg : stripedBg,
+            borderWidth: selected ? 1 : 0,
+            borderColor: selected ? selectionBorder : 'transparent',
             flexDirection: 'row',
             alignItems: 'center',
-      opacity: disabled ? 0.45 : 1
+            opacity: disabled ? 0.45 : 1
           })}
           accessibilityRole="button"
           accessibilityLabel={node.label}
@@ -361,8 +389,9 @@ export const Tree: React.FC<TreeProps> = ({
             >
               <Icon
                 name={isOpen ? 'chevron-down' : 'chevron-right'}
-                size="xs"
-                color={disabled ? '#AAA' : '#666'}
+                size="md"
+                color={disabled ? (theme?.text?.disabled || theme?.colors?.gray?.[3] || '#C7C7CC') : (theme?.text?.secondary || theme?.text?.muted || theme?.colors?.gray?.[7] || '#666')}
+                stroke={2}
               />
             </Pressable>
           ) : node.icon ? (
@@ -370,8 +399,8 @@ export const Tree: React.FC<TreeProps> = ({
               {node.icon}
             </View>
           ) : (
-            // No icon: add spacer margin to keep label alignment without showing empty badge box
-            <View style={{ width: 4 }} />
+            // No icon: add spacer matching icon width to keep labels aligned with siblings
+            <View style={{ width: 16, alignItems: 'center' }} />
           )}
           <View style={{ width: 4 }} />
           {showCheckbox && (
@@ -385,9 +414,6 @@ export const Tree: React.FC<TreeProps> = ({
               style={{ marginRight: 4 }}
             />
           )}
-          {node.icon && !isBranch && (
-            <View style={{ marginRight: 4 }}>{node.icon}</View>
-          )}
           {renderLabel ? (
             renderLabel(node, depth, isOpen, { selected, checked, indeterminate })
           ) : (
@@ -396,10 +422,22 @@ export const Tree: React.FC<TreeProps> = ({
             </Text>
           )}
         </Pressable>
-        {isBranch && isOpen && (
-          <View>
-            {node.children!.map(child => renderNode(child, depth + 1))}
-          </View>
+        {isBranch && shouldRenderChildren && (
+          useAnimations ? (
+            <Collapse
+              isCollapsed={isOpen}
+              collapsedHeight={0}
+              animateOnMount
+            >
+              <View>
+                {node.children!.map(child => renderNode(child, depth + 1))}
+              </View>
+            </Collapse>
+          ) : (
+            <View>
+              {node.children!.map(child => renderNode(child, depth + 1))}
+            </View>
+          )
         )}
       </View>
     );

@@ -1,12 +1,12 @@
 ---
 title: Variants
-category: usage
+category: theming
 order: 20
-tags: [variants, sizes, colors]
+tags: [size, color, state]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different radio variants including sizes and color options.
+Combine the `size`, `color`, and validation props to align radios with your UI tokens and state requirements.

@@ -1,6 +1,12 @@
 ---
 title: Range Selection
-description: Finder-style range selection with shift-clicking in Tree component.
+category: interaction
+order: 80
+tags: [tree, range-selection]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates range selection functionality where users can hold Shift and click to select continuous ranges of items, similar to file managers like Finder or Explorer.
+Enable `selectionMode="multiple"` and use shift-click gestures to capture contiguous sets of nodes.

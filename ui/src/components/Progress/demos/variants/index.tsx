@@ -1,32 +1,40 @@
-import { Progress, Text, Column, Card, Block } from '@platform-blocks/ui';
+import { Column, Progress, Text } from '@platform-blocks/ui';
+
+const VARIANTS = [
+  {
+    label: 'Primary status',
+    value: 60,
+    props: {}
+  },
+  {
+    label: 'Success status',
+    value: 82,
+    props: { color: 'success' as const }
+  },
+  {
+    label: 'Warning status',
+    value: 45,
+    props: { color: 'warning' as const }
+  },
+  {
+    label: 'Striped + animated',
+    value: 70,
+    props: { striped: true, animate: true, transitionDuration: 600 }
+  }
+] as const;
 
 export default function Demo() {
   return (
-    <Card>
-      <Column gap={16}>
-        <Text size="lg" weight="semibold">Progress Variants</Text>
-        
-        <Block>
-          <Text size="sm" mb="xs">Default</Text>
-          <Progress value={60} />
-        </Block>
-        
-        <Block>
-          <Text size="sm" mb="xs">Success</Text>
-          <Progress value={80} color="green" />
-        </Block>
-        
-        <Block>
-          <Text size="sm" mb="xs">Warning</Text>
-          <Progress value={45} color="orange" />
-        </Block>
-        
-        <Block>
-          <Text size="sm" mb="xs">Error</Text>
-          <Progress value={25} color="red" />
-        </Block>
-      </Column>
-    </Card>
+    <Column gap="lg">
+      {VARIANTS.map(({ label, value, props }) => (
+        <Column key={label} gap="xs">
+          <Text variant="small" colorVariant="muted">
+            {label}
+          </Text>
+          <Progress value={value} fullWidth {...props} />
+        </Column>
+      ))}
+    </Column>
   );
 }
 

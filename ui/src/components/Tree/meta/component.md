@@ -6,8 +6,6 @@ package: platform-blocks
 since: 1.0.0
 ---
 
-# Tree
-
 Tree component for displaying hierarchical data structures like file systems, navigation menus, or any nested content. Supports expansion/collapse, multiple selection modes, checkboxes, filtering, and custom rendering.
 
 ## Features
@@ -21,6 +19,7 @@ Tree component for displaying hierarchical data structures like file systems, na
 - **Custom Icons**: Add icons to differentiate node types
 - **Custom Rendering**: Complete control over node appearance
 - **Controlled State**: External control over expansion and selection
+- **Optional Animations**: Toggle `useAnimations` to animate branch expand/collapse via the Collapse helper
 - **Accessibility**: Proper ARIA labels and keyboard navigation support
 
 ## Use Cases

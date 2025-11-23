@@ -20,12 +20,6 @@ export const multimediaIcons: IconRegistry = {
     variant: 'filled' as const,
     description: 'Musical note for audio content or playlists.',
   },
-  'music-note': {
-    content: 'M12 13.535V3H20V5H14V15C14 17.2091 12.2091 19 10 19C7.79086 19 6 17.2091 6 15C6 12.7909 7.79086 11 10 11C10.7286 11 11.4117 11.2028 12 11.535Z',
-    viewBox: '0 0 24 24',
-    variant: 'filled' as const,
-    description: 'Alias for the music note glyph using kebab-case naming.',
-  },
   microphone: {
     content: 'M12 1C13.6569 1 15 2.34315 15 4V12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12V4C9 2.34315 10.3431 1 12 1ZM12 3C11.4477 3 11 3.44772 11 4V12C11 12.5523 11.4477 13 12 13C12.5523 13 13 12.5523 13 12V4C13 3.44772 12.5523 3 12 3ZM3 11V12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12V11H19V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V11H3ZM11 22H13V24H11V22Z',
     viewBox: '0 0 24 24',

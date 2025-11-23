@@ -20,6 +20,12 @@ export const uiIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Five-point star for favorites or featured items.',
   },
+  sparkles: {
+  content: 'M12 2l1.2 4 4 1.2 -4 1.2 -1.2 4 -1.2 -4 -4 -1.2 4 -1.2 Z M6 10l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 1 -3 Z M18 12l.8 2.4L21 15l-2.2 .6 -.8 2.4 -.8 -2.4L15 15l2.2 -.6L18 12 Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Cluster of sparkles for celebratory or highlight moments.',
+  },
   heart: {
     content: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z',
     viewBox: '0 0 24 24',
@@ -201,10 +207,10 @@ export const uiIcons: IconRegistry = {
     description: 'Shield backdrop with progress arc to represent guarded loading states.',
   },
   breadcrumbs: {
-    content: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2zM9 12l3-3 3 3',
+    content: 'M5 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z M12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z M19 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z M8 10h3 M15 10h3',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
-    description: 'Breadcrumb navigation bar with folder arrow.',
+    description: 'Three linked crumb nodes connected by guides to represent breadcrumb trails.',
   },
   pagination: {
     content: 'M3 10h18M7 6l4 4-4 4M17 6l4 4-4 4',
@@ -272,11 +278,17 @@ export const uiIcons: IconRegistry = {
     variant: 'outlined' as const,
     description: 'Horizontal slider track with centered thumb knob.',
   },
-  hook: {
-    content: 'M6 3v7a6 6 0 1 0 12 0v-2M6 6h6M10 13c0 2 1.5 3 3 3s3-1 3-3',
+  knob: {
+    content: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z M12 6a6 6 0 1 1-6 6h2a4 4 0 1 0 4-4V6Z M7 18h10v2H7z M12 6v4.5l3.5 2-1 1.73-4.5-2.6V6Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
-    description: 'Fishing hook silhouette for representing hooks utilities.',
+    description: 'Layered rotary knob with a weighted base and angled pointer for tactile controls.',
+  },
+  hook: {
+    content: 'M8 3v8a4 4 0 0 0 8 0V8h-3v3a1 1 0 0 1-2 0V3H8Z M5 13v2a7 7 0 0 0 7 7h2a5 5 0 0 0 5-5v-1h-3v1a2 2 0 0 1-2 2h-2a4 4 0 0 1-4-4v-2H5Z M17 3h4v3h-4V3Z',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Curved hook with a capped stem and catch, ideal for React hook utilities.',
   },
   support: {
     content: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm-4.95-.95 2.12 2.12-1.06 1.06-2.12-2.12 1.06-1.06Zm9.9 0 1.06 1.06-2.12 2.12-1.06-1.06 2.12-2.12ZM7.05 16.95l-1.06-1.06 2.12-2.12 1.06 1.06-2.12 2.12Zm9.9 0-2.12-2.12 1.06-1.06 2.12 2.12-1.06 1.06Z',

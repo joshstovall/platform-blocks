@@ -1,12 +1,12 @@
 ---
 title: Sizes
-category: usage
+category: layout
 order: 20
-tags: [sizes]
+tags: [size]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different size options for QR codes from small to large.
+Preview recommended QR code dimensions to pick the right footprint for your canvas.

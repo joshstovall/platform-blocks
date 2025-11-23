@@ -1,4 +1,6 @@
-import { Tree, TreeNode } from '../../../..';
+import { useState } from 'react';
+
+import { Block, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const treeData: TreeNode[] = [
   {
@@ -42,18 +44,25 @@ const treeData: TreeNode[] = [
   },
 ];
 
-export default function BasicTreeDemo() {
+export default function Demo() {
+  const [lastAction, setLastAction] = useState('Expand folders or open files to see updates.');
+
   return (
-    <Tree
-      data={treeData}
-      collapsible
-      indent={20}
-      onNavigate={(node) => {
-        console.log('Navigated to:', node.label);
-      }}
-      onToggle={(node, expanded) => {
-        console.log(`${expanded ? 'Expanded' : 'Collapsed'}:`, node.label);
-      }}
-    />
+    <Block gap="sm" fullWidth>
+      <Tree
+        data={treeData}
+        collapsible
+        indent={20}
+        onNavigate={(node) => {
+          setLastAction(`Opened ${node.label}`);
+        }}
+        onToggle={(node, expanded) => {
+          setLastAction(`${expanded ? 'Expanded' : 'Collapsed'} ${node.label}`);
+        }}
+      />
+      <Text size="xs" colorVariant="secondary">
+        {lastAction}
+      </Text>
+    </Block>
   );
 }

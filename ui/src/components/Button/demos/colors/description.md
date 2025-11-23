@@ -1,12 +1,12 @@
 ---
 title: Colors
-category: Colorss
-order: 15
-tags: [Colors, getting-started]
+category: styling
+order: 20
+tags: [buttons, colors]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Colors Button usage with a title prop.
+Cycle through semantic `colorVariant` values to align actions with brand intent.

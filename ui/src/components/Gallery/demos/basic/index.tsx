@@ -65,7 +65,7 @@ export default function Demo() {
         Gallery Demo
       </Text>
       
-      <Text variant="body" style={{ marginBottom: 24, color: '#666' }}>
+      <Text variant="p" style={{ marginBottom: 24, color: '#666' }}>
         Tap any image below to open the fullscreen gallery viewer.
       </Text>
 
@@ -95,7 +95,7 @@ export default function Demo() {
                   }}
                   resizeMode="cover"
                 />
-                <Text variant="caption" style={{ textAlign: 'center' }}>
+                <Text variant="small" style={{ textAlign: 'center' }}>
                   {image.title}
                 </Text>
               </Card>

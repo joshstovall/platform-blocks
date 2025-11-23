@@ -1,36 +1,14 @@
-import { View, StyleSheet } from 'react-native';
-import { ShimmerText } from '../..'; // adjust path
-import { Text } from '../../../../components/Text';
+import { Column, ShimmerText } from '@platform-blocks/ui';
 
-export default function ShimmerDemo() {
+export default function Demo() {
   return (
-    <View style={styles.container}>
-      
-      <ShimmerText 
-        // debug
-        // shimmerColor="#fff"
-        // colors={['#e34040ff', '#eeeeee', '#b74545ff']}
-        duration={2}       // seconds per sweep
-        // repeat              // continuous loop
-        color="#dc0000ff"        // base text color underneath shimmer
-      >
-        Shimmering Text ✨
+    <Column gap="lg" align="flex-start">
+      <ShimmerText size="xl" weight="bold">
+        Weekly highlights go live
       </ShimmerText>
-
-    </View>
+      <ShimmerText>
+        New arrivals shimmer into view every Friday at noon.
+      </ShimmerText>
+    </Column>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    gap: 24,
-    backgroundColor: '#000',
-  },
-  note: {
-    fontStyle: 'italic',
-  },
-  spacer: {
-    height: 16,
-  },
-});

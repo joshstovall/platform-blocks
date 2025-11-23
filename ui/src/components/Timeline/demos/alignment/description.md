@@ -1,12 +1,13 @@
 ---
-title: Alignment
-category: usage
+title: Alignment Options
+category: layout
 order: 20
-tags: [alignment, layout, positioning]
+tags: [timeline, layout]
+highlightLines: [26-59]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different alignment options for timeline items including left, right, and center alignment.
+Showcase left, right, and centered layouts by toggling `align` or `centerMode` on the timeline.

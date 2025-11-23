@@ -1,1 +1,1 @@
-export { BlockBasicDemo } from './BlockBasicDemo';
+export { default as BlockBasicDemo } from './basic';

@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Security features including masking, validation, and OTP functionality.
+Highlights masking, automatic OTP completion, and validation flows with inline messaging.

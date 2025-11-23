@@ -1,6 +1,12 @@
 ---
-title: Context Menu
-description: Right-click triggered context menu.
+title: Context Trigger
+category: behavior
+order: 20
+tags: [menu, contextmenu]
+highlightLines: [17-40]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Context menu that appears when right-clicking on a target area, useful for contextual actions.
+Enable `trigger="contextmenu"` to surface a menu when users right-click or long-press a target.

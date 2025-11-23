@@ -1,12 +1,12 @@
-import { Button, useToast } from '@platform-blocks/ui'
+import { Button, Column, useToast } from '@platform-blocks/ui';
+
 export default function Demo() {
-  const toast = useToast()
+  const toast = useToast();
+
   return (
-    <Button
-      onPress={
-        () => toast.success('Button clicked successfully!')
-      } >
-      Click Me
-    </Button>
-  )
+    <Column gap="sm" align="flex-start">
+      <Button onPress={() => toast.success('Launch command sent')}>Launch mission</Button>
+      <Button variant="secondary" onPress={() => toast.info('Sequence aborted')}>Abort</Button>
+    </Column>
+  );
 }

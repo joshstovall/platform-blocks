@@ -1,13 +1,14 @@
 import React from 'react';
 import { ViewStyle } from 'react-native';
 import { SizeValue } from '../../core/theme/types';
+import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
 // Calendar displays days at the 'month' level. Higher levels navigate selection context.
 export type CalendarLevel = 'month' | 'year' | 'decade';
 export type CalendarType = 'single' | 'multiple' | 'range';
 export type CalendarValue = Date | Date[] | [Date | null, Date | null] | null;
 
-export interface CalendarProps {
+export interface CalendarProps extends DisclaimerSupport {
   // View control
   level?: CalendarLevel;
   defaultLevel?: CalendarLevel;

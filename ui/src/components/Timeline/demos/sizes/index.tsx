@@ -1,71 +1,36 @@
-import { Timeline, Text, Card, Column, Row } from '@platform-blocks/ui';
+import { Column, Text, Timeline } from '@platform-blocks/ui';
+
+const steps = [
+  { title: 'Intake', description: 'Capture requirements and success metrics.' },
+  { title: 'Build', description: 'Ship incrementally while collecting feedback.' },
+  { title: 'Wrap-up', description: 'Deliver post-mortem and celebrate the launch.' },
+];
+
+const sizes = [
+  { token: 'xs', label: 'Extra small' },
+  { token: 'sm', label: 'Small' },
+  { token: 'md', label: 'Medium (default)' },
+  { token: 'lg', label: 'Large' },
+] as const;
 
 export default function Demo() {
-  const timelineItems = [
-    { title: 'First Step', description: 'Initial phase' },
-    { title: 'Second Step', description: 'Development phase' },
-    { title: 'Third Step', description: 'Final phase' },
-  ];
-
   return (
-    <Column gap={24}>
-      <Text variant="h6">Timeline Sizes</Text>
-      
-      <Row gap={16} wrap="wrap">
-        <Card padding={16} style={{ flex: 1, minWidth: 250 }}>
-          <Column gap={12}>
-            <Text variant="body" weight="medium">Extra Small</Text>
-            <Timeline size="xs" active={1}>
-              {timelineItems.map((item, index) => (
-                <Timeline.Item key={index} title={item.title}>
-                  <Text variant="caption">{item.description}</Text>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Column>
-        </Card>
-        
-        <Card padding={16} style={{ flex: 1, minWidth: 250 }}>
-          <Column gap={12}>
-            <Text variant="body" weight="medium">Small</Text>
-            <Timeline size="sm" active={1}>
-              {timelineItems.map((item, index) => (
-                <Timeline.Item key={index} title={item.title}>
-                  <Text variant="caption">{item.description}</Text>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Column>
-        </Card>
-      </Row>
-      
-      <Row gap={16} wrap="wrap">
-        <Card padding={16} style={{ flex: 1, minWidth: 250 }}>
-          <Column gap={12}>
-            <Text variant="body" weight="medium">Medium (Default)</Text>
-            <Timeline size="md" active={1}>
-              {timelineItems.map((item, index) => (
-                <Timeline.Item key={index} title={item.title}>
-                  <Text variant="caption">{item.description}</Text>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Column>
-        </Card>
-        
-        <Card padding={16} style={{ flex: 1, minWidth: 250 }}>
-          <Column gap={12}>
-            <Text variant="body" weight="medium">Large</Text>
-            <Timeline size="lg" active={1}>
-              {timelineItems.map((item, index) => (
-                <Timeline.Item key={index} title={item.title}>
-                  <Text variant="caption">{item.description}</Text>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Column>
-        </Card>
-      </Row>
+    <Column gap="lg">
+      <Text size="sm" colorVariant="secondary">
+        Pick a `size` token to scale bullet, connector, and typography metrics together.
+      </Text>
+      {sizes.map((entry) => (
+        <Column key={entry.token} gap="sm">
+          <Text weight="semibold">{entry.label}</Text>
+          <Timeline size={entry.token} active={1}>
+            {steps.map((step) => (
+              <Timeline.Item key={`${entry.token}-${step.title}`} title={step.title}>
+                <Text size="sm">{step.description}</Text>
+              </Timeline.Item>
+            ))}
+          </Timeline>
+        </Column>
+      ))}
     </Column>
   );
 }

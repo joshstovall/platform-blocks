@@ -1,49 +1,97 @@
-import { useState } from 'react';
-import { SpotlightProvider, Spotlight, useSpotlightStoreInstance, spotlight, Text, Button, Flex, Card } from '@platform-blocks/ui';
+import { useMemo, useState } from 'react';
+import {
+  Button,
+  Card,
+  Column,
+  Row,
+  Spotlight,
+  SpotlightProvider,
+  Text,
+  spotlight,
+  useSpotlightStoreInstance,
+  type SpotlightProps,
+} from '@platform-blocks/ui';
 
-const baseActions = [
-  { id: 'ping', label: 'Ping Server', description: 'Send a ping to backend', icon: 'bolt', onPress: () => console.log('ping') },
-  { id: 'refresh', label: 'Refresh Data', description: 'Reload cached data', icon: 'refresh', onPress: () => console.log('refresh') },
+const baseActions: SpotlightProps['actions'] = [
+  {
+    id: 'ping',
+    label: 'Ping server',
+    description: 'Send a ping to the backend',
+    icon: 'bolt',
+    onPress: () => console.log('ping'),
+  },
+  {
+    id: 'refresh',
+    label: 'Refresh data',
+    description: 'Reload cached domain data',
+    icon: 'refresh',
+    onPress: () => console.log('refresh'),
+  },
+];
+
+const globalActions: SpotlightProps['actions'] = [
+  {
+    id: 'global-home',
+    label: 'Global home',
+    description: 'Navigate home via the shared store',
+    icon: 'home',
+    onPress: () => console.log('global home'),
+  },
+  {
+    id: 'global-settings',
+    label: 'Global settings',
+    description: 'Open the account-wide preferences',
+    icon: 'settings',
+    onPress: () => console.log('global settings'),
+  },
 ];
 
 export default function Demo() {
   const [store] = useSpotlightStoreInstance();
   const [dynamicCount, setDynamicCount] = useState(0);
 
-  const actions = [
-    ...baseActions,
-    { id: 'add-dynamic', label: 'Add Dynamic Action', icon: 'plus', onPress: () => setDynamicCount(c => c + 1) },
-    ...Array.from({ length: dynamicCount }).map((_, i) => ({
-      id: 'dyn-' + i,
-      label: 'Dynamic Action ' + (i + 1),
-      description: 'Added at runtime',
-      icon: 'star',
-      onPress: () => console.log('dynamic', i + 1)
-    })),
-  ];
-
-  // Global actions for the global spotlight
-  const globalActions = [
-    { id: 'global-home', label: 'Global Home', description: 'Navigate home globally', icon: 'home', onPress: () => console.log('global home') },
-    { id: 'global-settings', label: 'Global Settings', description: 'Open global settings', icon: 'settings', onPress: () => console.log('global settings') },
-  ];
+  const actions = useMemo<SpotlightProps['actions']>(
+    () => [
+      ...baseActions,
+      {
+        id: 'add-dynamic',
+        label: 'Add dynamic action',
+        icon: 'plus',
+        onPress: () => setDynamicCount((count) => count + 1),
+      },
+      ...Array.from({ length: dynamicCount }).map((_, index) => ({
+        id: `dynamic-${index}`,
+        label: `Dynamic action ${index + 1}`,
+        description: 'Added at runtime to the local store',
+        icon: 'star',
+        onPress: () => console.log('dynamic', index + 1),
+      })),
+    ],
+    [dynamicCount]
+  );
 
   return (
     <SpotlightProvider>
-      <Flex direction="column" gap={16}>
-        <Card p={16} variant="outline">
-          <Text size="lg" weight="semibold" mb={8}>Programmatic Store & Dynamic Actions</Text>
-          <Text size="sm" color="dimmed" mb={12}>Demo store vs Global store; actions can add more actions.</Text>
-          <Flex direction="row" gap={12}>
-            <Button title="Open Demo Store" onPress={() => store.open()} />
-            <Button title="Global Toggle" variant="outline" onPress={() => spotlight.toggle()} />
-          </Flex>
+      <Column gap="lg">
+        <Card p="md">
+          <Column gap="md">
+            <Text size="sm" colorVariant="secondary">
+              Combine local stores with the global `spotlight` helper. This demo adds actions to its scoped store while still toggling the shared palette.
+            </Text>
+            <Row gap="sm" wrap="wrap">
+              <Button onPress={() => store.open()}>Open demo store</Button>
+              <Button variant="outline" onPress={() => spotlight.toggle()}>
+                Toggle global spotlight
+              </Button>
+            </Row>
+            <Text size="xs" colorVariant="secondary">
+              Select “Add dynamic action” to append more commands on the fly.
+            </Text>
+          </Column>
         </Card>
-        {/* Demo-specific spotlight with dynamic actions */}
-        <Spotlight actions={actions as any} store={store} />
-        {/* Global spotlight with different actions */}
-        <Spotlight actions={globalActions as any} />
-      </Flex>
+        <Spotlight actions={actions} store={store} />
+        <Spotlight actions={globalActions} />
+      </Column>
     </SpotlightProvider>
   );
 }

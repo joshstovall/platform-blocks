@@ -1,12 +1,12 @@
 ---
 title: Sizes
-category: appearance
-order: 50
-tags: [sizes, appearance]
+category: styling
+order: 40
+tags: [buttons, sizes]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Button in small, medium, and large sizes.
+Preview the available button size tokens for different density requirements.

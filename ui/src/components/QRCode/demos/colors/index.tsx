@@ -1,28 +1,41 @@
-import { QRCode, Row, Text, Column } from '@platform-blocks/ui';
+import { Column, QRCode, Row, Text, useTheme } from '@platform-blocks/ui';
+
+const SCHEMES = [
+  { key: 'primary', label: 'Primary accent' },
+  { key: 'success', label: 'Success state' },
+  { key: 'warning', label: 'Warning state' },
+  { key: 'error', label: 'Error state' }
+] as const;
 
 export default function Demo() {
-  const colorSchemes = [
-    { bg: '#ffffff', fg: '#000000', name: 'Default' },
-    { bg: '#1a1a1a', fg: '#ffffff', name: 'Dark' },
-    { bg: '#f0f9ff', fg: '#0ea5e9', name: 'Blue' },
-    { bg: '#f0fdf4', fg: '#22c55e', name: 'Green' },
-  ];
+  const theme = useTheme();
 
   return (
-    <Column gap={16}>
-      <Text variant="h6">QR Code Colors</Text>
-      <Row gap={16} wrap="wrap">
-        {colorSchemes.map((scheme) => (
-          <Column key={scheme.name} gap={8} align="center">
-            <QRCode
-              value="https://platform-blocks.com"
-              size={150}
-              backgroundColor={scheme.bg}
-              color={scheme.fg}
-            />
-            <Text variant="caption">{scheme.name}</Text>
-          </Column>
-        ))}
+    <Column gap="lg">
+      <Text variant="small" colorVariant="muted">
+        Theme-aligned palettes
+      </Text>
+      <Row gap="lg" wrap="wrap" justify="center">
+        {SCHEMES.map(({ key, label }) => {
+          const palette = theme.colors[key];
+          const foreground = palette?.[6] ?? theme.colors.primary[6];
+          const background = palette?.[0] ?? theme.backgrounds.surface;
+
+          return (
+            <Column key={key} gap="xs" align="center">
+              <QRCode
+                value="https://platform-blocks.com"
+                size={144}
+                backgroundColor={background}
+                color={foreground}
+                quietZone={2}
+              />
+              <Text variant="small" colorVariant="muted">
+                {label}
+              </Text>
+            </Column>
+          );
+        })}
       </Row>
     </Column>
   );

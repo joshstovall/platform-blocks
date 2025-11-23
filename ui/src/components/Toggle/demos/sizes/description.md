@@ -1,7 +1,12 @@
 ---
-title: Toggle Sizes
-description: Different size variants (small, medium, large) for various design needs.
-tags: ["sizes", "small", "medium", "large", "variants"]
+title: Size Variants
+category: appearance
+order: 50
+tags: [toggle, size]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates the three size variants of toggle buttons: small (sm), medium (md), and large (lg). Each size maintains proportional spacing and readability for different UI contexts.
+Set the `size` prop to `sm`, `md`, or `lg` to match the footprint of surrounding controls.

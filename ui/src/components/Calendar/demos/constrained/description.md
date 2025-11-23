@@ -1,6 +1,11 @@
 ---
-title: Date Constraints
-description: Calendar with minimum and maximum date restrictions.
+title: Date constraints
+category: rules
+order: 20
+tags: [min-date, max-date]
+highlightLines: []
+status: stable
+since: 0.3.0
+hidden: false
 ---
-
-Calendar example showing date constraints where only dates within the current month are selectable using minDate and maxDate props.
+Set `minDate` and `maxDate` to keep navigation inside the current month while still allowing the calendar to show surrounding weeks.

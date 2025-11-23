@@ -1,4 +1,4 @@
-import { Text, Card, Block, Button, Flex, Icon, useTheme, Title, Alert, Grid, GridItem, Chip, AnimatedPressable } from '@platform-blocks/ui';
+import { Text, Card, Block, Button, Flex, Icon, useTheme, Title, Notice, Grid, GridItem, Chip, AnimatedPressable } from '@platform-blocks/ui';
 import { useRouter } from 'expo-router';
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
 import { PageLayout } from 'components';
@@ -24,7 +24,7 @@ const exampleApps: ExampleApp[] = [
     difficulty: 'Intermediate',
     tags: ['Chat', 'Real-time', 'Messages', 'Social']
   },
-  , {
+  {
     id: 'photo-gallery',
     title: 'Photo Gallery',
     description: 'Masonry layout with endless scrolling and fullscreen lightbox.',
@@ -105,15 +105,6 @@ const exampleApps: ExampleApp[] = [
     difficulty: 'Advanced',
     tags: ['Files', 'Browser', 'Navigation', 'Finder']
   },
-  // {
-  //   id: 'chromatic-tuner',
-  //   title: 'Chromatic Tuner',
-  //   description: 'A musical instrument tuner that detects pitch and displays note information in real-time.',
-  //   category: 'Entertainment',
-  //   icon: 'music-note',
-  //   difficulty: 'Advanced',
-  //   tags: ['Music', 'Tuner', 'Pitch Detection', 'Audio']
-  // }
 ];
 
 const getDifficultyColor = (difficulty: ExampleApp['difficulty']) => {
@@ -140,7 +131,7 @@ export default function ExampleListScreen() {
     <PageLayout>
       <Block p="lg" gap="lg">
         <Block >
-          <Title variant='h1' weight="bold" afterline>
+          <Title variant="h1" weight="bold" afterline>
             Example Apps
           </Title>
           <Text size="lg" color="muted">
@@ -152,35 +143,24 @@ export default function ExampleListScreen() {
           {exampleApps.map((app) => (
 
             <GridItem key={app.id} >
-              <AnimatedPressable onPress={() => handleExamplePress(app.id)}>
-              <Card key={app.id} shadow="md" variant='outline'>
-                <Flex direction="column" gap={16}>
-                  <Flex direction="row" align="center" justify="space-between" gap={12}>
-                    <Flex direction="row" align="center" gap={12}>
-                      <Flex
-                        align="center"
-                        justify="center"
-                        style={{
-                          width: 42,
-                          height: 42,
-                          borderRadius: 12,
-                          backgroundColor: theme.colors.primary[0],
-                        }}
-                      >
-                        <Icon name={app.icon as any} size={22} color={theme.colors.primary[6]} />
-                      </Flex>
-                      <Text size="lg" weight="semibold">
-                        {app.title}
-                      </Text>
-                    </Flex>
-{/* 
-                    <Text
-                      size="sm"
-                      color={getDifficultyColor(app.difficulty) as any}
-                      weight="medium"
+              <AnimatedPressable onPress={() => handleExamplePress(app.id)} style={{ height: "100%" }}>
+                <Card key={app.id} variant="elevated" height="100%">
+                  <Flex direction="row" align="center" gap={12}>
+                    <Flex
+                      align="center"
+                      justify="center"
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 12,
+                        backgroundColor: theme.colors.primary[0],
+                      }}
                     >
-                      {app.difficulty}
-                    </Text> */}
+                      <Icon name={app.icon as any} size={22} color={theme.colors.primary[6]} />
+                    </Flex>
+                    <Text size="lg" weight="semibold">
+                      {app.title}
+                    </Text>
                   </Flex>
 
                   <Text color="muted">
@@ -199,24 +179,13 @@ export default function ExampleListScreen() {
                       </Chip>
                     ))}
                   </Flex>
-
-                  {/* <Button
-                    title="view"
-                    variant="filled"
-                    size="sm"
-                    onPress={() => handleExamplePress(app.id)}
-                  >
-                    View Example
-                  </Button> */}
-                </Flex>
-              </Card>
-              
+                </Card>
               </AnimatedPressable>
-              </GridItem>
+            </GridItem>
           ))}
         </Grid>
 
-        <Alert variant="light">
+        <Notice variant="light">
           <Flex direction="column" gap={16}>
             <Flex direction="row" align="center" gap={8}>
               <Icon name="star" size="md" color="primary" />
@@ -231,7 +200,7 @@ export default function ExampleListScreen() {
               for accessibility and user experience.
             </Text>
           </Flex>
-        </Alert>
+        </Notice>
       </Block>
     </PageLayout>
   );

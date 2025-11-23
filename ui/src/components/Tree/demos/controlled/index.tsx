@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Tree, TreeNode, Text, Button, Flex } from '../../../..';
+import { useState } from 'react';
+
+import { Block, Button, Column, Row, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const treeData: TreeNode[] = [
   {
@@ -51,7 +51,7 @@ const treeData: TreeNode[] = [
 const getAllBranchIds = (nodes: TreeNode[]): string[] => {
   const ids: string[] = [];
   const traverse = (nodeList: TreeNode[]) => {
-    nodeList.forEach(node => {
+    nodeList.forEach((node) => {
       if (node.children && node.children.length > 0) {
         ids.push(node.id);
         traverse(node.children);
@@ -62,7 +62,7 @@ const getAllBranchIds = (nodes: TreeNode[]): string[] => {
   return ids;
 };
 
-export default function ControlledTreeDemo() {
+export default function Demo() {
   const [expandedIds, setExpandedIds] = useState<string[]>(['settings']);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -81,31 +81,32 @@ export default function ControlledTreeDemo() {
   };
 
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ gap: 12 }}>
-        <Text size="sm" weight="bold">Tree Controls:</Text>
-        <Flex direction="row" gap="sm" style={{ flexWrap: 'wrap' }}>
+    <Block gap="sm" fullWidth>
+      <Column gap="xs">
+        <Text weight="semibold">Tree controls</Text>
+        <Row gap="xs" wrap="wrap">
           <Button size="sm" variant="outline" onPress={expandAll}>
-            Expand All
+            Expand all
           </Button>
           <Button size="sm" variant="outline" onPress={collapseAll}>
-            Collapse All
+            Collapse all
           </Button>
           <Button size="sm" variant="outline" onPress={expandSettings}>
-            Expand Settings
+            Expand settings branch
           </Button>
-        </Flex>
-      </View>
+        </Row>
+      </Column>
 
       <Tree
         data={treeData}
         expandedIds={expandedIds}
         onToggle={(node, expanded) => {
-          if (expanded) {
-            setExpandedIds(prev => [...prev, node.id]);
-          } else {
-            setExpandedIds(prev => prev.filter(id => id !== node.id));
-          }
+          setExpandedIds((prev) => {
+            if (expanded) {
+              return prev.includes(node.id) ? prev : [...prev, node.id];
+            }
+            return prev.filter((id) => id !== node.id);
+          });
         }}
         selectionMode="multiple"
         selectedIds={selectedIds}
@@ -114,20 +115,25 @@ export default function ControlledTreeDemo() {
         }}
       />
 
-      <View style={{ padding: 12, backgroundColor: '#f5f5f5', borderRadius: 8, gap: 8 }}>
-        <View>
-          <Text size="sm" weight="bold">Expanded Nodes:</Text>
-          <Text size="xs" color="secondary">
+      <Column gap="sm">
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Expanded nodes
+          </Text>
+          <Text size="xs" colorVariant="secondary">
             {expandedIds.length === 0 ? 'None' : expandedIds.join(', ')}
           </Text>
-        </View>
-        <View>
-          <Text size="sm" weight="bold">Selected Nodes:</Text>
-          <Text size="xs" color="secondary">
+        </Column>
+
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Selected nodes
+          </Text>
+          <Text size="xs" colorVariant="secondary">
             {selectedIds.length === 0 ? 'None' : selectedIds.join(', ')}
           </Text>
-        </View>
-      </View>
-    </View>
+        </Column>
+      </Column>
+    </Block>
   );
 }

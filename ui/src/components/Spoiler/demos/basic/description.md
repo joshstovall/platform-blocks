@@ -1,6 +1,12 @@
 ---
-title: Basic Spoiler
-description: Collapses overflowing content beyond maxHeight.
+title: Basic Usage
+category: basics
+order: 10
+tags: [spoiler, collapse, content]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Basic example showing how content is automatically collapsed when it exceeds the specified maximum height.
+Set `maxHeight` to reveal a preview of long copy while the rest stays accessible behind the built-in toggle.

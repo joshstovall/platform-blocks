@@ -20,7 +20,7 @@ const ThemingPage = () => {
         {/* Header */}
         <Column mb="xl">
           <DocsPageHeader>Theming Guide</DocsPageHeader>
-          <Text variant="body" colorVariant="secondary" mb="md">
+          <Text variant="p" colorVariant="secondary" mb="md">
             Learn how to customize colors, typography, spacing, and components in the Platform Blocks UI library.
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -33,7 +33,7 @@ const ThemingPage = () => {
         {/* Quick Start */}
 
         <Text variant="h3" mb="md">🚀 Quick Start</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           The simplest way to customize your theme is to override the primary color and color palettes:
         </Text>
         <CodeBlock
@@ -73,13 +73,13 @@ function App() {
         {/* Theme Structure */}
 
         <Text variant="h3" mb="md">🎨 Theme Structure</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           The theme system is built around these core concepts:
         </Text>
 
         <Column mb="md">
           <Text variant="h4" mb="sm">Color System</Text>
-          <Text variant="body" mb="sm" colorVariant="secondary">
+          <Text variant="p" mb="sm" colorVariant="secondary">
             Colors use a 10-step scale from lightest (0) to darkest (9):
           </Text>
           <CodeBlock language="tsx" spoiler={false}>
@@ -102,7 +102,7 @@ function App() {
 
         <Column mb="md">
           <Text variant="h4" mb="sm">Semantic Colors</Text>
-          <Text variant="body" mb="sm" colorVariant="secondary">
+          <Text variant="p" mb="sm" colorVariant="secondary">
             Semantic colors adapt automatically to light/dark themes:
           </Text>
           <CodeBlock language="tsx" spoiler={false}>
@@ -128,7 +128,7 @@ backgrounds: {
         {/* Comprehensive Customization */}
 
         <Text variant="h3" mb="md">⚙️ Comprehensive Customization</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           For complete control over your design system, you can customize all aspects of the theme:
         </Text>
         <CodeBlock
@@ -235,7 +235,7 @@ const theme = createTheme(myCustomTheme);`}
         {/* Dark/Light Themes */}
 
         <Text variant="h3" mb="md">🌙 Dark & Light Themes</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           Create custom variants for both light and dark modes:
         </Text>
         <CodeBlock
@@ -277,7 +277,7 @@ function App() {
         {/* Enhanced Theme Mode */}
 
         <Text variant="h3" mb="md">🔄 Enhanced Theme Mode Management</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           Use the enhanced theme mode system for automatic theme switching with persistence:
         </Text>
         <CodeBlock
@@ -318,7 +318,7 @@ function App() {
         {/* Using Theme in Components */}
 
         <Text variant="h3" mb="md">🎯 Using Theme in Components</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           Access theme values in your custom components:
         </Text>
         <CodeBlock
@@ -347,7 +347,7 @@ function CustomComponent() {
         <Divider my="md" />
 
         <Text variant="h4" mb="sm">Theme Mode Hook</Text>
-        <Text variant="body" mb="sm" colorVariant="secondary">
+        <Text variant="p" mb="sm" colorVariant="secondary">
           Control theme mode programmatically:
         </Text>
         <CodeBlock language="tsx" spoiler={false}>
@@ -367,7 +367,7 @@ function ThemeToggle() {
 
         {/* CSS Variables */}
         <Text variant="h3" mb="md">🎨 CSS Variables (Web)</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           Enable CSS variables for dynamic theming on web platforms:
         </Text>
         <CodeBlock
@@ -384,7 +384,7 @@ function ThemeToggle() {
 </PlatformBlocksProvider>`}
         </CodeBlock>
 
-        <Text variant="body" mb="sm" colorVariant="secondary" mt="md">
+        <Text variant="p" mb="sm" colorVariant="secondary" mt="md">
           Then use the variables in your CSS:
         </Text>
         <CodeBlock language="css" spoiler={false}>
@@ -404,35 +404,35 @@ function ThemeToggle() {
         <View style={{ gap: 12 }}>
           <View>
             <Text variant="h4" mb="xs">1. Use createTheme for Type Safety</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Always wrap your theme overrides with createTheme() for full TypeScript support.
             </Text>
           </View>
 
           <View>
             <Text variant="h4" mb="xs">2. Follow the 10-Step Color Scale</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Maintain consistency by using the 10-step color scale pattern (0-9) for all color palettes.
             </Text>
           </View>
 
           <View>
             <Text variant="h4" mb="xs">3. Define Semantic Colors</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Use semantic colors (text.primary, backgrounds.surface) rather than raw hex values for better adaptability.
             </Text>
           </View>
 
           <View>
             <Text variant="h4" mb="xs">4. Test Both Light and Dark</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Always test your custom themes in both light and dark modes to ensure good contrast and readability.
             </Text>
           </View>
 
           <View>
             <Text variant="h4" mb="xs">5. Use Component Tokens</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Leverage component-specific tokens to customize default behavior and create custom variants.
             </Text>
           </View>
@@ -441,7 +441,7 @@ function ThemeToggle() {
         {/* Current Theme Preview */}
 
         <Text variant="h3" mb="md">🔍 Current Theme Preview</Text>
-        <Text variant="body" mb="md" colorVariant="secondary">
+        <Text variant="p" mb="md" colorVariant="secondary">
           Here's a preview of the currently active theme:
         </Text>
 
@@ -521,7 +521,7 @@ function ThemeToggle() {
 
         {/* Footer */}
         <Column mt="xl" pt="lg" style={{ borderTopWidth: 1, borderTopColor: theme.backgrounds.border }}>
-          <Text variant="body" colorVariant="secondary" style={{ textAlign: 'center' }}>
+          <Text variant="p" colorVariant="secondary" style={{ textAlign: 'center' }}>
             Need help with theming? Check out our examples or reach out to the team.
           </Text>
         </Column>

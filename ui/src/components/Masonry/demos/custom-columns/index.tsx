@@ -17,8 +17,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 1.1,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 1</Text>
-          <Text variant="caption">Content for first item with some extra text.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 1</Text>
+          <Text>Content for first item with some extra text.</Text>
         </Card>
       ),
     },
@@ -27,8 +27,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 0.8,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 2</Text>
-          <Text variant="caption">Short content.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 2</Text>
+          <Text>Short content.</Text>
         </Card>
       ),
     },
@@ -37,8 +37,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 1.3,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 3</Text>
-          <Text variant="caption">Longer content to demonstrate height variation in different column layouts.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 3</Text>
+          <Text>Longer content to demonstrate height variation in different column layouts.</Text>
         </Card>
       ),
     },
@@ -47,8 +47,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 0.9,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 4</Text>
-          <Text variant="caption">Medium length content.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 4</Text>
+          <Text>Medium length content.</Text>
         </Card>
       ),
     },
@@ -57,8 +57,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 1.5,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 5</Text>
-          <Text variant="caption">Extended content that takes up more space to show how columns adapt.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 5</Text>
+          <Text>Extended content that takes up more space to show how columns adapt.</Text>
         </Card>
       ),
     },
@@ -67,8 +67,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 0.7,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 6</Text>
-          <Text variant="caption">Compact.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 6</Text>
+          <Text>Compact.</Text>
         </Card>
       ),
     },
@@ -77,8 +77,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 1.2,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 7</Text>
-          <Text variant="caption">Another item with moderate content length for testing.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 7</Text>
+          <Text>Another item with moderate content length for testing.</Text>
         </Card>
       ),
     },
@@ -87,8 +87,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 0.9,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 8</Text>
-          <Text variant="caption">Standard content item.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 8</Text>
+          <Text>Standard content item.</Text>
         </Card>
       ),
     },
@@ -97,8 +97,8 @@ export default function CustomColumnsMasonryDemo() {
       heightRatio: 1.4,
       content: (
         <Card p={12}>
-          <Text variant="h5" style={{ marginBottom: 6 }}>Item 9</Text>
-          <Text variant="caption">Taller content to fill out the grid and show column distribution effects.</Text>
+          <Text variant="strong" style={{ marginBottom: 6 }}>Item 9</Text>
+          <Text>Taller content to fill out the grid and show column distribution effects.</Text>
         </Card>
       ),
     },

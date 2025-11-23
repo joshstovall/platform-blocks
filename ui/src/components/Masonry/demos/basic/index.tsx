@@ -12,8 +12,8 @@ export default function BasicMasonryDemo() {
       id: '1',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 1</Text>
-          <Text variant="body">This is a basic card item in the masonry layout.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 1</Text>
+          <Text>This is a basic card item in the masonry layout.</Text>
         </Card>
       ),
     },
@@ -21,8 +21,8 @@ export default function BasicMasonryDemo() {
       id: '2',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 2</Text>
-          <Text variant="body">Short content.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 2</Text>
+          <Text>Short content.</Text>
         </Card>
       ),
     },
@@ -30,8 +30,8 @@ export default function BasicMasonryDemo() {
       id: '3',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 3</Text>
-          <Text variant="body">A third card showing how items are arranged in the masonry grid with longer content that will make this card taller than the others.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 3</Text>
+          <Text>A third card showing how items are arranged in the masonry grid with longer content that will make this card taller than the others.</Text>
         </Card>
       ),
     },
@@ -39,8 +39,8 @@ export default function BasicMasonryDemo() {
       id: '4',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 4</Text>
-          <Text variant="body">Medium length content here.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 4</Text>
+          <Text>Medium length content here.</Text>
         </Card>
       ),
     },
@@ -48,8 +48,8 @@ export default function BasicMasonryDemo() {
       id: '5',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 5</Text>
-          <Text variant="body">Fifth card in the masonry layout grid.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 5</Text>
+          <Text>Fifth card in the masonry layout grid.</Text>
         </Card>
       ),
     },
@@ -57,8 +57,8 @@ export default function BasicMasonryDemo() {
       id: '6',
       content: (
         <Card p={16}>
-          <Text variant="h4" style={{ marginBottom: 8 }}>Card 6</Text>
-          <Text variant="body">Sixth card showing the two-column arrangement.</Text>
+          <Text variant="strong" style={{ marginBottom: 8 }}>Card 6</Text>
+          <Text>Sixth card showing the two-column arrangement.</Text>
         </Card>
       ),
     },

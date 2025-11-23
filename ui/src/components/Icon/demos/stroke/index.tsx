@@ -12,7 +12,7 @@ export default function IconStrokeDemo() {
     <Card variant="outline" style={{ padding: 20 }}>
       <Flex direction="column" gap="md">
         <Text variant="h6">Stroke thickness</Text>
-        <Text variant="body" colorVariant="secondary">
+        <Text variant="p" colorVariant="secondary">
           Adjust the stroke thickness to match different visual weights. Filled icons that opt in to preserving stroke (like{' '}
           contrast) keep their outline while the fill still applies.
         </Text>
@@ -20,7 +20,7 @@ export default function IconStrokeDemo() {
           {strokeVariants.map(({ label, value }) => (
             <Flex key={label} direction="column" align="center" gap="sm">
               <Icon name="contrast" size="xl" variant="filled" stroke={value} />
-              <Text variant="caption" style={{ textAlign: 'center' }}>{label}</Text>
+              <Text variant="small" style={{ textAlign: 'center' }}>{label}</Text>
             </Flex>
           ))}
         </Flex>

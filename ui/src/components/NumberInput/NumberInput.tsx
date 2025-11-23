@@ -348,8 +348,8 @@ export const NumberInput = factory<{
   }, [value]);
 
   const {
-    rightSection: userRightSection,
-    leftSection: userLeftSection,
+    endSection: userRightSection,
+    startSection: userLeftSection,
     onFocus: userInputOnFocus,
     onBlur: userInputOnBlur,
     ...restInputProps
@@ -919,7 +919,7 @@ export const NumberInput = factory<{
   const disableIncrement = disabled || (max !== undefined && comparisonValue >= max);
   const disableDecrement = disabled || (resolvedMin !== undefined && comparisonValue <= resolvedMin);
 
-  const leftSection = useMemo(() => {
+  const startSection = useMemo(() => {
     if (!withSideButtons) {
       return userLeftSection;
     }
@@ -958,7 +958,7 @@ export const NumberInput = factory<{
   }, [withSideButtons, userLeftSection, startHold, stopHold, getModifierMultiplier, disableDecrement, theme]);
 
   // Right section with controls and side button
-  const rightSection = useMemo(() => {
+  const endSection = useMemo(() => {
     if (!withSideButtons && !showControls) {
       return userRightSection ?? null;
     }
@@ -1126,8 +1126,8 @@ export const NumberInput = factory<{
       onBlur={handleBlur}
       onFocus={handleFocus}
       keyboardType={keyboardType}
-      leftSection={leftSection}
-      rightSection={rightSection}
+      startSection={startSection}
+      endSection={endSection}
       disabled={disabled}
       error={error}
       inputRef={inputRef}

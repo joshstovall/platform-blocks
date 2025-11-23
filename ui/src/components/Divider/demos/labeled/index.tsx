@@ -1,28 +1,21 @@
-import { Divider, Column, Text, Chip } from '@platform-blocks/ui';
+import { Chip, Column, Divider, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap={16}>
-      <Text variant="body">Sign in to your account</Text>
-      
-      <Divider label="OR" />
-      
-      <Text variant="body">Continue with social media</Text>
-      
-      <Divider 
-        label={<Chip size="sm" variant="outline">Settings</Chip>} 
-        labelPosition="left" 
+    <Column gap="md">
+      <Text variant="p">Sign in with email</Text>
+      <Divider label="or" />
+      <Text variant="p">Continue with social accounts</Text>
+
+      <Divider
+        label={<Chip size="sm" variant="outline">Settings</Chip>}
+        labelPosition="left"
+        colorVariant="secondary"
       />
-      
-      <Text variant="body">Account preferences and configuration</Text>
-      
-      <Divider 
-        label="Advanced Options" 
-        labelPosition="right" 
-        color="#007bff"
-      />
-      
-      <Text variant="body">Developer settings and tools</Text>
+      <Text variant="p">Manage notification preferences</Text>
+
+      <Divider label="Advanced options" labelPosition="right" colorVariant="primary" />
+      <Text variant="p">Invite admins or export account data</Text>
     </Column>
   );
 }

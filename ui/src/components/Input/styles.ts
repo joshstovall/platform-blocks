@@ -132,7 +132,7 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         marginBottom: 0
       },
       
-      leftSection: {
+      startSection: {
         ...(isRTL ? { paddingLeft: px(theme.spacing.xs) } : { paddingRight: px(theme.spacing.xs) })
       },
       
@@ -140,7 +140,7 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         color: theme.colors.error[5]
       },
       
-      rightSection: {
+      endSection: {
         ...(isRTL ? { paddingRight: px(theme.spacing.xs) } : { paddingLeft: px(theme.spacing.xs) }),
         alignItems: 'center',
         flexDirection: 'row'

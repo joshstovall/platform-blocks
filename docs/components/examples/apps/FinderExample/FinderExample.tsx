@@ -373,7 +373,6 @@ export function FinderExample() {
     const id = state.selected || state.selectedIds?.[0];
     if (!id) return;
     const el = rowRefs.current[id];
-    // @ts-ignore - web only scrollIntoView
     if (el?.scrollIntoView) {
       // slight timeout to allow layout after expand/collapse
       setTimeout(() => {
@@ -632,14 +631,14 @@ export function FinderExample() {
     const dataset = listMode ? treeFiles.map(t => t.file) : visibleFiles;
     if (!dataset.length) return;
     const currentId = state.selected || state.selectedIds?.[0];
-    let idx = currentId ? dataset.findIndex(f => f.id === currentId) : -1;
+    const idx = currentId ? dataset.findIndex(f => f.id === currentId) : -1;
     const shift = e.shiftKey;
     // Helper to commit selection
     const commit = (newIndex: number) => {
       if (newIndex < 0 || newIndex >= dataset.length) return;
       // If shift held, extend range
       if (shift) {
-        let anchorId = lastAnchorRef.current || currentId || dataset[newIndex].id;
+        const anchorId = lastAnchorRef.current || currentId || dataset[newIndex].id;
         if (!lastAnchorRef.current) lastAnchorRef.current = anchorId;
         const anchorIndex = dataset.findIndex(f => f.id === anchorId);
         if (anchorIndex === -1) return selectSingle(dataset[newIndex].id, dataset);
@@ -856,7 +855,7 @@ export function FinderExample() {
         <View
           style={[S.sidebar, isMobile && S.sidebarMobile, { backgroundColor: colors.sidebarBg, borderRightColor: colors.sidebarBorder }]}
         >
-          <Text variant="small" colorVariant='muted'>
+          <Text variant="small" colorVariant="muted">
             Favorites
           </Text>
           {sidebarShortcuts.map(({ label, path: shortcutPath }) => {
@@ -942,11 +941,9 @@ export function FinderExample() {
           {/* File list */}
           <View
             ref={listContainerRef}
-            // @ts-ignore - tabIndex/web only
             tabIndex={0}
-            // @ts-ignore react-native-web key handler
+            // @ts-expect-error react-native-web key handler
             onKeyDown={handleArrowNav}
-            // @ts-ignore web only
             focusable={true}
             style={[
               S.fileGrid,

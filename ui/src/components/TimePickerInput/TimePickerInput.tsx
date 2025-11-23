@@ -245,7 +245,7 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
           }}
           label={label}
           placeholder={is12h ? 'hh:mm AM' : 'hh:mm'}
-          rightSection={
+          endSection={
             <Icon name="clock" size={16} color={disabled ? theme.text.disabled : theme.text.muted} />
           }
           disabled={disabled}
@@ -261,7 +261,7 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
 
       <Dialog
         visible={open}
-        variant="fullscreen"
+        // variant="fullscreen"
         onClose={handleClose}
         width={typeof computedPanelWidth === 'number' ? computedPanelWidth : 360}
         title={title || 'Select Time'}

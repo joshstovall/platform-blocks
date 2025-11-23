@@ -1,56 +1,59 @@
-import { useState } from 'react'
-import { PhoneInput, Text, Column, Code, Card } from '@platform-blocks/ui'
+import { useState } from 'react';
+
+import { Card, Code, Column, PhoneInput, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [us, setUs] = useState('')
-  const [uk, setUk] = useState('')
-  const [fr, setFr] = useState('')
-  const [br, setBr] = useState('')
+  const [us, setUs] = useState('');
+  const [uk, setUk] = useState('');
+  const [fr, setFr] = useState('');
+  const [br, setBr] = useState('');
 
   return (
-    <Column gap={24}>
-      <Text variant="body" colorVariant="secondary">
-        Different country formats with automatic formatting and validation.
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Country formatting</Text>
+      <Text size="sm" colorVariant="secondary">
+        Compare built-in masks for several countries. Each input stores digits only while rendering a localized format.
       </Text>
-      
-      <Column gap={16}>
+
+      <Column gap="sm">
         <PhoneInput
           label="United States"
           country="US"
           value={us}
           onChange={(raw) => setUs(raw)}
-          showCountryCode={true}
+          showCountryCode
         />
-        
         <PhoneInput
           label="United Kingdom"
           country="UK"
           value={uk}
           onChange={(raw) => setUk(raw)}
-          showCountryCode={true}
+          showCountryCode
         />
-        
         <PhoneInput
           label="France"
           country="FR"
           value={fr}
           onChange={(raw) => setFr(raw)}
-          showCountryCode={true}
+          showCountryCode
         />
-        
         <PhoneInput
           label="Brazil"
           country="BR"
           value={br}
           onChange={(raw) => setBr(raw)}
-          showCountryCode={true}
+          showCountryCode
         />
       </Column>
-      
+
       <Card variant="outline" p="sm">
-        <Text variant="caption" mb="xs" colorVariant="secondary">Raw Values (digits only)</Text>
-        <Code size="sm">{JSON.stringify({ us, uk, fr, br }, null, 2)}</Code>
+        <Column gap="xs">
+          <Text size="xs" colorVariant="secondary">
+            Raw digit values
+          </Text>
+          <Code size="sm">{JSON.stringify({ us, uk, fr, br }, null, 2)}</Code>
+        </Column>
       </Card>
     </Column>
-  )
+  );
 }

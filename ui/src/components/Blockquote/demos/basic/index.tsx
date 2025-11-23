@@ -1,11 +1,14 @@
-import { Blockquote } from '@platform-blocks/ui'
+import { Blockquote } from '@platform-blocks/ui';
 
-export default function BlockquoteBasicDemo() {
+const AUTHOR = {
+  name: 'Jamie Ortega',
+  title: 'Principal Product Designer',
+};
+
+export default function Demo() {
   return (
-    <Blockquote
-      author={{ name: 'Jane Doe' }}
-    >
-      This is an amazing product that changed my life.
+    <Blockquote author={AUTHOR}>
+      The Blockquote component keeps editorial typography consistent so our brand voice always feels elevated.
     </Blockquote>
-  )
+  );
 }

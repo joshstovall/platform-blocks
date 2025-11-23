@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Card, Column, Flex, NumberInput, Text } from '@platform-blocks/ui';
+
+import { Column, NumberInput, Text } from '@platform-blocks/ui';
 
 const DragNumberInput = NumberInput as any;
 
@@ -8,20 +9,30 @@ export default function Demo() {
   const [verticalValue, setVerticalValue] = useState<number | undefined>(120);
   const [dragging, setDragging] = useState(false);
 
+  const handleDragStateChange = (state: boolean) => {
+    setDragging(state);
+  };
+
   return (
-    <Card padding={16}>
-      <Column gap={16}>
-        <Text variant="h6">Press &amp; Drag Adjustment</Text>
-        <Text size="sm" color="muted">
-          Drag across the input to nudge values without lifting your finger. The label below
-          reflects the current drag state.
-        </Text>
-        <Text size="sm" colorVariant={dragging ? 'primary' : 'secondary'}>
-          Dragging: {dragging ? 'active' : 'idle'}
-        </Text>
-        <Flex direction="column" gap={16}>
+    <Column gap="lg">
+      <Text weight="semibold">Press-and-drag adjustment</Text>
+      <Text size="sm" colorVariant="secondary">
+        Drag across the input to nudge values without lifting your pointer. The status below reflects the current drag state.
+      </Text>
+      <Text size="xs" colorVariant={dragging ? 'primary' : 'secondary'}>
+        Dragging: {dragging ? 'active' : 'idle'}
+      </Text>
+
+      <Column gap="md">
+        <Column gap="sm">
+          <Text size="sm" weight="semibold">
+            Horizontal drag
+          </Text>
+          <Text size="sm" colorVariant="secondary">
+            Step every 14px drag movement with a multiplier for faster adjustments.
+          </Text>
           <DragNumberInput
-            label="Horizontal drag"
+            label="Temperature"
             value={horizontalValue}
             onChange={setHorizontalValue}
             withDragGesture
@@ -32,10 +43,19 @@ export default function Demo() {
             allowDecimal
             min={0}
             suffix=" °C"
-            onDragStateChange={setDragging}
+            onDragStateChange={handleDragStateChange}
           />
+        </Column>
+
+        <Column gap="sm">
+          <Text size="sm" weight="semibold">
+            Vertical drag
+          </Text>
+          <Text size="sm" colorVariant="secondary">
+            Drag up or down to adjust between 0 and 200 with built-in controls.
+          </Text>
           <DragNumberInput
-            label="Vertical drag"
+            label="Light intensity"
             value={verticalValue}
             onChange={setVerticalValue}
             withDragGesture
@@ -46,10 +66,10 @@ export default function Demo() {
             max={200}
             withControls
             hideControlsOnMobile={false}
-            onDragStateChange={setDragging}
+            onDragStateChange={handleDragStateChange}
           />
-        </Flex>
+        </Column>
       </Column>
-    </Card>
+    </Column>
   );
 }

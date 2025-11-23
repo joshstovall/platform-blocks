@@ -1,15 +1,12 @@
 ---
-title: Basic
-description: Essential usage with minimal props.
-tags: [basic, getting-started]
-category: basics
+title: Single Expansion
+category: usage
 order: 10
-highlightLines: [5, 10-15]
+tags: [accordion]
+highlightLines: [36-40]
 status: stable
-since: 0.4.0
+since: 1.0.0
 hidden: false
 ---
 
-Simplest controlled accordion with a single item expanded at a time.
-
-Use this pattern when introducing collapsible sections without complex state.
+Allow only one item to open at a time by setting `type="single"` and passing an items array.

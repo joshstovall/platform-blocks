@@ -1,7 +1,12 @@
 ---
-title: Toggle Orientation
-description: Horizontal and vertical layout orientations for different design contexts.
-tags: ["orientation", "horizontal", "vertical", "layout", "arrangement"]
+title: Orientation
+category: layout
+order: 40
+tags: [toggle, orientation]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Shows toggle groups in both horizontal and vertical orientations. Horizontal is the default layout, while vertical orientation is useful for sidebar controls or compact interfaces.
+Use the `orientation` prop to switch between horizontal rows and vertical stacks of toggle buttons.

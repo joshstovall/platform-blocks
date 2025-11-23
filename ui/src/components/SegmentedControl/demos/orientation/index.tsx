@@ -1,33 +1,41 @@
-import { SegmentedControl, Row, Column, Text } from '@platform-blocks/ui'
+import { Card, Column, Row, SegmentedControl, Text } from '@platform-blocks/ui';
+
+const horizontalOptions = [
+  { label: 'React', value: 'react' },
+  { label: 'Angular', value: 'angular' },
+  { label: 'Vue', value: 'vue' },
+];
+
+const verticalOptions = [
+  { label: 'Preview', value: 'preview' },
+  { label: 'Code', value: 'code' },
+  { label: 'Export', value: 'export' },
+];
 
 export default function Demo() {
   return (
-    <Row gap="xl" style={{ alignItems: 'flex-start' }}>
-      <Column gap="xs" style={{ flex: 1 }}>
-        <Text size="sm" weight="600">Horizontal (default)</Text>
-        <SegmentedControl
-          orientation="horizontal"
-          defaultValue="react"
-          data={[
-            { label: 'React', value: 'react' },
-            { label: 'Angular', value: 'angular' },
-            { label: 'Vue', value: 'vue' },
-          ]}
-        />
-      </Column>
-      
-      <Column gap="xs">
-        <Text size="sm" weight="600">Vertical</Text>
-        <SegmentedControl
-          orientation="vertical"
-          defaultValue="code"
-          data={[
-            { label: 'Preview', value: 'preview' },
-            { label: 'Code', value: 'code' },
-            { label: 'Export', value: 'export' },
-          ]}
-        />
-      </Column>
-    </Row>
-  )
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Switch the `orientation` prop to pivot between horizontal and vertical layouts. Vertical orientation is helpful for sidebars or stacked forms.
+          </Text>
+          <Row gap="lg" align="flex-start" wrap="wrap">
+            <Column gap="xs">
+              <Text size="xs" colorVariant="secondary">
+                Horizontal (default)
+              </Text>
+              <SegmentedControl orientation="horizontal" defaultValue="react" data={horizontalOptions} />
+            </Column>
+            <Column gap="xs">
+              <Text size="xs" colorVariant="secondary">
+                Vertical
+              </Text>
+              <SegmentedControl orientation="vertical" defaultValue="code" data={verticalOptions} />
+            </Column>
+          </Row>
+        </Column>
+      </Card>
+    </Column>
+  );
 }

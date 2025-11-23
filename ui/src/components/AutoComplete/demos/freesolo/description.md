@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Free solo mode allowing users to enter custom values not in the predefined options list.
+Free solo mode that suggests fruits while still accepting custom values.

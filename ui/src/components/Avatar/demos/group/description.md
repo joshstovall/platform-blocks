@@ -1,12 +1,12 @@
 ---
-title: Avatar Group
+title: Groups
 category: features
 order: 40
-tags: [group, stacked, overlap, limit]
-highlightLines: []
+tags: [avatars, groups]
+highlightLines: [21-40]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Stacked avatars with overlap and limit controls using AvatarGroup.
+Showcases avatar overlap by default and the `limit` prop for overflow indicators.

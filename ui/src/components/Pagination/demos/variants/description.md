@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different visual variants for pagination styling.
+Switch the `variant` prop between `default`, `outline`, and `subtle` to align pagination with the surrounding surface treatment.

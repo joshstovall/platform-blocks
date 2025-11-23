@@ -1,6 +1,6 @@
-import type { SizeValue } from '../../core/theme/types';
+import type { SizeValue, SpacingProps } from '../../core/theme/types';
 
-export interface SearchProps {
+export interface SearchProps extends SpacingProps {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
@@ -12,7 +12,7 @@ export interface SearchProps {
   debounce?: number;
   clearButton?: boolean;
   loading?: boolean;
-  rightSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   accessibilityLabel?: string;
   style?: any;
   /** When true, renders as a button that opens the spotlight instead of a typeable input */

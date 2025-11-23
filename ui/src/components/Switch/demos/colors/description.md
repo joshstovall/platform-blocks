@@ -1,12 +1,12 @@
 ---
 title: Colors
-category: usage
-order: 20
-tags: [colors, theming]
+category: theming
+order: 30
+tags: [color, semantic]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different color variants for switches to match various themes and contexts.
+Provide a `color` token to align switches with semantic palettes such as `primary`, `success`, or `error` states.

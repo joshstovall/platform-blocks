@@ -1,12 +1,12 @@
 ---
-title: Basic Sync
-category: usage
+title: Shared State
+category: behavior
 order: 50
-tags: [basic, switch, toggle]
+tags: [controlled, summary]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic switch usage for toggling between on/off states.
+Coordinate multiple switches with a shared state object and reflect the current selections in supporting copy.

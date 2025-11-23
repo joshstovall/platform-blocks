@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-PIN inputs with different lengths for various use cases.
+Compare 4, 6, and 8-digit PIN inputs tailored for common authentication flows.

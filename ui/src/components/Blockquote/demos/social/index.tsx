@@ -1,20 +1,18 @@
-import { Blockquote, Column, Text } from '@platform-blocks/ui';
+import { Blockquote, Column } from '@platform-blocks/ui';
 
-export default function BlockquoteSocialDemo() {
+export default function Demo() {
   return (
     <Column gap="lg">
-      <Text variant="h4">Social Media Quotes</Text>
-
       <Blockquote
         variant="minimal"
         author={{
-          name: '@elonmusk',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elon'
+          name: '@futureshaper',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Futura',
         }}
         source={{
           name: 'X (Twitter)',
           brand: 'x',
-          url: 'https://twitter.com/status/123'
+          url: 'https://x.com/platform-blocks',
         }}
         date="3h"
         verified
@@ -25,12 +23,13 @@ export default function BlockquoteSocialDemo() {
       <Blockquote
         variant="testimonial"
         author={{
-          name: 'Tech Reviewer',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Reviewer'
+          name: 'Jordan Reeves',
+          title: 'Developer Advocate',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
         }}
         source={{
           name: 'LinkedIn',
-          brand: 'linkedin'
+          brand: 'linkedin',
         }}
         date="1 day ago"
       >
@@ -40,12 +39,12 @@ export default function BlockquoteSocialDemo() {
       <Blockquote
         variant="testimonial"
         author={{
-          name: 'Happy Customer',
-          title: 'Software Engineer'
+          name: 'Sasha Lin',
+          title: 'Staff Engineer',
         }}
         source={{
           name: 'GitHub',
-          brand: 'github'
+          brand: 'github',
         }}
         rating={{ value: 5, max: 5, showValue: true }}
         verified

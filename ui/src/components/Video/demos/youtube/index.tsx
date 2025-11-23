@@ -1,65 +1,62 @@
-import React, { useState } from 'react';
-import { Column, Text, Card, Flex, Button, Alert, Block } from '@platform-blocks/ui';
-import { Video } from '../../Video';
-import { YouTubePlayer } from '../../YouTubePlayer';
+import { useState } from 'react';
+import { Button, Card, Column, Row, Text, Video } from '@platform-blocks/ui';
 
-export default function VideoYouTubeDemo() {
+const YOUTUBE_SOURCE = { youtube: 'dQw4w9WgXcQ' } as const;
+
+export default function Demo() {
   const [status, setStatus] = useState('Paused');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
   return (
-    <Block gap="lg">
-      <Video
-        source={{ youtube: 'dQw4w9WgXcQ' }}
-        width={400}
-        height={300}
-        controls={{
-          play: true,
-          pause: true,
-          progress: true,
-          time: true,
-          volume: true,
-          fullscreen: true,
-          playbackRate: true,
-          quality: true,
-        }}
-        youtubeOptions={{
-          modestbranding: true,
-          rel: false,
-        }}
-        onPlay={() => setStatus('Playing')}
-        onPause={() => setStatus('Paused')}
-        onBuffer={(isBuffering) => setStatus(isBuffering ? 'Buffering…' : 'Playing')}
-        onError={() => setStatus('Error')}
-        onTimeUpdate={(state) => {
-          setCurrentTime(state.currentTime);
-          setDuration(state.duration);
-        }}
-      />
-
-      <Alert icon="info" sev="error">
+    <Column gap="lg">
+      <Card p="md">
         <Column gap="md">
-          <Flex align="center" justify="space-between">
-            <Text variant="h6">Playback status: {status}</Text>
-            <Text variant="caption">
+          <Text size="sm" colorVariant="secondary">
+            Stream YouTube content by pointing `source.youtube` to an ID. Playback state stays in sync so you can react to buffering or progress updates.
+          </Text>
+          <Video
+            source={YOUTUBE_SOURCE}
+            width={420}
+            height={280}
+            controls={{
+              play: true,
+              pause: true,
+              progress: true,
+              time: true,
+              volume: true,
+              fullscreen: true,
+              playbackRate: true,
+              quality: true,
+            }}
+            youtubeOptions={{
+              modestbranding: true,
+              rel: false,
+            }}
+            onPlay={() => setStatus('Playing')}
+            onPause={() => setStatus('Paused')}
+            onBuffer={(buffering) => setStatus(buffering ? 'Buffering…' : 'Playing')}
+            onError={() => setStatus('Error')}
+            onTimeUpdate={(state) => {
+              setCurrentTime(state.currentTime);
+              setDuration(state.duration);
+            }}
+          />
+          <Row gap="sm" justify="space-between" align="center">
+            <Text size="xs" colorVariant="secondary">
+              Status: {status}
+            </Text>
+            <Text size="xs" colorVariant="secondary">
               {Math.floor(currentTime)}s / {Math.floor(duration)}s
             </Text>
-          </Flex>
-          <Text variant="body">
-            This demo loads a YouTube video with native controls enabled. Customize the control set via the{' '}
-            <Text variant="code">controls</Text>{' '}prop and respond to lifecycle events like{' '}
-            <Text variant="code">onPlay</Text>,{' '}
-            <Text variant="code">onPause</Text>, and{' '}
-            <Text variant="code">onBuffer</Text>.
-          </Text>
-          <Flex gap="sm">
-            <Button size="sm" variant="outline" onPress={() => setStatus('Paused')}>
+          </Row>
+          <Row gap="sm" wrap="wrap">
+            <Button size="xs" variant="outline" onPress={() => setStatus('Paused')}>
               Reset status
             </Button>
-          </Flex>
+          </Row>
         </Column>
-      </Alert>
-    </Block>
+      </Card>
+    </Column>
   );
 }

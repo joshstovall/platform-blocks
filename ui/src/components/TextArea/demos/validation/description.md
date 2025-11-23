@@ -1,5 +1,5 @@
 ---
-title: TextArea Validation
+title: Validation
 category: states
 order: 40
 tags: [validation, error, required, feedback]
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-TextArea with validation states, error messages, and required field indicators.
+Demonstrates required validation, length limits, inline success messaging, and error summaries.

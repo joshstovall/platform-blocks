@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Tree, TreeNode, Text } from '../../../..';
+import { useState } from 'react';
+
+import { Block, Column, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const treeData: TreeNode[] = [
   {
@@ -53,29 +53,28 @@ const treeData: TreeNode[] = [
   },
 ];
 
-export default function CheckboxTreeDemo() {
+export default function Demo() {
   const [checkedIds, setCheckedIds] = useState<string[]>(['react', 'css']);
 
   return (
-    <View style={{ gap: 16 }}>
+    <Block gap="sm" fullWidth>
       <Tree
         data={treeData}
         checkboxes
         cascadeCheck
         checkedIds={checkedIds}
-        onCheckedChange={(ids, node) => {
+        onCheckedChange={(ids) => {
           setCheckedIds(ids);
-          console.log('Checked items:', ids);
         }}
         expandAll
       />
-      
-      <View style={{ marginTop: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
-        <Text size="sm" weight="bold" mb="xs">Selected Technologies:</Text>
-        <Text size="xs" color="secondary">
+
+      <Column gap="xs">
+        <Text weight="semibold">Checked technologies</Text>
+        <Text size="xs" colorVariant="secondary">
           {checkedIds.length === 0 ? 'None selected' : checkedIds.join(', ')}
         </Text>
-      </View>
-    </View>
+      </Column>
+    </Block>
   );
 }

@@ -1,42 +1,33 @@
-import { Link, Row, Text, Column } from '@platform-blocks/ui';
+import { Card, Column, Link, Row, Text } from '@platform-blocks/ui';
+
+const sizes = [
+  { token: 'xs', label: 'Extra small' },
+  { token: 'sm', label: 'Small' },
+  { token: 'md', label: 'Medium (default)' },
+  { token: 'lg', label: 'Large' },
+  { token: 'xl', label: 'Extra large' },
+] as const;
 
 export default function Demo() {
   return (
-    <Column gap={12}>
-      <Row gap={8} align="center">
-        <Text variant="caption">XS:</Text>
-        <Link href="#" size="xs" color="primary">
-          Extra small link
-        </Link>
-      </Row>
-      
-      <Row gap={8} align="center">
-        <Text variant="caption">SM:</Text>
-        <Link href="#" size="sm" color="primary">
-          Small link
-        </Link>
-      </Row>
-      
-      <Row gap={8} align="center">
-        <Text variant="caption">MD:</Text>
-        <Link href="#" size="md" color="primary">
-          Medium link
-        </Link>
-      </Row>
-      
-      <Row gap={8} align="center">
-        <Text variant="caption">LG:</Text>
-        <Link href="#" size="lg" color="primary">
-          Large link (default)
-        </Link>
-      </Row>
-      
-      <Row gap={8} align="center">
-        <Text variant="caption">XL:</Text>
-        <Link href="#" size="xl" color="primary">
-          Extra large link
-        </Link>
-      </Row>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Adjust the `size` prop to match the surrounding typography scale.
+          </Text>
+          {sizes.map((entry) => (
+            <Row key={entry.token} gap="sm" align="center">
+              <Text size="xs" colorVariant="secondary">
+                {entry.token.toUpperCase()}:
+              </Text>
+              <Link href="#" size={entry.token} color="primary">
+                {entry.label}
+              </Link>
+            </Row>
+          ))}
+        </Column>
+      </Card>
     </Column>
   );
 }

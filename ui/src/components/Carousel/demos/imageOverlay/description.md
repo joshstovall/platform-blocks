@@ -1,12 +1,11 @@
 ---
-title: Images With Overlay
+title: Image overlay
 category: media
 order: 20
-tags: [images, overlay, gradient, hero]
+tags: [hero, overlay]
 highlightLines: []
-status: experimental
-since: 1.0.0
+status: stable
+since: 0.3.0
 hidden: false
 ---
-
-Carousel showcasing images with a dark gradient and text overlay.
+Layer an absolutely positioned `Block` with a semi-transparent `bg` on top of each slide to keep text and buttons readable on photography.

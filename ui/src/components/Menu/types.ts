@@ -43,9 +43,9 @@ export interface MenuItemProps extends SpacingProps {
   /** Whether item is disabled */
   disabled?: boolean;
   /** Left section content */
-  leftSection?: React.ReactNode;
+  startSection?: React.ReactNode;
   /** Right section content */
-  rightSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   /** Item color variant */
   color?: 'default' | 'danger' | 'success' | 'warning';
   /** Whether item should close menu when pressed */

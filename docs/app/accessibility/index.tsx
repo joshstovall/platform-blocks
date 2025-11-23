@@ -15,7 +15,7 @@ import AccessibilityDemoWithProvider from '../../components/examples/Accessibili
 const BulletList: React.FC<{ items: string[] }> = ({ items }) => (
   <Column gap="xs">
     {items.map((item, index) => (
-      <Text key={`${item}-${index}`} variant="body">
+      <Text key={`${item}-${index}`} variant="p">
         • {item}
       </Text>
     ))}
@@ -76,7 +76,7 @@ const AccessibilityPage = () => {
         <Column gap="2xl">
           <Column gap="md">
             <DocsPageHeader>Accessibility at Platform Blocks</DocsPageHeader>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Inclusive design is a baseline requirement across the Platform Blocks library and documentation site. This page gathers the guardrails, utilities, and testing practices that help us meet WCAG 2.1 AA expectations for keyboard, screen reader, low-vision, and motion-sensitive users.
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -90,7 +90,7 @@ const AccessibilityPage = () => {
           <Column gap="xl">
             <Column gap="md">
               <Text variant="h3">Keyboard & Focus Management</Text>
-              <Text variant="body" colorVariant="secondary">
+              <Text variant="p" colorVariant="secondary">
                 Platform Blocks is fully operable without a mouse. Focus order mirrors visual layout and shortcuts are discoverable and customizable.
               </Text>
               <BulletList items={keyboardFeatures} />
@@ -98,7 +98,7 @@ const AccessibilityPage = () => {
 
             <Column gap="md">
               <Text variant="h3">Assistive Technology Semantics</Text>
-              <Text variant="body" colorVariant="secondary">
+              <Text variant="p" colorVariant="secondary">
                 Components expose reliable roles, names, and states so VoiceOver, TalkBack, NVDA, and other assistive tools can correctly interpret the UI.
               </Text>
               <BulletList items={assistiveFeatures} />
@@ -106,7 +106,7 @@ const AccessibilityPage = () => {
 
             <Column gap="md">
               <Text variant="h3">Visual Accessibility</Text>
-              <Text variant="body" colorVariant="secondary">
+              <Text variant="p" colorVariant="secondary">
                 Color, typography, and spacing tokens are engineered for clarity, even under high contrast, zoom, or theme overrides.
               </Text>
               <BulletList items={visualFeatures} />
@@ -114,7 +114,7 @@ const AccessibilityPage = () => {
 
             <Column gap="md">
               <Text variant="h3">Motion, Audio, & Sensory Preferences</Text>
-              <Text variant="body" colorVariant="secondary">
+              <Text variant="p" colorVariant="secondary">
                 Micro-interactions respect user comfort and can be tuned or disabled globally.
               </Text>
               <BulletList items={motionFeatures} />
@@ -122,7 +122,7 @@ const AccessibilityPage = () => {
 
             <Column gap="md">
               <Text variant="h3">Design & QA Workflow</Text>
-              <Text variant="body" colorVariant="secondary">
+              <Text variant="p" colorVariant="secondary">
                 Accessibility is woven into the release checklist with dedicated reviews and automated tooling.
               </Text>
               <BulletList items={guidanceResources} />
@@ -131,7 +131,7 @@ const AccessibilityPage = () => {
 
           <Column gap="md">
             <Text variant="h3">Applying Accessible APIs</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Components forward platform accessibility props, letting you layer contextual hints or ARIA attributes without losing built-in behaviour.
             </Text>
             <CodeBlock language="tsx" spoiler={false}>
@@ -143,14 +143,14 @@ const AccessibilityPage = () => {
 
           <Column gap="lg">
             <Text variant="h3">Interactive Checks</Text>
-            <Text variant="body" colorVariant="secondary">
+            <Text variant="p" colorVariant="secondary">
               Explore the sensory feedback controls and focus-management demo below to see these principles in action.
             </Text>
             <SoundExample />
             <AccessibilityDemoWithProvider />
           </Column>
 
-          <Text variant="body" colorVariant="muted">
+          <Text variant="p" colorVariant="muted">
             Have an accessibility request or need help auditing a flow? Visit the Support page or open an issue so we can collaborate on an inclusive solution.
           </Text>
         </Column>

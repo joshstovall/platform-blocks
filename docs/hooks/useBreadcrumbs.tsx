@@ -21,7 +21,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
 
   const pathToBreadcrumbMap = {
-    "/components": {
+    '/components': {
       label: 'Components',
       href: '/components',
       onPress: () => {
@@ -29,77 +29,77 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
       }
     },
-    "/examples": {
+    '/examples': {
       label: 'All Examples',
       href: '/examples',
       onPress: () => {
         router.push('/examples');
       }
     },
-    "/charts": {
+    '/charts': {
       label: 'Charts',
       href: '/charts',
       onPress: () => {
         router.push('/charts');
       }
     },
-    "/platforms": {
+    '/platforms': {
       label: 'Platforms',
       href: '/platforms',
       onPress: () => {
         router.push('/platforms');
       }
     },
-    "/localization": {
+    '/localization': {
       label: 'Localization',
       href: '/localization',
       onPress: () => {
         router.push('/localization');
       }
     },
-    "/theming": {
+    '/theming': {
       label: 'Theming',
       href: '/theming',
       onPress: () => {
         router.push('/theming');
       }
     },
-    "/hooks": { 
+    '/hooks': { 
       label: 'Hooks',
       href: '/hooks',
       onPress: () => {
         router.push('/hooks');
       }
     },
-    "/installation": {
+    '/installation': {
       label: 'Installation',
       href: '/installation',
       onPress: () => {
         router.push('/installation');
       }
     },
-    "/icons": {
+    '/icons': {
       label: 'Icons',
       href: '/icons',
       onPress: () => {
         router.push('/icons');
       }
     },
-    "/getting-started": {
+    '/getting-started': {
       label: 'Getting Started',
       href: '/getting-started',
       onPress: () => {
         router.push('/getting-started');
       }
     },
-    "/faq": {
+    '/faq': {
       label: 'FAQ',
       href: '/faq',
       onPress: () => {
         router.push('/faq');
       } 
     },
-    "/support": {
+    '/support': {
       label: 'Support',
       href: '/support',
       onPress: () => {

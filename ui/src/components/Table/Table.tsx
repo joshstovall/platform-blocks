@@ -173,7 +173,7 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
   return (
     <View style={cellStyle}>
       <Text
-        variant="body"
+        variant="p"
         weight="semibold"
         style={{
           textAlign: effectiveAlign,
@@ -238,7 +238,7 @@ export const TableTd: React.FC<TableCellProps> = (allProps) => {
     <View style={cellStyle}>
       {typeof children === 'string' || typeof children === 'number' ? (
         <Text
-          variant="body"
+          variant="p"
           style={{
             textAlign: effectiveAlign,
             color: theme.text.primary
@@ -347,7 +347,7 @@ export const TableCaption: React.FC<TableSectionProps> = (allProps) => {
   return (
     <View style={[styles.caption, getSpacingStyles(spacingProps), style]}>
       <Text
-        variant="caption"
+        variant="small"
         colorVariant="secondary"
         style={{ textAlign: 'center' }}
       >

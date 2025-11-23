@@ -1,7 +1,7 @@
 // Component exports
-export { Alert } from './Alert';
+export { Notice } from './Notice';
 export { AppShell } from './AppShell';
-export { 
+export {
   AppStoreBadge,
   AppStoreDownloadBadge,
   GalaxyStoreDownloadBadge,
@@ -38,10 +38,9 @@ export { Chip } from './Chip';
 export { CodeBlock } from './CodeBlock';
 export { CopyButton } from './CopyButton/CopyButton';
 export { ColorPicker } from './ColorPicker';
-export { Container } from './Container';
 export { KeyboardAwareLayout } from './KeyboardAwareLayout';
 export { DataTable } from './DataTable';
-export { Disclaimer, ComponentWithDisclaimer, useDisclaimer, withDisclaimer, extractDisclaimerProps } from './Disclaimer';
+export { Disclaimer, ComponentWithDisclaimer, useDisclaimer, withDisclaimer, extractDisclaimerProps } from './_internal/Disclaimer';
 export { Dialog, DialogProvider, DialogRenderer, useDialog, useSimpleDialog } from './Dialog';
 export { Divider } from './Divider';
 export { Space } from './Space';
@@ -80,13 +79,13 @@ export { Form } from './Form';
 export { FormLayout, FormSection, FormGroup, FormField } from './FormLayout';
 export { Row, Column } from './Layout';
 // export { NavigationContainer, createStackNavigator, createDrawerNavigator, Screen } from './Navigation';
-export { ToastProvider, useToast, useToastApi, toast } from './Toast';
+export { ToastProvider, useToast, useToastApi } from './Toast';
 export { Progress } from './Progress';
 export { QRCode } from './QRCode';
 export { NavigationProgress, navigationProgress } from './NavigationProgress';
 export { Radio, RadioGroup } from './Radio';
 export { Rating } from './Rating';
-export { Reveal } from './Reveal';
+export { Collapse } from './Collapse';
 export { Ring } from './Ring';
 export { Skeleton } from './Skeleton';
 export { Loader } from './Loader';
@@ -123,13 +122,8 @@ export { Popover } from './Popover';
 // Media Components
 export { Gallery } from './Gallery';
 
-// Charts
-// Charts (re-exported from external package). Avoid duplicate identifiers by not re-declaring in types below.
-// TODO: Fix Charts library build issue
-// export { BarChart, PieChart, LineChart, ScatterChart, AreaChart, StackedAreaChart, CandlestickChart, StackedBarChart, GroupedBarChart, ChartContainer, ChartTitle, ChartLegend, ChartGrid, Axis, ChartRoot, ChartPlot, ChartLayer } from '@platform-blocks/charts';
-
 // Export types
-export type { AlertProps } from './Alert';
+export type { NoticeProps } from './Notice';
 export type { AppShellProps } from './AppShell';
 export type { AppStoreBadgeProps, AppStoreBadgeSize, SupportedLocale, BadgeConfig } from './AppStoreBadge';
 export type { AvatarProps, AvatarGroupProps } from './Avatar';
@@ -145,7 +139,6 @@ export type { ChipProps } from './Chip';
 export type { CodeBlockProps } from './CodeBlock/types';
 export type { CopyButtonProps } from './CopyButton/types';
 export type { ColorPickerProps } from './ColorPicker';
-export type { ContainerProps } from './Container';
 export type { KeyboardAwareLayoutProps } from './KeyboardAwareLayout';
 export type { DialogProps, DialogConfig, UseSimpleDialogOptions } from './Dialog';
 export type { DividerProps } from './Divider';
@@ -163,12 +156,12 @@ export type { ImageProps } from './Image';
 export type { OverlayProps } from './Overlay';
 export type { InputProps, PasswordInputProps, BaseInputProps, ValidationRule } from './Input';
 export type { LinkProps } from './Link';
-export type { 
-  MenuProps, 
-  MenuItemProps, 
-  MenuLabelProps, 
-  MenuDividerProps, 
-  MenuDropdownProps 
+export type {
+  MenuProps,
+  MenuItemProps,
+  MenuLabelProps,
+  MenuDividerProps,
+  MenuDropdownProps
 } from './Menu';
 export type { MenuItemButtonProps } from './MenuItemButton';
 export type { NumberInputProps } from './NumberInput';
@@ -204,19 +197,18 @@ export type { RingProps, RingColorStop, RingRenderContext } from './Ring';
 export type { SkeletonProps } from './Skeleton';
 export type { LoaderProps } from './Loader';
 export type { LoadingOverlayProps } from './LoadingOverlay';
-export type { 
-  SpotlightProps, 
-  SpotlightActionData, 
-  SpotlightActionGroupData, 
+export type {
+  SpotlightProps,
+  SpotlightActionData,
+  SpotlightActionGroupData,
   SpotlightItem,
   SpotlightState,
-  SpotlightStore 
+  SpotlightStore
 } from './Spotlight';
 
 export type { SwitchProps } from './Switch';
 export type { TableProps } from './Table';
 export type { DataTableProps, DataTableColumn, DataTableFilter, DataTableSort, DataTablePagination } from './DataTable';
-export type { DisclaimerProps, WithDisclaimerProps, ComponentWithDisclaimerProps, DisclaimerSupport } from './Disclaimer';
 export type { TextProps } from './Text';
 export type { ToastProps } from './Toast';
 export type { TooltipProps, TooltipPositionType } from './Tooltip';
@@ -231,46 +223,13 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu/ContextMen
 export type { PopoverProps, PopoverTargetProps, PopoverDropdownProps } from './Popover';
 export type { SegmentedControlProps, SegmentedControlItem, SegmentedControlData } from './SegmentedControl';
 
-
 // Media Types
 export type { GalleryProps, GalleryModalProps, GalleryItem } from './Gallery';
 
-// Chart types
-// Re-export chart related types via type-only import to avoid pulling charts source into this rootDir build.
-// Using 'import type' then re-export preserves declaration output while avoiding duplicate value exports.
-// TODO: Fix Charts library build issue
-// import type {
-//   BarChartProps as _BarChartProps,
-//   PieChartProps as _PieChartProps,
-//   LineChartProps as _LineChartProps,
-//   ScatterChartProps as _ScatterChartProps,
-//   ChartDataPoint as _ChartDataPoint,
-//   ChartAxis as _ChartAxis,
-//   ChartGrid as _ChartGrid,
-//   ChartLegend as _ChartLegend,
-//   ChartTooltip as _ChartTooltip,
-//   ChartAnimation as _ChartAnimation,
-//   ChartInteractionEvent as _ChartInteractionEvent
-// } from '@platform-blocks/charts';
-
-// TODO: Fix Charts library build issue
-// export type {
-//   _BarChartProps as BarChartProps,
-//   _PieChartProps as PieChartProps,
-//   _LineChartProps as LineChartProps,
-//   _ScatterChartProps as ScatterChartProps,
-//   _ChartDataPoint as ChartDataPoint,
-//   _ChartAxis as ChartAxis,
-//   _ChartLegend as ChartLegendType,
-//   _ChartTooltip as ChartTooltip,
-//   _ChartAnimation as ChartAnimation,
-//   _ChartInteractionEvent as ChartInteractionEvent
-// };
-
 // Accessibility components
-export * from './Accessibility/AccessibilityHelpers';
-export * from './Accessibility/AccessibilityTesting';
-export * from './Accessibility/AccessibilityDemo';
+export * from './_internal/Accessibility/AccessibilityHelpers';
+export * from './_internal/Accessibility/AccessibilityTesting';
+export * from './_internal/Accessibility/AccessibilityDemo';
 
 // Sound components
 export * from './Button/SoundButton';

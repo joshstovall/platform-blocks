@@ -24,7 +24,7 @@ export interface ResponsiveProps {
 }
 
 // Combined props
-export interface UniversalSystemProps extends UniversalProps, ResponsiveProps { }
+export type UniversalSystemProps = UniversalProps & ResponsiveProps;
 
 /**
  * Generates CSS class names based on universal props

@@ -50,6 +50,7 @@ const optionalModuleLoaders: Record<string, OptionalModuleLoader> = {
   'lottie-react': () => require('lottie-react'),
   '@lottiefiles/dotlottie-react': () => require('@lottiefiles/dotlottie-react'),
   'lottie-react-native': () => require('lottie-react-native'),
+  'expo-navigation-bar': () => require('expo-navigation-bar'),
 };
 
 /**

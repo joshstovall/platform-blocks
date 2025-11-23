@@ -9,51 +9,54 @@ import { YearPicker } from '../YearPicker';
 import { dateUtils } from './utils';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
 import type { CalendarProps, CalendarLevel } from './types';
 
-export const Calendar: React.FC<CalendarProps> = ({
-  // View control
-  level = 'month',
-  defaultLevel = 'month',
-  onLevelChange,
-  
-  // Date management
-  date: controlledDate,
-  defaultDate,
-  onDateChange,
-  
-  // Value handling (for selection)
-  value,
-  onChange,
-  type = 'single',
-  
-  // Constraints
-  minDate,
-  maxDate,
-  excludeDate,
-  
-  // Localization
-  locale = 'en-US',
-  firstDayOfWeek = 0,
-  weekendDays = [0, 6],
-  
-  // Display options
-  withCellSpacing = true,
-  hideOutsideDates = false,
-  hideWeekdays = false,
-  highlightToday = true,
-  numberOfMonths = 1,
-  
-  // Customization
-  getDayProps,
-  renderDay,
-  size = 'md',
-  
-  // Static mode (non-interactive)
-  static: isStatic = false,
-}) => {
+export const Calendar: React.FC<CalendarProps> = (incomingProps) => {
+  const { disclaimerProps: disclaimerData, otherProps: props } = extractDisclaimerProps(incomingProps);
+  const {
+    level = 'month',
+    defaultLevel = 'month',
+    onLevelChange,
+    
+    // Date management
+    date: controlledDate,
+    defaultDate,
+    onDateChange,
+    
+    // Value handling (for selection)
+    value,
+    onChange,
+    type = 'single',
+    
+    // Constraints
+    minDate,
+    maxDate,
+    excludeDate,
+    
+    // Localization
+    locale = 'en-US',
+    firstDayOfWeek = 0,
+    weekendDays = [0, 6],
+    
+    // Display options
+    withCellSpacing = true,
+    hideOutsideDates = false,
+    hideWeekdays = false,
+    highlightToday = true,
+    numberOfMonths = 1,
+    
+    // Customization
+    getDayProps,
+    renderDay,
+    size = 'md',
+    
+    // Static mode (non-interactive)
+    static: isStatic = false,
+  } = props;
   const theme = useTheme();
   const { isRTL } = useDirection();
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
   
   // Internal state for date navigation
   const [internalDate, setInternalDate] = useState(defaultDate || new Date());
@@ -271,81 +274,90 @@ export const Calendar: React.FC<CalendarProps> = ({
     );
   };
 
+  const disclaimerNode = renderDisclaimer();
+
   return (
-    <View
-      style={{ width: '100%' }}
-      {...(type === 'range' ? { onMouseLeave: handleDayHoverEnd } : {})}
-    >
-      {/* Header */}
-      <Flex 
-        direction="row" 
-        justify="space-between" 
-        align="center" 
-        style={{ 
-          marginBottom: 20,
-          paddingHorizontal: 4,
-          flexDirection: isRTL ? 'row-reverse' : 'row',
-        }}
+    <View>
+      <View
+        style={{ width: '100%' }}
+        {...(type === 'range' ? { onMouseLeave: handleDayHoverEnd } : {})}
       >
-        <Pressable
-          onPress={handlePreviousClick}
-          disabled={isStatic}
-          style={({ pressed }) => [
-            {
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: pressed && !isStatic ? theme.colors.gray[2] : 'transparent',
-              opacity: isStatic ? 0.5 : 1,
-            },
-          ]}
+        {/* Header */}
+        <Flex 
+          direction="row" 
+          justify="space-between" 
+          align="center" 
+          style={{ 
+            marginBottom: 20,
+            paddingHorizontal: 4,
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+          }}
         >
-          <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={20} color={theme.colors.gray[6]} />
-        </Pressable>
-
-        <Pressable 
-          onPress={handleHeaderClick}
-          disabled={isStatic || currentLevel === 'decade'}
-          style={({ pressed }) => [
-            {
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor: pressed && !isStatic && currentLevel !== 'decade' 
-                ? theme.colors.gray[2] 
-                : 'transparent',
-            },
-          ]}
-        >
-          <Text 
-            size="lg" 
-            weight="semibold"
-            style={{ 
-              color: theme.colors.gray[9],
-              textAlign: 'center',
-            }}
+          <Pressable
+            onPress={handlePreviousClick}
+            disabled={isStatic}
+            style={({ pressed }) => [
+              {
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: pressed && !isStatic ? theme.colors.gray[2] : 'transparent',
+                opacity: isStatic ? 0.5 : 1,
+              },
+            ]}
           >
-            {getHeaderText()}
-          </Text>
-        </Pressable>
+            <Icon name={isRTL ? 'chevron-right' : 'chevron-left'} size={20} color={theme.colors.gray[6]} />
+          </Pressable>
 
-        <Pressable
-          onPress={handleNextClick}
-          disabled={isStatic}
-          style={({ pressed }) => [
-            {
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: pressed && !isStatic ? theme.colors.gray[2] : 'transparent',
-              opacity: isStatic ? 0.5 : 1,
-            },
-          ]}
-        >
-          <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={20} color={theme.colors.gray[6]} />
-        </Pressable>
-      </Flex>
+          <Pressable 
+            onPress={handleHeaderClick}
+            disabled={isStatic || currentLevel === 'decade'}
+            style={({ pressed }) => [
+              {
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 8,
+                backgroundColor: pressed && !isStatic && currentLevel !== 'decade' 
+                  ? theme.colors.gray[2] 
+                  : 'transparent',
+              },
+            ]}
+          >
+            <Text 
+              size="lg" 
+              weight="semibold"
+              style={{ 
+                color: theme.colors.gray[9],
+                textAlign: 'center',
+              }}
+            >
+              {getHeaderText()}
+            </Text>
+          </Pressable>
 
-      {/* Content */}
-      {renderContent()}
+          <Pressable
+            onPress={handleNextClick}
+            disabled={isStatic}
+            style={({ pressed }) => [
+              {
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: pressed && !isStatic ? theme.colors.gray[2] : 'transparent',
+                opacity: isStatic ? 0.5 : 1,
+              },
+            ]}
+          >
+            <Icon name={isRTL ? 'chevron-left' : 'chevron-right'} size={20} color={theme.colors.gray[6]} />
+          </Pressable>
+        </Flex>
+
+        {/* Content */}
+        {renderContent()}
+      </View>
+      {disclaimerNode ? (
+        <View style={{ width: '100%' }}>
+          {disclaimerNode}
+        </View>
+      ) : null}
     </View>
   );
 };

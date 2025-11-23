@@ -1,8 +1,12 @@
 ---
-title: Variants
+title: Visual Variants
+category: theming
+order: 80
 tags: [segmented-control, variants, styling]
-order: 40
-status: beta
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Different visual styles including default, filled, outline, and ghost variants with optional auto contrast for text readability.
+Choose between `default`, `filled`, `outline`, or `ghost` variants and pair them with semantic `color` tokens to match the surrounding surface.

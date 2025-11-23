@@ -4,6 +4,7 @@ import { SpacingProps } from '../../core/theme/types';
 import { LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 import { SizeValue, ColorValue } from '../../core/theme/types';
+import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
 export interface ValidationRule {
   type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'custom' | 'passwordStrength';
@@ -23,7 +24,7 @@ export interface PasswordStrengthRule extends Omit<ValidationRule, 'type'> {
   };
 }
 
-export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusProps {
+export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusProps, DisclaimerSupport {
   /** Input value */
   value?: string;
   
@@ -60,10 +61,10 @@ export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusP
   name?: string;
   
   /** Left section content */
-  leftSection?: React.ReactNode;
+  startSection?: React.ReactNode;
   
   /** Right section content */
-  rightSection?: React.ReactNode;
+  endSection?: React.ReactNode;
   
   /** Additional styling */
   style?: any;

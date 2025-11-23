@@ -1,12 +1,12 @@
 ---
-title: Basic Usage
-category: usage
+title: Basics
+category: basics
 order: 10
-tags: [basic, progress]
+tags: [progress]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic progress bar usage for showing completion status and loading states.
+Track a single completion percentage, adjust it with controls, and embed the bar inside constrained layouts.

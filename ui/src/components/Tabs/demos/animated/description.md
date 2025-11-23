@@ -1,7 +1,12 @@
 ---
-title: Animated Transitions
-description: Smooth transitions and animations between tab content for enhanced user experience.
-tags: ["animated", "transitions", "smooth", "animation-duration", "enhanced-ux"]
+title: Animated transitions
+category: behavior
+order: 20
+tags: [animation, tabs]
+highlightLines: [26-33]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Shows animated tab transitions with customizable duration. The animated prop enables smooth content switching with fade or slide effects, creating a more polished and engaging user experience.
+Demonstrates motion-enabled tabs using the `animated` flag and custom duration to smooth the switch between panels.

@@ -24,7 +24,7 @@ export default function Demo() {
         smooth
         highlightLast
         highlightExtrema={{ showMax: true, showMin: false, color: '#F03E3E', radius: 4.5, strokeColor: '#FEE2E2', strokeWidth: 1.5 }}
-        thresholds={[{ value: 18, label: 'Alert threshold', color: '#F87171', dashed: true, opacity: 0.8, labelPosition: 'left' }]}
+        thresholds={[{ value: 18, label: 'Notice threshold', color: '#F87171', dashed: true, opacity: 0.8, labelPosition: 'left' }]}
         domain={{ y: [8, 26] }}
         valueFormatter={(value) => `${Math.round(value)} bugs`}
       />

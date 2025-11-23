@@ -311,7 +311,7 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
   return (
     <View
       ref={setContainerNode}
-      style={[{ position: 'relative' }, style]}
+      style={[{ position: 'relative', }, style]}
       testID={testID}
     >
       {enhancedChild}

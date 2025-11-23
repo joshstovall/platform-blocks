@@ -1,41 +1,40 @@
 import { useState } from 'react';
-import { Stepper, Text, Flex, Card } from '@platform-blocks/ui';
+import { Card, Column, Stepper, Text } from '@platform-blocks/ui';
+
+const stepContent = [
+  { label: 'Plan', description: 'Outline the goal' },
+  { label: 'Build', description: 'Execute tasks' },
+  { label: 'Launch', description: 'Ship the result' },
+];
+
+const sizes = [
+  { size: 'sm', label: 'Small' },
+  { size: 'md', label: 'Medium (default)' },
+  { size: 'lg', label: 'Large' },
+] as const;
 
 export default function Demo() {
-  const [active, setActive] = useState(1);
+  const [activeStep, setActiveStep] = useState(1);
 
   return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={24}>
-        <Text size="lg" weight="semibold">Stepper Sizes</Text>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="md" weight="medium">Small (sm)</Text>
-          <Stepper active={active} onStepClick={setActive} size="sm">
-            <Stepper.Step label="Step 1" description="First step" />
-            <Stepper.Step label="Step 2" description="Second step" />
-            <Stepper.Step label="Step 3" description="Third step" />
-          </Stepper>
-        </Flex>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="md" weight="medium">Medium (md) - Default</Text>
-          <Stepper active={active} onStepClick={setActive} size="md">
-            <Stepper.Step label="Step 1" description="First step" />
-            <Stepper.Step label="Step 2" description="Second step" />
-            <Stepper.Step label="Step 3" description="Third step" />
-          </Stepper>
-        </Flex>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="md" weight="medium">Large (lg)</Text>
-          <Stepper active={active} onStepClick={setActive} size="lg">
-            <Stepper.Step label="Step 1" description="First step" />
-            <Stepper.Step label="Step 2" description="Second step" />
-            <Stepper.Step label="Step 3" description="Third step" />
-          </Stepper>
-        </Flex>
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="lg">
+          <Text size="sm" colorVariant="secondary">
+            Pick a size token to match surrounding UI density while keeping the step labels consistent.
+          </Text>
+          {sizes.map((variant) => (
+            <Column key={variant.size} gap="sm">
+              <Text weight="semibold">{variant.label}</Text>
+              <Stepper active={activeStep} onStepClick={setActiveStep} size={variant.size}>
+                {stepContent.map((step) => (
+                  <Stepper.Step key={`${variant.size}-${step.label}`} label={step.label} description={step.description} />
+                ))}
+              </Stepper>
+            </Column>
+          ))}
+        </Column>
+      </Card>
+    </Column>
   );
 }

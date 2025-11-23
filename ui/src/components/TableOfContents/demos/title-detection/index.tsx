@@ -2,7 +2,7 @@ import { View, ScrollView } from 'react-native';
 import { TableOfContents } from '../../TableOfContents';
 import { Text } from '../../../Text';
 import { Title } from '../../../Title';
-import { TitleRegistryProvider } from '../../../../contexts';
+import { TitleRegistryProvider } from '../../../../hooks/useTitleRegistration/contexts';
 
 export default function MobileFriendlyTableOfContentsDemo() {
   return (

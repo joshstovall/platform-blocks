@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Advanced TextArea features including character counter, auto-resize, and row limits.
+Showcases auto-resize, character counting, validation, disabled, and required helper scenarios.

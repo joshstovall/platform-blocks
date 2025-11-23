@@ -1,7 +1,15 @@
----
 title: Debug Mode
 description: Debug mode for development and testing tooltip positioning and portal behavior.
 tags: ["debug", "development", "portal", "testing", "manual-control"]
 ---
+title: Controlled State
+category: behavior
+order: 50
+tags: [controlled]
+highlightLines: [12-25]
+status: stable
+since: 1.0.0
+hidden: false
+---
 
-Provides debugging tools for tooltip development including manual control, portal vs non-portal rendering, and different event handling modes. Useful for troubleshooting tooltip behavior during development.
+Drive the tooltip manually by pairing the `opened` prop with external UI state and disabling default interaction events.

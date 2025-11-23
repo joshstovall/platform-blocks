@@ -1,24 +1,52 @@
 import { useState } from 'react';
-import { Rating, Text, Column } from '@platform-blocks/ui';
+import { Column, Rating, Text, useTheme } from '@platform-blocks/ui';
+
+const FRACTION_SETTINGS = [
+  {
+    key: 'match',
+    label: 'Match excitement',
+    precision: 0.1,
+    helper: 'Set scores in 0.1 increments to capture precise fan sentiment.'
+  },
+  {
+    key: 'broadcast',
+    label: 'Broadcast quality',
+    precision: 0.5,
+    helper: 'Use half-star increments when quick feedback is enough.'
+  }
+] as const;
+
+type FractionKey = (typeof FRACTION_SETTINGS)[number]['key'];
 
 export default function Demo() {
-  const [movieRating, setMovieRating] = useState(4.2);
-  const [restaurantRating, setRestaurantRating] = useState(3.7);
+  const theme = useTheme();
+  const [values, setValues] = useState<Record<FractionKey, number>>({
+    match: 4.2,
+    broadcast: 3.5
+  });
 
   return (
-    <Column gap={16}>
-        <Text mb="sm">Movie Rating (Current: {movieRating})</Text>
-        <Rating
-          value={movieRating}
-          onChange={setMovieRating}
-          allowFraction
-          precision={0.1}
-          size="lg"
-          color="#FFD700"
-        />
-        <Text variant="caption" colorVariant="secondary" mt="xs">
-          Click anywhere on a star to set precise ratings (0.1 increments)
-        </Text>
+    <Column gap="lg">
+      {FRACTION_SETTINGS.map(({ key, label, precision, helper }) => (
+        <Column key={key} gap="xs">
+          <Text variant="small" colorVariant="muted">
+            {label}
+          </Text>
+          <Rating
+            value={values[key]}
+            onChange={(next) => setValues((prev) => ({ ...prev, [key]: next }))}
+            allowFraction
+            precision={precision}
+            size="lg"
+            color={theme.colors.highlight[5]}
+            emptyColor={theme.colors.highlight[1]}
+            hoverColor={theme.colors.highlight[6]}
+          />
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
     </Column>
   );
 }

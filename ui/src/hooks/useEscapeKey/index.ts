@@ -1,0 +1,1 @@
+export { useEscapeKey } from '../useHotkeys';

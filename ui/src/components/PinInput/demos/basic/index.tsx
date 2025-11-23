@@ -1,29 +1,28 @@
 import { useState } from 'react';
-import { PinInput, Text, Card, Column } from '@platform-blocks/ui';
+
+import { Column, PinInput, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [value, setValue] = useState('');
 
   return (
-    <Card padding={16}>
-      <Column gap={16}>
-        <Text variant="h6">Basic PIN Input</Text>
-        <Text variant="caption" colorVariant="secondary">
-          Enter a 4-digit PIN
+    <Column gap="sm">
+      <Text weight="semibold">Basic PIN input</Text>
+      <Text size="sm" colorVariant="secondary">
+        Controlled 4-digit PIN field with automatic focus management.
+      </Text>
+      <PinInput
+        value={value}
+        onChange={setValue}
+        label="PIN code"
+        keyboardFocusId="pin-demo-basic"
+      />
+      {value && (
+        <Text size="xs" colorVariant="secondary">
+          Current value: {value}
         </Text>
-        <PinInput
-          value={value}
-          onChange={setValue}
-          label="PIN Code"
-          keyboardFocusId="pin-demo-basic"
-        />
-        {value && (
-          <Text variant="caption" colorVariant="secondary">
-            Current value: {value}
-          </Text>
-        )}
-      </Column>
-    </Card>
+      )}
+    </Column>
   );
 }
 

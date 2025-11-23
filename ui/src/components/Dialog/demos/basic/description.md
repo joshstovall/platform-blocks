@@ -1,15 +1,12 @@
 ---
-title: Basic
-description: Simple modal dialog with basic content and actions.
-tags: [modal, basic, dialog]
+title: Basic Modal
 category: basics
 order: 10
-highlightLines: [5-8, 20-26]
+tags: [dialog, modal, actions]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic modal dialog with simple content and action buttons.
-
-Use this pattern for simple confirmations, information display, or basic user interactions that require modal presentation.
+Call `openDialog` with `variant: 'modal'` to show a titled dialog and wire action buttons to `closeDialog` when the user makes a choice.

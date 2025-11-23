@@ -126,12 +126,34 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
   valueBands,
   showLegend = false,
   legendPosition = 'bottom',
+  legend,
   onSeriesFocus,
   onSeriesBlur,
   onSeriesPress,
 }) => {
   const theme = useChartTheme();
-  const padding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const resolvedLegend = React.useMemo(() => {
+    if (legend) return legend;
+    if (!showLegend) return undefined;
+    return {
+      show: true,
+      position: legendPosition,
+      align: 'center' as const,
+    };
+  }, [legend, showLegend, legendPosition]);
+
+  const padding = React.useMemo(() => {
+    if (!resolvedLegend?.show) return basePadding;
+    const position = resolvedLegend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [resolvedLegend?.show, resolvedLegend?.position]);
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
   const seriesCount = series.length;

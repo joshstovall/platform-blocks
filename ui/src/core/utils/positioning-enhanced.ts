@@ -760,59 +760,6 @@ export function measureElement(ref: any): Promise<Rect> {
   });
 }
 
-// ============================================================================
-// Legacy API - For backward compatibility with older components
-// ============================================================================
-
-/**
- * Legacy overlay positioning function (simplified interface)
- * 
- * @deprecated Use calculateOverlayPositionEnhanced for better positioning with flip/shift support
- */
-export function calculateOverlayPosition(
-  anchor: Rect,
-  overlay: { width: number; height: number },
-  options: {
-    placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end';
-    offset?: number;
-    viewport?: Viewport;
-    strategy?: 'absolute' | 'fixed';
-  } = {}
-): Omit<PositionResult, 'flipped' | 'shifted' | 'finalWidth' | 'finalHeight'> {
-  const {
-    placement = 'auto',
-    offset = 8,
-    viewport = getViewport(),
-    strategy = 'fixed'
-  } = options;
-
-  // Use the enhanced algorithm but strip out the extra fields for backward compatibility
-  const result = calculateOverlayPositionEnhanced(anchor, overlay, {
-    placement: placement as PlacementType,
-    offset,
-    viewport,
-    strategy,
-    flip: true,
-    shift: false,
-    boundary: 8,
-    fallbackPlacements: ['bottom', 'top', 'right', 'left']
-  });
-
-  // Return a compatible result (without the new fields)
-  return {
-    x: result.x,
-    y: result.y,
-    placement: result.placement,
-    maxWidth: result.maxWidth,
-    maxHeight: result.maxHeight,
-  };
-}
-
-/**
- * Alias for backward compatibility
- */
-export { calculateOverlayPosition as calculateOverlayPositionLegacy };
-
 /**
  * Check if a point is inside a rectangle
  */

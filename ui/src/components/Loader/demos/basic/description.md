@@ -1,12 +1,12 @@
 ---
 title: Basic Usage
-category: usage
+category: basics
 order: 10
-tags: [basic, loading]
+tags: [variant]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic loader variants for loading states and activity indicators.
+Pick a loader `variant` to match the type of busy indicator you need for a loading state.

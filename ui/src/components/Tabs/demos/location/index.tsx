@@ -1,62 +1,62 @@
-import { Tabs, Text, Flex } from '@platform-blocks/ui';
+import { Column, Tabs, Text } from '@platform-blocks/ui';
 
-export default function LocationTabsDemo() {
+type Location = 'start' | 'end';
+
+const SECTIONS: Array<{ label: string; location: Location; helper: string }> = [
+  {
+    label: 'Tabs above content (start)',
+    location: 'start',
+    helper: 'Default placement keeps triggers directly above the active view.'
+  },
+  {
+    label: 'Tabs below content (end)',
+    location: 'end',
+    helper: 'Use end placement when the content should lead and controls follow.'
+  }
+];
+
+const buildItems = (location: Location) => [
+  {
+    key: 'home',
+    label: 'Home',
+    content: (
+      <Text>
+        Home content rendered with tabs {location === 'start' ? 'above' : 'below'} the panel.
+      </Text>
+    )
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    content: (
+      <Text>
+        Update configurations while keeping the tabs {location === 'start' ? 'up top' : 'after the details'}.
+      </Text>
+    )
+  },
+  {
+    key: 'profile',
+    label: 'Profile',
+    content: (
+      <Text>
+        Profile information with navigation {location === 'start' ? 'leading into' : 'following'} the content.
+      </Text>
+    )
+  }
+];
+
+export default function Demo() {
   return (
-    <Flex direction="column" gap={32}>
-      {/* Horizontal Tabs - Start vs End */}
-      <Flex direction="column" gap={16}>
-        <Text variant="h5" weight="semibold">Horizontal Tabs Location</Text>
-        
-        <Flex direction="column" gap={12}>
-          <Text variant="body" weight="medium">Start Position (Top - Default)</Text>
-          <Tabs
-            variant="line"
-            location="start"
-            items={[
-              {
-                key: 'tab1',
-                label: 'Home',
-                content: <Text>Content with tabs at the top (start position)</Text>
-              },
-              {
-                key: 'tab2',
-                label: 'Settings',
-                content: <Text>Settings content with tabs at the top</Text>
-              },
-              {
-                key: 'tab3',
-                label: 'Profile',
-                content: <Text>Profile content with tabs at the top</Text>
-              }
-            ]}
-          />
-        </Flex>
-
-        <Flex direction="column" gap={12}>
-          <Text variant="body" weight="medium">End Position (Bottom)</Text>
-          <Tabs
-            variant="line"
-            location="end"
-            items={[
-              {
-                key: 'tab1',
-                label: 'Home',
-                content: <Text>Content with tabs at the bottom (end position)</Text>
-              },
-              {
-                key: 'tab2',
-                label: 'Settings',
-                content: <Text>Settings content with tabs at the bottom</Text>
-              },
-              {
-                key: 'tab3',
-                label: 'Profile',
-                content: <Text>Profile content with tabs at the bottom</Text>
-              }
-            ]}
-          />
-        </Flex>
-      </Flex>
-    </Flex>
+    <Column gap="xl">
+      {SECTIONS.map(({ label, location, helper }) => (
+        <Column key={location} gap="xs">
+          <Text weight="medium">{label}</Text>
+          <Tabs variant="line" location={location} items={buildItems(location)} />
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
+    </Column>
   );
 }

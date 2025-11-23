@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different size variants for PIN input fields.
+Demonstrates xs through lg PIN inputs and when each token fits best.

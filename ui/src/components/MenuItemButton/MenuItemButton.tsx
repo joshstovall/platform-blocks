@@ -10,6 +10,8 @@ import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } fro
 import { getComponentSize } from '../../core/theme/unified-sizing';
 import { getFontSize } from '../../core/theme/sizes';
 
+type MenuTone = 'default' | 'primary' | 'danger' | 'success' | 'warning';
+
 export interface MenuItemButtonProps extends SpacingProps {
   /** Text label (alternative to children) */
   title?: string;
@@ -56,11 +58,11 @@ export interface MenuItemButtonProps extends SpacingProps {
   /** Blur handler */
   onBlur?: PressableProps['onBlur'];
   /** Semantic tone for menu styling */
-  tone?: 'default' | 'danger' | 'success' | 'warning';
+  tone?: MenuTone;
   /** Tone to apply when hovered */
-  hoverTone?: 'default' | 'danger' | 'success' | 'warning';
+  hoverTone?: MenuTone;
   /** Tone to apply when active/pressed */
-  activeTone?: 'default' | 'danger' | 'success' | 'warning';
+  activeTone?: MenuTone;
   /** Override text color for base state */
   textColor?: string;
   /** Override text color when hovered */
@@ -234,14 +236,22 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
-  const resolveTone = useCallback((toneKey?: 'default' | 'danger' | 'success' | 'warning') => {
+  const resolveTone = useCallback((toneKey?: MenuTone) => {
     if (danger) return 'danger' as const;
     return toneKey ?? 'default';
   }, [danger]);
 
-  const getPalette = useCallback((toneKey: 'default' | 'danger' | 'success' | 'warning') => {
+  const getPalette = useCallback((toneKey: MenuTone) => {
     const isDark = theme.colorScheme === 'dark';
     switch (toneKey) {
+      case 'primary':
+        return {
+          text: isDark ? (theme.text.onPrimary ?? theme.colors.primary[1]) : (theme.colors.primary[6] ?? theme.colors.primary[5]),
+          bg: 'transparent',
+          hoverBg: isDark ? (theme.colors.primary[4] ?? theme.colors.primary[3]) : (theme.colors.primary[0] ?? 'rgba(0,0,0,0.04)'),
+          activeBg: isDark ? (theme.colors.primary[5] ?? theme.colors.primary[6]) : (theme.colors.primary[1] ?? 'rgba(0,0,0,0.08)'),
+          activeText: isDark ? (theme.text.onPrimary ?? theme.colors.primary[1]) : (theme.colors.primary[7] ?? theme.colors.primary[6]),
+        };
       case 'danger':
         return {
           text: theme.colors.error[6],

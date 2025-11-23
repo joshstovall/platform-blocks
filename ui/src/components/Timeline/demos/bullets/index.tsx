@@ -1,61 +1,64 @@
-import { Timeline, Text, Card, Column, Block } from '@platform-blocks/ui';
+import { Column, Icon, Text, Timeline } from '@platform-blocks/ui';
+
+const bulletContent = [
+  {
+    title: 'Default bullet',
+    description: 'Uses the configured timeline size for spacing.',
+  },
+  {
+    title: 'Numbered bullet',
+    description: 'Render a custom label with the `bullet` prop.',
+    bullet: <Text size="xs" weight="semibold">1</Text>,
+  },
+  {
+    title: 'Completed bullet',
+    description: 'Swap in an icon to reinforce status.',
+    bullet: <Icon name="check" size={12} color="#0E8A16" />,
+  },
+  {
+    title: 'Pending bullet',
+    description: 'Show remaining work with a clock icon.',
+    bullet: <Icon name="clock" size={12} color="#F59E0B" />,
+  },
+];
+
+const bulletSizes = [
+  { label: 'Compact bullet (18px)', bulletSize: 18 },
+  { label: 'Large bullet (28px)', bulletSize: 28 },
+];
 
 export default function Demo() {
   return (
-    <Block gap={24}>
-      <Text variant="h6">Timeline Bullets</Text>
-      
-      <Card padding={16}>
-          <Text variant="body" weight="medium">Custom Bullet Styles</Text>
-          <Timeline bulletSize={24}>
-            <Timeline.Item title="Default Bullet">
-              <Text variant="caption">
-                Standard timeline bullet point
-              </Text>
+    <Column gap="lg">
+      <Text size="sm" colorVariant="secondary">
+        Override bullet content or scale it with the `bullet` and `bulletSize` props.
+      </Text>
+
+      <Column gap="sm">
+        <Text weight="semibold">Custom bullet content</Text>
+        <Timeline bulletSize={22}>
+          {bulletContent.map((item) => (
+            <Timeline.Item key={item.title} title={item.title} bullet={item.bullet}>
+              <Text size="sm">{item.description}</Text>
             </Timeline.Item>
-            
-            <Timeline.Item 
-              title="Number Bullet"
-              bullet={<Text variant="caption" weight="bold">1</Text>}
-            >
-              <Text variant="caption">
-                Custom numbered bullet point
-              </Text>
+          ))}
+        </Timeline>
+      </Column>
+
+      <Column gap="sm">
+        <Text weight="semibold">Adjust bullet size</Text>
+        {bulletSizes.map((entry) => (
+          <Timeline key={entry.label} bulletSize={entry.bulletSize}>
+            <Timeline.Item title={entry.label}>
+              <Text size="sm">Connector and spacing track with the bullet size.</Text>
             </Timeline.Item>
-            
-            <Timeline.Item 
-              title="Text Bullet"
-              bullet={<Text variant="caption">✓</Text>}
-            >
-              <Text variant="caption">
-                Checkmark bullet for completed items
-              </Text>
-            </Timeline.Item>
-            
-            <Timeline.Item 
-              title="Status Bullet"
-              bullet={<Text variant="caption">⏳</Text>}
-            >
-              <Text variant="caption">
-                Clock icon for pending items
-              </Text>
+            <Timeline.Item title="Follow-up task">
+              <Text size="sm">An additional item retains the same sizing.</Text>
             </Timeline.Item>
           </Timeline>
-      </Card>
-      
-      <Card padding={16}>
-          <Text variant="body" weight="medium">Different Bullet Sizes</Text>
-          <Timeline bulletSize={32}>
-            <Timeline.Item title="Large Bullet">
-              <Text variant="caption">Timeline with larger bullet size</Text>
-            </Timeline.Item>
-            
-            <Timeline.Item title="Another Item">
-              <Text variant="caption">Consistent large bullet sizing</Text>
-            </Timeline.Item>
-          </Timeline>
-      </Card>
-    </Block>
+        ))}
+      </Column>
+    </Column>
   );
 }
 

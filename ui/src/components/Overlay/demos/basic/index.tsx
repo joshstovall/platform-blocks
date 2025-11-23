@@ -1,68 +1,98 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
-import { Overlay, Text, Flex, Button } from '@platform-blocks/ui';
+import { useState, type ComponentProps } from 'react';
+import { ImageBackground, StyleSheet } from 'react-native';
+import { Button, Column, Overlay, Text } from '@platform-blocks/ui';
 
 const HERO_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-1.png';
 const GRADIENT_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png';
 const BLUR_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-3.png';
 
-export default function BasicOverlayDemo() {
+type OverlayExample = {
+  key: string;
+  image: string;
+  title: string;
+  description: string;
+  align?: 'flex-start' | 'center';
+  overlayProps: Omit<ComponentProps<typeof Overlay>, 'children'>;
+};
+
+const STATIC_EXAMPLES: OverlayExample[] = [
+  {
+    key: 'gradient',
+    image: GRADIENT_IMAGE,
+    title: 'Gradient spotlight',
+    description: 'When `gradient` is provided, the overlay renders a vivid fade instead of a solid tint.',
+    overlayProps: {
+      gradient: 'linear-gradient(145deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0) 75%)',
+      radius: 'xl',
+    },
+  },
+  {
+    key: 'blurred',
+    image: BLUR_IMAGE,
+    title: 'Glass overlay',
+    description: 'Blend blur with partial opacity to achieve a glassmorphism effect (blur is web-only).',
+    align: 'center',
+    overlayProps: {
+      color: '#000',
+      backgroundOpacity: 0.35,
+      blur: 18,
+      radius: 'xl',
+      center: true,
+    },
+  },
+];
+
+export default function Demo() {
   const [visible, setVisible] = useState(true);
 
   return (
-    <Flex direction="column" gap="2xl" style={styles.wrapper}>
-      <View style={styles.example}>
+    <Column gap="xl" align="center" style={styles.wrapper}>
+      <Column gap="md" style={styles.section}>
         <ImageBackground source={{ uri: HERO_IMAGE }} style={styles.image} imageStyle={styles.imageInner}>
-          {visible && (
-            <Overlay color="#000" backgroundOpacity={0.8} radius="xl" />
-          )}
-          <View style={styles.caption}>
-            <Text variant="h4" weight="semibold" color="white">Toggle overlay</Text>
-            <Text color="white" align="center" mt="xs">
-              Overlay fills its parent. Use backgroundOpacity to dim without affecting children.
+          {visible ? <Overlay color="#000" backgroundOpacity={0.8} radius="xl" /> : null}
+          <Column gap="xs" align="center" style={styles.overlayContent}>
+            <Text variant="h4" weight="semibold" color="white">
+              Toggle overlay
             </Text>
-          </View>
+            <Text color="white" align="center">
+              Overlay fills its parent. Use `backgroundOpacity` to dim the background without affecting children.
+            </Text>
+          </Column>
         </ImageBackground>
-        <Button title={visible ? 'Hide overlay' : 'Show overlay'} onPress={() => setVisible(v => !v)} style={styles.button} />
-      </View>
+        <Button onPress={() => setVisible((current) => !current)}>
+          {visible ? 'Hide overlay' : 'Show overlay'}
+        </Button>
+      </Column>
 
-      <View style={styles.example}>
-        <ImageBackground source={{ uri: GRADIENT_IMAGE }} style={styles.image} imageStyle={styles.imageInner}>
-          <Overlay
-            gradient="linear-gradient(145deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0) 75%)"
-            radius="xl"
-          >
-            <Flex direction="column" align="flex-start" gap="xs" style={styles.overlayContent}>
-              <Text variant="h4" weight="semibold" color="white">Gradient spotlight</Text>
-              <Text color="white">
-                When gradient is provided, color/backgroundOpacity are ignored on web for vivid fades.
-              </Text>
-            </Flex>
-          </Overlay>
-        </ImageBackground>
-      </View>
+      {STATIC_EXAMPLES.map(({ key, image, overlayProps, align = 'flex-start', title, description }) => (
+        <Column key={key} gap="sm" style={styles.section}>
+          <ImageBackground source={{ uri: image }} style={styles.image} imageStyle={styles.imageInner}>
+            <Overlay {...overlayProps}>
+              <Column gap="xs" align={align} style={styles.overlayContent}>
+                <Text variant="h4" weight="semibold" color="white">
+                  {title}
+                </Text>
+                <Text color="white" align={align === 'center' ? 'center' : 'left'}>
+                  {description}
+                </Text>
+              </Column>
+            </Overlay>
+          </ImageBackground>
+        </Column>
+      ))}
 
-      <View style={styles.example}>
-        <ImageBackground source={{ uri: BLUR_IMAGE }} style={styles.image} imageStyle={styles.imageInner}>
-          <Overlay color="#000" backgroundOpacity={0.35} blur={18} radius="xl" center>
-            <Flex direction="column" align="center" gap="sm" style={styles.overlayContent}>
-              <Text variant="h4" weight="semibold" color="white">Glass overlay</Text>
-              <Text color="white" align="center">
-                Combine blur with partial opacity for glassmorphism. Blur is web-only.
-              </Text>
-            </Flex>
-          </Overlay>
-        </ImageBackground>
-      </View>
-    </Flex>
+      <Text variant="small" colorVariant="muted" align="center">
+        Overlay inherits the size of its container, making it ideal for dimming media, spotlights, and modal scrims.
+      </Text>
+    </Column>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    padding: 24,
+    width: '100%',
   },
-  example: {
+  section: {
     width: '100%',
     maxWidth: 520,
     alignSelf: 'center',
@@ -76,12 +106,6 @@ const styles = StyleSheet.create({
   },
   imageInner: {
     borderRadius: 24,
-  },
-  caption: {
-    padding: 20,
-  },
-  button: {
-    marginTop: 16,
   },
   overlayContent: {
     padding: 24,

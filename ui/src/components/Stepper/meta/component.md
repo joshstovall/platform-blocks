@@ -4,6 +4,7 @@ description: A component for displaying step-by-step navigation and progress
 source: ui/src/components/Stepper
 status: stable
 category: Navigation
+playground: true
 props:
   - name: active
     type: number

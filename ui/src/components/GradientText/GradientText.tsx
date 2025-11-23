@@ -11,7 +11,7 @@ const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLin
  * GradientText Component
  * 
  * Renders text with a gradient color effect using linear gradients.
- * Supports animated gradients that can move from left to right.
+ * Displays text using a linear gradient fill across the glyphs.
  * 
  * **Note**: For native platforms (iOS/Android), gradient animation is currently
  * supported on web only. Native platforms show static gradients.
@@ -22,16 +22,7 @@ const { LinearGradient: OptionalLinearGradient, hasLinearGradient } = resolveLin
  * <GradientText colors={['#FF0080', '#7928CA']}>
  *   Hello World
  * </GradientText>
- * 
- * // Animated gradient (web only)
- * <GradientText 
- *   colors={['#FF0080', '#7928CA', '#4F46E5']} 
- *   animate
- *   animationDuration={3000}
- * >
- *   Animated Text
- * </GradientText>
- * 
+ *
  * // Custom gradient direction
  * <GradientText 
  *   colors={['red', 'blue']} 
@@ -59,18 +50,11 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
       start,
       end,
       position: controlledPosition,
-      animate = false,
-      animationDuration = 2000,
-      animationLoop = 'loop',
-      animationDelay = 0,
       testID,
       ...textProps
     },
     ref
   ) => {
-    // Animation state for web
-    const animationRef = useRef<number | null>(null);
-    const animationStartTimeRef = useRef<number | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const hasValidColors = Array.isArray(colors) && colors.length >= 2;
@@ -147,7 +131,7 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
     }, [locations, resolvedColors]);
 
     // Current position (animated or controlled)
-    const getCurrentPosition = () => controlledPosition ?? 0;
+  const getCurrentPosition = () => controlledPosition ?? 0;
 
     const isWeb = Platform.OS === 'web';
     const currentPosition = getCurrentPosition();
@@ -161,66 +145,6 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
     const positionPercent = (1 - currentPosition) * 100;
 
     useEffect(() => {
-      if (!isWeb || !hasValidColors) return undefined;
-      if (!animate || controlledPosition !== undefined) {
-        return undefined;
-      }
-
-      const updateGradient = (timestamp: number) => {
-        if (!containerRef.current) return;
-
-        if (!animationStartTimeRef.current) {
-          animationStartTimeRef.current = timestamp - animationDelay;
-        }
-
-        const elapsed = timestamp - animationStartTimeRef.current;
-
-        if (elapsed < animationDelay) {
-          animationRef.current = requestAnimationFrame(updateGradient);
-          return;
-        }
-
-        const adjustedElapsed = elapsed - animationDelay;
-        const progress = (adjustedElapsed % animationDuration) / animationDuration;
-
-        let currentPos = progress;
-
-        if (animationLoop === 'reverse') {
-          const cycle = Math.floor(adjustedElapsed / animationDuration) % 2;
-          currentPos = cycle === 1 ? 1 - progress : progress;
-        } else if (animationLoop === 'once' && adjustedElapsed >= animationDuration) {
-          currentPos = 1;
-        }
-
-        if (!containerRef.current) return;
-
-        const container = containerRef.current as any;
-        const allElements = [container, ...Array.from(container.querySelectorAll('*'))];
-        const position = (1 - currentPos) * 100;
-
-        allElements.forEach((element: HTMLElement) => {
-          element.style.backgroundPosition = `${position}% 0`;
-        });
-
-        if (animationLoop !== 'once' || adjustedElapsed < animationDuration) {
-          animationRef.current = requestAnimationFrame(updateGradient);
-        }
-      };
-
-      const timeout = setTimeout(() => {
-        animationRef.current = requestAnimationFrame(updateGradient);
-      }, 0);
-
-      return () => {
-        clearTimeout(timeout);
-        if (animationRef.current !== null) {
-          cancelAnimationFrame(animationRef.current);
-        }
-        animationStartTimeRef.current = null;
-      };
-    }, [isWeb, hasValidColors, animate, animationDuration, animationLoop, animationDelay, controlledPosition]);
-
-    useEffect(() => {
       if (!isWeb || !hasValidColors) return;
       if (!containerRef.current) return;
 
@@ -229,7 +153,7 @@ export const GradientText = React.forwardRef<View, GradientTextProps>(
 
       allElements.forEach((element: HTMLElement) => {
         element.style.background = `linear-gradient(${cssAngle}deg, ${colorStops})`;
-        element.style.backgroundSize = '200% 200%';
+  element.style.backgroundSize = '200% 200%';
         element.style.backgroundPosition = `${positionPercent}% 0`;
         element.style.webkitBackgroundClip = 'text';
         element.style.webkitTextFillColor = 'transparent';

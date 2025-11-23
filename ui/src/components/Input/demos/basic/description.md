@@ -1,6 +1,6 @@
 ---
 title: Basic
-category: usage
+category: basics
 order: 10
 tags: [basic, input, text]
 highlightLines: []

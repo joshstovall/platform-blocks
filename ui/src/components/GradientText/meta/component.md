@@ -1,3 +1,11 @@
+---
+title: GradientText
+description: A text component that displays text with gradient colors. Supports customizable gradients with multiple colors, different angles, and animated transitions (web only).
+category: typography
+tags: [text, gradient, animation, color]
+playground: true
+---
+
 # GradientText
 
 A text component that displays text with gradient colors. Supports customizable gradients with multiple colors, different angles, and animated transitions (web only).
@@ -7,9 +15,10 @@ A text component that displays text with gradient colors. Supports customizable 
 - **Multiple Color Gradients**: Support for 2 or more colors
 - **Custom Angles**: Control gradient direction (0-360 degrees)
 - **Custom Start/End Points**: Fine-grained control over gradient positioning
-- **Animated Gradients** (web only): Auto-animating gradients with loop, reverse, or single-run modes
 - **Controlled Position**: Manually control gradient position from 0.0 to 1.0
 - **Text Props**: Inherits all Text component props for full customization
+
+> Looking for shimmer or sweeping animations? Use [`ShimmerText`](../../ShimmerText/meta/component.md) which builds on top of GradientText for motion effects.
 
 ## Basic Usage
 
@@ -39,38 +48,7 @@ import { GradientText } from '@platform-blocks/ui';
 </GradientText>
 ```
 
-## Animated Gradients (Web Only)
-
-```tsx
-// Auto-animating (looping)
-<GradientText 
-  colors={['#FF0080', '#7928CA', '#4F46E5']}
-  animate
-  animationDuration={3000}
->
-  Looping Animation
-</GradientText>
-
-// Reverse animation
-<GradientText 
-  colors={['#f093fb', '#f5576c', '#ffd200']}
-  animate
-  animationLoop="reverse"
-  animationDuration={2000}
->
-  Reversing Animation
-</GradientText>
-
-// Single run
-<GradientText 
-  colors={['#667eea', '#764ba2']}
-  animate
-  animationLoop="once"
-  animationDuration={4000}
->
-  Single Run Animation
-</GradientText>
-```
+> ℹ️ GradientText renders static gradients. For shimmering sweeps or looping highlights, compose it with [`ShimmerText`](../../ShimmerText/meta/component.md) or animate the `position` prop manually.
 
 ## Controlled Position
 
@@ -104,11 +82,7 @@ const [position, setPosition] = useState(0);
 | `angle` | `number` | `0` | Gradient direction angle in degrees (0 = left to right, 90 = top to bottom) |
 | `start` | `[number, number]` | auto | Custom start point [x, y] (0-1). Overrides angle |
 | `end` | `[number, number]` | auto | Custom end point [x, y] (0-1). Overrides angle |
-| `position` | `number` | `0` | Gradient position offset (0-1). Animates gradient along the line |
-| `animate` | `boolean` | `false` | Enable automatic gradient animation (web only) |
-| `animationDuration` | `number` | `2000` | Animation duration in milliseconds |
-| `animationLoop` | `'loop' \| 'reverse' \| 'once'` | `'loop'` | Animation loop behavior |
-| `animationDelay` | `number` | `0` | Delay before animation starts in milliseconds |
+| `position` | `number` | `0` | Gradient position offset (0-1). Use it to manually move the gradient |
 | `...textProps` | `TextProps` | - | All props from the Text component |
 
 ## Gradient Angles
@@ -135,15 +109,14 @@ This creates a "wave" effect where the gradient appears to slide across the text
 ## Platform Notes
 
 ### Web
-- Full support for all features including animations
-- Uses CSS `background-clip: text` for gradient masking
-- Smooth animations using requestAnimationFrame
+- Full support for CSS-based gradients
+- Uses `background-clip: text` for masking
+- The `position` prop can be driven manually if you need bespoke animations
 
 ### Native (iOS/Android)
-- Static gradients supported
-- Animation features currently not supported (planned for future)
-- Uses LinearGradient component with text overlay
-- For true text masking on native, `@react-native-masked-view/masked-view` can be added
+- Static gradients supported via LinearGradient masking
+- Pair with `ShimmerText` or animate the mask yourself for advanced effects
+- Requires `@react-native-masked-view/masked-view` (already included in the package)
 
 ## Examples
 
@@ -151,8 +124,6 @@ This creates a "wave" effect where the gradient appears to slide across the text
 ```tsx
 <GradientText 
   colors={['#FF0080', '#FF8C00', '#FFD700', '#00FF00', '#0080FF', '#8000FF']}
-  animate
-  animationDuration={5000}
 >
   Rainbow Text
 </GradientText>
@@ -192,18 +163,18 @@ GradientText inherits all accessibility features from the Text component:
 
 ## Performance
 
-- Web animations use requestAnimationFrame for smooth 60fps performance
 - Gradients are CSS-based on web (hardware accelerated)
-- Native implementation is optimized for rendering performance
-- Animation can be disabled with `animate={false}`
+- Native implementation uses masked LinearGradient views
+- When animating the `position` prop yourself, throttle updates to avoid layout thrash
+- Prefer `ShimmerText` for ready-made, optimized shimmer animations
 
 ## Best Practices
 
 1. **Color Contrast**: Ensure gradient colors have sufficient contrast with the background
 2. **Readability**: Test gradients with different text sizes - small text may be hard to read
-3. **Animation Speed**: Use reasonable animation durations (2-4 seconds) for readability
-4. **Color Count**: 2-4 colors usually look best; too many can be overwhelming
-5. **Use Cases**: Best for headings, hero text, and emphasis - avoid for body text
+3. **Color Count**: 2-4 colors usually look best; too many can be overwhelming
+4. **Use Cases**: Best for headings, hero text, and emphasis - avoid for body text
+5. **Need Motion?**: Delegate shimmer effects to `ShimmerText` instead of hand-rolling them here
 
 ## Related Components
 

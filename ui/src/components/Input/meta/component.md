@@ -5,6 +5,7 @@ category: input
 status: stable
 since: 1.0.0
 tags: [input, form, text, validation]
+playground: true
 props:
   value: The current value of the input
   onChangeText: Callback fired when the input value changes

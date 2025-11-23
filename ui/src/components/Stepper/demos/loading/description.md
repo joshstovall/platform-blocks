@@ -1,6 +1,12 @@
 ---
-title: Loading State
-description: Stepper with loading indicator on active step.
+title: Loading Indicator
+category: feedback
+order: 50
+tags: [stepper, feedback]
+highlightLines: [42-51]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing how to display a loading state on a step while processing is in progress.
+Replace the step icon with a spinner during long-running work by toggling the `loading` prop.

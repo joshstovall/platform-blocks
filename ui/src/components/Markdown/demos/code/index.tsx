@@ -1,4 +1,4 @@
-import { Markdown, Flex, Card } from '@platform-blocks/ui';
+import { Markdown } from '@platform-blocks/ui';
 
 export default function Demo() {
   const content = `# Code Examples
@@ -31,11 +31,5 @@ const user: User = {
 Inline code: \`const result = fibonacci(10);\`
 `;
 
-  return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Markdown>{content}</Markdown>
-      </Card>
-    </Flex>
-  );
+  return <Markdown>{content}</Markdown>
 }

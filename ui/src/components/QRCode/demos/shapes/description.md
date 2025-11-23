@@ -1,12 +1,12 @@
 ---
-title: Module Shapes
-category: styling
+title: Shapes
+category: features
 order: 40
-tags: [shapes, modules, finder-patterns, scanner-compatibility]
+tags: [modules]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different module shapes for QR codes. Finder patterns (corner anchors) always remain square for optimal scanner compatibility.
+Switch between square, rounded, and diamond module shapes while keeping finder patterns scanner-safe.

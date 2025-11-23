@@ -6,13 +6,33 @@
  */
 
 let demosIndex: any = null;
-let componentsMeta: any = null;
+export interface PlaygroundMeta {
+  id: string;
+  label?: string;
+  description?: string;
+}
+
+export interface ComponentMeta {
+  name?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  since?: string;
+  category?: string;
+  tags?: string[];
+  playground?: PlaygroundMeta;
+  [key: string]: any;
+}
+
+let componentsMeta: Record<string, ComponentMeta> | null = null;
 let componentsProps: any = null;
+let componentMarkdown: Record<string, string> | null = null;
 let searchIndexNew: any = null;
 
 try { demosIndex = require('../data/generated/demos.json'); } catch { /* ignore */ }
 try { componentsMeta = require('../data/generated/components-meta.json'); } catch { /* ignore */ }
 try { componentsProps = require('../data/generated/components-props.json'); } catch { /* ignore */ }
+try { componentMarkdown = require('../data/generated/component-markdown.json'); } catch { /* ignore */ }
 try { searchIndexNew = require('../data/generated/search-new.json'); } catch { /* ignore */ }
 
 // Dynamic import map for demo React components
@@ -53,14 +73,24 @@ export function hasNewDemosArtifacts(): boolean {
   return Boolean(demosIndex && componentsMeta);
 }
 
-export function getComponentMeta(name: string): any | null {
+export function getComponentMeta(name: string): ComponentMeta | null {
   if (!componentsMeta) return null;
   return componentsMeta[name] || null;
+}
+
+export function getComponentPlaygroundMeta(name: string): PlaygroundMeta | null {
+  const meta = getComponentMeta(name);
+  return meta?.playground || null;
 }
 
 export function getComponentProps(name: string): any[] {
   if (!componentsProps) return [];
   return componentsProps[name] || [];
+}
+
+export function getComponentMarkdown(name: string): string | null {
+  if (!componentMarkdown) return null;
+  return componentMarkdown[name] || null;
 }
 
 export function getNewDemos(component: string): NewDemo[] {
@@ -106,7 +136,7 @@ try { DEMO_CODE_MAPS.Flex = require('../data/generated/demo-code-Flex.json'); } 
 try { DEMO_CODE_MAPS.Grid = require('../data/generated/demo-code-Grid.json'); } catch { /* ignore */ }
 try { DEMO_CODE_MAPS.Badge = require('../data/generated/demo-code-Badge.json'); } catch { /* ignore */ }
 try { DEMO_CODE_MAPS.Avatar = require('../data/generated/demo-code-Avatar.json'); } catch { /* ignore */ }
-try { DEMO_CODE_MAPS.Alert = require('../data/generated/demo-code-Alert.json'); } catch { /* ignore */ }
+try { DEMO_CODE_MAPS.Notice = require('../data/generated/demo-code-Notice.json'); } catch { /* ignore */ }
 try { DEMO_CODE_MAPS.Accordion = require('../data/generated/demo-code-Accordion.json'); } catch { /* ignore */ }
 try { DEMO_CODE_MAPS.AppStoreButton = require('../data/generated/demo-code-AppStoreButton.json'); } catch { /* ignore */ }
 try { DEMO_CODE_MAPS.AutoComplete = require('../data/generated/demo-code-AutoComplete.json'); } catch { /* ignore */ }
@@ -218,6 +248,7 @@ export interface NewComponentIndexEntry {
   category?: string;
   demoCount: number;
   hasDemos: boolean;
+  playground?: PlaygroundMeta;
 }
 
 export function getAllNewComponents(): NewComponentIndexEntry[] {
@@ -231,7 +262,8 @@ export function getAllNewComponents(): NewComponentIndexEntry[] {
       description: meta.description,
       category: meta.category,
       demoCount,
-      hasDemos: demoCount > 0
+      hasDemos: demoCount > 0,
+      playground: meta.playground
     } as NewComponentIndexEntry;
   }).sort((a, b) => a.name.localeCompare(b.name));
 }

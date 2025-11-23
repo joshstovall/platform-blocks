@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Pressable, Platform, Animated, Easing } from 'react-native';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useRouter } from 'expo-router';
@@ -36,29 +36,29 @@ export default function ComponentListScreen() {
   const demosReady = hasNewDemosArtifacts();
 
   // Handle URL query parameters for category filtering and component detail navigation
+  const legacyNavigationHandledRef = useRef(false);
+
   useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location) {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryParam = urlParams.get('category');
-        const componentName = urlParams.get('componentName');
+    if (Platform.OS !== 'web' || typeof window === 'undefined' || !window.location) {
+      return;
+    }
 
-        // Also check if the path ends with ComponentDetail (for legacy URLs)
-        const isComponentDetailPath = window.location.pathname.includes('ComponentDetail');
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const categoryParam = urlParams.get('category');
+      const componentName = urlParams.get('componentName');
 
-        // If componentName is in the URL or path indicates ComponentDetail, navigate to ComponentDetail
-        if (componentName || isComponentDetailPath) {
-          const targetComponentName = componentName || urlParams.get('componentName') || 'Unknown';
-          router.push(`/components/${targetComponentName}`);
-          return; // Don't set category if we're navigating away
-        }
-
-        if (categoryParam) {
-          setSelectedCategory(categoryParam.toLowerCase());
-        }
-      } catch (error) {
-        // Silently ignore URL parsing errors
+      if (componentName && !legacyNavigationHandledRef.current) {
+        legacyNavigationHandledRef.current = true;
+        router.push(`/components/${componentName}`);
+        return;
       }
+
+      if (categoryParam) {
+        setSelectedCategory(categoryParam.toLowerCase());
+      }
+    } catch (error) {
+      // Silently ignore URL parsing errors
     }
   }, [router]);
 
@@ -141,15 +141,15 @@ export default function ComponentListScreen() {
     <PageLayout contentContainerStyle={styles.content}>
       <Title
         afterline
-        variant='h1' weight="bold"
+        variant="h1" weight="bold"
         action={<Input
           placeholder="Search components..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          leftSection={
+          startSection={
             <Icon name="search" size="sm" color="#a0aec0" />
           }
-          rightSection={
+          endSection={
             searchQuery.length > 0 ? (
               <Pressable onPress={() => setSearchQuery('')}>
                 <Icon name="close" size="sm" color="#a0aec0" />
@@ -158,7 +158,7 @@ export default function ComponentListScreen() {
           }
         />}
       >Components</Title>
-      <Text variant="body" colorVariant="secondary" mb="lg">
+      <Text variant="p" colorVariant="secondary" mb="lg">
         Explore all {allComponents.length} components in the PlatformBlocks library
       </Text>
 
@@ -216,7 +216,7 @@ export default function ComponentListScreen() {
 
       {/* Results Count */}
       <View style={styles.resultsContainer}>
-        <Text variant="caption" colorVariant="muted">
+        <Text variant="small" colorVariant="muted">
           {filteredComponents.length} components
           {searchQuery && ` matching "${searchQuery}"`}
           {selectedCategory && ` in ${selectedCategory}`}
@@ -224,20 +224,20 @@ export default function ComponentListScreen() {
       </View>
 
       {!demosReady && (
-        <Card variant="outline" style={styles.emptyState}>
-          <Text variant="body" colorVariant="muted" align="center" style={{ marginBottom: 8 }}>
+        <Card variant="elevated" style={styles.emptyState}>
+          <Text variant="p" colorVariant="muted" align="center" style={{ marginBottom: 8 }}>
             Component demos haven&apos;t been generated yet for this build.
           </Text>
-          <Text variant="caption" colorVariant="secondary" align="center">
-            Run <Text variant="caption" weight="bold">npm run demos:generate</Text> before building to include metadata and demo modules.
+          <Text variant="small" colorVariant="secondary" align="center">
+            Run <Text variant="small" weight="bold">npm run demos:generate</Text> before building to include metadata and demo modules.
           </Text>
         </Card>
       )}
 
       {/* Unified Components Grid */}
       {filteredComponents.length === 0 ? (
-        <Card variant="outline" style={styles.emptyState}>
-          <Text variant="body" colorVariant="muted" align="center">
+        <Card variant="elevated" style={styles.emptyState}>
+          <Text variant="p" colorVariant="muted" align="center">
             No components found matching your criteria.
           </Text>
         </Card>
@@ -311,7 +311,7 @@ const AnimatedComponentCard: React.FC<AnimatedComponentCardProps> = ({ component
           style={({ pressed }) => [Platform.OS === 'web' && pressed && styles.cardPressed]}
           accessibilityRole={Platform.OS === 'web' ? 'button' : undefined}
         >
-          <Card variant="outline">
+          <Card variant="elevated">
             <View style={styles.cardHeader}>
               <Row gap={12}>
                 {(() => {

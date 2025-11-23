@@ -1,33 +1,40 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Checkbox } from '../..';
-import { Text } from '../../../Text';
-import { Block } from 'platform-blocks/components/Block';
+import { useState } from 'react';
+import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
-// Show direct palette keys + alias examples
-const colors: ('primary' | 'secondary' | 'success' | 'warning' | 'error')[] = ['primary','secondary','success','warning','error'];
+const COLORS = ['primary', 'secondary', 'success', 'warning', 'error'] as const;
 
-export default function CheckboxColorsDemo() {
-  const [vals, setVals] = useState<Record<string, boolean>>({});
-  const toggle = (c: string) => setVals(v => ({ ...v, [c]: !v[c] }));
+export default function Demo() {
+  const [values, setValues] = useState<Record<string, boolean>>({});
+
+  const toggle = (color: string) => {
+    setValues((current) => ({
+      ...current,
+      [color]: !current[color]
+    }));
+  };
+
   return (
-    <Block style={{ gap: 12 }} w={300}>
-      <Text weight="bold">Colors</Text>
-      {colors.map(color => (
-        <Checkbox
-          key={color}
-          colorVariant={color}
-          label={`Color: ${color}`}
-          checked={!!vals[color]}
-          onChange={() => toggle(color)}
-        />
-      ))}
+    <Column gap="sm">
+      <Text weight="medium">Semantic colors</Text>
+      <Column gap="xs">
+        {COLORS.map((color) => (
+          <Checkbox
+            key={color}
+            colorVariant={color}
+            label={`Color: ${color}`}
+            checked={Boolean(values[color])}
+            onChange={() => toggle(color)}
+          />
+        ))}
+      </Column>
       <Checkbox
         colorVariant="success"
-        label="Default Checked (uncontrolled)"
+        label="Default checked"
         defaultChecked
-        onChange={() => {}}
       />
-    </Block>
+      <Text variant="small" colorVariant="muted">
+        Use `colorVariant` to match checkbox accents with message intent while keeping labels readable.
+      </Text>
+    </Column>
   );
 }

@@ -7,12 +7,10 @@ import { Platform } from 'react-native';
 export type { SpacingValue } from '../theme/types';
 
 /** Base system props that include universal props */
-export interface BaseSystemProps extends UniversalSystemProps {
-  /** Add other system-wide props here as needed */
-}
+export type BaseSystemProps = UniversalSystemProps;
 
 /** Enhanced spacing prop types with CSS value support */
-export interface SpacingProps extends BaseSystemProps {
+export type SpacingProps = BaseSystemProps & {
   /** All margins */
   m?: SpacingValue;
   /** Horizontal margins (left + right) */
@@ -42,7 +40,7 @@ export interface SpacingProps extends BaseSystemProps {
   pb?: SpacingValue;
   /** Padding left */
   pl?: SpacingValue;
-}
+};
 
 /**
  * Enhanced function to resolve spacing values including CSS values

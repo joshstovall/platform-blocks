@@ -1,7 +1,12 @@
 ---
-title: Standalone Toggle Button
-description: Individual toggle button outside of a group for simple on/off controls.
-tags: ["standalone", "individual", "independent", "favorite", "single"]
+title: Standalone Toggle
+category: basics
+order: 60
+tags: [toggle, standalone]
+highlightLines: []
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Demonstrates a standalone toggle button that works independently without being part of a group. Useful for simple on/off controls like favorites, notifications, or feature toggles.
+Drive a single toggle by managing its `selected` state without a surrounding group.

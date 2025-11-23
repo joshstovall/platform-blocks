@@ -311,7 +311,19 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
   const xDomain: [number, number] = useMemo(() => [xValues[0] ?? 0, xValues[xValues.length - 1] ?? 1], [xValues]);
   const yDomain: [number, number] = useMemo(() => [0, yMax], [yMax]);
 
-  const padding = useMemo(() => ({ top: 40, right: 20, bottom: 60, left: 80 }), []);
+  // Adjust padding based on legend position to prevent overlap with axis labels
+  const basePadding = useMemo(() => ({ top: 40, right: 20, bottom: 60, left: 80 }), []);
+  const padding = useMemo(() => {
+    if (!legend?.show) return basePadding;
+    const position = legend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [legend?.show, legend?.position, basePadding]);
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 

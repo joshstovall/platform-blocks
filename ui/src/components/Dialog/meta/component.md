@@ -5,6 +5,7 @@ source: ui/src/components/Dialog
 status: experimental
 category: Overlays
 tags: [modal, dialog, overlay, sheet]
+playground: true
 examples:
   - basic
   - confirmation

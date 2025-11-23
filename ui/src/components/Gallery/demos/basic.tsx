@@ -66,12 +66,12 @@ export default function BasicGalleryDemo() {
         Gallery Demo
       </Text>
       
-      <Text variant="body" style={{ marginBottom: 24, color: '#666' }}>
+      <Text variant="p" style={{ marginBottom: 24, color: '#666' }}>
         Tap any image below to open the fullscreen gallery viewer with navigation, thumbnails, and metadata.
       </Text>
 
       <View style={{ marginBottom: 24 }}>
-        <Text variant="subtitle" style={{ marginBottom: 12 }}>
+        <Text variant="h5" style={{ marginBottom: 12 }}>
           Photo Collection
         </Text>
         <Flex direction="row" style={{ flexWrap: 'wrap', gap: 12 }}>
@@ -99,7 +99,7 @@ export default function BasicGalleryDemo() {
                   }}
                   resizeMode="cover"
                 />
-                <Text variant="caption" style={{ textAlign: 'center' }}>
+                <Text variant="small" style={{ textAlign: 'center' }}>
                   {image.title}
                 </Text>
               </Card>

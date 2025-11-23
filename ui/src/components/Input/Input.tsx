@@ -75,7 +75,7 @@ export const Input = factory<{
     textInputProps,
     required,
     withAsterisk,
-    rightSection,
+    endSection,
     inputRef,
     value,
     onChangeText,
@@ -136,7 +136,7 @@ export const Input = factory<{
   ) : null;
 
   // Determine the right section content
-  const finalRightSection = isPasswordType ? passwordToggleButton : rightSection;
+  const finalRightSection = isPasswordType ? passwordToggleButton : endSection;
 
   // Default withAsterisk to true when required is true
   const finalWithAsterisk = withAsterisk ?? required;
@@ -208,7 +208,7 @@ export const Input = factory<{
       inputRef={inputRef || ref}
       required={required}
       withAsterisk={finalWithAsterisk}
-      rightSection={finalRightSection}
+      endSection={finalRightSection}
     
       textInputProps={mergedTextInputProps}
       secureTextEntry={

@@ -1,13 +1,13 @@
 ---
 title: Horizontal spacing
-description: Use Space to pad inline layouts without manual margins.
+description: Use `Space` to control gutters between inline buttons with tokens or fixed widths.
 tags: [spacing, layout]
 category: layout
 order: 20
-highlightLines: [6-14]
+highlightLines: [26-38]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Demonstrates adding gaps between buttons in a horizontal layout by combining Space with the Row component.
+Demonstrates using `Space` to insert repeatable widths between buttons and contrasts token spacing with an exact pixel value.

@@ -1,20 +1,16 @@
-import { Divider, Column, Text } from '@platform-blocks/ui';
+import { Column, Divider, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap={16}>
-      <Text variant="h4">Section 1</Text>
-      <Text variant="body">Content for the first section with some example text.</Text>
-      
+    <Column gap="md">
+      <Text variant="p" weight="medium">
+        Q1 Highlights
+      </Text>
+      <Text variant="p">Revenue grew 12% year over year.</Text>
       <Divider />
-      
-      <Text variant="h4">Section 2</Text>
-      <Text variant="body">Content for the second section with more example text.</Text>
-      
+      <Text variant="p">Customer retention improved across every region.</Text>
       <Divider variant="dashed" />
-      
-      <Text variant="h4">Section 3</Text>
-      <Text variant="body">Content for the third section with final example text.</Text>
+      <Text variant="p">Product roadmap updates will ship next quarter.</Text>
     </Column>
   );
 }

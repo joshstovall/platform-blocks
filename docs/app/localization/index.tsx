@@ -1,4 +1,4 @@
-import { Text, Button, useI18n, ToggleBar, Chip, useTheme, Alert, H2, Flex, Block, CodeBlock } from '@platform-blocks/ui';
+import { Text, Button, useI18n, ToggleBar, Chip, useTheme, Notice, H2, Flex, Block, CodeBlock } from '@platform-blocks/ui';
 import { useBrowserTitle, formatPageTitle } from 'hooks/useBrowserTitle';
 import { PageLayout } from 'components';
 import { DocsPageHeader } from '../../components/DocsPageHeader';
@@ -35,7 +35,10 @@ function Greeting() {
     <>
       <Text tx='localization.exampleGreeting' txParams={{ name: 'Ada' }} />
       <Text>{t('localization.current', { locale })}</Text>
-      <Button title={t('actions.switchLocale')} onPress={() => setLocale(locale.startsWith('en') ? 'fr' : 'en')} />
+      <Button 
+        title={t('actions.switchLocale')} 
+        onPress={() => setLocale(locale.startsWith('en') ? 'fr' : 'en')} 
+      />
     </>
   );
 }`;
@@ -48,47 +51,50 @@ function LocalizationContent() {
 
   return (
     <PageLayout>
-        <Block gap='md' mb='lg' m={12}>
-          <DocsPageHeader
-            tx='localization.title'
-            action={
-              <Alert icon='globe'>
-                <Text variant='h4'>{t('localization.helloWorld')}</Text>
-              </Alert>
-            }
+      <Block gap="md" mb="lg" m={12}>
+        <DocsPageHeader
+          tx="localization.title"
+          action={
+            <Notice icon="globe">
+              <Text variant="h4">{t('localization.helloWorld')}</Text>
+            </Notice>
+          }
+        />
+        <Text tx="localization.intro" colorVariant="muted" />
+        <Flex direction="row" align="center" justify="space-between" mb="md">
+          <Button
+            title={t('actions.switchLocale')}
+            onPress={() => setLocale(locale.startsWith('en') ? 'fr' : 'en')}
           />
-          <Text tx='localization.intro' colorVariant='muted' />
-          <Flex direction='row' align='center' justify='space-between' mb="md">
-            <Button title={t('actions.switchLocale')} colorVariant='secondary' onPress={() => setLocale(locale.startsWith('en') ? 'fr' : locale.startsWith('fr') ? 'es' : 'en')} />
-            <ToggleBar
-              value={[locale]}
-              onChange={(vals) => { const next = vals[0]; if (typeof next === 'string') setLocale(next); }}
-              options={locales.map(l => ({ value: l, label: l.toUpperCase() }))}
-            />
-          </Flex>
+          <ToggleBar
+            value={[locale]}
+            onChange={(vals) => { const next = vals[0]; if (typeof next === 'string') setLocale(next); }}
+            options={locales.map(l => ({ value: l, label: l.toUpperCase() }))}
+          />
+        </Flex>
 
-          <Text tx='localization.steps.resources' />
-          {/* <Text tx='localization.steps.aggregate' /> */}
-          
-          <Flex direction="column" gap="xl">
-            <CodeBlock title='resources.ts' language='javascript' showLineNumbers highlightLines={['1', '2', '3']}>{RESOURCES_SNIPPET}</CodeBlock>
-            <Text tx='localization.steps.provider' />
-            <CodeBlock title='App.tsx' language='javascript' showLineNumbers>{PROVIDER_SNIPPET}</CodeBlock>
-            {/* <Text tx='localization.steps.usageTx' /> */}
-            {/* <Text tx='localization.steps.usageHook' /> */}
-            <Text tx='localization.steps.switch' />
-            <CodeBlock title='Usage' language='javascript' showLineNumbers>{USAGE_SNIPPET}</CodeBlock>
-            {/* <Text tx='localization.steps.format' /> */}
-            {/* <Text tx='localization.steps.missing' /> */}
-          </Flex>
-        </Block>
-      </PageLayout>
+        <Text tx="localization.steps.resources" />
+        {/* <Text tx='localization.steps.aggregate' /> */}
+
+        <Flex direction="column" gap="xl">
+          <CodeBlock title="resources.ts" language="javascript" showLineNumbers highlightLines={['1', '2', '3']}>{RESOURCES_SNIPPET}</CodeBlock>
+          <Text tx="localization.steps.provider" />
+          <CodeBlock title="App.tsx" language="javascript" showLineNumbers>{PROVIDER_SNIPPET}</CodeBlock>
+          {/* <Text tx='localization.steps.usageTx' /> */}
+          {/* <Text tx='localization.steps.usageHook' /> */}
+          <Text tx="localization.steps.switch" />
+          <CodeBlock title="Usage" language="javascript" showLineNumbers>{USAGE_SNIPPET}</CodeBlock>
+          {/* <Text tx='localization.steps.format' /> */}
+          {/* <Text tx='localization.steps.missing' /> */}
+        </Flex>
+      </Block>
+    </PageLayout>
   );
 }
 
 export default function LocalizationPage() {
   // Update browser title
   useBrowserTitle(formatPageTitle('Localization'));
-  
+
   return <LocalizationContent />;
 }

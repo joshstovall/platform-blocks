@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different input types: numeric-only and alphanumeric PIN inputs.
+Contrast numeric-only PIN entry with an alphanumeric option for recovery codes.

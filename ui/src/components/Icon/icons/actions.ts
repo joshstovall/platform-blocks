@@ -14,6 +14,12 @@ export const actionIcons: IconRegistry = {
     variant: 'filled' as const,
     description: 'Lightning bolt indicating quick actions, performance, or energy.',
   },
+  target: {
+    content: 'M12 2v4 M12 18v4 M2 12h4 M18 12h4 M12 5a7 7 0 1 1 0 14 7 7 0 0 1 0-14 M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
+    viewBox: '0 0 24 24',
+    variant: 'outlined' as const,
+    description: 'Bullseye target with crosshairs for focus or precision states.',
+  },
   funnel: {
     content: 'M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .707 1.707L15 10.414V17a1 1 0 0 1-.553.894l-4 2A1 1 0 0 1 9 19v-8.586L3.293 4.707A1 1 0 0 1 3 4Z',
     viewBox: '0 0 24 24',
@@ -70,10 +76,10 @@ export const actionIcons: IconRegistry = {
     description: 'Magnifying glass and highlight circle to represent spotlight search.',
   },
   highlight: {
-    content: 'm15.728 3.514 4.758 4.758-7.071 7.071-2.474.353a1 1 0 0 1-1.118-1.118l.353-2.474 7.552-7.03Zm-9.95 8.486 3.222 3.222-3 3H3a1 1 0 0 1-1-1v-2.999l3.778-3.223Z',
+    content: 'M4 16.5l8.5 -11 4 4 4 -4 2 2 -4 4 4 4 -8.5 8.5H7l-3-3v-4.5Z M4 23h16v-2H4v2Z',
     viewBox: '0 0 24 24',
     variant: 'outlined' as const,
-    description: 'Highlighter marker illustrating text emphasis.',
+    description: 'Angled marker with a bold highlight stroke for emphasized text.',
   },
   minus: {
     content: 'M5 12h14',

@@ -1,4 +1,4 @@
-import { Button, Text, Column, Card, useToast, Row } from '@platform-blocks/ui';
+import { Button, Column, Row, Text, useToast } from '@platform-blocks/ui';
 
 const toastPositions = [
   'top-left',
@@ -21,21 +21,18 @@ export default function Demo() {
   };
 
   return (
-    <Card>
-      <Column gap={16}>
-        <Text size="lg" weight="semibold">Toast Positions</Text>
-        <Row gap={8} wrap="wrap">
-          {toastPositions.map((position) => (
-            <Button
-              key={position}
-              title={position}
-              onPress={() => showToastAtPosition(position)}
-              size="sm"
-            />
-          ))}
-        </Row>
-      </Column>
-    </Card>
+    <Column gap="sm">
+      <Text size="xs" colorVariant="secondary">
+        Pass `position` to align the toast container with your layout.
+      </Text>
+      <Row gap="xs" wrap="wrap">
+        {toastPositions.map((position) => (
+          <Button key={position} size="sm" onPress={() => showToastAtPosition(position)}>
+            {position}
+          </Button>
+        ))}
+      </Row>
+    </Column>
   );
 }
 

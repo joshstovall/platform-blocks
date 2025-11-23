@@ -1,12 +1,12 @@
 ---
-title: Sizes
-category: usage
+title: Size Options
+category: appearance
 order: 30
-tags: [sizes]
-highlightLines: []
+tags: [link, sizing]
+highlightLines: [20-27]
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different size variants for links from extra small to extra large.
+Demonstrate how the `size` token scales link typography and spacing.

@@ -1,38 +1,54 @@
-import { QRCode, Row, Text, Column } from '@platform-blocks/ui';
+import { Column, QRCode, Row, Text, useTheme } from '@platform-blocks/ui';
+
+const LOGO_EXAMPLES = [
+  {
+    label: 'Rounded modules',
+    value: 'https://platform-blocks.com/events/media-day',
+    moduleShape: 'rounded' as const,
+    cornerRadius: 0.4,
+    logo: {
+      uri: 'https://static.platform-blocks.com/logo-mark.png',
+      size: 56,
+      borderRadius: 12
+    }
+  },
+  {
+    label: 'Square modules',
+    value: 'https://platform-blocks.com/support/app',
+    moduleShape: 'square' as const,
+    cornerRadius: undefined,
+    logo: {
+      uri: 'https://static.platform-blocks.com/logo-glyph-dark.png',
+      size: 48,
+      borderRadius: 8
+    }
+  }
+] as const;
 
 export default function Demo() {
+  const theme = useTheme();
+
   return (
-    <Column gap={16}>
-      <Row gap={24} wrap="wrap" align="center">
-        <Column align="center" gap={8}>
-          <QRCode
-            value="https://platform-blocks.com/logo"
-            size={180}
-            moduleShape="rounded"
-            cornerRadius={0.5}
-            logo={{ 
-              uri: 'placeholder', 
-              size: 56, 
-              backgroundColor: '#ffffff', 
-              borderRadius: 12
-            }}
-          />
-          <Text variant="caption">Rounded with Logo</Text>
-        </Column>
-        <Column align="center" gap={8}>
-          <QRCode
-            value="https://platform-blocks.com/brand"
-            size={180}
-            moduleShape="square"
-            logo={{ 
-              uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/2300px-React-icon.svg.png',
-              size: 48, 
-              backgroundColor: '#ffffff', 
-              borderRadius: 4
-            }}
-          />
-          <Text variant="caption">Square with Logo</Text>
-        </Column>
+    <Column gap="lg">
+      <Row gap="lg" wrap="wrap" justify="center">
+        {LOGO_EXAMPLES.map(({ label, value, moduleShape, cornerRadius, logo }) => (
+          <Column key={label} gap="xs" align="center">
+            <QRCode
+              value={value}
+              size={176}
+              moduleShape={moduleShape}
+              cornerRadius={cornerRadius}
+              quietZone={2}
+              logo={{
+                ...logo,
+                backgroundColor: theme.backgrounds.surface
+              }}
+            />
+            <Text variant="small" colorVariant="muted">
+              {label}
+            </Text>
+          </Column>
+        ))}
       </Row>
     </Column>
   );

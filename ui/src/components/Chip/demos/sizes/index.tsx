@@ -2,7 +2,7 @@ import { Chip, Column } from '@platform-blocks/ui'
 
 export default function Demo() {
   return (
-    <Column wrap="wrap" >
+    <Column gap="sm">
       <Chip size="xs">Extra Small</Chip>
       <Chip size="sm">Small</Chip>
       <Chip size="md">Medium</Chip>

@@ -1,45 +1,69 @@
 import { useState } from 'react';
-import { Switch, Text, Column, Card } from '@platform-blocks/ui';
+import { Column, Switch, Text } from '@platform-blocks/ui';
+
+const PREFERENCE_CONTROLS = [
+  {
+    key: 'scoreAlerts',
+    label: 'Live score alerts',
+    description: 'Push notifications for scoring plays.'
+  },
+  {
+    key: 'newsEmails',
+    label: 'Breaking news emails',
+    description: 'Send a morning recap with roster updates.'
+  },
+  {
+    key: 'audioHighlights',
+    label: 'Audio highlights',
+    description: 'Play broadcast clips after each match.'
+  }
+] as const;
+
+type PreferenceKey = (typeof PREFERENCE_CONTROLS)[number]['key'];
+
+const INITIAL_SETTINGS: Record<PreferenceKey, boolean> = {
+  scoreAlerts: true,
+  newsEmails: false,
+  audioHighlights: false
+};
 
 export default function Demo() {
-  const [notifications, setNotifications] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [autoSave, setAutoSave] = useState(false);
+  const [settings, setSettings] = useState<Record<PreferenceKey, boolean>>(
+    () => ({ ...INITIAL_SETTINGS })
+  );
 
   return (
-    <Column gap={24}>
-      <Text variant="h6">Basic Switch Usage</Text>
-      
-      <Card padding={16}>
-        <Column gap={16}>
+    <Column gap="lg">
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">
+          Shared state
+        </Text>
+        {PREFERENCE_CONTROLS.map(({ key, label, description }) => (
           <Switch
-            checked={notifications}
-            onChange={setNotifications}
-            label="Enable notifications"
+            key={key}
+            checked={settings[key]}
+            onChange={(checked) =>
+              setSettings((prev) => ({ ...prev, [key]: checked }))
+            }
+            label={label}
+            description={description}
           />
-          
-          <Switch
-            checked={darkMode}
-            onChange={setDarkMode}
-            label="Dark mode"
-          />
-          
-          <Switch
-            checked={autoSave}
-            onChange={setAutoSave}
-            label="Auto-save documents"
-          />
-        </Column>
-      </Card>
-      
-      <Card padding={16}>
-        <Column gap={8}>
-          <Text variant="body" weight="medium">Current Settings:</Text>
-          <Text variant="body">Notifications: {notifications ? 'On' : 'Off'}</Text>
-          <Text variant="body">Dark Mode: {darkMode ? 'On' : 'Off'}</Text>
-          <Text variant="body">Auto-save: {autoSave ? 'On' : 'Off'}</Text>
-        </Column>
-      </Card>
+        ))}
+      </Column>
+  <Column gap="xs">
+        <Text variant="small" colorVariant="muted">
+          Summary
+        </Text>
+        <Text variant="p">
+          Score alerts are {settings.scoreAlerts ? 'on' : 'off'}.
+        </Text>
+        <Text variant="p">
+          Breaking news emails are {settings.newsEmails ? 'on' : 'off'}.
+        </Text>
+        <Text variant="p">
+          Audio highlights are {settings.audioHighlights ? 'on' : 'off'}.
+        </Text>
+      </Column>
     </Column>
   );
 }

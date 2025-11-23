@@ -1,15 +1,13 @@
 ---
 title: Languages
-description: Multiple programming languages with syntax highlighting.
-tags: [syntax, languages, highlighting]
 category: features
 order: 30
-highlightLines: [6-16, 18-30]
+tags: [syntax, languages, highlighting]
+highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-CodeBlock supporting multiple programming languages with proper syntax highlighting.
+Examples highlighting TypeScript, JSON, and Markdown syntax rendering in CodeBlock.
 
-Shows how different languages render with appropriate syntax coloring including TypeScript, JSON, and Markdown.

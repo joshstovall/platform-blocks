@@ -3,8 +3,62 @@ import { View } from 'react-native';
 import { polymorphicFactory } from '../../core/factory';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils/spacing';
 import { getBlockStyles } from './utils';
-import type { BlockFactory, BlockProps } from './types';
+import type { BlockFactory, BlockProps, BlockStyleProps } from './types';
 import { useDirection } from '../../core/providers/DirectionProvider';
+
+const BLOCK_STYLE_PROP_KEYS: Array<keyof BlockStyleProps> = [
+  'bg',
+  'radius',
+  'borderWidth',
+  'borderColor',
+  'shadow',
+  'opacity',
+  'w',
+  'h',
+  'minW',
+  'minH',
+  'maxW',
+  'maxH',
+  'grow',
+  'shrink',
+  'basis',
+  'direction',
+  'align',
+  'justify',
+  'wrap',
+  'gap',
+  'position',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'start',
+  'end',
+  'zIndex',
+  'flex',
+];
+
+const BLOCK_STYLE_PROP_SET = new Set(BLOCK_STYLE_PROP_KEYS);
+
+type BlockStyleKey = keyof BlockStyleProps;
+
+const partitionBlockProps = (source: Record<string, any>) => {
+  const style: Partial<BlockStyleProps> = {};
+  const passthrough: Record<string, unknown> = {};
+
+  Object.entries(source).forEach(([key, value]) => {
+    if (BLOCK_STYLE_PROP_SET.has(key as BlockStyleKey)) {
+      if (value !== undefined) {
+        (style as Record<BlockStyleKey, unknown>)[key as BlockStyleKey] = value;
+      }
+      return;
+    }
+
+    passthrough[key] = value;
+  });
+
+  return { style, passthrough };
+};
 
 /**
  * Block - A polymorphic building block component
@@ -44,124 +98,77 @@ export const Block = forwardRef<any, BlockProps>((props, ref) => {
   const { isRTL } = useDirection();
   // Extract spacing props from the rest
   const { spacingProps, otherProps } = extractSpacingProps(props);
-    
-    const {
-      children,
-      style,
-      component = View,
-      testID,
-      accessibilityLabel,
-      accessible,
-      accessibilityRole,
-      className,
-      // Extract style props
-      bg,
-      radius,
-      borderWidth,
-      borderColor,
-      shadow,
-      opacity,
-      w,
-      h,
-      fullWidth,
-      fluid,
-      minW,
-      minH,
-      maxW,
-      maxH,
-      grow,
-      shrink,
-      basis,
-      direction,
-      align,
-      justify,
-      wrap,
-      gap,
-      position,
-      top,
-      right,
-      bottom,
-      left,
-      start,
-      end,
-      zIndex,
-      flex,
-      ...restProps
-    } = otherProps;
+  
+  const {
+    children,
+    style,
+    component = View,
+    testID,
+    accessibilityLabel,
+    accessible,
+    accessibilityRole,
+    className,
+    fluid,
+    fullWidth,
+    ...restProps
+  } = otherProps;
 
-    // Generate styles from props
-    const spacingStyles = getSpacingStyles(spacingProps);
-    const blockStyles = getBlockStyles({
-      bg,
-      radius,
-      borderWidth,
-      borderColor,
-      shadow,
-      opacity,
-      w: fullWidth ? 'full' : w,
-      h,
-      minW,
-      minH,
-      maxW,
-      maxH,
-      grow,
-      shrink,
-      basis,
-      direction,
-      align,
-      justify,
-      wrap,
-      gap,
-      position,
-      top,
-      right,
-      bottom,
-      left,
-      start,
-      end,
-      zIndex,
-      flex,
-    }, isRTL);
+  const { style: layoutProps, passthrough } = partitionBlockProps(restProps as Record<string, any>);
+  const forwardedProps = passthrough as typeof restProps;
 
-    // Combine all styles
-    const finalStyle = [
-      blockStyles,
-      spacingStyles,
-      fluid && { flex: 1 }, // Apply flex: 1 if fluid prop is true
-      style,
-    ].filter(Boolean);
+  const hasLayoutValues = fullWidth || Object.keys(layoutProps).length > 0;
+  const blockStyles = hasLayoutValues
+    ? getBlockStyles(
+        {
+          ...layoutProps,
+          ...(fullWidth ? { w: 'full' as BlockStyleProps['w'] } : {}),
+        } as BlockStyleProps,
+        isRTL,
+      )
+    : undefined;
 
-    // For React Native, always use View for default or string components
-    if (component === View || component === 'div' || typeof component === 'string') {
-      return (
-        <View
-          ref={ref}
-          style={finalStyle}
-          testID={testID}
-          accessibilityLabel={accessibilityLabel}
-          accessible={accessible}
-          {...restProps}
-        >
-          {children}
-        </View>
-      );
-    }
+  // Generate styles from props
+  const spacingStyles = getSpacingStyles(spacingProps);
 
-    // For custom components, pass through props
-    const Component = component as React.ElementType;
+  // Combine all styles
+  const finalStyle = [
+    blockStyles,
+    spacingStyles,
+    fluid && { flex: 1 }, // Apply flex: 1 if fluid prop is true
+    style,
+  ].filter(Boolean);
+
+  // For React Native, always use View for default or string components
+  if (component === View || component === 'div' || typeof component === 'string') {
     return (
-      <Component
+      <View
         ref={ref}
         style={finalStyle}
         testID={testID}
         accessibilityLabel={accessibilityLabel}
         accessible={accessible}
-        className={className}
-        {...restProps}
+        {...forwardedProps}
       >
         {children}
-      </Component>
+      </View>
     );
-  });
+  }
+
+  // For custom components, pass through props
+  const Component = component as React.ElementType;
+  return (
+    <Component
+      ref={ref}
+      style={finalStyle}
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      accessible={accessible}
+      className={className}
+      {...forwardedProps}
+    >
+      {children}
+    </Component>
+  );
+});
 
 Block.displayName = 'Block';

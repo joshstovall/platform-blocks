@@ -1,0 +1,1 @@
+Analog-style time picker that drives a pointer hand, tick labels, and dual readouts using the compound `Knob.Root` API.

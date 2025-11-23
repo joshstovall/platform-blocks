@@ -1,34 +1,70 @@
-import { useState } from 'react'
-import { Rating, Text, Column, Block } from '@platform-blocks/ui'
+import { useState } from 'react';
+import { Column, Rating, Text, useTheme } from '@platform-blocks/ui';
+
+const COLOR_CONFIG = [
+  {
+    key: 'primary',
+    label: 'Primary accent',
+    getColors: (palette: string[]) => ({
+      color: palette[5],
+      emptyColor: palette[1],
+      hoverColor: palette[6]
+    })
+  },
+  {
+    key: 'success',
+    label: 'Success feedback',
+    getColors: (palette: string[]) => ({
+      color: palette[5],
+      emptyColor: palette[1],
+      hoverColor: palette[6]
+    })
+  },
+  {
+    key: 'warning',
+    label: 'Warning feedback',
+    getColors: (palette: string[]) => ({
+      color: palette[5],
+      emptyColor: palette[1],
+      hoverColor: palette[6]
+    })
+  }
+] as const;
+
+type PaletteKey = (typeof COLOR_CONFIG)[number]['key'];
 
 export default function Demo() {
-  const [redRating, setRedRating] = useState(4)
-  const [blueRating, setBlueRating] = useState(3)
+  const theme = useTheme();
+  const [values, setValues] = useState<Record<PaletteKey, number>>({
+    primary: 4,
+    success: 3.5,
+    warning: 2.5
+  });
 
   return (
-    <Column gap={16}>
-      <Block>
-        <Text mb="sm">Red Theme Rating (Current: {redRating})</Text>
-        <Rating
-          value={redRating}
-          onChange={setRedRating}
-          color="#EF4444"
-          emptyColor="#FEE2E2"
-          hoverColor="#DC2626"
-          size="lg"
-        />
-      </Block>
-      <Block>
-        <Text mb="sm">Blue Theme Rating (Current: {blueRating})</Text>
-        <Rating
-          value={blueRating}
-          onChange={setBlueRating}
-          color="#3B82F6"
-          emptyColor="#DBEAFE"
-          hoverColor="#2563EB"
-          size="lg"
-        />
-      </Block>
+    <Column gap="lg">
+      {COLOR_CONFIG.map(({ key, label, getColors }) => {
+        const palette = theme.colors[key as keyof typeof theme.colors];
+        const { color, emptyColor, hoverColor } = getColors(palette);
+
+        return (
+          <Column key={key} gap="xs">
+            <Text variant="small" colorVariant="muted">
+              {label}
+            </Text>
+            <Rating
+              value={values[key]}
+              onChange={(next) =>
+                setValues((prev) => ({ ...prev, [key]: next }))
+              }
+              color={color}
+              emptyColor={emptyColor}
+              hoverColor={hoverColor}
+              size="lg"
+            />
+          </Column>
+        );
+      })}
     </Column>
-  )
+  );
 }

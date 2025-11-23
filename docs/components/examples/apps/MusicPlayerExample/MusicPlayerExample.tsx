@@ -231,21 +231,21 @@ export function MusicPlayerExample() {
           <Button
             size="sm"
             variant="ghost"
-            icon={<Icon name="ellipsis" size="md" color={theme.text.secondary} variant='filled' />}
+            icon={<Icon name="ellipsis" size="md" color={theme.text.secondary} variant="filled" />}
             title=""
             style={{ minWidth: 32, minHeight: 32, paddingHorizontal: 6 }}
           />
           <MenuDropdown>
-            <MenuItem leftSection={<Icon name="plus" size="sm" />}>
+            <MenuItem startSection={<Icon name="plus" size="sm" />}>
               Add to Playlist
             </MenuItem>
-            <MenuItem leftSection={<Icon name="share" size="sm" />}>
+            <MenuItem startSection={<Icon name="share" size="sm" />}>
               Share
             </MenuItem>
-            <MenuItem leftSection={<Icon name="user" size="sm" />}>
+            <MenuItem startSection={<Icon name="user" size="sm" />}>
               View Artist
             </MenuItem>
-            <MenuItem leftSection={<Icon name="flag" size="sm" />} color="danger">
+            <MenuItem startSection={<Icon name="flag" size="sm" />} color="danger">
               Report
             </MenuItem>
           </MenuDropdown>

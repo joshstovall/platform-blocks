@@ -1,12 +1,12 @@
 ---
 title: Basic Usage
-category: usage
+category: basics
 order: 10
-tags: [basic, separator]
+tags: [solid, dashed]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic divider usage with solid and dashed variants for separating content sections.
+Insert horizontal dividers between sections to separate content; switch the `variant` prop to toggle between solid and dashed lines.

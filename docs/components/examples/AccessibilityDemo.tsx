@@ -12,7 +12,7 @@ import {
   DataTable,
   DatePickerInput,
 } from '../../../ui/src/components';
-import { AccessibleAnnouncer, AccessibleModal } from '../../../ui/src/components/Accessibility';
+import { AccessibleAnnouncer, AccessibleModal } from '../../../ui/src/components/_internal/Accessibility';
 import { useAccessibility } from '../../../ui/src/core/accessibility/context';
 import { DESIGN_TOKENS } from '../../../ui/src/core';
 

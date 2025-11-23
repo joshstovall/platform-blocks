@@ -1,107 +1,73 @@
-import React, { useState } from 'react';
-import {
-  AutoComplete,
-  Column,
-  Text,
-  Icon,
-  Chip,
-  Block,
-  Divider,
-} from '@platform-blocks/ui';
-import type { AutoCompleteOption } from '../../types';
+import { useState } from 'react'
 
-export default function MultiAutoCompleteDemo() {
-  const [selectedGenres, setSelectedGenres] = useState<AutoCompleteOption[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  
-  const musicGenres: AutoCompleteOption[] = [
-    { label: 'Pop', value: 'pop' },
-    { label: 'Rock', value: 'rock' },
-    { label: 'Hip Hop', value: 'hiphop' },
-    { label: 'Jazz', value: 'jazz' },
-    { label: 'Classical', value: 'classical' },
-    { label: 'Electronic', value: 'electronic' },
-    { label: 'Country', value: 'country' },
-    { label: 'R&B', value: 'rnb' },
-  ];
-  
-  // Include all genres (don't filter out selected ones for multi-select)
-  const availableGenres = [...musicGenres];
-  
-  const handleSelect = (item: AutoCompleteOption) => {
-    const isSelected = selectedGenres.find(genre => genre.value === item.value);
-    
-    if (isSelected) {
-      // Remove if already selected (toggle behavior)
-      setSelectedGenres(selectedGenres.filter(genre => genre.value !== item.value));
-    } else {
-      // Add if not selected
-      setSelectedGenres([...selectedGenres, item]);
-    }
-  };
-  
+import { AutoComplete, Chip, Column, Icon, Text } from '@platform-blocks/ui'
+import type { AutoCompleteOption } from '../../types'
+
+const musicGenres: AutoCompleteOption[] = [
+  { label: 'Pop', value: 'pop' },
+  { label: 'Rock', value: 'rock' },
+  { label: 'Hip Hop', value: 'hiphop' },
+  { label: 'Jazz', value: 'jazz' },
+  { label: 'Classical', value: 'classical' },
+  { label: 'Electronic', value: 'electronic' },
+  { label: 'Country', value: 'country' },
+  { label: 'R&B', value: 'rnb' },
+]
+
+export default function Demo() {
+  const [inputValue, setInputValue] = useState('')
+  const [selectedGenres, setSelectedGenres] = useState<AutoCompleteOption[]>([])
+
+  const handleToggle = (option: AutoCompleteOption) => {
+    const isSelected = selectedGenres.some((genre) => genre.value === option.value)
+
+    setSelectedGenres((current) =>
+      isSelected
+        ? current.filter((genre) => genre.value !== option.value)
+        : [...current, option],
+    )
+  }
+
   return (
-    <Column gap="lg">
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Multi-select tags</Text>
+      <Text size="sm" colorVariant="secondary">
+        Tap an item to add or remove it. Selected genres render as removable chips.
+      </Text>
       <AutoComplete
-        placeholder="Search music genres..."
-        data={availableGenres}
+        label="Music genres"
+        placeholder="Search genres..."
+        data={musicGenres}
         value={inputValue}
         onChangeText={setInputValue}
-        onSelect={handleSelect}
+        onSelect={handleToggle}
         multiSelect
         selectedValues={selectedGenres}
+        minSearchLength={0}
         clearable
         onClear={() => {
-          setSelectedGenres([]);
-          setInputValue('');
+          setSelectedGenres([])
+          setInputValue('')
         }}
-        selectedValuesContainerStyle={{ flexWrap: 'wrap' }}
-        renderSelectedValue={(item, _index, { onRemove, source }) => (
+  selectedValuesContainerStyle={{ flexWrap: 'wrap', gap: 6 }}
+        renderSelectedValue={(item, _index, helpers) => (
           <Chip
+            key={item.value}
             size="sm"
             variant="filled"
-            color={source === 'modal' ? 'primary' : 'secondary'}
-            startIcon={<Icon name="music" size={12} color="#fff" />}
-            onRemove={onRemove}
-            style={{ marginRight: 8, marginBottom: 6 }}
+            color="primary"
+            endIcon={<Icon name="x" size={12} color="currentColor" />}
+            onRemove={helpers.onRemove}
           >
             {item.label}
           </Chip>
         )}
-        renderItem={(item: AutoCompleteOption, index: number) => {
-          const isSelected = selectedGenres.find(genre => genre.value === item.value);
-          const isLastItem = index === availableGenres.length - 1;
-
-          return (
-            <Column>
-              <Block
-                direction="row"
-                align="center"
-                justify="space-between"
-                px="md"
-                py="sm"
-                bg={isSelected ? '#f0f9ff' : undefined}
-              >
-                <Text
-                  weight={isSelected ? 'semibold' : 'normal'}
-                  color={isSelected ? '#1e40af' : '#374151'}
-                >
-                  {item.label}
-                </Text>
-                {isSelected && (
-                  <Icon name="check" size={16} color="#1e40af" />
-                )}
-              </Block>
-              {!isLastItem && <Divider colorVariant="subtle" />}
-            </Column>
-          );
-        }}
-        minSearchLength={0}
+        fullWidth
       />
-      
-      <Text size="sm" colorVariant="muted">
-        Selected {selectedGenres.length} genre(s). Click items to toggle selection.
+
+      <Text size="xs" colorVariant="secondary">
+        Selected {selectedGenres.length} genre{selectedGenres.length === 1 ? '' : 's'}.
       </Text>
     </Column>
-  );
+  )
 }

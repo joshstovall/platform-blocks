@@ -1,0 +1,1 @@
+Showcase solid, dashed, and dotted dividers in both horizontal and vertical layouts to highlight how each variant can communicate different section breaks.

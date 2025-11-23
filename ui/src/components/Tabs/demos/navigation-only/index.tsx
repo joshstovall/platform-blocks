@@ -1,44 +1,44 @@
-import { Tabs, Text } from '@platform-blocks/ui';
-import { View } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Block, Column, Tabs, Text, useTheme } from '@platform-blocks/ui';
 
-export default function NavigationOnlyTabsDemo() {
-  const [activeTab, setActiveTab] = useState('home');
+const NAV_ITEMS = [
+  { key: 'home', label: 'Home' },
+  { key: 'products', label: 'Products' },
+  { key: 'about', label: 'About' },
+  { key: 'contact', label: 'Contact' }
+] as const;
 
-  const tabItems = [
-    { key: 'home', label: 'Home', content: <></> },
-    { key: 'products', label: 'Products', content: <></> },
-    { key: 'about', label: 'About', content: <></> },
-    { key: 'contact', label: 'Contact', content: <></> }
-  ];
+const CONTENT_COPY: Record<typeof NAV_ITEMS[number]['key'], string> = {
+  home: 'Welcome back! Navigation only mode keeps the tab strip separated from the view.',
+  products: 'Highlight product cards, filters, or category grids below the navigation.',
+  about: 'Share the company story, values, and milestones alongside persistent tabs.',
+  contact: 'Surface support channels and locations while the navigation stays fixed.'
+};
+
+export default function Demo() {
+  const theme = useTheme();
+  const [activeTab, setActiveTab] = useState<typeof NAV_ITEMS[number]['key']>('home');
+
+  const items = useMemo(
+    () => NAV_ITEMS.map(({ key, label }) => ({ key, label, content: null })),
+    []
+  );
 
   return (
-    <View>
-      {/* Navigation only - separated from content */}
+    <Column gap="sm">
       <Tabs
-        items={tabItems}
+        items={items}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tabKey) => setActiveTab(tabKey as typeof NAV_ITEMS[number]['key'])}
         variant="chip"
-        navigationOnly={true}
-        style={{ marginBottom: 20 }}
+        navigationOnly
       />
-      
-      {/* Custom content based on active tab */}
-      <View style={{ padding: 20, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
-        {activeTab === 'home' && (
-          <Text>Welcome to our homepage! This content is rendered separately from the tabs.</Text>
-        )}
-        {activeTab === 'products' && (
-          <Text>Browse our amazing products here. The tab navigation is completely separate.</Text>
-        )}
-        {activeTab === 'about' && (
-          <Text>Learn more about our company and mission. Navigation and content are decoupled.</Text>
-        )}
-        {activeTab === 'contact' && (
-          <Text>Get in touch with us! The tabs above control what content shows here.</Text>
-        )}
-      </View>
-    </View>
+      <Block bg={theme.backgrounds.surface} borderColor={theme.backgrounds.border} radius="lg" p="lg">
+        <Text>{CONTENT_COPY[activeTab]}</Text>
+      </Block>
+      <Text variant="small" colorVariant="muted">
+        `navigationOnly` renders just the triggers so you can manage layout and transitions for the content area yourself.
+      </Text>
+    </Column>
   );
 }

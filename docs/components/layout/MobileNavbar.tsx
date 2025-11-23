@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform, ScrollView } from 'react-native';
 import {
   Dialog,
   Flex,
@@ -54,9 +55,13 @@ export const MobileNavbar: React.FC = () => {
           />
         </Flex> */}
 
-        <Flex style={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 16 }}
+          showsVerticalScrollIndicator={Platform.OS !== 'web'}
+        >
           <MobileNavigation onItemPress={closeNavbar} />
-        </Flex>
+        </ScrollView>
       </Flex>
     </Dialog>
   );

@@ -73,6 +73,7 @@ export function Blockquote({
         }
         color={theme.colors.gray[4]}
         style={styles.quoteIcon}
+        variant="filled"
       />
     );
 

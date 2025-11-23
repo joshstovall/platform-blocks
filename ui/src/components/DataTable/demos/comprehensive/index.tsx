@@ -1,184 +1,152 @@
-import { useState, useMemo } from 'react';
-import { DataTable, Flex, Text, Button, Card } from '@platform-blocks/ui';
-import type { DataTableColumn, DataTableSort, DataTablePagination } from '@platform-blocks/ui';
+import { useMemo, useState } from 'react';
+import { Button, Card, Column, DataTable, Icon, Row, Text } from '@platform-blocks/ui';
+import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
-// Sample data
-interface User {
+type User = {
   id: number;
   name: string;
   email: string;
-  role: string;
-  status: 'active' | 'inactive' | 'pending';
-  lastLogin: Date;
-  salary: number;
+  role: 'Admin' | 'Editor' | 'Viewer';
+  status: 'active' | 'inactive';
   department: string;
-}
-
-const generateSampleData = (): User[] => {
-  const names = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Lisa Garcia', 'Robert Davis', 'Jennifer Miller'];
-  const roles = ['Admin', 'User', 'Manager', 'Developer', 'Designer'];
-  const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance'];
-  const statuses: ('active' | 'inactive' | 'pending')[] = ['active', 'inactive', 'pending'];
-
-  return Array.from({ length: 25 }, (_, i) => ({
-    id: i + 1,
-    name: names[i % names.length] + ` ${i + 1}`,
-    email: `user${i + 1}@company.com`,
-    role: roles[i % roles.length],
-    status: statuses[i % statuses.length],
-    lastLogin: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000),
-    salary: 40000 + Math.floor(Math.random() * 100000),
-    department: departments[i % departments.length],
-  }));
+  lastLogin: string;
 };
 
+const rows: User[] = [
+  { id: 1, name: 'Olivia Carter', email: 'olivia@example.com', role: 'Admin', status: 'active', department: 'Operations', lastLogin: '2025-03-04' },
+  { id: 2, name: 'Mason Ellis', email: 'mason@example.com', role: 'Editor', status: 'active', department: 'Product', lastLogin: '2025-03-03' },
+  { id: 3, name: 'Aaliyah Chen', email: 'aaliyah@example.com', role: 'Viewer', status: 'inactive', department: 'Finance', lastLogin: '2025-02-13' },
+  { id: 4, name: 'Gavin Brooks', email: 'gavin@example.com', role: 'Editor', status: 'active', department: 'Engineering', lastLogin: '2025-03-01' },
+  { id: 5, name: 'Priya Singh', email: 'priya@example.com', role: 'Admin', status: 'active', department: 'People', lastLogin: '2025-03-05' },
+  { id: 6, name: 'Henry Wolfe', email: 'henry@example.com', role: 'Viewer', status: 'inactive', department: 'Legal', lastLogin: '2025-01-28' },
+  { id: 7, name: 'Noah Reed', email: 'noah@example.com', role: 'Editor', status: 'active', department: 'Sales', lastLogin: '2025-02-23' },
+  { id: 8, name: 'Isla Gomez', email: 'isla@example.com', role: 'Viewer', status: 'active', department: 'Support', lastLogin: '2025-03-04' },
+  { id: 9, name: 'Theo Martin', email: 'theo@example.com', role: 'Editor', status: 'active', department: 'Product', lastLogin: '2025-02-16' },
+  { id: 10, name: 'Riya Patel', email: 'riya@example.com', role: 'Viewer', status: 'inactive', department: 'Operations', lastLogin: '2025-01-19' },
+];
+
+const columns: DataTableColumn<User>[] = [
+  {
+    key: 'name',
+    header: 'Name',
+    accessor: 'name',
+    sortable: true,
+    cell: (value) => <Text weight="semibold">{value}</Text>,
+  },
+  {
+    key: 'email',
+    header: 'Email',
+    accessor: 'email',
+    sortable: true,
+  },
+  {
+    key: 'role',
+    header: 'Role',
+    accessor: 'role',
+    sortable: true,
+    filterable: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: 'Admin', value: 'Admin' },
+      { label: 'Editor', value: 'Editor' },
+      { label: 'Viewer', value: 'Viewer' },
+    ],
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    accessor: 'status',
+    sortable: true,
+    filterable: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: 'Active', value: 'active' },
+      { label: 'Inactive', value: 'inactive' },
+    ],
+    cell: (value: User['status']) => (
+      <Text colorVariant={value === 'active' ? 'success' : 'error'} weight="semibold">
+        {value === 'active' ? 'Active' : 'Inactive'}
+      </Text>
+    ),
+  },
+  {
+    key: 'department',
+    header: 'Department',
+    accessor: 'department',
+    sortable: true,
+  },
+  {
+    key: 'lastLogin',
+    header: 'Last Login',
+    accessor: 'lastLogin',
+    sortable: true,
+  },
+];
+
+const rowActions = (row: User) => [
+  {
+    key: 'edit',
+    icon: <Icon name="edit" size={14} />,
+    onPress: () => console.log('Edit', row.id),
+  },
+  {
+    key: 'remove',
+    icon: <Icon name="trash" size={14} />,
+    onPress: () => console.log('Archive', row.id),
+  },
+];
+
 export default function Demo() {
-  const [data] = useState(generateSampleData());
   const [sortBy, setSortBy] = useState<DataTableSort[]>([]);
-  const [pagination, setPagination] = useState<DataTablePagination>({
-    page: 1,
-    pageSize: 10,
-    total: 25
-  });
-  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState<DataTablePagination>({ page: 1, pageSize: 5, total: rows.length });
+  const [selection, setSelection] = useState<(string | number)[]>([]);
 
-  const columns: DataTableColumn<User>[] = [
-    {
-      key: 'name',
-      header: 'Name',
-      accessor: 'name',
-      sortable: true,
-      cell: (value) => (
-        <Text weight="semibold">{value}</Text>
-      )
-    },
-    {
-      key: 'email',
-      header: 'Email',
-      accessor: 'email',
-      sortable: true,
-    },
-    {
-      key: 'role',
-      header: 'Role',
-      accessor: 'role',
-      sortable: true,
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      accessor: 'status',
-      sortable: true,
-      cell: (value) => (
-        <Text 
-          style={{ 
-            color: value === 'active' ? 'green' : value === 'inactive' ? 'red' : 'orange',
-            fontWeight: '600'
-          }}
-        >
-          {value.toUpperCase()}
-        </Text>
-      )
-    },
-    {
-      key: 'department',
-      header: 'Department',
-      accessor: 'department',
-      sortable: true,
-    },
-    {
-      key: 'salary',
-      header: 'Salary',
-      accessor: 'salary',
-      sortable: true,
-      cell: (value) => (
-        <Text>${value.toLocaleString()}</Text>
-      )
-    },
-    {
-      key: 'lastLogin',
-      header: 'Last Login',
-      accessor: 'lastLogin',
-      sortable: true,
-      cell: (value) => (
-        <Text>{value.toLocaleDateString()}</Text>
-      )
-    }
-  ];
-
-  const handleBulkAction = (action: string) => {
-    setLoading(true);
-    console.log(`Performing ${action} on selected rows:`, selectedRows);
-    setTimeout(() => {
-      setLoading(false);
-      setSelectedRows([]);
-    }, 1000);
-  };
-
-  // Get current page data
-  const currentData = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.pageSize;
-    const endIndex = startIndex + pagination.pageSize;
-    return data.slice(startIndex, endIndex);
-  }, [data, pagination]);
+  const currentPageLabel = useMemo(() => `Page ${pagination.page} of ${Math.ceil(pagination.total / pagination.pageSize)}`, [pagination]);
 
   return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={16}>
-        <Flex direction="row" justify="space-between" align="center">
-          <Text size="lg" weight="semibold">User Management</Text>
-          <Flex direction="row" gap={8}>
-            {selectedRows.length > 0 && (
-              <>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onPress={() => handleBulkAction('delete')}
-                  loading={loading}
-                >
-                  Delete Selected ({selectedRows.length})
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onPress={() => handleBulkAction('export')}
-                  loading={loading}
-                >
-                  Export Selected
-                </Button>
-              </>
-            )}
-            <Button size="sm" variant="filled">
-              Add User
-            </Button>
-          </Flex>
-        </Flex>
-
-        <DataTable
-          data={currentData}
-          columns={columns}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          selectedRows={selectedRows}
-          onSelectionChange={setSelectedRows}
-          loading={loading}
-          rowActions={(row, index) => [
-            {
-              key: 'edit',
-              icon: <Text style={{ fontSize: 12 }}>✏️</Text>,
-              onPress: () => console.log('Edit user', row.id)
-            },
-            {
-              key: 'delete',
-              icon: <Text style={{ fontSize: 12 }}>🗑️</Text>,
-              onPress: () => handleBulkAction('delete')
-            }
-          ]}
-        />
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Row justify="space-between" align="center">
+            <Column gap="xs">
+              <Text size="sm" weight="semibold">
+                Team directory
+              </Text>
+              <Text size="sm" colorVariant="secondary">
+                Sort, filter, and select rows to manage bulk actions.
+              </Text>
+            </Column>
+            <Row gap="sm">
+              <Button size="xs" variant="outline" onPress={() => setSelection([])} disabled={selection.length === 0}>
+                Clear selection
+              </Button>
+              <Button size="xs" variant="filled">
+                Invite member
+              </Button>
+            </Row>
+          </Row>
+          <Row gap="sm" align="center">
+            <Text size="sm" colorVariant="secondary">
+              {selection.length ? `${selection.length} selected · ${currentPageLabel}` : currentPageLabel}
+            </Text>
+          </Row>
+          <DataTable
+            data={rows}
+            columns={columns}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            selectedRows={selection}
+            onSelectionChange={setSelection}
+            getRowId={(row) => row.id}
+            rowActions={rowActions}
+            searchable
+            searchPlaceholder="Search team"
+            variant="striped"
+          />
+        </Column>
+      </Card>
+    </Column>
   );
 }

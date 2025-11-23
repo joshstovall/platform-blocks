@@ -1,12 +1,12 @@
 ---
 title: Layout
-category: styling
+category: layout
 order: 40
-tags: [layout, width, fullwidth, multiline]
+tags: [input, layout]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Input layout options including width control and multiline text areas.
+Combine Rows, Columns, and `fullWidth` to build responsive forms and width-constrained inputs.

@@ -15,7 +15,7 @@ const getAccentStyles = (theme: PlatformBlocksTheme) => ({
 export default function HighlightStyledDemo() {
   return (
     <Block>
-      <Text variant="subtitle">Custom styles</Text>
+      <Text variant="h5">Custom styles</Text>
       <Highlight highlight={['customize', 'brand']} highlightStyles={getAccentStyles}>
         {copy}
       </Highlight>

@@ -362,8 +362,8 @@ export const SparklineChart: React.FC<SparklineChartProps> = (props) => {
       return;
     }
 
-    setCrosshair?.(null);
     setPointer?.({ x: 0, y: 0, inside: false });
+    setCrosshair?.(null);
   }, [pointerShouldUpdate, setCrosshair, setPointer]);
 
   const handleWebPointerMove = useCallback(

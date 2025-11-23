@@ -5,6 +5,27 @@
 // Mock React Native Reanimated
 jest.mock('react-native-reanimated', () => {
   const View = require('react-native').View;
+  const createAnimatedStyle = (cb) => new Proxy({}, {
+    get: (_target, prop) => {
+      const latest = cb() || {};
+      return latest[prop];
+    },
+    ownKeys: () => {
+      const latest = cb() || {};
+      return Reflect.ownKeys(latest);
+    },
+    getOwnPropertyDescriptor: (_target, prop) => {
+      const latest = cb() || {};
+      if (prop in latest) {
+        return {
+          configurable: true,
+          enumerable: true,
+          value: latest[prop],
+        };
+      }
+      return undefined;
+    },
+  });
   return {
     __esModule: true,
     default: {
@@ -14,9 +35,20 @@ jest.mock('react-native-reanimated', () => {
       createAnimatedComponent: (Component) => Component,
     },
     useSharedValue: (initial) => ({ value: initial }),
-    useAnimatedStyle: (cb) => cb(),
-    withTiming: (value) => value,
-    withSpring: (value) => value,
+    useAnimatedStyle: (cb) => createAnimatedStyle(cb),
+    withTiming: (value, _config, callback) => {
+      if (callback) {
+        callback(true);
+      }
+      return value;
+    },
+    withSpring: (value, _config, callback) => {
+      if (callback) {
+        callback(true);
+      }
+      return value;
+    },
+    withDelay: (_delay, value) => value,
     withRepeat: (value) => value,
     withSequence: (...values) => values[0],
     cancelAnimation: () => {},

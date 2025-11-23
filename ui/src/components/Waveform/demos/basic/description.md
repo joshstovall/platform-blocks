@@ -1,12 +1,12 @@
 ---
 title: Basic Usage
-category: usage
+category: basics
 order: 10
-tags: [basic, waveform, audio]
+tags: [peaks, progress]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Basic waveform visualization for audio data display and interaction.
+Render a static waveform by passing the `peaks` array and update playback UI by adjusting the `progress` prop.

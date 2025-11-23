@@ -1,6 +1,11 @@
 ---
-title: Multiple Selection
-description: Calendar with multiple date selection.
+title: Multiple selection
+category: selection
+order: 30
+tags: [multiple, events]
+highlightLines: []
+status: stable
+since: 0.3.0
+hidden: false
 ---
-
-Calendar example showing multiple date selection where users can select multiple individual dates by clicking on them.
+Switch `type="multiple"` to let teammates flag several event days at once; the component returns an array you can format for summaries or badges.

@@ -1,6 +1,12 @@
 ---
-title: Basic Menu
-description: Simple dropdown menu with icons and dividers.
+title: Basic Usage
+category: usage
+order: 10
+tags: [menu]
+highlightLines: [20-38]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Basic dropdown menu example with menu items, icons, and dividers for organizing options.
+Pair a trigger with `MenuDropdown` to show primary actions and separators in a compact surface.

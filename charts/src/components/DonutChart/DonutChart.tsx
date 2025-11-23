@@ -37,6 +37,7 @@ const DEFAULT_RING_GAP = 8;
 const DEFAULT_LABEL_MIN_ANGLE = 6;
 const DEFAULT_LABEL_OFFSET = 24;
 const DEFAULT_LABEL_LEADER_LENGTH = 12;
+const ANGLE_EPSILON = 0.0001;
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -195,11 +196,11 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
   const dataset = data ?? [];
   const resolvedRingsProp = Array.isArray(rings) ? rings.filter(Boolean) : [];
   const hasCustomRings = resolvedRingsProp.length > 0;
-  const width = widthProp ?? size;
-  const height = heightProp ?? size;
 
   const theme = useChartTheme();
   const padding = useMemo(() => paddingProp ?? DEFAULT_PADDING, [paddingProp]);
+  const width = widthProp ?? (size + padding.left + padding.right);
+  const height = heightProp ?? (size + padding.top + padding.bottom);
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
   const centerX = plotWidth / 2;
@@ -324,17 +325,31 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
         return sum + Math.max(slice.value, 0);
       }, 0);
 
+      const angleSpan = Math.max(ringEndAngle - ringStartAngle, 0);
+      const activeSlices = baseResolved.filter((slice) => slice.visible && Math.max(slice.value, 0) > 0);
+      const gapCount = activeSlices.length > 1 ? activeSlices.length : 0;
+      let effectivePadAngle = gapCount > 0 ? Math.max(ringPadAngle, 0) : 0;
+      let totalPad = effectivePadAngle * gapCount;
+      if (gapCount > 0) {
+        const padBudget = Math.max(angleSpan - ANGLE_EPSILON, 0);
+        if (totalPad > padBudget) {
+          effectivePadAngle = padBudget / gapCount;
+          totalPad = effectivePadAngle * gapCount;
+        }
+      }
+      const availableAngle = Math.max(angleSpan - totalPad, 0);
+
       let currentAngle = ringStartAngle;
       const decoratedResolved: ResolvedSlice[] = [];
       const slicesWithGeometry: SliceGeometry[] = baseResolved.map((slice) => {
         const safeValue = slice.visible ? Math.max(slice.value, 0) : 0;
         const ratio = totalValue > 0 ? safeValue / totalValue : 0;
-        const sweep = (ringEndAngle - ringStartAngle) * ratio;
+        const sweep = availableAngle * ratio;
         const sliceStart = totalValue > 0 ? currentAngle : ringStartAngle;
         const sliceEnd = totalValue > 0 ? sliceStart + sweep : ringStartAngle;
         const centerAngle = totalValue > 0 ? sliceStart + sweep / 2 : ringStartAngle;
-        if (totalValue > 0) {
-          currentAngle = sliceEnd + ringPadAngle;
+        if (totalValue > 0 && safeValue > 0) {
+          currentAngle = sliceEnd + (gapCount > 0 ? effectivePadAngle : 0);
         }
 
         const globalIndex = globalSliceIndex++;
@@ -912,7 +927,7 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
       <Svg
         width={plotWidth}
         height={plotHeight}
-        style={{ position: 'absolute', left: padding.left, top: padding.top }}
+        style={{ position: 'absolute', left: padding.left, top: padding.top, overflow: 'visible' }}
       >
         {ringStates.map((ring) => {
           const strokeWidth = Math.max(ring.outerRadius - ring.innerRadius, 0);

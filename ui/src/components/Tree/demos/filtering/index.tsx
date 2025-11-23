@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, TextInput } from 'react-native';
-import { Tree, TreeNode, Text, Button, Flex } from '../../../..';
+import { useState } from 'react';
+
+import { Block, Button, Column, Input, Row, Text, Tree, type TreeNode } from '@platform-blocks/ui';
 
 const treeData: TreeNode[] = [
   {
@@ -50,7 +50,7 @@ const treeData: TreeNode[] = [
   },
 ];
 
-export default function FilteringTreeDemo() {
+export default function Demo() {
   const [filterQuery, setFilterQuery] = useState('');
   const [hideFiltered, setHideFiltered] = useState(true);
 
@@ -60,9 +60,9 @@ export default function FilteringTreeDemo() {
     const parts = label.split(new RegExp(`(${query})`, 'gi'));
     return (
       <Text size="sm">
-        {parts.map((part, index) => 
+        {parts.map((part, index) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <Text key={index} style={{ backgroundColor: '#ffeb3b', fontWeight: 'bold' }}>
+            <Text key={index} weight="semibold" colorVariant="primary">
               {part}
             </Text>
           ) : (
@@ -74,54 +74,42 @@ export default function FilteringTreeDemo() {
   };
 
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ gap: 12 }}>
-        <TextInput
-          placeholder="Search technologies..."
+    <Block gap="sm" fullWidth>
+      <Column gap="sm">
+        <Input
+          label="Search technologies"
           value={filterQuery}
           onChangeText={setFilterQuery}
-          style={{ 
-            borderWidth: 1, 
-            borderColor: '#ddd', 
-            borderRadius: 8, 
-            padding: 12,
-            fontSize: 14 
-          }}
+          placeholder="Type to filter the tree"
         />
-        
-        <Flex direction="row" gap="md" align="center">
-          <Text size="sm" weight="bold">Filter Mode:</Text>
-          <Button
-            size="sm"
-            variant={hideFiltered ? 'filled' : 'outline'}
-            onPress={() => setHideFiltered(true)}
-          >
-            Hide Non-matching
+
+        <Row gap="sm" align="center" wrap="wrap">
+          <Text size="sm" weight="semibold">
+            Filter mode
+          </Text>
+          <Button size="sm" variant={hideFiltered ? 'filled' : 'outline'} onPress={() => setHideFiltered(true)}>
+            Hide non-matching
           </Button>
-          <Button
-            size="sm"
-            variant={!hideFiltered ? 'filled' : 'outline'}
-            onPress={() => setHideFiltered(false)}
-          >
-            Highlight Only
+          <Button size="sm" variant={!hideFiltered ? 'filled' : 'outline'} onPress={() => setHideFiltered(false)}>
+            Highlight only
           </Button>
-        </Flex>
-      </View>
+        </Row>
+      </Column>
 
       <Tree
         data={treeData}
         filterQuery={filterQuery}
         hideFiltered={hideFiltered}
         highlight={highlightMatch}
-        expandAll={!!filterQuery} // Auto-expand when searching
+        expandAll={!!filterQuery}
         noResultsFallback={
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text size="sm" color="secondary">
-              No technologies found matching &quot;{filterQuery}&quot;
+          <Column gap="xs" align="center" style={{ paddingVertical: 16 }}>
+            <Text size="sm" colorVariant="secondary">
+              No technologies match &quot;{filterQuery}&quot;
             </Text>
-          </View>
+          </Column>
         }
       />
-    </View>
+    </Block>
   );
 }

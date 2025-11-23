@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Different QR code variants with error correction levels and quiet zones.
+Compare how error correction levels and quiet zone widths influence scannability.

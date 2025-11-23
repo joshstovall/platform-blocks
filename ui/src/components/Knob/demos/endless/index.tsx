@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Card, Flex, Knob, Text } from '@platform-blocks/ui';
+
+import { Column, Knob, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [value, setValue] = useState(0);
@@ -7,23 +8,32 @@ export default function Demo() {
   const rotations = useMemo(() => value / 360, [value]);
 
   return (
-    <Card padding={24} shadow="md" style={{ width: 280 }}>
-      <Flex direction="column" align="center" gap="md">
-        <Text size="lg" weight="600">Endless encoder</Text>
-        <Knob
-          value={value}
-          onChange={setValue}
-          min={0}
-          max={360}
-          step={5}
-          mode="endless"
-          size={170}
-          formatLabel={() => `${Math.round(normalizedAngle)}°`}
-        />
-        <Text size="sm" style={{ color: '#666' }}>
+    <Column gap="sm" fullWidth>
+      <Knob
+        value={value}
+        onChange={setValue}
+        min={0}
+        max={360}
+        step={5}
+        variant="endless"
+        size={170}
+        valueLabel={{
+          position: 'center',
+          formatter: () => `${Math.round(normalizedAngle)}°`,
+          secondary: {
+            position: 'bottom',
+            formatter: () => `${rotations.toFixed(2)} turns`,
+          },
+        }}
+      />
+      <Column gap="xs">
+        <Text size="xs" colorVariant="secondary">
+          Normalized angle: {Math.round(normalizedAngle)}°
+        </Text>
+        <Text size="xs" colorVariant="secondary">
           Total turns: {rotations.toFixed(2)}
         </Text>
-      </Flex>
-    </Card>
+      </Column>
+    </Column>
   );
 }

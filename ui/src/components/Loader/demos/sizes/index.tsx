@@ -1,14 +1,18 @@
-import { Loader, Row, Column, Text } from '@platform-blocks/ui';
-import { DESIGN_TOKENS } from '../../../../core/design-tokens';
+import type { LoaderProps } from '@platform-blocks/ui';
+import { Block, Column, Loader, Row, Text } from '@platform-blocks/ui';
+
+const LOADER_SIZES: Required<LoaderProps>['size'][] = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 export default function Demo() {
   return (
-    <Column gap={DESIGN_TOKENS.spacing.md}>
-      {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => (
-        <Row key={size} gap={DESIGN_TOKENS.spacing.md} align="center">
-          <Text variant="body" style={{ width: 40, fontSize: DESIGN_TOKENS.typography.fontSize.xs }}>
-            {size}:
-          </Text>
+    <Column gap="md">
+      {LOADER_SIZES.map((size) => (
+        <Row key={size} gap="md" align="center">
+          <Block minW={72}>
+            <Text variant="small" colorVariant="muted">
+              {String(size).toUpperCase()}
+            </Text>
+          </Block>
           <Loader variant="oval" size={size} />
           <Loader variant="bars" size={size} />
           <Loader variant="dots" size={size} />

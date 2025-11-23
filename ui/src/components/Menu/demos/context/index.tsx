@@ -1,43 +1,59 @@
-import { Menu, MenuItem, MenuDivider, MenuDropdown, Text, Icon, Flex, Card } from '@platform-blocks/ui';
+import {
+  Card,
+  Column,
+  Icon,
+  Menu,
+  MenuDivider,
+  MenuDropdown,
+  MenuItem,
+  Text,
+} from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Flex direction="column" gap={16} align="center">
-      <Text size="lg" weight="semibold">Context Menu</Text>
-      <Text size="sm" color="secondary">
-        Right-click the area below to open a context menu
-      </Text>
-      
-      <Menu trigger="contextmenu">
-        <Card 
-          p={32} 
-          variant="outline" 
-          style={{ 
-            borderStyle: 'dashed',
-            minWidth: 200,
-            textAlign: 'center',
-            cursor: 'context-menu'
-          }}
-        >
-          <Text size="sm" color="secondary">Right-click here</Text>
-          <Icon name="mouse" size="lg" style={{ marginTop: 8, opacity: 0.5 }} />
-        </Card>
-        <MenuDropdown>
-          <MenuItem leftSection={<Icon name="copy" size="sm" />}>
-            Copy
-          </MenuItem>
-          <MenuItem leftSection={<Icon name="edit" size="sm" />}>
-            Edit
-          </MenuItem>
-          <MenuItem leftSection={<Icon name="share" size="sm" />}>
-            Share
-          </MenuItem>
-          <MenuDivider />
-          <MenuItem leftSection={<Icon name="trash" size="sm" />}>
-            Delete
-          </MenuItem>
-        </MenuDropdown>
-      </Menu>
-    </Flex>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Set `trigger="contextmenu"` to open the menu with a right-click or long press.
+          </Text>
+          <Menu trigger="contextmenu">
+            <Card
+              p="lg"
+              variant="outline"
+              style={{
+                borderStyle: 'dashed',
+                cursor: 'context-menu',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 140,
+              }}
+            >
+              <Column gap="sm" align="center">
+                <Icon name="mouse" size="lg" color="tertiary" />
+                <Text size="sm" colorVariant="secondary">
+                  Right-click or long-press this area
+                </Text>
+              </Column>
+            </Card>
+            <MenuDropdown>
+              <MenuItem startSection={<Icon name="copy" size="sm" />}>
+                Copy link
+              </MenuItem>
+              <MenuItem startSection={<Icon name="edit" size="sm" />}>
+                Rename
+              </MenuItem>
+              <MenuItem startSection={<Icon name="share" size="sm" />}>
+                Share
+              </MenuItem>
+              <MenuDivider />
+              <MenuItem startSection={<Icon name="trash" size="sm" />}>
+                Delete
+              </MenuItem>
+            </MenuDropdown>
+          </Menu>
+        </Column>
+      </Card>
+    </Column>
   );
 }

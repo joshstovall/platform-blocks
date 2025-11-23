@@ -1,43 +1,32 @@
-import { QRCode, Row, Text, Column } from '@platform-blocks/ui';
+import { Column, QRCode, Row, Text } from '@platform-blocks/ui';
+
+const SHAPES = [
+  { label: 'Square modules', value: 'https://platform-blocks.com/square', moduleShape: 'square' as const, cornerRadius: undefined },
+  { label: 'Rounded modules', value: 'https://platform-blocks.com/rounded', moduleShape: 'rounded' as const, cornerRadius: 0.4 },
+  { label: 'Diamond modules', value: 'https://platform-blocks.com/diamond', moduleShape: 'diamond' as const, cornerRadius: undefined }
+] as const;
 
 export default function Demo() {
   return (
-    <Column gap={20}>
-      
-      <Row gap={24} wrap="wrap" justify="center">
-        <Column align="center" gap={8}>
-          <QRCode 
-            value="https://platform-blocks.com/square" 
-            size={150} 
-            moduleShape="square"
-            quietZone={1}
-            style={{ borderRadius: 12, overflow: 'hidden' }}
-          />
-          <Text variant="caption" style={{ color: '#6b7280' }}>Square modules</Text>
-        </Column>
-        
-        <Column align="center" gap={8}>
-          <QRCode 
-            value="https://platform-blocks.com/rounded" 
-            size={150} 
-            moduleShape="rounded" 
-            cornerRadius={0.4}
-            quietZone={1}
-            style={{ borderRadius: 12, overflow: 'hidden' }}
-          />
-          <Text variant="caption" style={{ color: '#6b7280' }}>Rounded modules</Text>
-        </Column>
-        
-        <Column align="center" gap={8}>
-          <QRCode 
-            value="https://platform-blocks.com/diamond" 
-            size={150} 
-            moduleShape="diamond"
-            quietZone={1}
-            style={{ borderRadius: 12, overflow: 'hidden' }} 
-          />
-          <Text variant="caption" style={{ color: '#6b7280' }}>Diamond modules</Text>
-        </Column>
+    <Column gap="sm">
+      <Text variant="small" colorVariant="muted">
+        Module geometry
+      </Text>
+      <Row gap="lg" wrap="wrap" justify="center">
+        {SHAPES.map(({ label, value, moduleShape, cornerRadius }) => (
+          <Column key={label} gap="xs" align="center">
+            <QRCode
+              value={value}
+              size={150}
+              moduleShape={moduleShape}
+              cornerRadius={cornerRadius}
+              quietZone={1}
+            />
+            <Text variant="small" colorVariant="muted">
+              {label}
+            </Text>
+          </Column>
+        ))}
       </Row>
     </Column>
   );

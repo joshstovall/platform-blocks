@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { View, TextInput, Modal, Pressable, ScrollView, Platform, DimensionValue, Keyboard, InteractionManager, StyleSheet } from 'react-native';
 import { Text } from '../Text';
 import { Loader } from '../Loader';
-import { ListGroup } from '../ListGroup';
+import { ListGroup, ListGroupDivider } from '../ListGroup';
 import { FieldHeader } from '../_internal/FieldHeader';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
@@ -25,6 +25,7 @@ import { Highlight } from '../Highlight';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import { handleSelectionComplete } from '../../core/keyboard/selection';
 import { resolveOptionalModule } from '../../utils/optionalModule';
+import { useOverlayMode } from '../../hooks';
 
 type SimpleDebounced<F extends (...args: any[]) => void> = ((...args: Parameters<F>) => void) & {
   cancel: () => void;
@@ -134,9 +135,9 @@ export const AutoComplete = factory<{
   refocusAfterSelect,
     freeSolo = false,
     displayProperty = 'value',
-    // Use modal on mobile native, portal on web
-    useModal = Platform.OS !== 'web',
-    usePortal = Platform.OS === 'web',
+    // Use overlay mode helper for presentation defaults
+    useModal: useModalOverride,
+    usePortal: usePortalOverride,
     inputWidth,
     minWidth = Platform.OS === 'android' ? 240 : undefined,
     // Enhanced positioning props
@@ -163,6 +164,14 @@ export const AutoComplete = factory<{
     return rest;
   }, [inputProps]);
 
+  const { shouldUseModal, shouldUsePortal } = useOverlayMode({
+    forceModal: useModalOverride,
+    forceOverlay: usePortalOverride,
+  });
+
+  const useModal = shouldUseModal;
+  const usePortal = shouldUsePortal;
+
   const baseTextInputProps = useMemo(() => ({
     ...restInputProps,
     autoFocus: useModal ? false : autoFocusProp,
@@ -182,8 +191,8 @@ export const AutoComplete = factory<{
       return refocusAfterSelect;
     }
 
-    return Platform.OS === 'web';
-  }, [refocusAfterSelect, useModal]);
+    return usePortal;
+  }, [refocusAfterSelect, useModal, usePortal]);
 
   const theme = useTheme();
   const radiusStyles = useMemo(() => createRadiusStyles(radius, undefined, 'input'), [radius]);
@@ -253,6 +262,14 @@ export const AutoComplete = factory<{
   }, radiusStyles), [inputStyleFactory, size, focused, error, disabled, showClearButton, radiusStyles]);
 
   const clearLabel = clearButtonLabel || 'Clear input';
+
+  const menuHighlightColor = useMemo(() => {
+    const primaryPalette = theme.colors.primary || [];
+    if (theme.colorScheme === 'dark') {
+      return primaryPalette[2] || primaryPalette[3] || theme.text.onPrimary || theme.text.primary;
+    }
+    return primaryPalette[6] || primaryPalette[5] || theme.colors.secondary?.[6] || '#6941C6';
+  }, [theme.colors.primary, theme.colors.secondary, theme.colorScheme, theme.text.onPrimary, theme.text.primary]);
 
   const selectedCount = selectedValues?.length ?? 0;
   const hasSelectedValues = multiSelect && selectedCount > 0;
@@ -614,12 +631,20 @@ export const AutoComplete = factory<{
   // Default item renderer - use stable reference to prevent loops
   const defaultRenderItem = useCallback((item: AutoCompleteOption, index: number, isSelected = false) => {
     const highlightQuery = highlightMatches ? currentQueryRef.current : undefined;
+    const baseTextColor = item.disabled ? theme.text.disabled : theme.text.primary;
+    const accentTextColor = item.disabled ? theme.text.disabled : menuHighlightColor;
 
     return (
       <MenuItemButton
         onPress={() => handleSelectSuggestion(item)}
         disabled={item.disabled}
         active={isSelected}
+        tone={isSelected ? 'primary' : 'default'}
+        hoverTone="primary"
+        activeTone="primary"
+        textColor={baseTextColor}
+        hoverTextColor={accentTextColor}
+        activeTextColor={accentTextColor}
         compact
         rounded={false}
         style={[styles.menuItemButton, suggestionItemStyle]}
@@ -639,7 +664,7 @@ export const AutoComplete = factory<{
         </Highlight>
       </MenuItemButton>
     );
-  }, [handleSelectSuggestion, highlightMatches, suggestionItemStyle]);
+  }, [handleSelectSuggestion, highlightMatches, suggestionItemStyle, theme.text.disabled, theme.text.primary, menuHighlightColor]);
 
   // Render item with enhanced parameters - use refs to prevent infinite loops
   const renderSuggestionItem = useCallback((item: AutoCompleteOption, index: number) => {
@@ -729,10 +754,8 @@ export const AutoComplete = factory<{
         borderBottomColor: theme.backgrounds?.border ?? (theme.colorScheme === 'dark' ? '#2C2C2E' : '#E5E7EB'),
       },
       menuItemButton: {
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: theme.backgrounds?.border ?? (theme.colorScheme === 'dark' ? '#2C2C2E' : '#E5E7EB'),
         borderRadius: 0,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
       },
       suggestionContent: {
         flex: 1,
@@ -840,6 +863,7 @@ export const AutoComplete = factory<{
             keyboardShouldPersistTaps="always"
             renderItem={({ item, index }: { item: AutoCompleteOption; index: number }) => renderSuggestionItem(item, index)}
             keyExtractor={(item: AutoCompleteOption, index: number) => `${item.value}-${index}`}
+            ItemSeparatorComponent={renderItem ? undefined : ListGroupDivider}
             showsVerticalScrollIndicator={false}
             style={stableSuggestionStyles.suggestionsList}
           />

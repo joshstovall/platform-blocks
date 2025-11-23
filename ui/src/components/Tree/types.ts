@@ -63,4 +63,6 @@ export interface TreeProps {
   highlight?: (label: string, query: string) => React.ReactNode;
   /** Apply alternating background stripes to rows */
   striped?: boolean;
+  /** Animate branch expansion/collapse using the Collapse component */
+  useAnimations?: boolean;
 }

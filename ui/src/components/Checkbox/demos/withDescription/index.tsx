@@ -1,27 +1,30 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Checkbox } from '../..';
-import { Text } from '../../../Text';
+import { useState } from 'react';
+import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
-export default function CheckboxWithDescriptionDemo() {
-  const [checked, setChecked] = useState(false);
+export default function Demo() {
+  const [newsletter, setNewsletter] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   return (
-    <View style={{ gap: 12, maxWidth: 420 }}>
-      <Text weight="bold">Description & Helper</Text>
+    <Column gap="sm" style={{ maxWidth: 420 }}>
+      <Text weight="medium">Descriptions and helper text</Text>
       <Checkbox
         label="Receive product updates"
         description="Get occasional emails about new features and improvements."
-        checked={checked}
-        onChange={setChecked}
+        checked={newsletter}
+        onChange={setNewsletter}
       />
       <Checkbox
-        label="Terms acceptance"
-        description="You must agree before continuing."
-        error={!checked ? 'Required before proceeding' : undefined}
-        checked={checked}
-        onChange={setChecked}
+        label="Accept terms of service"
+        description="Required before creating an account."
+        error={termsAccepted ? undefined : 'Please accept to continue.'}
+        checked={termsAccepted}
+        onChange={setTermsAccepted}
         required
       />
-    </View>
+      <Text variant="small" colorVariant="muted">
+        Use `description` for supporting copy and pair with `error` to surface validation details.
+      </Text>
+    </Column>
   );
 }

@@ -12,19 +12,24 @@ import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { Text } from '../Text';
 import { FieldHeader } from '../_internal/FieldHeader';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
 import { SwitchProps } from './types';
 import { useSwitchStyles } from './styles';
 import { Row, Column } from '../Layout';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 import { resolveComponentSize, type ComponentSize } from '../../core/theme/componentSize';
+import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 
 export const Switch = factory<{
   props: SwitchProps;
   ref: View;
-}>((props, ref) => {
+}>((rawProps, ref) => {
+  const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(rawProps);
+  const spacingStyles = getSpacingStyles(spacingProps);
+  const { disclaimerProps: disclaimerData, otherProps: props } = extractDisclaimerProps(propsAfterSpacing as SwitchProps);
   const {
-  checked,
-  defaultChecked = false,
+    checked,
+    defaultChecked = false,
     onChange,
     size = 'md',
     color = 'primary',
@@ -44,10 +49,10 @@ export const Switch = factory<{
     accessibilityHint,
     testID,
     style,
-    ...spacingProps
   } = props;
 
   const theme = useTheme();
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
   // Controlled / uncontrolled logic
   const isControlled = typeof checked === 'boolean';
   const [internalChecked, setInternalChecked] = useState<boolean>(defaultChecked);
@@ -214,14 +219,23 @@ export const Switch = factory<{
     ? { gap: 'xs' as const, style: { alignItems: 'center' as const } }
     : { gap: 'sm' as const, style: { alignItems: 'center' as const } };
 
+  const disclaimerNode = renderDisclaimer();
+
   return (
-    <LayoutComponent {...layoutProps}>
-      {labelPosition === 'top' && labelElement}
-      {labelPosition === 'left' && labelElement}
-      {switchElement}
-      {labelPosition === 'right' && labelElement}
-      {labelPosition === 'bottom' && labelElement}
-    </LayoutComponent>
+    <View style={spacingStyles}>
+      <LayoutComponent {...layoutProps}>
+        {labelPosition === 'top' && labelElement}
+        {labelPosition === 'left' && labelElement}
+        {switchElement}
+        {labelPosition === 'right' && labelElement}
+        {labelPosition === 'bottom' && labelElement}
+      </LayoutComponent>
+      {disclaimerNode ? (
+        <View style={{ width: '100%' }}>
+          {disclaimerNode}
+        </View>
+      ) : null}
+    </View>
   );
 });
 

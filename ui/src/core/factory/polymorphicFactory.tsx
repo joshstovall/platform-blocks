@@ -2,6 +2,8 @@ import React, { forwardRef } from 'react';
 
 import { ComponentWithProps, FactoryPayload } from './factory';
 
+type DefaultProps = Record<string, unknown>;
+
 // Polymorphic component types
 type ElementType = keyof React.JSX.IntrinsicElements | React.JSXElementConstructor<any>;
 
@@ -14,16 +16,16 @@ type ComponentProp<C> = {
   component?: C;
 };
 
-type ExtendedProps<Props = {}, OverrideProps = {}> = OverrideProps &
+type ExtendedProps<Props = DefaultProps, OverrideProps = DefaultProps> = OverrideProps &
   Omit<Props, keyof OverrideProps>;
 
-type InheritedProps<C extends ElementType, Props = {}> = ExtendedProps<PropsOf<C>, Props>;
+type InheritedProps<C extends ElementType, Props = DefaultProps> = ExtendedProps<PropsOf<C>, Props>;
 
 export type PolymorphicRef<C> = C extends React.ElementType
   ? React.ComponentPropsWithRef<C>['ref']
   : never;
 
-export type PolymorphicComponentProps<C, Props = {}> = C extends React.ElementType
+export type PolymorphicComponentProps<C, Props = DefaultProps> = C extends React.ElementType
   ? InheritedProps<C, Props & ComponentProp<C>> & {
       ref?: PolymorphicRef<C>;
     }

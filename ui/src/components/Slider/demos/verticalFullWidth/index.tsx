@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Slider, Text, Row, Column, Card } from '@platform-blocks/ui';
+import { Slider, Text, Row, Column, Card, Block } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [value, setValue] = useState(25);
@@ -8,11 +8,10 @@ export default function Demo() {
   return (
     <Card>
       <Column gap={24}>
-        <Text size="lg" weight="semibold">Full Height Vertical Sliders</Text>
         
         <Row gap={32} style={{ height: 300 }}>
           {/* Regular height vertical slider */}
-          <Column gap={12} style={{ alignItems: 'center' }}>
+          <Block gap={12} style={{ alignItems: 'center' }}>
             <Text size="md" weight="medium">Regular Height</Text>
             <Slider
               value={value}
@@ -25,7 +24,7 @@ export default function Demo() {
             <Text size="sm" style={{ color: '#666' }}>
               Value: {value}
             </Text>
-          </Column>
+          </Block>
 
           {/* Full height vertical slider */}
           <View style={{ height: '100%' }}>
@@ -52,7 +51,6 @@ export default function Demo() {
           <View style={{ 
             height: '80%', 
             padding: 16, 
-            backgroundColor: '#f5f5f5', 
             borderRadius: 8,
             alignItems: 'center'
           }}>

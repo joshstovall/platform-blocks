@@ -20,7 +20,7 @@ export default function Demo() {
       data={POWER_BY_SUBSYSTEM}
       padAngle={2}
       legend={{ position: 'right', align: 'start' }}
-      padding={{ top: 72, right: 168, bottom: 72, left: 72 }}
+      padding={{ top: 140, right: 168, bottom: 72, left: 72 }}
       centerLabel={() => 'Power load'}
       centerSubLabel={() => 'Across campus subsystems'}
       centerValueFormatter={(value) => formatMegawatts(value)}

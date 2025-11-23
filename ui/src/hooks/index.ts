@@ -14,4 +14,15 @@ export { useScrollSpy, type ScrollSpyOptions, type UseScrollSpyItem } from './us
 export { useHaptics, type UseHapticsOptions, type UseHapticsReturn } from './useHaptics';
 export { useMaskedInput, type UseMaskedInputOptions, type UseMaskedInputReturn } from './useMaskedInput';
 export { useTitleRegistration, type UseTitleRegistrationOptions } from './useTitleRegistration';
+export {
+  useDeviceInfo,
+  type DeviceInfo,
+  type UseDeviceInfoOptions,
+} from './useDeviceInfo';
+
+export {
+  useOverlayMode,
+  type UseOverlayModeOptions,
+  type UseOverlayModeResult,
+} from './useOverlayMode';
 

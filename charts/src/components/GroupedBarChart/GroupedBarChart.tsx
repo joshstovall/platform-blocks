@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useCallback, useRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import Svg, { Rect, G, Text as SvgText } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing, SharedValue } from 'react-native-reanimated';
 
@@ -16,6 +16,7 @@ import { formatNumber } from '../../utils';
 import { createColorAssigner } from '../../colors';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
+const isWeb = Platform.OS === 'web';
 
 type ResolvedSeries = {
   id: string;
@@ -160,7 +161,18 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
   const setCrosshair = interaction?.setCrosshair;
   const interactionSeries = interaction?.series;
 
-  const padding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const basePadding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const padding = React.useMemo(() => {
+    if (!legend?.show) return basePadding;
+    const position = legend.position || 'bottom';
+    return {
+      ...basePadding,
+      top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+      bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+      left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+      right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+    };
+  }, [legend?.show, legend?.position]);
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
 
@@ -366,6 +378,12 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     });
   }, [categories, outerScale, plotWidth]);
 
+  const categoryCenters = useMemo(() => {
+    if (plotWidth <= 0) return [] as number[];
+    const bandwidth = outerScale.bandwidth ? outerScale.bandwidth() : categories.length ? plotWidth / categories.length : 0;
+    return categories.map((category) => (outerScale(category) ?? 0) + bandwidth / 2);
+  }, [categories, outerScale, plotWidth]);
+
   const normalizedYTicks = useMemo(() => {
     if (plotHeight <= 0) return [] as number[];
     return valueTicks.map((tick) => valueScale(tick) / plotHeight);
@@ -400,6 +418,52 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     return toNativePointerEvent(event).nativeEvent;
   };
 
+  const updatePointerCoords = useCallback((chartX: number, chartY: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
+    if (!setPointer && !setCrosshair) return;
+    const plotX = chartX - padding.left;
+    const plotY = chartY - padding.top;
+    const insideX = plotX >= 0 && plotX <= plotWidth;
+    const insideY = plotY >= 0 && plotY <= plotHeight;
+    if (setPointer) {
+      setPointer({
+        x: chartX,
+        y: chartY,
+        inside: insideX && insideY,
+        insideX,
+        insideY,
+        pageX: meta?.pageX,
+        pageY: meta?.pageY,
+        data: meta?.data ?? null,
+      });
+    }
+    if (wantsCrosshairUpdates && setCrosshair && insideX) {
+      const clampedX = Math.max(0, Math.min(plotWidth, plotX));
+      let closestIndex = 0;
+      if (categoryCenters.length) {
+        let bestDistance = Infinity;
+        for (let i = 0; i < categoryCenters.length; i += 1) {
+          const dist = Math.abs(categoryCenters[i] - clampedX);
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            closestIndex = i;
+          }
+        }
+      }
+      const pixelX = padding.left + clampedX;
+      setCrosshair({ dataX: closestIndex, pixelX });
+    }
+  }, [setPointer, setCrosshair, padding.left, padding.top, plotWidth, plotHeight, wantsCrosshairUpdates, categoryCenters]);
+
+  const clearPointerState = useCallback(() => {
+    hoverRef.current = null;
+    if (setPointer) {
+      setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
+    }
+    if (wantsCrosshairUpdates) {
+      setCrosshair?.(null);
+    }
+  }, [setPointer, setCrosshair, wantsCrosshairUpdates]);
+
   const handleHoverIn = useCallback(
     (bar: ComputedBar, event?: any) => {
       hoverRef.current = bar.id;
@@ -408,10 +472,7 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
       const native = extractNativeEvent(event);
       const seriesEntry = resolvedSeriesMap.get(bar.seriesId);
       const datum = seriesEntry?.dataLookup.get(bar.category) || bar.dataPoint || { category: bar.category, value: bar.value };
-      setPointer?.({
-        x: pointerX,
-        y: pointerY,
-        inside: true,
+      updatePointerCoords(pointerX, pointerY, {
         pageX: native?.pageX,
         pageY: native?.pageY,
         data: {
@@ -425,26 +486,35 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
           datum,
         },
       });
-      if (wantsCrosshairUpdates) {
-        setCrosshair?.({ dataX: bar.categoryIndex, pixelX: pointerX });
-      }
     },
-    [padding.left, padding.top, resolvedSeriesMap, setCrosshair, setPointer, wantsCrosshairUpdates]
+    [padding.left, padding.top, resolvedSeriesMap, updatePointerCoords]
   );
 
   const handleHoverOut = useCallback(
-    (bar: ComputedBar, event?: any) => {
+    (bar: ComputedBar, event?: any, options?: { preserveCrosshair?: boolean; suppressPointerReset?: boolean }) => {
       if (hoverRef.current !== bar.id) return;
       hoverRef.current = null;
-      const native = extractNativeEvent(event);
-      if (native?.pageX != null || native?.pageY != null) {
-        const pointerX = padding.left + bar.x + bar.width / 2;
-        const pointerY = padding.top + (bar.isPositive ? bar.y : bar.y + bar.height);
-        setPointer?.({ x: pointerX, y: pointerY, inside: false, pageX: native?.pageX, pageY: native?.pageY });
-      } else {
-        setPointer?.(null);
+      if (!options?.suppressPointerReset) {
+        const native = extractNativeEvent(event);
+        if (native?.pageX != null || native?.pageY != null) {
+          const pointerX = padding.left + bar.x + bar.width / 2;
+          const pointerY = padding.top + (bar.isPositive ? bar.y : bar.y + bar.height);
+          setPointer?.({
+            x: pointerX,
+            y: pointerY,
+            inside: false,
+            insideX: false,
+            insideY: false,
+            pageX: native?.pageX,
+            pageY: native?.pageY,
+            data: null,
+          });
+        } else {
+          setPointer?.(null);
+        }
       }
-      if (wantsCrosshairUpdates) {
+      const preserve = options?.preserveCrosshair ?? true;
+      if (wantsCrosshairUpdates && !preserve) {
         setCrosshair?.(null);
       }
     },
@@ -475,6 +545,39 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     },
     [height, onDataPointPress, onPress, width, padding.left, padding.top]
   );
+
+  const handlePointer = useCallback((nativeEvent: any, firePress: boolean = false) => {
+    if (!nativeEvent || disabled) return;
+    const { locationX, locationY, pageX, pageY } = nativeEvent;
+    if (typeof locationX !== 'number' || typeof locationY !== 'number') return;
+    const chartX = padding.left + locationX;
+    const chartY = padding.top + locationY;
+    updatePointerCoords(chartX, chartY, { pageX, pageY });
+
+    let target: ComputedBar | null = null;
+    for (const bar of computedBars) {
+      if (!bar.visible || bar.height <= 0) continue;
+      const withinX = locationX >= bar.x && locationX <= bar.x + bar.width;
+      const withinY = locationY >= bar.y && locationY <= bar.y + bar.height;
+      if (withinX && withinY) {
+        target = bar;
+        break;
+      }
+    }
+
+    if (target) {
+      handleHoverIn(target);
+      if (firePress) {
+        handlePress(target, { nativeEvent });
+      }
+    } else {
+      hoverRef.current = null;
+    }
+  }, [disabled, padding.left, padding.top, updatePointerCoords, computedBars, handleHoverIn, handlePress]);
+
+  const handlePointerEnd = useCallback(() => {
+    clearPointerState();
+  }, [clearPointerState]);
 
   const registerSignatureRef = useRef<string | null>(null);
   useEffect(() => {
@@ -559,7 +662,7 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
               borderRadius={3}
               disabled={disabled}
               onHoverIn={handleHoverIn}
-              onHoverOut={handleHoverOut}
+                onHoverOut={(target, event) => handleHoverOut(target, event, { preserveCrosshair: true, suppressPointerReset: true })}
               onPress={handlePress}
             />
           ) : null
@@ -643,6 +746,63 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
           );
         })}
       </Svg>
+
+      <View
+        style={{
+          position: 'absolute',
+          left: padding.left,
+          top: padding.top,
+          width: plotWidth,
+          height: plotHeight,
+        }}
+        pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
+        {...(isWeb
+          ? {
+              // @ts-ignore react-native-web pointer events
+              onPointerMove: (event: any) => {
+                if (disabled) return;
+                const native = toNativePointerEvent(event).nativeEvent;
+                handlePointer(native);
+              },
+              // @ts-ignore react-native-web pointer events
+              onPointerDown: (event: any) => {
+                if (disabled) return;
+                event.currentTarget?.setPointerCapture?.(event.pointerId);
+                const native = toNativePointerEvent(event).nativeEvent;
+                handlePointer(native);
+              },
+              // @ts-ignore react-native-web pointer events
+              onPointerUp: (event: any) => {
+                event.currentTarget?.releasePointerCapture?.(event.pointerId);
+                const native = toNativePointerEvent(event).nativeEvent;
+                handlePointer(native, true);
+                handlePointerEnd();
+              },
+              // @ts-ignore react-native-web pointer events
+              onPointerLeave: () => {
+                handlePointerEnd();
+              },
+              // @ts-ignore react-native-web pointer events
+              onPointerCancel: () => {
+                handlePointerEnd();
+              },
+            }
+          : {
+              onStartShouldSetResponder: () => !disabled,
+              onMoveShouldSetResponder: () => !disabled,
+              onResponderGrant: (e: any) => {
+                handlePointer(e.nativeEvent);
+              },
+              onResponderMove: (e: any) => {
+                handlePointer(e.nativeEvent);
+              },
+              onResponderRelease: () => {
+                handlePointerEnd();
+              },
+              onResponderTerminate: handlePointerEnd,
+              onResponderTerminationRequest: () => true,
+            })}
+      />
 
       {xAxis?.show !== false && (
         <Axis

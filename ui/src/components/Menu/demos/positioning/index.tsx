@@ -1,67 +1,38 @@
-import { Menu, MenuItem, MenuDropdown, Button, Text, Flex } from '@platform-blocks/ui';
+import { Button, Card, Column, Menu, MenuDropdown, MenuItem, Row, Text } from '@platform-blocks/ui';
+
+const POSITIONS = [
+  { label: 'Bottom start', position: 'bottom-start' },
+  { label: 'Bottom', position: 'bottom' },
+  { label: 'Bottom end', position: 'bottom-end' },
+  { label: 'Top start', position: 'top-start' },
+  { label: 'Top', position: 'top' },
+  { label: 'Top end', position: 'top-end' },
+] as const;
 
 export default function Demo() {
   return (
-    <Flex direction="column" gap={16} align="center">
-      <Text size="lg" weight="semibold">Menu Positioning</Text>
-      
-      <Flex direction="row" gap={12} wrap="wrap" justify="center">
-        <Menu position="bottom-start">
-          <Button variant="outline" size="sm">Bottom Start</Button>
-          <MenuDropdown>
-            <MenuItem>Bottom Start Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-
-        <Menu position="bottom">
-          <Button variant="outline" size="sm">Bottom Center</Button>
-          <MenuDropdown>
-            <MenuItem>Bottom Center Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-
-        <Menu position="bottom-end">
-          <Button variant="outline" size="sm">Bottom End</Button>
-          <MenuDropdown>
-            <MenuItem>Bottom End Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-      </Flex>
-
-      <Flex direction="row" gap={12} wrap="wrap" justify="center">
-        <Menu position="top-start">
-          <Button variant="outline" size="sm">Top Start</Button>
-          <MenuDropdown>
-            <MenuItem>Top Start Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-
-        <Menu position="top">
-          <Button variant="outline" size="sm">Top Center</Button>
-          <MenuDropdown>
-            <MenuItem>Top Center Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-
-        <Menu position="top-end">
-          <Button variant="outline" size="sm">Top End</Button>
-          <MenuDropdown>
-            <MenuItem>Top End Menu</MenuItem>
-            <MenuItem>Item 2</MenuItem>
-            <MenuItem>Item 3</MenuItem>
-          </MenuDropdown>
-        </Menu>
-      </Flex>
-    </Flex>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="sm">
+          <Text size="sm" colorVariant="secondary">
+            Menus follow the trigger by default; override `position` to align to an edge or axis.
+          </Text>
+          <Row gap="md" justify="center" wrap="wrap">
+            {POSITIONS.map(({ label, position }) => (
+              <Menu key={position} position={position}>
+                <Button size="sm" variant="outline">
+                  {label}
+                </Button>
+                <MenuDropdown>
+                  <MenuItem>{label} menu action</MenuItem>
+                  <MenuItem>Duplicate</MenuItem>
+                  <MenuItem>Archive</MenuItem>
+                </MenuDropdown>
+              </Menu>
+            ))}
+          </Row>
+        </Column>
+      </Card>
+    </Column>
   );
 }

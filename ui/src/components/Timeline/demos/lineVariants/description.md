@@ -1,11 +1,13 @@
 ---
 title: Line Variants
-category: styling
+category: appearance
 order: 45
-tags: [timeline, dashed, dotted, lines]
-status: experimental
+tags: [timeline, appearance]
+status: stable
 since: 1.0.0
 hidden: false
+highlightLines: [32-46]
+highlightLines: []
 ---
 
-Demonstrates solid (default), dashed, and dotted connector line variants.
+Compare solid, dashed, and dotted connectors, including mixed variants within a single flow.

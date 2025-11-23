@@ -1,48 +1,50 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Checkbox } from '../..';
-import { Text } from '../../../Text';
+import { useState } from 'react';
+import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
-interface Item { id: number; label: string; }
-const items: Item[] = [
+const ITEMS = [
   { id: 1, label: 'Email notifications' },
   { id: 2, label: 'SMS alerts' },
-  { id: 3, label: 'Push notifications' },
-];
+  { id: 3, label: 'Push notifications' }
+] as const;
 
-export default function CheckboxIndeterminateDemo() {
+export default function Demo() {
   const [selected, setSelected] = useState<number[]>([]);
-  const allIds = items.map(i => i.id);
-  const allChecked = selected.length === items.length;
+  const allIds = ITEMS.map((item) => item.id);
+  const allChecked = selected.length === ITEMS.length;
   const someChecked = selected.length > 0 && !allChecked;
 
   const toggleAll = () => {
-    setSelected(prev => prev.length === items.length ? [] : allIds);
+    setSelected((current) => (current.length === ITEMS.length ? [] : allIds));
   };
 
-  const toggleOne = (id: number) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  const toggleItem = (id: number) => {
+    setSelected((current) =>
+      current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id]
+    );
   };
 
   return (
-    <View style={{ gap: 8 }}>
-      <Text weight="bold">Indeterminate / Group</Text>
+    <Column gap="sm">
+      <Text weight="medium">Notification preferences</Text>
       <Checkbox
-        label={`Select all (${selected.length}/${items.length})`}
+        label={`Select all (${selected.length}/${ITEMS.length})`}
         checked={allChecked}
         indeterminate={someChecked}
         onChange={toggleAll}
       />
-      <View style={{ marginLeft: 16, gap: 4 }}>
-        {items.map(item => (
+      <Column gap="xs" pl="md">
+        {ITEMS.map(({ id, label }) => (
           <Checkbox
-            key={item.id}
-            label={item.label}
-            checked={selected.includes(item.id)}
-            onChange={() => toggleOne(item.id)}
+            key={id}
+            label={label}
+            checked={selected.includes(id)}
+            onChange={() => toggleItem(id)}
           />
         ))}
-      </View>
-    </View>
+      </Column>
+      <Text variant="small" colorVariant="muted">
+        The parent checkbox enters an indeterminate state until every child preference matches.
+      </Text>
+    </Column>
   );
 }

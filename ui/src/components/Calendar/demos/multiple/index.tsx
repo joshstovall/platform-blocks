@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, Column, Text } from '@platform-blocks/ui';
+
+const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
 export default function Demo() {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
-  const formatDates = (dates: Date[]) => {
-    if (dates.length === 0) return 'No dates selected';
-    if (dates.length === 1) return `1 date selected: ${dates[0].toLocaleDateString()}`;
-    return `${dates.length} dates selected: ${dates.map(d => d.toLocaleDateString()).join(', ')}`;
-  };
+  const summary = useMemo(() => {
+    if (selectedDates.length === 0) return 'No dates picked yet.';
+    if (selectedDates.length === 1) {
+      return `1 date picked: ${formatter.format(selectedDates[0])}`;
+    }
+    return `${selectedDates.length} dates picked: ${selectedDates.map((date) => formatter.format(date)).join(', ')}`;
+  }, [selectedDates]);
 
   return (
-    <Column gap={16}>
-      <Calendar 
+    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+      <Calendar
         type="multiple"
         value={selectedDates}
         onChange={(dates) => setSelectedDates(dates as Date[])}
         highlightToday
       />
-      <Text size="sm" color="gray">
-        {formatDates(selectedDates)}
+      <Text size="sm" colorVariant="muted">
+        {summary}
       </Text>
     </Column>
   );

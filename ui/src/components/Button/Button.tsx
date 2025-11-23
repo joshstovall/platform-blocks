@@ -468,7 +468,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const animatedWrapperStyle = useMemo(() => ({ transform: [{ scale: scaleAnim }] }), [scaleAnim]);
 
   const buttonElement = (
-    <View style={[spacingStyles, layoutStyles]}>
+    <View style={spacingStyles}>
       <Animated.View style={animatedWrapperStyle} collapsable={false}
 
       >
@@ -478,16 +478,13 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
           {...accessibilityProps}
           style={({ pressed }) => [
             buttonStyles,
-            {
-              width: '100%',
-            },
+            layoutStyles,
             // subtle visual feedback beyond scale on supported platforms
             pressed && !isInteractionDisabled ? {
               opacity: effectiveVariant === 'ghost' || effectiveVariant === 'none' ? 0.6 : 0.9,
               ...(Platform.OS !== 'web' ? { transform: [{ translateY: 1 }] } : {})
             } : null,
             style,
-            { minWidth: calculatedMinWidth }
           ]}
           onPress={handleInternalPress}
           onLayout={onLayout}

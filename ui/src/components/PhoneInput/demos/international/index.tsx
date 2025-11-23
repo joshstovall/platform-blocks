@@ -1,53 +1,64 @@
-import { useState } from 'react'
-import { PhoneInput, Text, Column, Code, Card } from '@platform-blocks/ui'
+import { useState } from 'react';
+
+import { Card, Code, Column, PhoneInput, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [autoDetectValue, setAutoDetectValue] = useState('')
-  const [autoDetectFormatted, setAutoDetectFormatted] = useState('')
-  const [internationalValue, setInternationalValue] = useState('')
-  const [internationalFormatted, setInternationalFormatted] = useState('')
+  const [autoDetectValue, setAutoDetectValue] = useState('');
+  const [autoDetectFormatted, setAutoDetectFormatted] = useState('');
+  const [intlValue, setIntlValue] = useState('');
+  const [intlFormatted, setIntlFormatted] = useState('');
 
   return (
-    <Column gap={24}>
-      <Text variant="body" colorVariant="secondary">
-        Auto-detection analyzes the input to determine the best country format.
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">International detection</Text>
+      <Text size="sm" colorVariant="secondary">
+        Compare auto-detected formats against a fully manual international mask.
       </Text>
-      
-      <Column gap={16}>
+
+      <Column gap="sm">
         <PhoneInput
-          label="Auto-Detect Format"
+          label="Auto-detect format"
           value={autoDetectValue}
           onChange={(raw, formatted) => {
-            setAutoDetectValue(raw)
-            setAutoDetectFormatted(formatted)
+            setAutoDetectValue(raw);
+            setAutoDetectFormatted(formatted);
           }}
-          autoDetect={true}
-          showCountryCode={true}
-          placeholder="Try: 5551234567, 447911123456, or 33123456789"
+          autoDetect
+          showCountryCode
+          placeholder="Try 5551234567, 447911123456, or 33123456789"
         />
-        
+
         <PhoneInput
-          label="International (No Auto-Format)"
+          label="Manual international"
           country="INTL"
-          value={internationalValue}
+          value={intlValue}
           onChange={(raw, formatted) => {
-            setInternationalValue(raw)
-            setInternationalFormatted(formatted)
+            setIntlValue(raw);
+            setIntlFormatted(formatted);
           }}
+          autoDetect={false}
           showCountryCode={false}
-          placeholder="Any international number"
+          placeholder="Enter any international number"
         />
       </Column>
-      
+
       <Card variant="outline" p="sm">
-        <Text variant="caption" mb="xs" colorVariant="secondary">Values</Text>
-        <Code size="sm">
-          {JSON.stringify({
-            autoDetect: { raw: autoDetectValue, formatted: autoDetectFormatted },
-            international: { raw: internationalValue, formatted: internationalFormatted }
-          }, null, 2)}
-        </Code>
+        <Column gap="xs">
+          <Text size="xs" colorVariant="secondary">
+            Values
+          </Text>
+          <Code size="sm">
+            {JSON.stringify(
+              {
+                autoDetect: { raw: autoDetectValue, formatted: autoDetectFormatted },
+                international: { raw: intlValue, formatted: intlFormatted }
+              },
+              null,
+              2
+            )}
+          </Code>
+        </Column>
       </Card>
     </Column>
-  )
+  );
 }

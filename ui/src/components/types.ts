@@ -2,7 +2,7 @@
 // Prefer importing from here in app code, while intra-library keeps local paths
 // to avoid circular dependencies.
 
-export type { AlertProps } from './Alert';
+export type { NoticeProps } from './Notice';
 export type { AppShellProps } from './AppShell';
 export type { AvatarProps, AvatarGroupProps } from './Avatar';
 export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs';
@@ -14,7 +14,6 @@ export type { ChipProps } from './Chip';
 export type { CodeBlockProps } from './CodeBlock/types';
 export type { CopyButtonProps } from './CopyButton/types';
 export type { ColorPickerProps } from './ColorPicker';
-export type { ContainerProps } from './Container';
 export type { KeyboardAwareLayoutProps } from './KeyboardAwareLayout';
 export type { DialogProps } from './Dialog';
 export type { DividerProps } from './Divider';
@@ -43,7 +42,6 @@ export type { FileInputProps, FileInputFile } from './FileInput';
 export type { RichTextEditorProps } from './RichTextEditor';
 export type { FormProps } from './Form';
 export type { RowProps, ColumnProps } from './Layout';
-// export type { ToastOptions, ToastMessage, ToastPosition } from './Notifications';
 export type { ProgressProps } from './Progress';
 export type { QRCodeProps } from './QRCode';
 export type { RadioProps, RadioGroupProps } from './Radio';
@@ -53,7 +51,6 @@ export type { SkeletonProps } from './Skeleton';
 export type { LoaderProps } from './Loader';
 export type { SpotlightProps } from './Spotlight';
 export type { SelectProps, SelectOption } from './Select';
-// export type { IconPropI, IconName } from './Icon';
 export type { SwitchProps } from './Switch';
 export type { TableProps } from './Table';
 export type { DataTableProps } from './DataTable';
@@ -64,5 +61,3 @@ export type { TabsProps, TabItem } from './Tabs';
 export type { AccordionProps } from './Accordion';
 export type { GaugeProps } from './Gauge';
 export type { GalleryProps } from './Gallery';
-// TODO: Fix Charts library build issue
-// export type { BarChartProps, PieChartProps, LineChartProps, ScatterChartProps, AreaChartProps, StackedBarChartProps, GroupedBarChartProps } from '@platform-blocks/charts';

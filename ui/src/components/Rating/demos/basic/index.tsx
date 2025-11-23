@@ -1,14 +1,20 @@
-import { useState } from 'react'
-import { Rating } from '@platform-blocks/ui'
+import { useState } from 'react';
+import { Column, Rating, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [rating, setRating] = useState(3)
+  const [score, setScore] = useState<number>(3);
+
   return (
-    <Rating
-      value={rating}
-      onChange={setRating}
-      size="lg"
-      label={`Interactive Rating (Current: ${rating})`}
-    />
-  )
+    <Column gap="sm">
+      <Rating
+        value={score}
+        onChange={setScore}
+        size="lg"
+        label="Rate the broadcast quality"
+      />
+      <Text variant="small" colorVariant="muted">
+        Current score: {score} out of 5.
+      </Text>
+    </Column>
+  );
 }

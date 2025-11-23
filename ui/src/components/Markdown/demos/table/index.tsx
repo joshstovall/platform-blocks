@@ -37,11 +37,5 @@ export default function Demo() {
 | Card | \`variant\`, \`padding\` | Container component | \`<Card variant="outline">Content</Card>\` |
 `;
 
-  return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Markdown>{content}</Markdown>
-      </Card>
-    </Flex>
-  );
+  return <Markdown>{content}</Markdown>
 }

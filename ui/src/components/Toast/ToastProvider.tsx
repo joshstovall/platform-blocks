@@ -86,7 +86,7 @@ interface ToastItem extends ToastOptions {
 }
 
 // Severity-specific toast options (omit sev since it's set by the method)
-export interface SeverityToastOptions extends Omit<ToastOptions, 'sev'> {}
+export type SeverityToastOptions = Omit<ToastOptions, 'sev'>;
 
 // Simplified options for string shortcuts
 export type ToastMessage = string;
@@ -415,6 +415,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 
   const getPositionStyle = (position: ToastPosition): ViewStyle => {
     if (Platform.OS === 'web') {
+      const horizontalMargin = 20;
+      const windowWidth = Dimensions.get('window')?.width ?? 1024;
+      const availableWidth = Math.max(windowWidth - horizontalMargin * 2, 0);
+      const centerWidth = Math.min(400, availableWidth || 400);
+      const centerLeft = Math.max((windowWidth - centerWidth) / 2, horizontalMargin);
+
       const webBase: ViewStyle = {
         position: 'fixed' as any,
         zIndex: 2000,
@@ -425,19 +431,19 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 
       switch (position) {
         case 'top-left':
-          return { ...webBase, top: 20, left: 20 };
+          return { ...webBase, top: 20, left: horizontalMargin };
         case 'top-right':
-          return { ...webBase, top: 20, right: 20 };
+          return { ...webBase, top: 20, right: horizontalMargin };
         case 'top-center':
-          return { ...webBase, top: 20, left: '50%', transform: [{ translateX: -200 }], alignSelf: 'center' };
+          return { ...webBase, top: 20, left: centerLeft, width: centerWidth };
         case 'bottom-left':
-          return { ...webBase, bottom: 20, left: 20 };
+          return { ...webBase, bottom: 20, left: horizontalMargin };
         case 'bottom-right':
-          return { ...webBase, bottom: 20, right: 20 };
+          return { ...webBase, bottom: 20, right: horizontalMargin };
         case 'bottom-center':
-          return { ...webBase, bottom: 20, left: '50%', transform: [{ translateX: -200 }], alignSelf: 'center' };
+          return { ...webBase, bottom: 20, left: centerLeft, width: centerWidth };
         default:
-          return { ...webBase, top: 20, right: 20 };
+          return { ...webBase, top: 20, right: horizontalMargin };
       }
     }
 
@@ -609,16 +615,6 @@ export const toasts: ToastContextValue = {
 // Hook to get toasts object with actual context
 export const useToastApi = () => useToast();
 
-// Legacy aliases for backwards compatibility
-export const toast = toasts;
-export const notifications = toasts;
-
 export const useActiveToasts = useActiveToast;
 
 export const onToastsRequested = onToastRequested;
-export const onNotificationsRequested = onToastRequested;
-
-export const useNotifications = () => useToast();
-export const useNotificationsApi = () => useToastApi();
-
-export const NotificationsProvider = ToastProvider;

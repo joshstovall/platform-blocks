@@ -1,14 +1,25 @@
-import { TableOfContents } from '@platform-blocks/ui';
+import { Column, TableOfContents } from '@platform-blocks/ui';
+
+const INITIAL_ITEMS = [
+  { id: 'intro', value: 'Introduction', depth: 1 },
+  { id: 'schedule', value: 'Release schedule', depth: 2 },
+  { id: 'api', value: 'API reference', depth: 2 },
+  { id: 'hooks', value: 'Hooks', depth: 3 },
+  { id: 'migration', value: 'Migration', depth: 1 },
+];
 
 export default function Demo() {
   return (
-    <TableOfContents 
-      variant="outline" 
-      minDepthToOffset={2} 
-      depthOffset={28} 
-      size="xs" 
-      p={8}
-      style={{ maxWidth: 260 }}
-    />
+    <Column gap="sm" align="flex-start">
+      <TableOfContents
+        initialData={INITIAL_ITEMS}
+        variant="outline"
+        minDepthToOffset={2}
+        depthOffset={28}
+        size="xs"
+        p="sm"
+        style={{ width: 240 }}
+      />
+    </Column>
   );
 }

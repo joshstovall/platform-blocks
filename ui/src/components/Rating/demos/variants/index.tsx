@@ -1,11 +1,31 @@
-import { Rating, Text, Column, Block } from '@platform-blocks/ui';
+import { useState } from 'react';
+import { Block, Rating } from '@platform-blocks/ui';
 
 export default function Demo() {
+  const [interactiveValue, setInteractiveValue] = useState<number>(4);
+
   return (
-    <Block gap={16}>
-      <Rating value={4} readOnly size="lg" label="Default Rating" />
-      <Rating value={4} readOnly size="lg" color="#FF6B6B" label="Custom Color" />
-      <Rating value={3} readOnly size="xl" label="Different Size" />
+    <Block gap="lg">
+      <Rating
+        value={interactiveValue}
+        onChange={setInteractiveValue}
+        size="lg"
+        label="Interactive rating"
+      />
+      <Rating
+        value={4.5}
+        readOnly
+        size="lg"
+        label="Read-only rating"
+        disclaimer="Use `readOnly` to show aggregated scores."
+      />
+      <Rating
+        defaultValue={3}
+        showTooltip
+        size="lg"
+        label="Tooltip rating"
+        disclaimer="Tooltips show numeric value on hover."
+      />
     </Block>
   );
 }

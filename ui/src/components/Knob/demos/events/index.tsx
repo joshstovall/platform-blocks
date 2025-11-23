@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Card, Flex, Knob, Text } from '@platform-blocks/ui';
+
+import { Column, Knob, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [value, setValue] = useState(32);
@@ -7,30 +8,30 @@ export default function Demo() {
   const [committed, setCommitted] = useState(value);
 
   return (
-    <Card padding={24} shadow="sm" style={{ width: 300 }}>
-      <Flex direction="column" gap="md">
-        <Knob
-          value={value}
-          onChange={(next) => setValue(next)}
-          onChangeEnd={(next) => setCommitted(next)}
-          onScrubStart={() => setIsScrubbing(true)}
-          onScrubEnd={() => setIsScrubbing(false)}
-          min={0}
-          max={64}
-          step={1}
-          size={150}
-          formatLabel={(current) => `${Math.round(current)}%`}
-        />
-        <Text size="sm" style={{ color: '#666' }}>
+    <Column gap="sm" fullWidth>
+      <Knob
+        value={value}
+        onChange={setValue}
+        onChangeEnd={setCommitted}
+        onScrubStart={() => setIsScrubbing(true)}
+        onScrubEnd={() => setIsScrubbing(false)}
+        min={0}
+        max={64}
+        step={1}
+        size={150}
+        formatLabel={(current) => `${Math.round(current)}%`}
+      />
+      <Column gap="xs">
+        <Text size="xs" colorVariant="secondary">
           Live value: {Math.round(value)}%
         </Text>
-        <Text size="sm" style={{ color: '#666' }}>
+        <Text size="xs" colorVariant="secondary">
           Last commit: {Math.round(committed)}%
         </Text>
-        <Text size="sm" style={{ color: isScrubbing ? '#007aff' : '#666' }}>
+        <Text size="xs" colorVariant={isScrubbing ? 'primary' : 'secondary'}>
           {isScrubbing ? 'User is scrubbing' : 'Idle'}
         </Text>
-      </Flex>
-    </Card>
+      </Column>
+    </Column>
   );
 }

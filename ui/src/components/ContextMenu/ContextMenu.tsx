@@ -67,7 +67,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     },
     onPressIn: (e: any) => {
       if (Platform.OS === 'web') return; // rely on contextmenu for web
-      longPressTimer.current && clearTimeout(longPressTimer.current);
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
       longPressTimer.current = setTimeout(() => {
         const x = (e.nativeEvent?.pageX || e.nativeEvent?.locationX || 0);
         const y = (e.nativeEvent?.pageY || e.nativeEvent?.locationY || 0);
@@ -75,7 +77,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       }, longPressDelay);
     },
     onPressOut: () => {
-      longPressTimer.current && clearTimeout(longPressTimer.current);
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
     }
   };
 

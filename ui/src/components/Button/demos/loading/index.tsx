@@ -1,44 +1,52 @@
-import React, { useState } from 'react';
-import { Button, Row } from '@platform-blocks/ui';
+import { useEffect, useRef, useState } from 'react';
+import { Button, Column, Row } from '@platform-blocks/ui';
+
+const LOADING_DURATION_MS = 2000;
 
 export default function Demo() {
-  const [loading, setLoading] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+
+  useEffect(() => () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, []);
+
+  const triggerLoading = (key: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setActiveKey(key);
+    timeoutRef.current = setTimeout(() => {
+      setActiveKey(null);
+      timeoutRef.current = null;
+    }, LOADING_DURATION_MS);
+  };
 
   return (
-    <Row align="flex-start" gap="lg">
-       <Button
-        title="Submit Application"
-        loading={loading}
-        tooltip="Click to submit your application"
-        onPress={() => {
-          setLoading(true);
-          setTimeout(() => setLoading(false), 2000);
-        }}
-      />
-      <Button
-        title="Submit Application"
-        loadingTitle="Submitting..."
-        loading={loading}
-        tooltip="This shows custom loading text"
-        tooltipPosition="bottom"
-        onPress={() => {
-          setLoading(true);
-          setTimeout(() => setLoading(false), 2000);
-        }}
-      />
-      {/* disabled button */}
-      <Button
-        title="Submit Application"
-        loadingTitle="Disabled and Loading..."
-        loading={loading}
-        disabled={loading}
-        tooltip="This button is disabled while loading"
-        tooltipPosition="right"
-        onPress={() => {
-          setLoading(true);
-          setTimeout(() => setLoading(false), 2000);
-        }}
-      />
-  </Row>
+    <Column gap="sm">
+      <Row gap="md" wrap="wrap" align="flex-start">
+        <Button loading={activeKey === 'default'} onPress={() => triggerLoading('default')}>
+          Submit application
+        </Button>
+        <Button
+          loading={activeKey === 'custom'}
+          loadingTitle="Submitting…"
+          onPress={() => triggerLoading('custom')}
+        >
+          Submit application
+        </Button>
+        <Button
+          loading={activeKey === 'disabled'}
+          disabled={activeKey === 'disabled'}
+          loadingTitle="Disabled while loading"
+          onPress={() => triggerLoading('disabled')}
+        >
+          Submit application
+        </Button>
+      </Row>
+    </Column>
   );
 }

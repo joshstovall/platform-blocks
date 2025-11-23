@@ -1,20 +1,22 @@
-import { Block, Card, Text } from '@platform-blocks/ui';
-const VARIANTS = ['filled', 'outline', 'elevated', 'subtle', 'ghost', 'gradient'] as const;
-const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+import { Card, Column, Text } from '@platform-blocks/ui';
 
-export default function CardVariantsDemo() {
+const VARIANTS = ['filled', 'outline', 'elevated', 'subtle', 'ghost', 'gradient'] as const;
+
+export default function Demo() {
   return (
-    <Block gap="lg">
+    <Column gap="lg">
       {VARIANTS.map((variant) => (
-        <Card key={variant} variant={variant} padding={16}>
-          <Text variant="h6" mb="xs">
-            {capitalize(variant)} card
-          </Text>
-          <Text colorVariant="secondary">
-            This card showcases the {variant} visual treatment.
-          </Text>
+        <Card key={variant} variant={variant} p="lg" radius="lg">
+          <Column gap="xs">
+            <Text variant="small" colorVariant="muted">
+              {String(variant).toUpperCase()} variant
+            </Text>
+            <Text colorVariant="muted">
+              Apply the {variant} treatment to match surface contrast needs.
+            </Text>
+          </Column>
         </Card>
       ))}
-    </Block>
+    </Column>
   );
 }

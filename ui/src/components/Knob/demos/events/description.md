@@ -1,1 +1,12 @@
-Tracks live value updates, committed values, and scrubbing state via `onChange`, `onChangeEnd`, `onScrubStart`, and `onScrubEnd` callbacks.
+---
+title: Events
+category: behavior
+order: 50
+tags: [events, scrubbing, callbacks]
+highlightLines: []
+status: experimental
+since: 1.0.0
+hidden: false
+---
+
+Demonstrates live value, committed value, and scrubbing lifecycle callbacks.

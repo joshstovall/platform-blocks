@@ -23,16 +23,16 @@ export default function AlignFlexDemo() {
             ) : value === 'stretch' ? (
               <Flex direction="row" align={value as any} gap="sm" height={80}>
                 {/* No fixed heights so children stretch to the container's cross-size */}
-                <Card p="xs" style={{ minWidth: 32 }}><Text variant="caption">1</Text></Card>
-                <Card p="xs" style={{ minWidth: 32 }}><Text variant="caption">2</Text></Card>
-                <Card p="xs" style={{ minWidth: 32 }}><Text variant="caption">3</Text></Card>
+                <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">1</Text></Card>
+                <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">2</Text></Card>
+                <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">3</Text></Card>
               </Flex>
             ) : (
               <Flex direction="row" align={value as any} gap="sm" height={80}>
                 {/* Different heights to showcase flex-start/center/flex-end */}
-                <Card p="xs" height={40}><Text variant="caption">A</Text></Card>
-                <Card p="xs" height={60}><Text variant="caption">B</Text></Card>
-                <Card p="xs" height={30}><Text variant="caption">C</Text></Card>
+                <Card p="xs" height={40}><Text variant="small">A</Text></Card>
+                <Card p="xs" height={60}><Text variant="small">B</Text></Card>
+                <Card p="xs" height={30}><Text variant="small">C</Text></Card>
               </Flex>
             )}
           </Card>

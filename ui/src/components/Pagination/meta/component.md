@@ -27,8 +27,6 @@ examples:
   - Advanced pagination with custom controls
 ---
 
-# Pagination
-
 A comprehensive pagination component that provides intuitive navigation through large datasets. The component offers flexible configuration options and consistent styling across different use cases.
 
 ## Features

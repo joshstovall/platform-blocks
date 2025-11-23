@@ -1,6 +1,6 @@
 import { Blockquote } from '@platform-blocks/ui';
 
-export default function BlockquoteFeaturedDemo() {
+export default function Demo() {
   return (
     <Blockquote
       variant="featured"
@@ -9,7 +9,7 @@ export default function BlockquoteFeaturedDemo() {
       quoteIconPosition="top-center"
       author={{
         name: 'Marie Curie',
-        title: 'Nobel Prize Winner'
+        title: 'Physicist & Chemist',
       }}
       date="1903"
     >

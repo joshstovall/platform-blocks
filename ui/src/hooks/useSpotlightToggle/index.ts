@@ -1,0 +1,1 @@
+export { useSpotlightToggle } from '../useHotkeys';

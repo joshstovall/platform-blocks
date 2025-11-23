@@ -397,18 +397,30 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     return visibleSeries;
   }, [resolvedLayout, visibleSeries, normalizedSeries]);
 
+  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
   const chartDimensions = useMemo(
-    () => ({
-      padding: { top: 40, right: 20, bottom: 60, left: 80 },
-      plotWidth: width - 80 - 20,
-      plotHeight: height - 40 - 60,
-    }),
-    [width, height]
+    () => {
+      const adjustedPadding = !legend?.show ? basePadding : (() => {
+        const position = legend.position || 'bottom';
+        return {
+          ...basePadding,
+          top: position === 'top' ? basePadding.top + 40 : basePadding.top,
+          bottom: position === 'bottom' ? basePadding.bottom + 40 : basePadding.bottom,
+          left: position === 'left' ? basePadding.left + 120 : basePadding.left,
+          right: position === 'right' ? basePadding.right + 120 : basePadding.right,
+        };
+      })();
+      return {
+        padding: adjustedPadding,
+        plotWidth: width - adjustedPadding.left - adjustedPadding.right,
+        plotHeight: height - adjustedPadding.top - adjustedPadding.bottom,
+      };
+    },
+    [width, height, legend?.show, legend?.position]
   );
 
   const { padding, plotWidth, plotHeight } = chartDimensions;
 
-  const tooltipEnabled = tooltip?.show !== false;
   const usePercentageStack = resolvedLayout === 'stacked' && stackMode === '100%';
 
   const metrics = useMemo(() => {
@@ -761,16 +773,49 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     [disabled, onDataPointPress, onPress]
   );
 
-  const handleHoverOut = useCallback(() => {
+  const updatePointerState = useCallback((x: number, y: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
+    if (!setPointer && !setCrosshair) return;
+    const insideX = x >= 0 && x <= plotWidth;
+    const insideY = y >= 0 && y <= plotHeight;
+    if (setPointer) {
+      setPointer({
+        x,
+        y,
+        inside: insideX && insideY,
+        insideX,
+        insideY,
+        pageX: meta?.pageX,
+        pageY: meta?.pageY,
+        data: meta?.data ?? null,
+      });
+    }
+    if (setCrosshair && insideX) {
+      const clampedX = Math.max(0, Math.min(plotWidth, x));
+      let dataX: number;
+      if (orientation === 'vertical') {
+        const rawIndex = categoryScaleX.invert ? categoryScaleX.invert(clampedX) : 0;
+        const maxIndex = Math.max(categories.length - 1, 0);
+        dataX = Math.max(0, Math.min(maxIndex, Math.round(rawIndex)));
+      } else {
+        dataX = valueScaleX.invert ? valueScaleX.invert(clampedX) : metrics.minValue;
+      }
+      setCrosshair({ dataX, pixelX: clampedX });
+    }
+  }, [setPointer, setCrosshair, plotWidth, plotHeight, orientation, categoryScaleX, categories.length, valueScaleX, metrics.minValue]);
+
+  const handleHoverOut = useCallback((options?: { preserveCrosshair?: boolean; suppressPointerReset?: boolean }) => {
     if (hoveredIndex != null) {
       updateScale(hoveredIndex, 1);
     }
     setHoveredIndex(null);
-    if (tooltipEnabled && setPointer) {
-      setPointer({ x: 0, y: 0, inside: false, data: null });
+    if (!options?.suppressPointerReset && setPointer) {
+      setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
     }
-    setCrosshair?.(null);
-  }, [hoveredIndex, updateScale, tooltipEnabled, setPointer, setCrosshair]);
+    const shouldPreserve = options?.preserveCrosshair ?? true;
+    if (!shouldPreserve) {
+      setCrosshair?.(null);
+    }
+  }, [hoveredIndex, updateScale, setPointer, setCrosshair]);
 
   const handleHoverIn = useCallback(
     (bar: ComputedBar) => {
@@ -778,35 +823,25 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
       setHoveredIndex(bar.globalIndex);
       updateScale(bar.globalIndex, pressedIndex === bar.globalIndex ? 0.92 : 1.05);
 
-      if (tooltipEnabled && setPointer) {
-        const pointerX = bar.x + bar.width / 2;
-        const pointerY = orientation === 'vertical' ? bar.y : bar.y + bar.height / 2;
-        const formattedValue = valueFormatter
-          ? valueFormatter(bar.originalValue, bar.datum, bar.globalIndex)
-          : formatNumber(bar.originalValue);
-        setPointer({
-          x: pointerX,
-          y: pointerY,
-          inside: true,
-          data: {
-            type: 'bar',
-            label: bar.datum.category,
-            value: bar.originalValue,
-            formattedValue,
-            seriesId: bar.seriesId,
-            seriesName: bar.seriesName,
-            datum: bar.datum,
-            percentContribution: bar.percentContribution,
-          },
-        });
-        if (orientation === 'vertical') {
-          setCrosshair?.({ dataX: bar.categoryIndex, pixelX: pointerX });
-        } else {
-          setCrosshair?.({ dataX: bar.originalValue, pixelX: bar.x + bar.width });
-        }
-      }
+      const pointerX = bar.x + bar.width / 2;
+      const pointerY = orientation === 'vertical' ? bar.y : bar.y + bar.height / 2;
+      const formattedValue = valueFormatter
+        ? valueFormatter(bar.originalValue, bar.datum, bar.globalIndex)
+        : formatNumber(bar.originalValue);
+      updatePointerState(pointerX, pointerY, {
+        data: {
+          type: 'bar',
+          label: bar.datum.category,
+          value: bar.originalValue,
+          formattedValue,
+          seriesId: bar.seriesId,
+          seriesName: bar.seriesName,
+          datum: bar.datum,
+          percentContribution: bar.percentContribution,
+        },
+      });
     },
-    [disabled, updateScale, pressedIndex, tooltipEnabled, setPointer, orientation, valueFormatter, setCrosshair]
+    [disabled, updateScale, pressedIndex, orientation, valueFormatter, updatePointerState]
   );
 
   useEffect(() => {
@@ -944,6 +979,8 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
       const x = locationX;
       const y = locationY;
 
+      updatePointerState(x, y, { pageX, pageY });
+
       let target: ComputedBar | null = null;
       let bestDistance = Number.POSITIVE_INFINITY;
 
@@ -969,14 +1006,14 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
           });
         }
       } else {
-        handleHoverOut();
+        handleHoverOut({ preserveCrosshair: true, suppressPointerReset: true });
       }
     },
-    [bars, disabled, handleHoverIn, handlePress, handleHoverOut]
+    [bars, disabled, handleHoverIn, handlePress, handleHoverOut, updatePointerState]
   );
 
   const handlePointerEnd = useCallback(() => {
-    handleHoverOut();
+    handleHoverOut({ preserveCrosshair: false });
   }, [handleHoverOut]);
 
   const isWeb = Platform.OS === 'web';
@@ -1162,7 +1199,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
                 stroke={stroke}
                 strokeWidth={isHovered ? 1.5 : 0}
                 onHoverIn={() => handleHoverIn(bar)}
-                onHoverOut={handleHoverOut}
+                onHoverOut={() => handleHoverOut({ preserveCrosshair: true, suppressPointerReset: true })}
                 onPress={(e) => handlePress(bar, e)}
                 onPressIn={() => handlePressIn(bar.globalIndex)}
                 onPressOut={() => handlePressOut(bar.globalIndex)}

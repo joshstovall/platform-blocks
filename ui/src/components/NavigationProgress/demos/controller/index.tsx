@@ -1,19 +1,23 @@
-import { Button, Flex } from '@platform-blocks/ui';
-import { NavigationProgress, navigationProgress } from '../..';
+import { useEffect } from 'react';
+import { Button, Column, NavigationProgress, Row, navigationProgress } from '@platform-blocks/ui';
 
-export default function ControllerNavigationProgressDemo() {
+export default function Demo() {
+  useEffect(() => {
+    navigationProgress.reset();
+  }, []);
+
   return (
-    <Flex gap={12} style={{ paddingTop: 32 }}>
+    <Column gap="sm" align="flex-start">
       <NavigationProgress />
-      <Flex direction="row" gap={8} wrap="wrap">
-        <Button title="Start" size="sm" onPress={() => navigationProgress.start()} />
-        <Button title="Stop" size="sm" onPress={() => navigationProgress.stop()} />
-        <Button title="Inc" size="sm" onPress={() => navigationProgress.increment()} />
-        <Button title="Dec" size="sm" onPress={() => navigationProgress.decrement()} />
-        <Button title="50%" size="sm" onPress={() => navigationProgress.set(50)} />
-        <Button title="Reset" size="sm" onPress={() => navigationProgress.reset()} />
-        <Button title="Complete" size="sm" variant="outline" onPress={() => navigationProgress.complete()} />
-      </Flex>
-    </Flex>
+      <Row gap="sm" wrap="wrap">
+        <Button size="sm" onPress={() => navigationProgress.start()}>Start</Button>
+        <Button size="sm" onPress={() => navigationProgress.stop()}>Stop</Button>
+        <Button size="sm" onPress={() => navigationProgress.increment()}>Increment</Button>
+        <Button size="sm" onPress={() => navigationProgress.decrement()}>Decrement</Button>
+        <Button size="sm" onPress={() => navigationProgress.set(50)}>Set 50%</Button>
+        <Button size="sm" onPress={() => navigationProgress.reset()}>Reset</Button>
+        <Button size="sm" variant="outline" onPress={() => navigationProgress.complete()}>Complete</Button>
+      </Row>
+    </Column>
   );
 }

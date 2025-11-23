@@ -9,7 +9,7 @@ export default function IOSPlatformScreen() {
   return (
     <PageLayout>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Flex p="lg" gap="xl" direction='column'>
+        <Flex p="lg" gap="xl" direction="column">
 
           {/* Header with Breadcrumbs */}
           <Flex direction="column" gap="xs">
@@ -44,19 +44,19 @@ export default function IOSPlatformScreen() {
             <Text variant="h6" mb="xs">
               Native iOS Experience
             </Text>
-            <Text variant="body" colorVariant="secondary" mb="md" style={{ lineHeight: 24 }}>
+            <Text variant="p" colorVariant="secondary" mb="md" style={{ lineHeight: 24 }}>
               Platform Blocks provides native iOS components that integrate seamlessly with UIKit,
               following Apple's Human Interface Guidelines while maintaining consistency across platforms.
             </Text>
             <Flex direction="row" wrap="wrap" gap="xs">
               <Flex px="xs" py="xs" style={{ backgroundColor: '#007AFF15', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#007AFF' }}>iOS 13+</Text>
+                <Text variant="small" style={{ color: '#007AFF' }}>iOS 13+</Text>
               </Flex>
               <Flex px="xs" py="xs" style={{ backgroundColor: '#34C75915', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#34C759' }}>Swift Compatible</Text>
+                <Text variant="small" style={{ color: '#34C759' }}>Swift Compatible</Text>
               </Flex>
               <Flex px="xs" py="xs" style={{ backgroundColor: '#FF950015', borderRadius: 12 }}>
-                <Text variant="caption" style={{ color: '#FF9500' }}>UIKit Integration</Text>
+                <Text variant="small" style={{ color: '#FF9500' }}>UIKit Integration</Text>
               </Flex>
             </Flex>
           </Card>
@@ -69,11 +69,11 @@ export default function IOSPlatformScreen() {
               <Block>
                 <Flex direction="row" align="flex-start" gap="sm">
                   <Icon name="check" size={20} color="#34C759" mt={2} />
-                  <Text variant="body" weight="semibold" mb={4}>
+                  <Text variant="p" weight="semibold" mb={4}>
                     Native Performance
                   </Text>
                 </Flex>
-                <Text variant="caption" colorVariant="secondary">
+                <Text variant="small" colorVariant="secondary">
                   Compiled to native iOS components for optimal performance and memory usage
                 </Text>
               </Block>
@@ -82,11 +82,11 @@ export default function IOSPlatformScreen() {
               <Block>
                 <Flex direction="row" align="flex-start" gap="sm">
                   <Icon name="check" size={20} color="#34C759" mt={2} />
-                  <Text variant="body" weight="semibold" mb={4}>
+                  <Text variant="p" weight="semibold" mb={4}>
                     Theming & Customization
                   </Text>
                 </Flex>
-                <Text variant="caption" colorVariant="secondary">
+                <Text variant="small" colorVariant="secondary">
                   Easily customize colors, typography, and spacing to match your brand
                 </Text>
               </Block>
@@ -95,11 +95,11 @@ export default function IOSPlatformScreen() {
               <Block>
                 <Flex direction="row" align="flex-start" gap="sm">
                   <Icon name="check" size={20} color="#34C759" mt={2} />
-                  <Text variant="body" weight="semibold" mb={4}>
+                  <Text variant="p" weight="semibold" mb={4}>
                     Cross-Platform Consistency
                   </Text>
                 </Flex>
-                <Text variant="caption" colorVariant="secondary">
+                <Text variant="small" colorVariant="secondary">
                   Ensure a consistent look and feel across iOS and other platforms
                 </Text>
               </Block>
@@ -108,11 +108,11 @@ export default function IOSPlatformScreen() {
               <Block>
                 <Flex direction="row" align="flex-start" gap="sm">
                   <Icon name="accessibility" size={20} color="#34C759" mt={2} />
-                  <Text variant="body" weight="semibold" mb={4}>
+                  <Text variant="p" weight="semibold" mb={4}>
                     Accessibility
                   </Text>
                 </Flex>
-                <Text variant="caption" colorVariant="secondary">
+                <Text variant="small" colorVariant="secondary">
                   Built-in support for VoiceOver, Dynamic Type, and other iOS accessibility features
                 </Text>
               </Block>
@@ -123,14 +123,14 @@ export default function IOSPlatformScreen() {
           <Block direction="column" gap="md">
             <Text variant="h6">Installation</Text>
             <Card variant="filled" p="md" fullWidth>
-              <Text variant="caption" weight="semibold" mb="xs" style={{ color: '#666' }}>
+              <Text variant="small" weight="semibold" mb="xs" style={{ color: '#666' }}>
                 NPM
               </Text>
               <CodeBlock variant="hacker" mb="md" fullWidth>
                 npm install platform-blocks
               </CodeBlock>
 
-              <Text variant="caption" colorVariant="secondary">
+              <Text variant="small" colorVariant="secondary">
                 For iOS-specific setup instructions, see our installation guide.
               </Text>
             </Card>
@@ -140,13 +140,13 @@ export default function IOSPlatformScreen() {
           <Flex direction="column" gap="md">
             <Text variant="h6">iOS Configuration</Text>
             <Card variant="outline" p="md">
-              <Text variant="body" mb="xs">
+              <Text variant="p" mb="xs">
                 Configure your iOS project to work with Platform Blocks:
               </Text>
 
               <Flex direction="column" gap="xs">
                 <Flex>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     1. Pod Installation
                   </Text>
                   <CodeBlock>
@@ -156,19 +156,19 @@ export default function IOSPlatformScreen() {
 
 
                 <Flex>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     2. Info.plist Configuration
                   </Text>
-                  <Text variant="caption" colorVariant="secondary" style={{ marginBottom: 8 }}>
+                  <Text variant="small" colorVariant="secondary" style={{ marginBottom: 8 }}>
                     Add required permissions and configurations to your Info.plist
                   </Text>
                 </Flex>
 
                 <Flex>
-                  <Text variant="body" weight="semibold" style={{ marginBottom: 4 }}>
+                  <Text variant="p" weight="semibold" style={{ marginBottom: 4 }}>
                     3. Theme Setup
                   </Text>
-                  <Text variant="caption" colorVariant="secondary">
+                  <Text variant="small" colorVariant="secondary">
                     Configure your app's theme to match iOS design patterns
                   </Text>
                 </Flex>

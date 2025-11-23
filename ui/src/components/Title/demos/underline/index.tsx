@@ -1,14 +1,18 @@
-import { Title, Card, Flex } from '@platform-blocks/ui';
+import { Card, Column, Title } from '@platform-blocks/ui';
 
-export default function UnderlineTitleDemo() {
+export default function Demo() {
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={20}>
-        <Title underline>Underline Only</Title>
-        <Title afterline>Afterline Only</Title>
-        <Title underline afterline>Underline + Afterline</Title>
-        <Title underline underlineColor="#ff4d4f" underlineStroke={4}>Custom Color & Thickness</Title>
-      </Flex>
-    </Card>
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="sm">
+          <Title underline>Underline only</Title>
+          <Title afterline>Afterline only</Title>
+          <Title underline afterline>Underline with afterline</Title>
+          <Title underline underlineColor="#ff4d4f" underlineStroke={4}>
+            Custom underline color and stroke
+          </Title>
+        </Column>
+      </Card>
+    </Column>
   );
 }

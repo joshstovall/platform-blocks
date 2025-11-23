@@ -1,22 +1,45 @@
-import { Spotlight, useSpotlightStoreInstance, Text, Button, Flex, Card, Icon } from '@platform-blocks/ui';
+import { Button, Card, Column, Icon, Spotlight, Text, useSpotlightStoreInstance, type SpotlightProps } from '@platform-blocks/ui';
 
-const ACTIONS = [
-  { id: 'deploy', label: 'Deploy Service', description: 'Trigger CI/CD deployment', icon: <Icon name="bolt" size="md" />, onPress: () => console.log('deploy') },
-  { id: 'logs', label: 'View Logs', description: 'Inspect recent system logs', icon: <Icon name="code" size="md" />, onPress: () => console.log('logs') },
-  { id: 'alerts', label: 'Open Alerts', description: 'Show active alerts', icon: <Icon name="bell" size="md" />, onPress: () => console.log('alerts') },
+const actions: SpotlightProps['actions'] = [
+  {
+    id: 'deploy',
+    label: 'Deploy service',
+    description: 'Trigger the CI/CD pipeline',
+    icon: <Icon name="bolt" size="md" />,
+    onPress: () => console.log('deploy service'),
+  },
+  {
+    id: 'logs',
+    label: 'Inspect logs',
+    description: 'Open the latest runtime logs',
+    icon: <Icon name="code" size="md" />,
+    onPress: () => console.log('view logs'),
+  },
+  {
+    id: 'alerts',
+    label: 'Review alerts',
+    description: 'Check active incidents',
+    icon: <Icon name="bell" size="md" />,
+    onPress: () => console.log('open alerts'),
+  },
 ];
 
 export default function Demo() {
   const [store] = useSpotlightStoreInstance();
-  
+
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="lg" weight="semibold" mb={8}>Custom Icons</Text>
-        <Text size="sm" color="dimmed" mb={12}>Actions can use custom React nodes for icons.</Text>
-        <Button title="Open Spotlight" variant="outline" onPress={() => store.open()} />
+    <Column gap="lg">
+      <Card p="md">
+        <Column gap="md">
+          <Text size="sm" colorVariant="secondary">
+            Icons accept full React nodes, so you can swap in composable UI like `Icon`, avatars, or status badges for richer visuals.
+          </Text>
+          <Button variant="outline" onPress={() => store.open()}>
+            Open spotlight
+          </Button>
+        </Column>
       </Card>
-      <Spotlight actions={ACTIONS as any} store={store} />
-    </Flex>
+      <Spotlight actions={actions} store={store} />
+    </Column>
   );
 }

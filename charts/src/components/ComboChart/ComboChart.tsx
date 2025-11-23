@@ -373,6 +373,9 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
   const setCrosshair = interaction?.setCrosshair;
+  const wantsCrosshairUpdates = (enableCrosshair !== false) || Boolean(multiTooltip);
+  const pointerStateAvailable = Boolean(setPointer || (wantsCrosshairUpdates && setCrosshair));
+  const isWeb = Platform.OS === 'web';
 
   const normalizedLayers = useMemo<NormalizedLayer[]>(() => {
     return layers.map((layer, index) => {
@@ -438,6 +441,8 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
 
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
+  const pointerTrackingEnabled = pointerStateAvailable && !disabled && plotWidth > 0 && plotHeight > 0;
+  const hasContinuousPointerTracking = pointerTrackingEnabled && isWeb;
 
   const { xDomain, yDomainLeft, yDomainRight } = useMemo(() => {
     const leftLayers = resolvedLayers.filter((layer) => layer.targetAxis === 'left');
@@ -484,6 +489,75 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   const scaleYLeft = useMemo(() => linearScale(yDomainLeft, [plotHeight, 0]), [yDomainLeft, plotHeight]);
   const scaleYRight = useMemo(() => linearScale(yDomainRight, [plotHeight, 0]), [yDomainRight, plotHeight]);
 
+  const updatePointerFromPlotCoords = useCallback((plotX: number, plotY: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
+    if (!pointerStateAvailable) return;
+    const chartX = padding.left + plotX;
+    const chartY = padding.top + plotY;
+    const insideX = plotX >= 0 && plotX <= plotWidth;
+    const insideY = plotY >= 0 && plotY <= plotHeight;
+    if (setPointer) {
+      setPointer({
+        x: chartX,
+        y: chartY,
+        inside: insideX && insideY,
+        insideX,
+        insideY,
+        pageX: meta?.pageX,
+        pageY: meta?.pageY,
+        data: meta?.data ?? null,
+      });
+    }
+    if (wantsCrosshairUpdates && setCrosshair) {
+      const clampedX = Math.max(0, Math.min(plotWidth, plotX));
+      const dataX = scaleX.invert ? scaleX.invert(clampedX) : xDomain[0];
+      setCrosshair({ dataX, pixelX: padding.left + clampedX });
+    }
+  }, [pointerStateAvailable, padding.left, padding.top, plotWidth, plotHeight, setPointer, wantsCrosshairUpdates, setCrosshair, scaleX, xDomain]);
+
+  const clearPointerState = useCallback(() => {
+    if (!pointerStateAvailable) return;
+    if (setPointer) {
+      setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
+    }
+    if (wantsCrosshairUpdates) {
+      setCrosshair?.(null);
+    }
+  }, [pointerStateAvailable, setPointer, wantsCrosshairUpdates, setCrosshair]);
+
+  useEffect(() => {
+    if (!pointerTrackingEnabled) {
+      clearPointerState();
+    }
+  }, [pointerTrackingEnabled, clearPointerState]);
+
+  const handleWebPointerMove = useCallback((event: any) => {
+    if (!hasContinuousPointerTracking) return;
+    const rect = event?.currentTarget?.getBoundingClientRect?.();
+    if (!rect) return;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    updatePointerFromPlotCoords(x, y, { pageX: event.pageX ?? event.clientX, pageY: event.pageY ?? event.clientY });
+  }, [hasContinuousPointerTracking, updatePointerFromPlotCoords]);
+
+  const handlePointerLeave = useCallback(() => {
+    if (!hasContinuousPointerTracking) return;
+    clearPointerState();
+  }, [hasContinuousPointerTracking, clearPointerState]);
+
+  const svgPointerHandlers = useMemo(() => {
+    if (!hasContinuousPointerTracking) return {};
+    return {
+      // @ts-ignore react-native-web pointer events
+      onPointerMove: handleWebPointerMove,
+      // @ts-ignore react-native-web pointer events
+      onPointerDown: handleWebPointerMove,
+      // @ts-ignore react-native-web pointer events
+      onPointerLeave: handlePointerLeave,
+      // @ts-ignore react-native-web pointer events
+      onPointerCancel: handlePointerLeave,
+    } as const;
+  }, [hasContinuousPointerTracking, handleWebPointerMove, handlePointerLeave]) as Record<string, any>;
+
   const barLayers = resolvedLayers.filter((layer): layer is NormalizedBarLayer => layer.type === 'bar' || layer.type === 'histogram');
   const lineLayers = resolvedLayers.filter((layer): layer is NormalizedLineLikeLayer => layer.type === 'line' || layer.type === 'area' || layer.type === 'density');
 
@@ -504,29 +578,39 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
         id: layer.id,
         name: layer.name,
         color: layer.color,
-        points: layer.points.map((point) => ({
-          x: point.x,
-          y: point.y,
-          meta: {
-            axis: layer.targetAxis,
-            type: layer.type,
-            ...point.meta,
-          },
-        })),
+        points: layer.points.map((point) => {
+          const axisScale = layer.targetAxis === 'right' ? scaleYRight : scaleYLeft;
+          const pixelX = padding.left + scaleX(point.x);
+          const pixelY = padding.top + axisScale(point.y);
+          return {
+            x: point.x,
+            y: point.y,
+            pixelX,
+            pixelY,
+            meta: {
+              axis: layer.targetAxis,
+              type: layer.type,
+              chartX: pixelX,
+              chartY: pixelY,
+              ...point.meta,
+            },
+          };
+        }),
         visible: layer.visible,
       });
     });
-  }, [registerSeries, resolvedLayers, layerSignature]);
+  }, [registerSeries, resolvedLayers, layerSignature, scaleX, scaleYLeft, scaleYRight, padding.left, padding.top]);
 
   const handleBarHover = useCallback((bar: ComputedBarRect) => {
-    setPointer?.({ x: bar.x + bar.width / 2, y: bar.y, inside: true });
-    setCrosshair?.({ dataX: bar.dataX, pixelX: bar.x + bar.width / 2 });
-  }, [setPointer, setCrosshair]);
+    const centerPlotX = bar.x + bar.width / 2 - padding.left;
+    const pointerPlotY = bar.y - padding.top;
+    updatePointerFromPlotCoords(centerPlotX, pointerPlotY);
+  }, [padding.left, padding.top, updatePointerFromPlotCoords]);
 
-  const handleBarHoverEnd = useCallback((bar: ComputedBarRect) => {
-    setPointer?.(null);
-    setCrosshair?.(null);
-  }, [setPointer, setCrosshair]);
+  const handleBarHoverEnd = useCallback((_bar: ComputedBarRect) => {
+    if (hasContinuousPointerTracking) return;
+    clearPointerState();
+  }, [hasContinuousPointerTracking, clearPointerState]);
 
   const handleBarPress = useCallback((bar: ComputedBarRect, nativeEvent: any) => {
     const chartEvent: ChartInteractionEvent = {
@@ -616,7 +700,12 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
         />
       )}
 
-      <Svg width={plotWidth} height={plotHeight} style={{ position: 'absolute', left: padding.left, top: padding.top }}>
+      <Svg
+        width={plotWidth}
+        height={plotHeight}
+        style={{ position: 'absolute', left: padding.left, top: padding.top }}
+        {...svgPointerHandlers}
+      >
         <G>
           {barLayers.map((layer) => (
             layer.visible ? (

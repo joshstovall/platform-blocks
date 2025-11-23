@@ -1,6 +1,6 @@
 ---
-title: Basic Usage
-category: usage
+title: Basic
+category: basics
 order: 10
 tags: [basic, phone, input]
 highlightLines: []
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Basic controlled PhoneInput showing formatted display value and raw digits.
+Controlled PhoneInput example that surfaces both raw digits and the formatted display.

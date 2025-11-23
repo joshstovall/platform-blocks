@@ -1,12 +1,12 @@
 ---
 title: Positions
-category: usage
-order: 30
-tags: [positions, placement, layout]
+category: layout
+order: 20
+tags: [toast, layout, placement]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Different positioning options for toast notifications including top, bottom, left, center, and right placements.
+Set the `position` option to anchor the toast stack to any corner or edge of the viewport.

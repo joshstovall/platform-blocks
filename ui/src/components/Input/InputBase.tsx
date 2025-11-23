@@ -6,6 +6,7 @@ import { getSpacingStyles, extractSpacingProps, getLayoutStyles, extractLayoutPr
 import { factory } from '../../core/factory/factory';
 import { createInputStyles } from './styles';
 import { FieldHeader } from '../_internal/FieldHeader';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
 import { BaseInputProps, InputStyleProps, ExtendedTextInputProps } from './types';
 import { Icon } from '../Icon';
 import { ClearButton } from '../../core/components/ClearButton';
@@ -53,7 +54,8 @@ export const TextInputBase = factory<{
   ref: TextInput;
 }>((props, ref) => {
   const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(props);
-  const { layoutProps, otherProps } = extractLayoutProps(propsAfterSpacing);
+  const { layoutProps, otherProps: propsAfterLayout } = extractLayoutProps(propsAfterSpacing);
+  const { disclaimerProps: disclaimerData, otherProps } = extractDisclaimerProps(propsAfterLayout as TextInputBaseProps);
   
   const {
     value,
@@ -68,8 +70,8 @@ export const TextInputBase = factory<{
     size = 'md',
     withAsterisk,
     placeholder,
-    leftSection,
-    rightSection,
+    startSection,
+    endSection,
     focused: focusedProp,
     accessibilityLabel,
     accessibilityHint,
@@ -86,6 +88,8 @@ export const TextInputBase = factory<{
     keyboardFocusId,
     ...rest
   } = otherProps;
+
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
 
   const [focused, setFocused] = useState(false);
   const theme = useTheme();
@@ -144,9 +148,9 @@ export const TextInputBase = factory<{
     disabled: !!disabled,
     focused: isFocused,
     size,
-    hasLeftSection: !!leftSection,
-    hasRightSection: !!rightSection || showClearButton
-  }), [error, disabled, isFocused, size, leftSection, rightSection, showClearButton]);
+    hasLeftSection: !!startSection,
+    hasRightSection: !!endSection || showClearButton
+  }), [error, disabled, isFocused, size, startSection, endSection, showClearButton]);
 
   const { getInputStyles } = createInputStyles(theme, isRTL);
   const styles = getInputStyles(styleProps, radiusStyles);
@@ -288,6 +292,8 @@ export const TextInputBase = factory<{
     }
   }, [keyboardManager, pendingFocusTarget, focusTargetId]);
 
+  const disclaimerNode = renderDisclaimer();
+
   return (
     <View style={[styles.container, spacingStyles, layoutStyles, style]} {...rest}>
       <FieldHeader
@@ -301,9 +307,9 @@ export const TextInputBase = factory<{
       />
 
       <View style={styles.inputContainer}>
-        {leftSection && (
-          <View style={styles.leftSection}>
-            {leftSection}
+        {startSection && (
+          <View style={styles.startSection}>
+            {startSection}
           </View>
         )}
 
@@ -338,20 +344,22 @@ export const TextInputBase = factory<{
           )}
         </View>
 
-        {(showClearButton || rightSection) && (
-          <View style={styles.rightSection}>
+        {(showClearButton || endSection) && (
+          <View style={styles.endSection}>
             {showClearButton && (
               <ClearButton
                 onPress={handleClear}
                 size={size}
                 accessibilityLabel={clearButtonLabelText}
-                hasRightSection={!!rightSection}
+                hasRightSection={!!endSection}
               />
             )}
-            {rightSection}
+            {endSection}
           </View>
         )}
       </View>
+
+      {disclaimerNode}
 
       {error && (
         <Text style={styles.error} role="alert" accessibilityLiveRegion="polite">

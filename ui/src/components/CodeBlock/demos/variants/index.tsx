@@ -1,13 +1,13 @@
-import { CodeBlock, Flex, Card, Text } from '@platform-blocks/ui';
+import { CodeBlock, Column, Text } from '@platform-blocks/ui';
 
 const sampleCode = `function hackTheMatrix() {
   const matrix = generateMatrix();
   console.log('Entering the matrix...');
-  
-  for (let i = 0; i < matrix.length; i++) {
+
+  for (let i = 0; i < matrix.length; i += 1) {
     matrix[i].decrypt();
   }
-  
+
   return 'Welcome to the real world.';
 }`;
 
@@ -16,46 +16,41 @@ $ cd my-app
 $ npm start
 Server running on port 3000`;
 
-export default function VariantsCodeBlockDemo() {
+export default function Demo() {
   return (
-    <Card>
-      <Flex direction="column" gap={24}>
-        <Text size="lg" weight="semibold">CodeBlock Variants</Text>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="sm" weight="medium">Default Code Block</Text>
-          <CodeBlock
-            language="javascript"
-            title="matrix.js"
-            showCopyButton
-          >
+    <Column gap="sm" fullWidth>
+      <Text weight="semibold">Visual variants</Text>
+      <Text size="sm" colorVariant="secondary">
+        Switch between default, terminal, and hacker themes using the variant prop.
+      </Text>
+      <Column gap="lg">
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Default code block
+          </Text>
+          <CodeBlock language="javascript" title="matrix.js">
             {sampleCode}
           </CodeBlock>
-        </Flex>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="sm" weight="medium">Terminal Variant</Text>
-          <CodeBlock
-            variant="terminal"
-            title="Terminal"
-            showCopyButton
-          >
+        </Column>
+
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Terminal variant
+          </Text>
+          <CodeBlock variant="terminal" title="Terminal">
             {terminalCode}
           </CodeBlock>
-        </Flex>
-        
-        <Flex direction="column" gap={16}>
-          <Text size="sm" weight="medium">Hacker Variant</Text>
-          <CodeBlock
-            variant="hacker"
-            language="javascript"
-            title="hack.exe"
-            showCopyButton
-          >
+        </Column>
+
+        <Column gap="xs">
+          <Text size="sm" weight="semibold">
+            Hacker variant
+          </Text>
+          <CodeBlock variant="hacker" language="javascript" title="hack.exe">
             {sampleCode}
           </CodeBlock>
-        </Flex>
-      </Flex>
-    </Card>
+        </Column>
+      </Column>
+    </Column>
   );
 }

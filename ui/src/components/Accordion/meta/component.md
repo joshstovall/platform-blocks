@@ -7,6 +7,7 @@ since: 0.4.0
 category: layout
 subcategories: [layout, disclosure]
 tags: [collapse, expand, panel, ui, content-grouping]
+playground: true
 a11yKeyboard: Arrow keys / Home / End navigate headers; Enter or Space toggles; focus returns to header after collapse.
 a11yRoles: Headers behave as buttons; panels use region role with aria-labelledby referencing header id.
 theming: [radius, spacing, variant-colors, divider-opacity]

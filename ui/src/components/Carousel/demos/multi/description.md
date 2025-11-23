@@ -1,11 +1,11 @@
 ---
-title: Multiple Visible Slides
+title: Multiple slides
 category: layout
 order: 30
-tags: [multiple, itemsPerPage, responsive]
-status: experimental
-since: 1.0.0
+tags: [responsive, items-per-page]
+highlightLines: []
+status: stable
+since: 0.3.0
 hidden: false
 ---
-
-Carousel rendering multiple slides at once using `itemsPerPage` and/or `slideSize`.
+Combine `itemsPerPage` with responsive `slideSize` values to show more than one card while keeping the layout adaptive.

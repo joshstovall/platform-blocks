@@ -1,28 +1,62 @@
-import { Flex, Tabs, Text } from '@platform-blocks/ui';
+import { Column, Tabs, Text } from '@platform-blocks/ui';
 
-const demoItems = [
+type Orientation = 'horizontal' | 'vertical';
+
+const buildItems = (orientation: Orientation) => [
   {
-    key: 'tab1',
-    label: 'Tab 1',
-    content: <Text>Content for Tab 1</Text>,
+    key: 'general',
+    label: 'General',
+    content: (
+      <Text>
+        Broad overview content rendered with a {orientation} tab list.
+      </Text>
+    )
   },
   {
-    key: 'tab2',
-    label: 'Tab 2',
-    content: <Text>Content for Tab 2</Text>,
+    key: 'security',
+    label: 'Security',
+    content: (
+      <Text>
+        Security controls and permissions laid out for a {orientation} arrangement.
+      </Text>
+    )
   },
   {
-    key: 'tab3',
-    label: 'Tab 3',
-    content: <Text>Content for Tab 3</Text>,
-  },
+    key: 'notifications',
+    label: 'Notifications',
+    content: (
+      <Text>
+        Configure alerts and digests with triggers stacked {orientation === 'vertical' ? 'in a column' : 'in a row'}.
+      </Text>
+    )
+  }
 ];
 
-export default function OrientationTabsDemo() {
+const ORIENTATIONS: Array<{ label: string; orientation: Orientation; helper: string }> = [
+  {
+    label: 'Horizontal orientation',
+    orientation: 'horizontal',
+    helper: 'Default layout presents tabs in a row for top-level navigation.'
+  },
+  {
+    label: 'Vertical orientation',
+    orientation: 'vertical',
+    helper: 'Vertical tab lists are ideal for settings sidebars and dense menus.'
+  }
+];
+
+export default function Demo() {
   return (
-    <Flex direction="column" gap={24}>
-      <Tabs orientation="horizontal" items={demoItems} />
-      <Tabs orientation="vertical" items={demoItems} />
-    </Flex>
+    <Column gap="xl">
+      {ORIENTATIONS.map(({ label, orientation, helper }) => (
+        <Column key={orientation} gap="xs">
+          <Text weight="medium">{label}</Text>
+          <Tabs orientation={orientation} items={buildItems(orientation)} />
+          <Text variant="small" colorVariant="muted">
+            {helper}
+          </Text>
+        </Column>
+      ))}
+    </Column>
   );
 }

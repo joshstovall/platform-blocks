@@ -1,6 +1,12 @@
 ---
-title: Custom Icons
-description: Stepper with custom icons for each step.
+title: Icon Overrides
+category: appearance
+order: 30
+tags: [stepper, icons]
+highlightLines: [47-65]
+status: stable
+since: 1.0.0
+hidden: false
 ---
 
-Example showing how to use custom icons for each step and the completed state in a stepper.
+Swap icons for both active steps and the completed state to reinforce the status of each milestone.

@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Advanced pagination with customizable controls and navigation options.
+Combine `showFirst`, `showPrevNext`, `siblings`, and `boundaries` to reveal the right amount of context for long result sets.

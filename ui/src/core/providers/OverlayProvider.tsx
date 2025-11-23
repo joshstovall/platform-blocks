@@ -66,7 +66,11 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       // Schedule onClose after state commit to avoid setState during render warnings
       if (overlay?.onClose) {
         setTimeout(() => {
-          try { overlay.onClose && overlay.onClose(); } catch {
+          try {
+            if (overlay.onClose) {
+              overlay.onClose();
+            }
+          } catch {
             console.warn('Error in overlay onClose callback');
           }
         }, 0);
@@ -106,7 +110,11 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       prev.forEach(overlay => {
         if (overlay.onClose) {
           setTimeout(() => {
-            try { overlay.onClose && overlay.onClose(); } catch {
+            try {
+              if (overlay.onClose) {
+                overlay.onClose();
+              }
+            } catch {
               console.warn('Error in overlay onClose callback');
             }
           }, 0);

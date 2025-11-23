@@ -1,48 +1,56 @@
-import { Tabs, Text, Flex } from '@platform-blocks/ui';
+import { Column, Tabs, Text } from '@platform-blocks/ui';
 
-export default function AnimatedTabsDemo() {
+const ITEMS = [
+  {
+    key: 'home',
+    label: 'Home',
+    content: (
+      <Column gap="xs">
+        <Text weight="medium">Welcome back</Text>
+        <Text colorVariant="muted">
+          Animated transitions ease between dashboard sections and reinforce context shifts.
+        </Text>
+      </Column>
+    )
+  },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    content: (
+      <Column gap="xs">
+        <Text weight="medium">Analytics overview</Text>
+        <Text colorVariant="muted">
+          Surface key charts and KPIs while the motion guides attention to new content.
+        </Text>
+      </Column>
+    )
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    content: (
+      <Column gap="xs">
+        <Text weight="medium">Account settings</Text>
+        <Text colorVariant="muted">
+          Manage notifications, billing, and other preferences without abrupt content swaps.
+        </Text>
+      </Column>
+    )
+  }
+];
+
+export default function Demo() {
   return (
-    <Flex direction="column" gap={24}>
-      <Flex direction="column" gap={12}>
-        <Text variant="h6">Animated Horizontal Tabs</Text>
-        <Tabs
-          variant="line"
-          animated={true}
-          animationDuration={300}
-          items={[
-            {
-              key: 'home',
-              label: 'Home',
-              content: (
-                <Flex direction="column" gap={8}>
-                  <Text variant="h5">Welcome Home</Text>
-                  <Text>This is the home dashboard with your latest activity and notifications.</Text>
-                </Flex>
-              )
-            },
-            {
-              key: 'analytics',
-              label: 'Analytics',
-              content: (
-                <Flex direction="column" gap={8}>
-                  <Text variant="h5">Analytics Dashboard</Text>
-                  <Text>View your performance metrics, user engagement, and growth statistics.</Text>
-                </Flex>
-              )
-            },
-            {
-              key: 'settings',
-              label: 'Settings',
-              content: (
-                <Flex direction="column" gap={8}>
-                  <Text variant="h5">Account Settings</Text>
-                  <Text>Manage your account preferences, security settings, and integrations.</Text>
-                </Flex>
-              )
-            }
-          ]}
-        />
-      </Flex>
-    </Flex>
+    <Column gap="sm">
+      <Tabs
+        variant="line"
+        animated
+        animationDuration={250}
+        items={ITEMS}
+      />
+      <Text variant="small" colorVariant="muted">
+        Enable `animated` to add motion and use `animationDuration` to moderate the easing speed.
+      </Text>
+    </Column>
   );
 }

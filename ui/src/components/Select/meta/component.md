@@ -4,6 +4,7 @@ description: A dropdown component for selecting from a list of options with supp
 source: "@platform-blocks/ui"
 status: "stable"
 category: "Input"
+playground: true
 accessibility: "Supports keyboard navigation, ARIA attributes, and screen readers"
 variants:
   - name: "basic"
