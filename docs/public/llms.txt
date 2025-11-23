@@ -1,10 +1,10 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2025-11-23T23:45:35.294Z
+Generated: 2025-11-23T23:50:33.646Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
-- Version: 0.3.1
+- Version: 0.4.0
 - Description: A React Native UI library
 - Main: lib/cjs/index.js
 - Module: lib/esm/index.js
