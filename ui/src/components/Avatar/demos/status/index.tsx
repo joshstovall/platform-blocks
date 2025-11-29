@@ -21,7 +21,7 @@ const STATUS_AVATARS = [
     description: 'Focus time',
     size: 'lg' as const,
     src: 'https://randomuser.me/api/portraits/men/2.jpg',
-    badgeColor: 'warning' as const
+    indicatorColor: 'warning' as const
   },
   {
     key: 'offline',
@@ -37,18 +37,18 @@ export default function Demo() {
   return (
     <Column gap="md">
       <Row gap="lg" wrap="wrap">
-        {STATUS_AVATARS.map(({ key, badgeColor, online = true, ...avatar }) => (
+        {STATUS_AVATARS.map(({ key, indicatorColor, online = true, ...avatar }) => (
           <Avatar
               key={key}
               {...avatar}
               fallback={avatar.label.slice(0, 2).toUpperCase()}
               online={online}
-              badgeColor={badgeColor}
+              indicatorColor={indicatorColor}
             />
         ))}
       </Row>
       <Text variant="small" colorVariant="muted" align="center">
-        Set `online` to control the presence badge and adjust `badgeColor` for custom states.
+        Set `online` to control the presence indicator and adjust `indicatorColor` for custom states.
       </Text>
     </Column>
   );

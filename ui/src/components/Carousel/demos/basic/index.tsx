@@ -3,7 +3,14 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 export default function Demo() {
 	return (
 		<Block gap="md" fullWidth>
-			<Carousel height={220} width={400} loop autoPlay autoPlayInterval={4500} showDots>
+			<Carousel
+				height={220}
+				loop
+				autoPlay
+				autoPlayInterval={4500}
+				showDots
+				style={{ width: '100%' }}
+			>
 				<Column
 					gap="sm"
 					bg="#4C1D95"

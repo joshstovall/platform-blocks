@@ -8,7 +8,7 @@
  * - Size types (tokens + numbers)
  * - Image source (src)
  * - Fallback text
- * - Colors (background, text, badge)
+ * - Colors (background, text, indicator)
  * - Online indicator
  * - Label and description
  * - Gap and showText props
@@ -126,8 +126,8 @@ describe('Avatar - Type Safety and Prop Validation', () => {
       expect(UNSAFE_getByType(View)).toBeTruthy();
     });
 
-    it('should accept badgeColor', () => {
-      const { UNSAFE_getByType } = render(<Avatar online badgeColor="#00ff00" />);
+    it('should accept indicatorColor', () => {
+      const { UNSAFE_getByType } = render(<Avatar online indicatorColor="#00ff00" />);
       expect(UNSAFE_getByType(View)).toBeTruthy();
     });
 
@@ -277,7 +277,7 @@ describe('Avatar - Type Safety and Prop Validation', () => {
           backgroundColor="#ff0000"
           textColor="#ffffff"
           online={true}
-          badgeColor="#00ff00"
+          indicatorColor="#00ff00"
           label="John Doe"
           description="Engineer"
           gap={12}

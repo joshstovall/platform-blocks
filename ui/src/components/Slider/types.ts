@@ -1,6 +1,9 @@
 import React from 'react';
+import { ViewStyle } from 'react-native';
 import { BaseInputProps } from '../Input/types';
-import { ColorValue, SizeValue } from '../../core/theme/types';
+import { ColorValue, SizeValue, PlatformBlocksTheme } from '../../core/theme/types';
+
+export type SliderColorScheme = keyof PlatformBlocksTheme['colors'] | (string & {});
 
 export interface SliderTick {
   /** Tick value */
@@ -46,6 +49,24 @@ export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeTex
 
   /** Thumb size */
   thumbSize?: number;
+
+  /** Theme color palette or custom color to drive active elements */
+  colorScheme?: SliderColorScheme;
+
+  /** Additional styling for the inactive track */
+  trackStyle?: ViewStyle;
+
+  /** Additional styling for the active track */
+  activeTrackStyle?: ViewStyle;
+
+  /** Additional styling for the thumb */
+  thumbStyle?: ViewStyle;
+
+  /** Override inactive tick color */
+  tickColor?: ColorValue;
+
+  /** Override active tick color */
+  activeTickColor?: ColorValue;
 
   /** Input label (above the slider) */
   label?: React.ReactNode;
@@ -133,6 +154,12 @@ export interface SliderTrackProps {
   activeWidth?: number;
   activeLeft?: number;
   isRange?: boolean;
+  trackColor?: ColorValue;
+  activeTrackColor?: ColorValue;
+  trackStyle?: ViewStyle;
+  activeTrackStyle?: ViewStyle;
+  trackHeight?: number;
+  thumbSize?: number;
 }
 
 export interface SliderTicksProps {
@@ -142,6 +169,10 @@ export interface SliderTicksProps {
   size: 'sm' | 'md' | 'lg';
   orientation: 'horizontal' | 'vertical';
   keyPrefix?: string;
+  trackHeight?: number;
+  thumbSize?: number;
+  activeTickColor?: ColorValue;
+  tickColor?: ColorValue;
 }
 
 export interface SliderThumbProps {
@@ -153,6 +184,9 @@ export interface SliderThumbProps {
   isDragging: boolean;
   zIndex?: number;
   panHandlers?: any;
+  thumbColor?: ColorValue;
+  thumbStyle?: ViewStyle;
+  thumbSize?: number;
 }
 
 export interface SliderLabelProps {
@@ -165,4 +199,5 @@ export interface SliderValueLabelProps {
   size: 'sm' | 'md' | 'lg';
   orientation: 'horizontal' | 'vertical';
   isCard?: boolean;
+  thumbSize?: number;
 }

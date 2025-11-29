@@ -15,7 +15,7 @@ export default function Demo() {
   }, []);
 
   return (
-    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+    <Column gap="xs" fullWidth>
       <Calendar
         value={selectedDate}
         onChange={(date) => setSelectedDate(date as Date | null)}
@@ -23,10 +23,10 @@ export default function Demo() {
         maxDate={maxDate}
         highlightToday
       />
-      <Text size="sm" colorVariant="muted">
+      <Text size="sm" colorVariant="secondary">
         Selected date: {selectedDate ? dateFormatter.format(selectedDate) : 'none'}
       </Text>
-      <Text size="xs" colorVariant="muted">
+      <Text size="xs" colorVariant="secondary">
         Only dates in {monthLabel} are enabled.
       </Text>
     </Column>

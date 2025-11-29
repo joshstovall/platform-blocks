@@ -12,6 +12,7 @@ export default function Demo() {
         autoPlayInterval={4500}
         showArrows
         showDots
+        style={{ width: '100%' }}
       >
         <Column
           gap="sm"

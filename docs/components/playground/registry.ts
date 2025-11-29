@@ -11,6 +11,7 @@ export interface PlaygroundControlOverride {
   step?: number;
   placeholder?: string;
   colorPresets?: string[];
+  label?: string;
 }
 
 export interface ComponentPlaygroundConfig {
@@ -672,11 +673,11 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       showText: true,
       gap: 12,
       online: true,
-      badgeColor: '#16a34a',
+      indicatorColor: '#16a34a',
       backgroundColor: '#0f172a',
       textColor: '#f1f5f9'
     },
-    pinnedProps: ['size', 'src', 'fallback', 'online', 'showText', 'gap', 'badgeColor', 'backgroundColor', 'textColor'],
+    pinnedProps: ['size', 'src', 'fallback', 'online', 'showText', 'gap', 'indicatorColor', 'backgroundColor', 'textColor'],
     hiddenProps: [...COMMON_EVENT_PROPS, 'accessibilityLabel', 'style'],
     controlOverrides: {
       size: { controlType: 'segmented', options: SIZE_TOKENS },
@@ -684,7 +685,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       gap: { controlType: 'number', min: 0, max: 32, step: 1 },
       backgroundColor: { controlType: 'color', colorPresets: AVATAR_COLOR_PRESETS, placeholder: '#0f172a' },
       textColor: { controlType: 'color', colorPresets: ['#f8fafc', '#0f172a', '#1e293b'], placeholder: '#f1f5f9' },
-      badgeColor: { controlType: 'color', colorPresets: ['#22c55e', '#f97316', '#6366f1'], placeholder: '#16a34a' }
+      indicatorColor: { controlType: 'color', colorPresets: ['#22c55e', '#f97316', '#6366f1'], placeholder: '#16a34a', label: 'Indicator color' }
     }
   },
   Stepper: {

@@ -12,8 +12,8 @@ export const Footer: React.FC = () => {
       {/* <Text size="sm" colorVariant="muted">© {currentYear} Platform Blocks</Text> */}
       <Flex direction="row" gap="xs" align="center" ml="sm">
         <Text size="xs" colorVariant="muted">{t('footer.builtBy')}</Text>
-               <Link size="xs" href="https://joshuastovall.com" target="_blank" variant="hover-underline"  color="secondary">Joshua Stovall</Link>
- <Text size="xs" colorVariant="muted">© {currentYear} Platform Blocks</Text>
+        <Link size="xs" href="https://joshuastovall.com" target="_blank" variant="hover-underline" color="secondary">Joshua Stovall</Link>
+        <Text size="xs" colorVariant="muted">© {currentYear} Platform Blocks</Text>
       </Flex>
       <Flex direction="row" gap="md">
         <Button

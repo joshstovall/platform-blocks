@@ -13,8 +13,7 @@ export default function Demo() {
       : 'Tap the dropzone to open the native file picker on touch devices.';
 
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Dropzone file input</Text>
+    <Column gap="xs" fullWidth>
       <Text size="sm" colorVariant="secondary">
         {instructions}
       </Text>
@@ -25,6 +24,7 @@ export default function Demo() {
         helperText="Drag & drop on desktop or tap to browse on mobile"
         onFilesChange={setFiles}
         showFileList
+        fullWidth
       />
       {files.length > 0 && (
         <Column gap="xs">

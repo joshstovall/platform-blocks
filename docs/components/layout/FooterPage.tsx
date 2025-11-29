@@ -30,7 +30,7 @@ export function FooterContent() {
         <Grid columns={12} gap={responsive.isMobile ? 'xs' : 'xl'} style={{ width: '100%', rowGap: responsive.isMobile ? 32 : 48 }}>
           <GridItem span={responsive.isMobile ? 12 : 6}>
             <Title
-            // mb={8}
+              // mb={8}
               startIcon={(
                 <Image
                   source={require('../../assets/favicon.png')}
@@ -41,7 +41,7 @@ export function FooterContent() {
                 />
               )}
               // underline
-              afterline 
+              afterline
               size={36} weight="bold">{t('footer.app.title')}</Title>
             <Flex direction="column" gap="xs">
 

@@ -1,7 +1,6 @@
-import { Markdown } from '@platform-blocks/ui';
+import { Column, Markdown, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  const content = `# Hello Markdown
+const CONTENT = `# Hello Markdown
 
 This is a **bold** statement and this is _italic_.
 
@@ -11,7 +10,15 @@ This is a **bold** statement and this is _italic_.
 
 > Blockquote with *inline emphasis* and **strong** text.
 
-Inline code: \`const x = 42;\`
-`;
-  return <Markdown>{content}</Markdown>
+Inline code: \`const x = 42;\``;
+
+export default function Demo() {
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Rendered using the default Markdown renderer
+      </Text>
+    </Column>
+  );
 }

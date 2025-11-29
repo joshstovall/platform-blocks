@@ -8,20 +8,20 @@ import { Indicator } from '../Indicator';
 
 type AvatarMetrics = {
   avatar: number;
-  badge: number;
+  indicator: number;
   text: ComponentSize;
 };
 
 const AVATAR_ALLOWED_SIZES: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
 
 const AVATAR_SIZE_SCALE: Record<ComponentSize, AvatarMetrics> = {
-  xs: { avatar: 24, badge: 6, text: 'xs' },
-  sm: { avatar: 32, badge: 8, text: 'xs' },
-  md: { avatar: 40, badge: 10, text: 'sm' },
-  lg: { avatar: 48, badge: 12, text: 'md' },
-  xl: { avatar: 64, badge: 16, text: 'lg' },
-  '2xl': { avatar: 80, badge: 20, text: 'xl' },
-  '3xl': { avatar: 96, badge: 24, text: '2xl' },
+  xs: { avatar: 24, indicator: 6, text: 'xs' },
+  sm: { avatar: 32, indicator: 8, text: 'xs' },
+  md: { avatar: 40, indicator: 10, text: 'sm' },
+  lg: { avatar: 48, indicator: 12, text: 'md' },
+  xl: { avatar: 64, indicator: 16, text: 'lg' },
+  '2xl': { avatar: 80, indicator: 20, text: 'xl' },
+  '3xl': { avatar: 96, indicator: 24, text: '2xl' },
 };
 
 const BASE_AVATAR_METRICS = AVATAR_SIZE_SCALE.md;
@@ -45,12 +45,12 @@ function resolveAvatarMetrics(value: ComponentSizeValue | undefined): AvatarMetr
 
 function calculateNumericMetrics(value: number): AvatarMetrics {
   const ratio = value / BASE_AVATAR_METRICS.avatar;
-  const badge = Math.max(4, Math.round(BASE_AVATAR_METRICS.badge * ratio));
+  const indicator = Math.max(4, Math.round(BASE_AVATAR_METRICS.indicator * ratio));
   const text = pickTextSize(value);
 
   return {
     avatar: value,
-    badge,
+    indicator,
     text,
   };
 }
@@ -72,7 +72,7 @@ export function Avatar({
   backgroundColor,
   textColor = 'white',
   online,
-  badgeColor,
+  indicatorColor,
   style,
   accessibilityLabel,
   label,
@@ -82,7 +82,7 @@ export function Avatar({
 }: AvatarProps) {
   const theme = useTheme();
 
-  const { avatar: avatarSize, badge: badgeSize, text: textSize } = resolveAvatarMetrics(size);
+  const { avatar: avatarSize, indicator: indicatorSize, text: textSize } = resolveAvatarMetrics(size);
 
   const avatarStyle: ViewStyle = {
     width: avatarSize,
@@ -126,8 +126,8 @@ export function Avatar({
       </View>
       {online && (
         <Indicator
-          size={badgeSize}
-          color={badgeColor || theme.colors.success[5]}
+          size={indicatorSize}
+          color={indicatorColor || theme.colors.success[5]}
           borderColor={theme.colors.gray[0]}
           placement="bottom-right"
         />

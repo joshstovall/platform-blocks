@@ -444,10 +444,11 @@ function buildControlDefinition(prop: PropDoc, override?: PlaygroundControlOverr
   }
 
   const initialValue = deriveInitialValue(controlType, options, prop.defaultValue, override);
+  const label = override?.label ?? formatOptionLabel(prop.name);
 
   return {
     name: prop.name,
-    label: formatOptionLabel(prop.name),
+    label,
     type: type || undefined,
     description: prop.description || undefined,
     required: prop.required,

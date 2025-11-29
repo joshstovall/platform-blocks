@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { useState } from 'react';
-import { Avatar, Card, Chip, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Avatar, Chip, Column, DataTable, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type Employee = {
@@ -106,24 +106,20 @@ export default function Demo() {
   const [pagination, setPagination] = useState<DataTablePagination>({ page: 1, pageSize: 5, total: rows.length });
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Showcase avatars, chips, and custom status cues to elevate table readability while keeping a compact density.
-          </Text>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            density="comfortable"
-            variant="striped"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Add avatars, chips, and inline status cues while keeping a compact density
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        density="comfortable"
+        variant="striped"
+      />
     </Column>
   );
 }

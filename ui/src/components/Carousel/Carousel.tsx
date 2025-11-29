@@ -230,64 +230,133 @@ const CarouselDot = memo(({
   );
 });
 
+const BREAKPOINT_ORDER = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+type BreakpointKey = typeof BREAKPOINT_ORDER[number];
+
+const getBreakpointName = (width: number): BreakpointKey => {
+  if (width >= 1200) return 'xl';
+  if (width >= 992) return 'lg';
+  if (width >= 768) return 'md';
+  if (width >= 576) return 'sm';
+  return 'xs';
+};
+
+const getViewportWidth = () => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && typeof window.innerWidth === 'number') {
+    return window.innerWidth;
+  }
+
+  const dimensions = Dimensions.get('window');
+  return typeof dimensions?.width === 'number' ? dimensions.width : 0;
+};
+
 // Optimized breakpoint hook with debouncing
 const useOptimizedBreakpoint = () => {
-  const [breakpoint, setBreakpoint] = useState('sm');
+  const computeState = () => {
+    const width = getViewportWidth();
+    return {
+      width,
+      breakpoint: getBreakpointName(width),
+    };
+  };
+
+  const [state, setState] = useState<{ breakpoint: BreakpointKey; width: number }>(computeState);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
-    const compute = () => {
-      const w = Platform.OS === 'web'
-        ? (window as any).innerWidth
-        : Dimensions.get('window').width;
-
-      let newBreakpoint = 'sm';
-      if (w >= 1200) newBreakpoint = 'xl';
-      else if (w >= 992) newBreakpoint = 'lg';
-      else if (w >= 768) newBreakpoint = 'md';
-      else if (w >= 576) newBreakpoint = 'sm';
-      else newBreakpoint = 'xs';
-
-      setBreakpoint(prev => prev !== newBreakpoint ? newBreakpoint : prev);
+    const update = () => {
+      const next = computeState();
+      setState(prev => (prev.breakpoint === next.breakpoint && prev.width === next.width) ? prev : next);
     };
 
-    const debouncedCompute = () => {
+    const debouncedUpdate = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(compute, 100); // Debounce resize events
+      timeoutId = setTimeout(update, 100); // Debounce resize events
     };
 
-    compute();
+    update();
 
-    if (Platform.OS === 'web') {
-      window.addEventListener('resize', debouncedCompute, { passive: true });
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.addEventListener('resize', debouncedUpdate, { passive: true });
       return () => {
-        window.removeEventListener('resize', debouncedCompute);
+        window.removeEventListener('resize', debouncedUpdate);
         clearTimeout(timeoutId);
       };
     }
 
-    return () => clearTimeout(timeoutId);
+    const subscription = Dimensions.addEventListener('change', debouncedUpdate);
+    return () => {
+      subscription?.remove();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
-  return breakpoint;
+  return state;
+};
+const parseMediaQuery = (query: string) => {
+  const minMatch = query.match(/min-width:\s*(\d+)px/);
+  const maxMatch = query.match(/max-width:\s*(\d+)px/);
+  return {
+    min: minMatch ? parseInt(minMatch[1], 10) : undefined,
+    max: maxMatch ? parseInt(maxMatch[1], 10) : undefined,
+  };
 };
 
-export const Carousel: React.FC<CarouselProps> = (props) => {
+const matchQuery = (query: string, width: number) => {
+  const { min, max } = parseMediaQuery(query);
+  if (min != null && width < min) return false;
+  if (max != null && width > max) return false;
+  return true;
+};
+
+const mergeBreakpointProps = (baseProps: CarouselProps, breakpointProps?: Record<string, Partial<CarouselProps>>, width?: number) => {
+  if (!breakpointProps) return baseProps;
+  const sortedEntries = Object.entries(breakpointProps).sort((a, b) => {
+    const aMin = parseMediaQuery(a[0]).min ?? 0;
+    const bMin = parseMediaQuery(b[0]).min ?? 0;
+    return aMin - bMin;
+  });
+
+  let resolvedProps: CarouselProps = { ...baseProps };
+  sortedEntries.forEach(([query, value]) => {
+    const shouldApply = width != null ? matchQuery(query, width) : (Platform.OS === 'web' && typeof window !== 'undefined' ? window.matchMedia(query).matches : false);
+    if (shouldApply) {
+      resolvedProps = { ...resolvedProps, ...value };
+    }
+  });
+
+  return resolvedProps;
+};
+
+export const Carousel: React.FC<CarouselProps> = (incomingProps) => {
+  const { breakpoint, width: viewportWidth } = useOptimizedBreakpoint();
+  const mergedProps = useMemo(
+    () => mergeBreakpointProps(incomingProps as CarouselProps, incomingProps.breakpoints, viewportWidth),
+    [incomingProps, viewportWidth]
+  );
   const {
     children,
     orientation = 'horizontal',
     height = 200,
-    w = 300,
     showDots = true,
     showArrows = true,
     loop = true,
     autoPlay = false,
     autoPlayInterval = 3000,
     itemsPerPage = 1,
+    slidesToScroll,
     slideSize,
     slideGap,
     itemGap = 16,
+    containScroll = 'trimSnaps',
+    startIndex,
+    align = 'start',
+    dragFree = false,
+    skipSnaps = true,
+    dragThreshold,
+    duration,
+    breakpoints: _breakpoints,
     onSlideChange,
     style,
     itemStyle,
@@ -297,7 +366,7 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
     windowSize = 0, // 0 means no virtualization
     reducedMotion = false,
     ...rest
-  } = props as any;
+  } = mergedProps as any;
 
   const { spacingProps, otherProps } = extractSpacingProps(rest);
   const spacingStyles = getSpacingStyles(spacingProps);
@@ -311,12 +380,10 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
   // progress holds absolute item progress (fractional, not modulo) supplied by engine
   const progress = useSharedValue(0);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const hasInitializedRef = useRef(false);
 
   const itemsArray = useMemo(() => React.Children.toArray(children), [children]);
   const totalItems = itemsArray.length;
-
-  // Use optimized breakpoint detection with debouncing
-  const breakpoint = useOptimizedBreakpoint();
 
   const resolvedGap = useMemo(() => {
     const raw = resolveResponsive(slideGap, breakpoint);
@@ -332,7 +399,7 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
   const isVertical = orientation === 'vertical';
   const containerSize = isVertical ? containerHeight : containerWidth;
 
-  const itemSize = useMemo(() => {
+  const desiredItemSize = useMemo(() => {
     if (containerSize <= 0) return 0;
     const rawSize = resolveResponsive(slideSize, breakpoint);
     if (rawSize == null) {
@@ -356,25 +423,173 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
     return (containerSize - resolvedGap * (itemsPerPage - 1)) / itemsPerPage;
   }, [slideSize, breakpoint, containerSize, itemsPerPage, resolvedGap]);
 
+  const hasLayout = isVertical ? containerHeight > 0 : containerWidth > 0;
+  const baseItemsPerPage = Math.max(1, itemsPerPage);
+  const slidesToScrollValue = Math.max(1, slidesToScroll ?? baseItemsPerPage);
+  const containMode: 'trimSnaps' | 'keepSnaps' | 'none' = containScroll === false
+    ? 'none'
+    : containScroll === 'keepSnaps'
+      ? 'keepSnaps'
+      : 'trimSnaps';
+  const isDragFree = !!dragFree;
+  const allowSkipSnaps = skipSnaps ?? true;
+  const dragThresholdValue = typeof dragThreshold === 'number'
+    ? Math.max(dragThreshold, 0)
+    : undefined;
+
+  const visibleSlides = useMemo(() => {
+    if (!hasLayout || containerSize <= 0) return baseItemsPerPage;
+    if (desiredItemSize <= 0) return baseItemsPerPage;
+    const maxFit = Math.max(1, Math.floor((containerSize + resolvedGap) / (desiredItemSize + resolvedGap)));
+    if (slideSize == null) {
+      return Math.min(baseItemsPerPage, maxFit);
+    }
+    return maxFit;
+  }, [hasLayout, containerSize, desiredItemSize, resolvedGap, baseItemsPerPage, slideSize]);
+
+  const cardSize = useMemo(() => {
+    if (!hasLayout) return desiredItemSize;
+    if (visibleSlides <= 1) {
+      if (desiredItemSize > 0) return desiredItemSize;
+      return containerSize > 0 ? containerSize : desiredItemSize;
+    }
+    const totalGap = resolvedGap * (visibleSlides - 1);
+    const available = Math.max(containerSize - totalGap, 0);
+    return available / visibleSlides;
+  }, [hasLayout, desiredItemSize, visibleSlides, resolvedGap, containerSize]);
+
+  const slideExtent = useMemo(() => {
+    if (!hasLayout || cardSize <= 0) return undefined;
+    return cardSize + resolvedGap;
+  }, [hasLayout, cardSize, resolvedGap]);
+
+  const scrollStep = useMemo(() => {
+    if (totalItems === 0) return slidesToScrollValue;
+    return Math.min(slidesToScrollValue, Math.max(1, totalItems));
+  }, [slidesToScrollValue, totalItems]);
+
+  const maxScrollDistancePerSwipe = useMemo(() => {
+    if (allowSkipSnaps || slideExtent == null) return undefined;
+    return slideExtent * scrollStep;
+  }, [allowSkipSnaps, slideExtent, scrollStep]);
+
+  const lastStart = useMemo(() => Math.max(totalItems - visibleSlides, 0), [totalItems, visibleSlides]);
+
+  const pageStartIndices = useMemo(() => {
+    if (totalItems === 0) return [] as number[];
+    if (loop) {
+      const count = Math.max(1, Math.ceil(totalItems / scrollStep));
+      return Array.from({ length: count }, (_, idx) => (idx * scrollStep) % totalItems);
+    }
+
+    const starts: number[] = [];
+    const seen = new Set<number>();
+    const limit = containMode === 'none' ? Math.max(totalItems - 1, 0) : lastStart;
+
+    const addStart = (value: number) => {
+      if (!seen.has(value)) {
+        seen.add(value);
+        starts.push(Math.max(0, value));
+      }
+    };
+
+    for (let start = 0; start <= limit; start += scrollStep) {
+      const value = containMode === 'trimSnaps'
+        ? Math.min(start, lastStart)
+        : start;
+      addStart(value);
+    }
+
+    if (containMode !== 'trimSnaps') {
+      addStart(lastStart);
+    }
+
+    starts.sort((a, b) => a - b);
+    return starts;
+  }, [totalItems, loop, scrollStep, containMode, lastStart]);
+
+  const pagedItems = useMemo(() => {
+    if (!totalItems) return [] as React.ReactNode[][];
+    return pageStartIndices.map(start => {
+      const group: React.ReactNode[] = [];
+      for (let offset = 0; offset < visibleSlides; offset++) {
+        const targetIndex = start + offset;
+        if (loop) {
+          const normalized = ((targetIndex % totalItems) + totalItems) % totalItems;
+          group.push(itemsArray[normalized]);
+        } else if (targetIndex < totalItems) {
+          group.push(itemsArray[targetIndex]);
+        }
+      }
+      return group;
+    });
+  }, [pageStartIndices, visibleSlides, loop, totalItems, itemsArray]);
+
+  const totalPages = pagedItems.length;
+
+  const normalizedStartIndex = useMemo(() => {
+    if (!totalItems) return 0;
+    const rawIndex = startIndex ?? 0;
+    if (loop) {
+      return ((rawIndex % totalItems) + totalItems) % totalItems;
+    }
+    return Math.max(0, Math.min(rawIndex, Math.max(totalItems - 1, 0)));
+  }, [startIndex, totalItems, loop]);
+
+  const initialPageStart = useMemo(() => {
+    if (!totalItems) return 0;
+    const base = Math.floor(normalizedStartIndex / scrollStep) * scrollStep;
+    if (loop) {
+      return totalItems ? base % totalItems : 0;
+    }
+    if (containMode === 'none') {
+      return Math.min(base, Math.max(totalItems - 1, 0));
+    }
+    if (containMode === 'keepSnaps') {
+      return Math.min(base, Math.max(totalItems - 1, 0));
+    }
+    return Math.min(base, lastStart);
+  }, [normalizedStartIndex, scrollStep, loop, totalItems, containMode, lastStart]);
+
+  const initialPageIndex = useMemo(() => {
+    if (!pageStartIndices.length) return 0;
+    const idx = pageStartIndices.indexOf(initialPageStart);
+    return idx >= 0 ? idx : 0;
+  }, [pageStartIndices, initialPageStart]);
+
   const handleLayout = useCallback((e: any) => {
     setContainerWidth(e.nativeEvent.layout.width);
     setContainerHeight(e.nativeEvent.layout.height);
   }, []);
 
-  const goTo = useCallback((index: number) => {
-    if (!carouselRef.current) return;
-    if (totalItems === 0) return;
-    const clamped = ((index % totalItems) + totalItems) % totalItems;
+  const scrollToPage = useCallback((index: number, animated = true) => {
+    if (!carouselRef.current || totalPages === 0) return;
+    const clamped = ((index % totalPages) + totalPages) % totalPages;
     const delta = clamped - currentIndex;
-    if (delta === 0) return;
-    // For looping choose shortest path if loop enabled
+    if (delta === 0) {
+      if (!animated) {
+        progress.value = clamped;
+        setCurrentIndex(clamped);
+      }
+      return;
+    }
+
     let count = delta;
     if (loop) {
-      const alt = delta > 0 ? delta - totalItems : delta + totalItems;
+      const alt = delta > 0 ? delta - totalPages : delta + totalPages;
       if (Math.abs(alt) < Math.abs(count)) count = alt;
     }
-    carouselRef.current.scrollTo({ count, animated: true });
-  }, [carouselRef, totalItems, currentIndex, loop]);
+
+    carouselRef.current.scrollTo({ count, animated });
+    if (!animated) {
+      progress.value = clamped;
+      setCurrentIndex(clamped);
+    }
+  }, [carouselRef, totalPages, currentIndex, loop, progress]);
+
+  const goTo = useCallback((index: number) => {
+    scrollToPage(index, true);
+  }, [scrollToPage]);
 
   const goPrev = useCallback(() => {
     if (!carouselRef.current) return;
@@ -386,8 +601,6 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
     carouselRef.current.next();
   }, []);
 
-  const totalPages = useMemo(() => totalItems, [totalItems]);
-
   // Page progress derived directly from absolute item progress
   const pageProgress = useDerivedValue(() => {
     return progress.value;
@@ -395,6 +608,16 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
 
   const arrowMetrics = useMemo(() => resolveCarouselArrowMetrics(arrowSize), [arrowSize]);
   const dotMetrics = useMemo(() => resolveCarouselDotMetrics(dotSize), [dotSize]);
+  const alignJustify = useMemo(() => {
+    switch (align) {
+      case 'center':
+        return 'center';
+      case 'end':
+        return 'flex-end';
+      default:
+        return 'flex-start';
+    }
+  }, [align]);
 
   // Memoized render functions to prevent unnecessary re-renders
   const renderDots = useMemo(() => {
@@ -429,7 +652,7 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
 
   // Arrows
   const renderArrows = () => {
-    if (!showArrows || totalItems <= 1) return null;
+    if (!showArrows || totalPages <= 1) return null;
 
     const buttonSize = arrowMetrics.buttonSizeToken;
     const iconSize = arrowMetrics.iconSize;
@@ -519,13 +742,29 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
   };
 
   // Autoplay: if library autoPlay not sufficient for pause logic, we can just pass through for now.
-  const enableAutoPlay = autoPlay && totalItems > 1;
+  const enableAutoPlay = autoPlay && totalPages > 1;
+
+  useEffect(() => {
+    if (!carouselRef.current || totalPages === 0 || !hasLayout) return;
+    const controlledStart = startIndex != null;
+
+    if (controlledStart) {
+      scrollToPage(initialPageIndex, false);
+      return;
+    }
+
+    if (!hasInitializedRef.current) {
+      scrollToPage(initialPageIndex, false);
+      hasInitializedRef.current = true;
+    }
+  }, [scrollToPage, initialPageIndex, startIndex, totalPages, hasLayout]);
 
   return (
     <View
       ref={containerRef}
       style={[
         {
+          width: '100%',
           position: 'relative',
           ...(isVertical ? { flexDirection: 'row' } : {})
         },
@@ -536,19 +775,21 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
       {...otherProps}
     >
       <View style={{ flex: 1 }}>
-        {itemSize > 0 && (
+        {hasLayout && pagedItems.length > 0 && cardSize > 0 && (
           <ReanimatedCarousel
             ref={carouselRef}
-            width={isVertical ? containerWidth : itemSize}
-            height={isVertical ? itemSize : height}
+            width={isVertical ? containerWidth : containerWidth}
+            height={isVertical ? containerHeight : height}
             style={isVertical ? { height: containerHeight } : { width: containerWidth }}
             vertical={isVertical}
             loop={loop}
             autoPlay={enableAutoPlay}
             autoPlayInterval={autoPlayInterval}
-            data={itemsArray}
-            pagingEnabled={snapToItem}
+            data={pagedItems}
+            pagingEnabled={isDragFree ? false : snapToItem}
+            snapEnabled={isDragFree ? false : undefined}
             windowSize={windowSize > 0 ? windowSize : undefined}
+            scrollAnimationDuration={duration}
             // Performance optimizations
             overscrollEnabled={false}
             enabled={!reducedMotion}
@@ -556,34 +797,65 @@ export const Carousel: React.FC<CarouselProps> = (props) => {
               { type: 'timing', config: { duration: 100 } } :
               { type: 'spring', config: { damping: 60, stiffness: 150 } }
             }
+            maxScrollDistancePerSwipe={maxScrollDistancePerSwipe}
+            minScrollDistancePerSwipe={dragThresholdValue}
             onProgressChange={(offset: number, absolute: number) => {
               // absolute may be undefined in some versions; fallback to offset
               const val = typeof absolute === 'number' ? absolute : offset;
               progress.value = val;
-              const ci = ((Math.round(val) % totalItems) + totalItems) % totalItems;
+              const ci = totalPages > 0
+                ? ((Math.round(val) % totalPages) + totalPages) % totalPages
+                : 0;
               if (ci !== currentIndex) {
                 setCurrentIndex(ci);
                 onSlideChange?.(ci);
               }
             }}
-            renderItem={({ item, index }) => (
-              <View
-                style={[
-                  {
-                    width: isVertical ? containerWidth : itemSize,
-                    height: isVertical ? itemSize : height,
-                    ...(isVertical
-                      ? { marginBottom: index < itemsArray.length - 1 ? resolvedGap : 0 }
-                      : { marginRight: index < itemsArray.length - 1 ? resolvedGap : 0 }
-                    ),
-                  },
-                  itemStyle,
-                ]}
-                accessibilityLabel={`Carousel item ${index + 1} of ${totalItems}`}
-              >
-                {item as any}
-              </View>
-            )}
+            renderItem={({ item, index }) => {
+              const pageItems = Array.isArray(item) ? item : [item];
+              const pageWidth = isVertical ? containerWidth : containerWidth;
+              const pageHeight = isVertical ? containerHeight : height;
+              const justify = containMode === 'trimSnaps' ? 'flex-start' : alignJustify;
+
+              return (
+                <View
+                  style={[
+                    {
+                      width: pageWidth,
+                      height: pageHeight,
+                      justifyContent: 'center',
+                    },
+                    itemStyle,
+                  ]}
+                  accessibilityLabel={`Carousel item ${index + 1} of ${totalPages}`}
+                >
+                  <View
+                    style={{
+                      flexDirection: isVertical ? 'column' : 'row',
+                      alignItems: 'stretch',
+                      justifyContent: justify,
+                      flexWrap: 'nowrap',
+                      flex: 1,
+                    }}
+                  >
+                    {pageItems.map((child, childIndex) => (
+                      <View
+                        key={childIndex}
+                        style={{
+                          width: isVertical ? '100%' : cardSize,
+                          height: isVertical ? cardSize : '100%',
+                          marginRight: !isVertical && childIndex < pageItems.length - 1 ? resolvedGap : 0,
+                          marginBottom: isVertical && childIndex < pageItems.length - 1 ? resolvedGap : 0,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {child as any}
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            }}
           />
         )}
       </View>

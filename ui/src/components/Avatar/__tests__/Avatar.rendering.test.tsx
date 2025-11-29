@@ -172,12 +172,12 @@ describe('Avatar - Rendering and Behavior', () => {
       expect(UNSAFE_getByType(View)).toBeTruthy();
     });
 
-    it('should calculate badge size for token sizes', () => {
+    it('should calculate indicator size for token sizes', () => {
       const { getByTestId } = render(<Avatar size="md" online />);
       expect(getByTestId('indicator')).toBeTruthy();
     });
 
-    it('should calculate badge size for numeric sizes', () => {
+    it('should calculate indicator size for numeric sizes', () => {
       const { getByTestId } = render(<Avatar size={100} online />);
       expect(getByTestId('indicator')).toBeTruthy();
     });
@@ -194,8 +194,8 @@ describe('Avatar - Rendering and Behavior', () => {
       expect(getByText('AB')).toBeTruthy();
     });
 
-    it('should apply custom badgeColor', () => {
-      const { getByTestId } = render(<Avatar online badgeColor="#00ff00" />);
+    it('should apply custom indicatorColor', () => {
+      const { getByTestId } = render(<Avatar online indicatorColor="#00ff00" />);
       expect(getByTestId('indicator')).toBeTruthy();
     });
 
@@ -226,8 +226,8 @@ describe('Avatar - Rendering and Behavior', () => {
       expect(queryByTestId('indicator')).toBeNull();
     });
 
-    it('should render indicator with custom badgeColor', () => {
-      const { getByTestId } = render(<Avatar online badgeColor="#ff0000" />);
+    it('should render indicator with custom indicatorColor', () => {
+      const { getByTestId } = render(<Avatar online indicatorColor="#ff0000" />);
       const indicator = getByTestId('indicator');
       expect(indicator.props.color).toBe('#ff0000');
     });
@@ -404,7 +404,7 @@ describe('Avatar - Rendering and Behavior', () => {
           backgroundColor="#ff0000"
           textColor="#ffffff"
           online={true}
-          badgeColor="#00ff00"
+          indicatorColor="#00ff00"
           label="John Doe"
           description="Engineer"
         />

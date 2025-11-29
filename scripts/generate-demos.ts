@@ -55,6 +55,24 @@ function sha256(content: string) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
+function parseStructuredValue(rawValue: string): any {
+  const value = rawValue.trim();
+  const looksJson = (value.startsWith('[') && value.endsWith(']')) || (value.startsWith('{') && value.endsWith('}'));
+  if (!looksJson) return rawValue;
+  try {
+    return JSON.parse(value);
+  } catch {
+    if (value.startsWith('[') && value.endsWith(']')) {
+      return value
+        .slice(1, -1)
+        .split(',')
+        .map((token) => token.trim())
+        .filter(Boolean);
+    }
+    return rawValue;
+  }
+}
+
 function parseFrontmatter(raw: string): { frontmatter: any; body: string } {
   if (!raw.startsWith('---')) return { frontmatter: {}, body: raw };
   const end = raw.indexOf('\n---', 3);
@@ -70,10 +88,13 @@ function parseFrontmatter(raw: string): { frontmatter: any; body: string } {
     if (typeof value === 'string') {
       value = value.replace(/\s+\/\/.*$/, '').replace(/\s+#.*$/, '').trim();
     }
-    if (value.startsWith('[') && value.endsWith(']')) {
-      try { value = JSON.parse(value.replace(/(['\"])?([A-Za-z0-9_-]+)(['\"])?/g, '"$2"')); } catch { }
+    if (typeof value === 'string' && ((value.startsWith('[') && value.endsWith(']')) || (value.startsWith('{') && value.endsWith('}')))) {
+      const structured = parseStructuredValue(value);
+      if (structured !== value) {
+        value = structured;
+      }
     }
-    if (/^\d+$/.test(value)) value = parseInt(value, 10);
+    if (typeof value === 'string' && /^\d+$/.test(value)) value = parseInt(value, 10);
     if (value === 'true') value = true; else if (value === 'false') value = false;
     frontmatter[key] = value;
   }

@@ -245,23 +245,30 @@ export const SliderTrack: React.FC<SliderTrackProps> = ({
   size,
   orientation,
   activeWidth = 0,
-  activeLeft = SLIDER_CONSTANTS.THUMB_SIZE[size] / 2,
-  isRange = false
+  activeLeft,
+  isRange = false,
+  trackColor,
+  activeTrackColor,
+  trackStyle,
+  activeTrackStyle,
+  trackHeight,
+  thumbSize,
 }) => {
   const orientationProps = getOrientationProps(orientation);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[size];
-  const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[size];
+  const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
+  const resolvedTrackHeight = trackHeight ?? SLIDER_CONSTANTS.TRACK_HEIGHT[size];
+  const resolvedActiveLeft = activeLeft ?? (resolvedThumbSize / 2);
 
-  const baseTrackStyle = {
+  const inactiveTrackBaseStyle = {
     position: 'absolute' as const,
-    backgroundColor: disabled ? theme.colors.gray[2] : theme.colors.gray[3],
-    borderRadius: trackHeight / 2,
+    backgroundColor: disabled && !trackColor ? theme.colors.gray[2] : (trackColor ?? theme.colors.gray[3]),
+    borderRadius: resolvedTrackHeight / 2,
   };
 
-  const activeTrackStyle = {
+  const activeTrackBaseStyle = {
     position: 'absolute' as const,
-    backgroundColor: disabled ? theme.colors.gray[4] : theme.colors.primary[5],
-    borderRadius: trackHeight / 2,
+    backgroundColor: disabled && !activeTrackColor ? theme.colors.gray[4] : (activeTrackColor ?? theme.colors.primary[5]),
+    borderRadius: resolvedTrackHeight / 2,
   };
 
   if (orientationProps.isVertical) {
@@ -269,31 +276,36 @@ export const SliderTrack: React.FC<SliderTrackProps> = ({
       <>
         {/* Background track */}
         <View
-          style={{
-            ...baseTrackStyle,
-            top: thumbSize / 2,
-            bottom: thumbSize / 2,
-            width: trackHeight,
-            left: (thumbSize - trackHeight) / 2,
-          }}
+          style={[
+            {
+              ...inactiveTrackBaseStyle,
+              top: resolvedThumbSize / 2,
+              bottom: resolvedThumbSize / 2,
+              width: resolvedTrackHeight,
+              left: (resolvedThumbSize - resolvedTrackHeight) / 2,
+            },
+            trackStyle,
+          ]}
         />
 
         {/* Active track - for vertical sliders */}
         {activeWidth > 0 && (
           <View
-            style={{
-              ...activeTrackStyle,
-              // For range sliders, use activeLeft as top position; for single sliders, start from bottom
-              ...(isRange ? {
-                top: activeLeft,
-                height: activeWidth,
-              } : {
-                bottom: thumbSize / 2,
-                height: activeWidth,
-              }),
-              width: trackHeight,
-              left: (thumbSize - trackHeight) / 2,
-            }}
+            style={[
+              {
+                ...activeTrackBaseStyle,
+                ...(isRange ? {
+                  top: activeLeft ?? resolvedActiveLeft,
+                  height: activeWidth,
+                } : {
+                  bottom: resolvedThumbSize / 2,
+                  height: activeWidth,
+                }),
+                width: resolvedTrackHeight,
+                left: (resolvedThumbSize - resolvedTrackHeight) / 2,
+              },
+              activeTrackStyle,
+            ]}
           />
         )}
       </>
@@ -304,25 +316,31 @@ export const SliderTrack: React.FC<SliderTrackProps> = ({
     <>
       {/* Background track */}
       <View
-        style={{
-          ...baseTrackStyle,
-          left: thumbSize / 2,
-          right: thumbSize / 2,
-          height: trackHeight,
-          top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - trackHeight) / 2,
-        }}
+        style={[
+          {
+            ...inactiveTrackBaseStyle,
+            left: resolvedThumbSize / 2,
+            right: resolvedThumbSize / 2,
+            height: resolvedTrackHeight,
+            top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedTrackHeight) / 2,
+          },
+          trackStyle,
+        ]}
       />
 
       {/* Active track */}
       {activeWidth > 0 && (
         <View
-          style={{
-            ...activeTrackStyle,
-            left: activeLeft,
-            width: activeWidth,
-            height: trackHeight,
-            top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - trackHeight) / 2,
-          }}
+          style={[
+            {
+              ...activeTrackBaseStyle,
+              left: activeLeft ?? resolvedActiveLeft,
+              width: activeWidth,
+              height: resolvedTrackHeight,
+              top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedTrackHeight) / 2,
+            },
+            activeTrackStyle,
+          ]}
         />
       )}
     </>
@@ -336,11 +354,17 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
   theme,
   size,
   orientation,
-  keyPrefix = 'tick'
+  keyPrefix = 'tick',
+  trackHeight,
+  thumbSize,
+  activeTickColor,
+  tickColor,
 }) => {
   const orientationProps = getOrientationProps(orientation);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[size];
-  const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[size];
+  const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
+  const resolvedTrackHeight = trackHeight ?? SLIDER_CONSTANTS.TRACK_HEIGHT[size];
+  const inactiveColor = disabled && !tickColor ? theme.colors.gray[2] : (tickColor ?? theme.colors.gray[4]);
+  const activeColor = disabled && !activeTickColor ? theme.colors.gray[4] : (activeTickColor ?? theme.colors.primary[5]);
 
   if (orientationProps.isVertical) {
     return (
@@ -351,13 +375,11 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
             key={`${keyPrefix}-${tick.value}-${index}`}
             style={{
               position: 'absolute',
-              top: thumbSize / 2 + tick.position,
-              left: (thumbSize - trackHeight) / 2 - 3,
+              top: resolvedThumbSize / 2 + tick.position,
+              left: (resolvedThumbSize - resolvedTrackHeight) / 2 - 3,
               height: 2,
-              width: trackHeight + 6,
-              backgroundColor: tick.isActive
-                ? (disabled ? theme.colors.gray[4] : theme.colors.primary[5])
-                : (disabled ? theme.colors.gray[2] : theme.colors.gray[4]),
+              width: resolvedTrackHeight + 6,
+              backgroundColor: tick.isActive ? activeColor : inactiveColor,
               borderRadius: 1,
             }}
           />
@@ -370,8 +392,8 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
               key={`${keyPrefix}-label-${tick.value}-${index}`}
               style={{
                 position: 'absolute',
-                top: thumbSize / 2 + tick.position - 10,
-                left: thumbSize + 8,
+                top: resolvedThumbSize / 2 + tick.position - 10,
+                left: resolvedThumbSize + 8,
                 height: 20,
                 justifyContent: 'center',
               }}
@@ -394,13 +416,11 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
           key={`${keyPrefix}-${tick.value}-${index}`}
           style={{
             position: 'absolute',
-            left: thumbSize / 2 + tick.position,
-            top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - trackHeight) / 2 - 3,
+            left: resolvedThumbSize / 2 + tick.position,
+            top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedTrackHeight) / 2 - 3,
             width: 2,
-            height: trackHeight + 6,
-            backgroundColor: tick.isActive
-              ? (disabled ? theme.colors.gray[4] : theme.colors.primary[5])
-              : (disabled ? theme.colors.gray[2] : theme.colors.gray[4]),
+            height: resolvedTrackHeight + 6,
+            backgroundColor: tick.isActive ? activeColor : inactiveColor,
             borderRadius: 1,
           }}
         />
@@ -413,7 +433,7 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
             key={`${keyPrefix}-label-${tick.value}-${index}`}
             style={{
               position: 'absolute',
-              left: thumbSize / 2 + tick.position - 20,
+              left: resolvedThumbSize / 2 + tick.position - 20,
               top: SLIDER_CONSTANTS.CONTAINER_HEIGHT + 8,
               width: 40,
               alignItems: 'center',
@@ -437,17 +457,21 @@ export const SliderThumb: React.FC<SliderThumbProps> = ({
   orientation,
   isDragging,
   zIndex = 1,
-  panHandlers
+  panHandlers,
+  thumbColor,
+  thumbStyle,
+  thumbSize,
 }) => {
   const orientationProps = getOrientationProps(orientation);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[size];
+  const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
+  const resolvedThumbColor = disabled && !thumbColor ? theme.colors.gray[4] : (thumbColor ?? theme.colors.primary[5]);
 
   const baseStyle = {
     position: 'absolute' as const,
-    width: thumbSize,
-    height: thumbSize,
-    backgroundColor: disabled ? theme.colors.gray[4] : theme.colors.primary[5],
-    borderRadius: thumbSize / 2,
+    width: resolvedThumbSize,
+    height: resolvedThumbSize,
+    backgroundColor: resolvedThumbColor,
+    borderRadius: resolvedThumbSize / 2,
     borderWidth: 2,
     borderColor: 'white',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
@@ -459,11 +483,14 @@ export const SliderThumb: React.FC<SliderThumbProps> = ({
   if (orientationProps.isVertical) {
     return (
       <View
-        style={{
-          ...baseStyle,
-          top: position,
-          left: 0,
-        }}
+        style={[
+          baseStyle,
+          {
+            top: position,
+            left: 0,
+          },
+          thumbStyle,
+        ]}
         {...panHandlers}
       />
     );
@@ -471,11 +498,14 @@ export const SliderThumb: React.FC<SliderThumbProps> = ({
 
   return (
     <View
-      style={{
-        ...baseStyle,
-        left: position,
-        top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - thumbSize) / 2,
-      }}
+      style={[
+        baseStyle,
+        {
+          left: position,
+          top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedThumbSize) / 2,
+        },
+        thumbStyle,
+      ]}
       {...panHandlers}
     />
   );
@@ -497,21 +527,23 @@ export const SliderValueLabel: React.FC<SliderValueLabelProps> = ({
   position,
   size,
   orientation,
-  isCard = false
+  isCard = false,
+  thumbSize,
 }) => {
   const orientationProps = getOrientationProps(orientation);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[size];
+  const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
 
   // round number to 2 decimal places for display
   const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
 
   if (orientationProps.isVertical) {
+    const verticalLabelOffset = resolvedThumbSize + 16; // keep label clear of the thumb
     return (
       <View
         style={{
           position: 'absolute',
-          top: position + (thumbSize / 2) - 10,
-          right: thumbSize + 8,
+          top: position + (resolvedThumbSize / 2) - 10,
+          right: verticalLabelOffset,
           height: 20,
           justifyContent: 'center',
         }}
@@ -535,7 +567,7 @@ export const SliderValueLabel: React.FC<SliderValueLabelProps> = ({
     <View
       style={{
         position: 'absolute',
-        left: position + (thumbSize / 2) - 50,
+        left: position + (resolvedThumbSize / 2) - 50,
         bottom: SLIDER_CONSTANTS.CONTAINER_HEIGHT - 6, // Moved closer to thumb
         width: 100,
         alignItems: 'center',

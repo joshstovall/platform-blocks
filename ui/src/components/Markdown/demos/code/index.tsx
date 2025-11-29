@@ -1,7 +1,6 @@
-import { Markdown } from '@platform-blocks/ui';
+import { Column, Markdown, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  const content = `# Code Examples
+const CONTENT = `# Code examples
 
 Here's some JavaScript:
 
@@ -28,8 +27,15 @@ const user: User = {
 };
 \`\`\`
 
-Inline code: \`const result = fibonacci(10);\`
-`;
+Inline code: \`const result = fibonacci(10);\``;
 
-  return <Markdown>{content}</Markdown>
+export default function Demo() {
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Showcases fenced code blocks with syntax highlighting
+      </Text>
+    </Column>
+  );
 }

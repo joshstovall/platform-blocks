@@ -5,6 +5,4 @@ category: navigation
 tags: [link, anchor, navigation, url, href]
 ---
 
-# Link
-
 A versatile component for creating styled hyperlinks and navigation elements with hover states and accessibility features.

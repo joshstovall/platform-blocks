@@ -28,6 +28,48 @@ const SLIDER_SIZE_SCALE: Partial<Record<ComponentSize, 'sm' | 'md' | 'lg'>> = {
   '3xl': 'lg',
 };
 
+const resolvePaletteColor = (themeColors: Record<string, string[]>, scheme?: SliderProps['colorScheme']) => {
+  if (!scheme || typeof scheme !== 'string') {
+    return undefined;
+  }
+
+  const palette = themeColors[scheme];
+  if (Array.isArray(palette)) {
+    return palette;
+  }
+
+  return undefined;
+};
+
+const resolveSliderColors = (
+  theme: ReturnType<typeof useTheme>,
+  {
+    colorScheme,
+    trackColor,
+    activeTrackColor,
+    thumbColor,
+    tickColor,
+    activeTickColor,
+  }: Pick<SliderProps, 'colorScheme' | 'trackColor' | 'activeTrackColor' | 'thumbColor' | 'tickColor' | 'activeTickColor'>
+) => {
+  const palette = resolvePaletteColor(theme.colors as Record<string, string[]>, colorScheme);
+  const schemeColor = palette?.[5]
+    ?? (typeof colorScheme === 'string' ? colorScheme : undefined)
+    ?? theme.colors.primary[5];
+
+  const resolvedActiveTrack = activeTrackColor ?? schemeColor;
+  const defaultTrackColor = theme.colorScheme === 'dark' ? theme.colors.gray[6] : theme.colors.gray[3];
+  const defaultTickColor = theme.colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[4];
+
+  return {
+    trackColor: trackColor ?? defaultTrackColor,
+    activeTrackColor: resolvedActiveTrack,
+    thumbColor: thumbColor ?? resolvedActiveTrack,
+    tickColor: tickColor ?? defaultTickColor,
+    activeTickColor: activeTickColor ?? resolvedActiveTrack,
+  };
+};
+
 // Optimized Single Slider Component
 export const Slider = factory<{
   props: SliderProps;
@@ -51,6 +93,17 @@ export const Slider = factory<{
     ticks,
     showTicks = false,
     restrictToTicks = false,
+    trackColor,
+    activeTrackColor,
+    thumbColor,
+    trackSize,
+    thumbSize: thumbSizeProp,
+    colorScheme = 'primary',
+    trackStyle,
+    activeTrackStyle,
+    thumbStyle,
+    tickColor,
+    activeTickColor,
     style,
     ...spacingProps
   } = props;
@@ -85,17 +138,34 @@ export const Slider = factory<{
         : 'md'
     : (resolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
-  const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
+  const thumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  const trackHeight = trackSize ?? SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
 
   // Memoized processed value
   const clampedValue = useSliderValue(isControlled ? (value as number) : internal, min, max, step, restrictToTicks, ticks, false) as number;
 
   // Memoized value label handling
+  const defaultValueFormatter = useCallback((val: number) => Math.round(val).toString(), []);
+
+  const resolvedValueLabel = useMemo<((value: number) => string) | null>(() => {
+    if (valueLabel === null) return null;
+    if (valueLabel) return valueLabel;
+    return defaultValueFormatter;
+  }, [valueLabel, defaultValueFormatter]);
+
   const labelConfig = useMemo(() => ({
-    shouldShow: valueLabel !== null && (valueLabelAlwaysOn || isDragging || (Platform.OS === 'web' && isHovering)),
-    formatter: valueLabel || ((val: number) => (Number.isInteger(val) ? val.toString() : val.toFixed(2)))
-  }), [valueLabel, valueLabelAlwaysOn, isDragging, isHovering]);
+    shouldShow: !!resolvedValueLabel && (valueLabelAlwaysOn || isDragging || (Platform.OS === 'web' && isHovering)),
+    formatter: resolvedValueLabel ?? defaultValueFormatter,
+  }), [resolvedValueLabel, valueLabelAlwaysOn, isDragging, isHovering, defaultValueFormatter]);
+
+  const sliderColors = useMemo(() => resolveSliderColors(theme, {
+    colorScheme,
+    trackColor,
+    activeTrackColor,
+    thumbColor,
+    tickColor,
+    activeTickColor,
+  }), [theme, colorScheme, trackColor, activeTrackColor, thumbColor, tickColor, activeTickColor]);
 
   // Memoized position calculations
   const positions = useMemo(() => {
@@ -270,6 +340,7 @@ export const Slider = factory<{
           height: fullWidth && orientation === 'vertical' ? '100%' : orientationProps.containerHeight,
           justifyContent: 'center',
           position: 'relative',
+          ...(Platform.OS === 'web' && orientation === 'vertical' ? { touchAction: 'none' as const } : null),
         }}
         onLayout={(event) => {
           // When fullWidth is enabled, track the actual container dimensions
@@ -296,6 +367,12 @@ export const Slider = factory<{
           size={sliderSize}
           orientation={orientation}
           activeWidth={positions.activeLength}
+          trackColor={sliderColors.trackColor}
+          activeTrackColor={sliderColors.activeTrackColor}
+          trackStyle={trackStyle}
+          activeTrackStyle={activeTrackStyle}
+          trackHeight={trackHeight}
+          thumbSize={thumbSize}
         />
 
         {/* Ticks */}
@@ -305,6 +382,10 @@ export const Slider = factory<{
           theme={theme}
           size={sliderSize}
           orientation={orientation}
+          trackHeight={trackHeight}
+          thumbSize={thumbSize}
+          tickColor={sliderColors.tickColor}
+          activeTickColor={sliderColors.activeTickColor}
         />
 
         {/* Thumb */}
@@ -315,6 +396,9 @@ export const Slider = factory<{
           size={sliderSize}
           orientation={orientation}
           isDragging={isDragging}
+          thumbColor={sliderColors.thumbColor}
+          thumbStyle={thumbStyle}
+          thumbSize={thumbSize}
         />
 
         {/* Value label */}
@@ -325,6 +409,7 @@ export const Slider = factory<{
             size={sliderSize}
             orientation={orientation}
             isCard={true}
+            thumbSize={thumbSize}
           />
         )}
       </View>
@@ -355,6 +440,17 @@ export const RangeSlider = factory<{
     showTicks = false,
     restrictToTicks = false,
     pushOnOverlap = true,
+    trackColor,
+    activeTrackColor,
+    thumbColor,
+    trackSize,
+    thumbSize: thumbSizeProp,
+    colorScheme = 'primary',
+    trackStyle,
+    activeTrackStyle,
+    thumbStyle,
+    tickColor,
+    activeTickColor,
     style,
     ...spacingProps
   } = props;
@@ -380,9 +476,18 @@ export const RangeSlider = factory<{
         : 'md'
     : (rangeResolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
-  const thumbSize = SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
-  const trackHeight = SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
+  const thumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  const trackHeight = trackSize ?? SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
   const containerRef = useRef<View>(null);
+
+  const sliderColors = useMemo(() => resolveSliderColors(theme, {
+    colorScheme,
+    trackColor,
+    activeTrackColor,
+    thumbColor,
+    tickColor,
+    activeTickColor,
+  }), [theme, colorScheme, trackColor, activeTrackColor, thumbColor, tickColor, activeTickColor]);
 
   // Memoized processed values
   const [minValue, maxValue] = useSliderValue(value, min, max, step, restrictToTicks, ticks, true) as [number, number];
@@ -671,6 +776,7 @@ export const RangeSlider = factory<{
           height: fullWidth && orientation === 'vertical' ? '100%' : orientationProps.containerHeight,
           justifyContent: 'center',
           position: 'relative',
+          ...(Platform.OS === 'web' && orientation === 'vertical' ? { touchAction: 'none' as const } : null),
         }}
         onLayout={(event) => {
           // When fullWidth is enabled, track the actual container dimensions
@@ -699,6 +805,12 @@ export const RangeSlider = factory<{
           activeWidth={positions.activeWidth}
           activeLeft={positions.activeLeft}
           isRange={true}
+          trackColor={sliderColors.trackColor}
+          activeTrackColor={sliderColors.activeTrackColor}
+          trackStyle={trackStyle}
+          activeTrackStyle={activeTrackStyle}
+          trackHeight={trackHeight}
+          thumbSize={thumbSize}
         />
 
         {/* Ticks */}
@@ -709,6 +821,10 @@ export const RangeSlider = factory<{
           size={sliderSize}
           orientation={orientation}
           keyPrefix="range-tick"
+          trackHeight={trackHeight}
+          thumbSize={thumbSize}
+          tickColor={sliderColors.tickColor}
+          activeTickColor={sliderColors.activeTickColor}
         />
 
         {/* Min Thumb */}
@@ -721,6 +837,9 @@ export const RangeSlider = factory<{
           isDragging={dragState.thumb === 'min'}
           zIndex={dragState.thumb === 'min' ? 10 : 1}
           panHandlers={minThumbPanResponder.panHandlers}
+          thumbColor={sliderColors.thumbColor}
+          thumbStyle={thumbStyle}
+          thumbSize={thumbSize}
         />
 
         {/* Max Thumb */}
@@ -733,6 +852,9 @@ export const RangeSlider = factory<{
           isDragging={dragState.thumb === 'max'}
           zIndex={dragState.thumb === 'max' ? 10 : 2}
           panHandlers={maxThumbPanResponder.panHandlers}
+          thumbColor={sliderColors.thumbColor}
+          thumbStyle={thumbStyle}
+          thumbSize={thumbSize}
         />
 
         {/* Value labels */}
@@ -744,6 +866,7 @@ export const RangeSlider = factory<{
               size={sliderSize}
               orientation={orientation}
               isCard={true}
+              thumbSize={thumbSize}
             />
             <SliderValueLabel
               value={labelConfig.formatter(maxValue, 1)}
@@ -751,6 +874,7 @@ export const RangeSlider = factory<{
               size={sliderSize}
               orientation={orientation}
               isCard={true}
+              thumbSize={thumbSize}
             />
           </>
         )}

@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { Pressable } from 'react-native';
 
 export const AppHeader: React.FC = () => {
-  const { headerHeight } = useAppShell();
+  const { headerHeight, isMobile } = useAppShell();
   const breadcrumbs = useBreadcrumbs();
   const [navSidebarOpen, setNavSidebarOpen] = useState(false);
   const router = useRouter();
@@ -25,11 +25,13 @@ export const AppHeader: React.FC = () => {
     <>
       <Flex direction="row" justify="space-between" align="center" px="md" style={{ height: typeof headerHeight === 'number' ? headerHeight : 60 }}>
         <Flex direction="row" align="center" gap="md">
-          <NavIconButton
-            icon="menu"
-            onPress={() => setNavSidebarOpen(!navSidebarOpen)}
-            accessibilityLabel="Toggle navigation menu"
-          />
+          {isMobile && (
+            <NavIconButton
+              icon="menu"
+              onPress={() => setNavSidebarOpen(!navSidebarOpen)}
+              accessibilityLabel="Toggle navigation menu"
+            />
+          )}
           <Pressable onPress={() => router.push('/')}>
             <Flex direction="row" align="center" gap="sm" style={{ cursor: 'pointer' }}>
               <Image

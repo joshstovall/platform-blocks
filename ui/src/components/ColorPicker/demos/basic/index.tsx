@@ -1,17 +1,22 @@
 import { useState } from 'react';
-import { ColorPicker, Card } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [color, setColor] = useState('#FF6B6B');
 
   return (
-    <Card p={16} variant="outline">
+    <Column gap="xs" fullWidth>
       <ColorPicker
         value={color}
         onChange={setColor}
-        label="Choose a color"
-        placeholder="Select your favorite color"
+        label="Favorite color"
+        placeholder="Select a color"
+        clearable
+        fullWidth
       />
-    </Card>
+      <Text size="sm" colorVariant="secondary">
+        Selected: {color || 'none'}
+      </Text>
+    </Column>
   );
 }

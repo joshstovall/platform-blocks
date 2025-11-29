@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type Member = {
@@ -60,46 +60,42 @@ export default function Demo() {
   };
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Row justify="space-between" align="center">
-            <Column gap="xxs">
-              <Text size="sm" weight="semibold">
-                Row selection
-              </Text>
-              <Text size="sm" colorVariant="secondary">
-                Multi-select rows for follow-up actions.
-              </Text>
-            </Column>
-            <Row gap="sm">
-              <Button size="xs" variant="outline" onPress={() => setSelectedRows([])} disabled={selectedRows.length === 0}>
-                Clear selection
-              </Button>
-              <Button size="xs" variant="outline" onPress={toggleSelectAll}>
-                {selectedRows.length === rows.length ? 'Deselect all' : 'Select all'}
-              </Button>
-            </Row>
-          </Row>
-          <Text size="sm" colorVariant={selectedRows.length ? 'primary' : 'muted'}>
-            {selectedRows.length ? `${selectedRows.length} member${selectedRows.length > 1 ? 's' : ''} selected` : 'No rows selected'}
+    <Column gap="sm" fullWidth>
+      <Row justify="space-between" align="center" wrap="wrap" gap="sm">
+        <Column gap="xxs">
+          <Text size="sm" weight="semibold">
+            Row selection
           </Text>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            selectable
-            selectedRows={selectedRows}
-            onSelectionChange={setSelectedRows}
-            getRowId={(row) => row.id}
-            searchable
-            searchPlaceholder="Search members"
-          />
+          <Text size="sm" colorVariant="secondary">
+            Multi-select rows for follow-up actions
+          </Text>
         </Column>
-      </Card>
+        <Row gap="sm">
+          <Button size="xs" variant="outline" onPress={() => setSelectedRows([])} disabled={selectedRows.length === 0}>
+            Clear selection
+          </Button>
+          <Button size="xs" variant="outline" onPress={toggleSelectAll}>
+            {selectedRows.length === rows.length ? 'Deselect all' : 'Select all'}
+          </Button>
+        </Row>
+      </Row>
+      <Text size="sm" colorVariant={selectedRows.length ? 'primary' : 'muted'}>
+        {selectedRows.length ? `${selectedRows.length} member${selectedRows.length > 1 ? 's' : ''} selected` : 'No rows selected'}
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        selectable
+        selectedRows={selectedRows}
+        onSelectionChange={setSelectedRows}
+        getRowId={(row) => row.id}
+        searchable
+        searchPlaceholder="Search members"
+      />
     </Column>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileInput, Flex, Text, Button, Card } from '@platform-blocks/ui';
+import { Button, Column, FileInput, Flex, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
 
 export default function Demo() {
@@ -32,66 +32,74 @@ export default function Demo() {
   };
 
   return (
-    <Flex direction="column" gap={16}>
-      <Text size="lg" weight="semibold">Upload with Progress Simulation</Text>
-      
-  <Card p={16} variant="outline">
-        <FileInput
-          label="Select Files to Upload"
-          helperText="Choose files and click upload to see progress simulation"
-          onFilesChange={setFiles}
-          multiple
-          maxFiles={5}
-          maxSize={10 * 1024 * 1024} // 10MB
-        />
-      </Card>
+    <Column gap="sm" fullWidth>
+      <FileInput
+        label="Select files to upload"
+        helperText="Choose files and click upload to simulate progress"
+        onFilesChange={setFiles}
+        multiple
+        maxFiles={5}
+        maxSize={10 * 1024 * 1024}
+        fullWidth
+      />
 
       {files.length > 0 && (
-  <Card p={16} variant="outline">
-          <Text size="md" weight="semibold" mb={12}>Selected Files</Text>
-          <Flex direction="column" gap={8}>
+        <Column gap="sm" fullWidth>
+          <Text size="sm" weight="semibold">
+            Selected files
+          </Text>
+          <Column gap="xs">
             {files.map((file, index) => (
-              <Flex key={index} direction="row" justify="space-between" align="center" p={8} style={{ borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 4 }}>
-                <Flex direction="column" gap={2}>
-                  <Text size="sm" weight="medium">{file.name}</Text>
-                  <Text size="xs" color="secondary">{(file.size / 1024).toFixed(1)} KB</Text>
+              <Flex
+                key={file.id ?? file.name}
+                direction="row"
+                justify="space-between"
+                align="center"
+                p={8}
+                style={{ borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 4 }}
+              >
+                <Column gap="xxs">
+                  <Text size="sm" weight="medium">
+                    {file.name}
+                  </Text>
+                  <Text size="xs" colorVariant="secondary">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </Text>
                   {uploadProgress[file.name] !== undefined && (
-                    <Text size="xs" color="primary">
+                    <Text size="xs" colorVariant="primary">
                       Progress: {uploadProgress[file.name]}%
                     </Text>
                   )}
-                </Flex>
-                <Button 
-                  size="xs" 
-                  variant="outline" 
-                  onPress={() => handleRemove(index)}
-                  disabled={isUploading}
-                >
+                </Column>
+                <Button size="xs" variant="outline" onPress={() => handleRemove(index)} disabled={isUploading}>
                   Remove
                 </Button>
               </Flex>
             ))}
-          </Flex>
-          
-          <Flex direction="row" gap={12} style={{ marginTop: 16 }}>
-            <Button 
-              variant="gradient" 
+          </Column>
+
+          <Flex direction="row" gap={12} wrap="wrap">
+            <Button
+              variant="gradient"
               onPress={handleUpload}
               disabled={isUploading || files.length === 0}
               loading={isUploading}
             >
-              {isUploading ? 'Uploading...' : 'Upload Files'}
+              {isUploading ? 'Uploading…' : 'Upload files'}
             </Button>
-            <Button 
-              variant="outline" 
-              onPress={() => { setFiles([]); setUploadProgress({}); }}
+            <Button
+              variant="outline"
+              onPress={() => {
+                setFiles([]);
+                setUploadProgress({});
+              }}
               disabled={isUploading}
             >
-              Clear All
+              Clear all
             </Button>
           </Flex>
-        </Card>
+        </Column>
       )}
-    </Flex>
+    </Column>
   );
 }

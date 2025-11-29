@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Column, DataTable, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTableSort } from '@platform-blocks/ui';
 
 type Product = {
@@ -80,28 +80,22 @@ export default function Demo() {
   const [sortBy, setSortBy] = useState<DataTableSort[]>([]);
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Row justify="space-between" align="center">
-            <Text size="sm" colorVariant="secondary">
-              Open the header menu (⋮) and choose “Column settings” to adjust width, label, or visibility without shifting the table.
-            </Text>
-          </Row>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            searchable
-            searchPlaceholder="Search products"
-            enableColumnResizing
-            showColumnVisibilityManager
-            hoverHighlight
-            variant="striped"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Use the header menu (⋮) → Column settings to adjust width, label, or visibility
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        searchable
+        searchPlaceholder="Search products"
+        enableColumnResizing
+        showColumnVisibilityManager
+        hoverHighlight
+        variant="striped"
+      />
     </Column>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ColorPicker, Flex, Card, Text } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [color1, setColor1] = useState('#2196F3');
@@ -17,36 +17,45 @@ export default function Demo() {
   ];
 
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Custom Blue Palette</Text>
+    <Column gap="md" fullWidth>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Custom blue palette
+        </Text>
         <ColorPicker
           value={color1}
           onChange={setColor1}
           swatches={blueSwatches}
-          label="Blue Shades"
+          label="Blue shades"
+          fullWidth
         />
-      </Card>
+      </Column>
 
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Custom Green Palette</Text>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Custom green palette
+        </Text>
         <ColorPicker
           value={color2}
           onChange={setColor2}
           swatches={greenSwatches}
-          label="Green Shades"
+          label="Green shades"
+          fullWidth
         />
-      </Card>
+      </Column>
 
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>No Swatches</Text>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Without swatches
+        </Text>
         <ColorPicker
           value={color3}
           onChange={setColor3}
           withSwatches={false}
-          label="Color Wheel Only"
+          label="Color wheel only"
+          fullWidth
         />
-      </Card>
-    </Flex>
+      </Column>
+    </Column>
   );
 }

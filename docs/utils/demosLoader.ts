@@ -21,6 +21,7 @@ export interface ComponentMeta {
   category?: string;
   tags?: string[];
   playground?: PlaygroundMeta;
+  resources?: Array<{ label?: string; href: string }>;
   [key: string]: any;
 }
 

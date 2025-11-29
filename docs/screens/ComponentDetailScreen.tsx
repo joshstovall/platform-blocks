@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Linking, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, Button, Card, Chip, Flex, Loader, Tabs, Markdown, useI18n, Title, Breadcrumbs, Divider, BrandButton, TableOfContents, Switch } from '@platform-blocks/ui';
+import { Text, Button, Card, Chip, Flex, Loader, Tabs, Markdown, useI18n, Title, Breadcrumbs, Divider, BrandButton, TableOfContents, Switch, Link } from '@platform-blocks/ui';
 import { BREAKPOINTS } from '@platform-blocks/ui/core/responsive';
 import { GlobalChartsRoot } from '@platform-blocks/charts';
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
@@ -142,6 +142,9 @@ function ComponentContent({
   componentMarkdown: string | null;
 }) {
   const tabItems: Array<{ key: string; label: string; content: React.ReactNode; subLabel?: string }> = [];
+  const resourceLinks = Array.isArray(newMeta?.resources)
+    ? (newMeta?.resources as Array<{ label?: string; href?: string }>).filter((entry) => typeof entry?.href === 'string')
+    : [];
 
   tabItems.push({
     key: 'demos',
@@ -303,6 +306,26 @@ function ComponentContent({
         items={tabItems}
         style={{ flex: 1 }}
       />
+
+      {resourceLinks.length > 0 && (
+        <Card style={{ padding: 20, marginTop: 24, gap: 12 }}>
+          <Text variant="h4" weight="semibold">Further reading</Text>
+          <Flex direction="column" gap={10}>
+            {resourceLinks.map((resource) => (
+              <Link
+                key={`${resource.href}-${resource.label ?? resource.href}`}
+                href={resource.href}
+                target="_blank"
+                external
+                variant="hover-underline"
+                size="sm"
+              >
+                {resource.label || resource.href}
+              </Link>
+            ))}
+          </Flex>
+        </Card>
+      )}
     </>
   );
 }

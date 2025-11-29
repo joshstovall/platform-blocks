@@ -6,7 +6,8 @@
     "ui",
     "docs",
     "charts",
-    "icons"
+    "icons",
+    "packages/create-platform-blocks"
   ],
   "scripts": {
     "build": "npm run build --workspace=ui",
@@ -31,7 +32,7 @@
     "docs:baseline": "npm run build-web --workspace=docs && npx playwright test --config=playwright.config.ts",
     "verify:packages": "npm run lint --workspace=ui && npm run test --workspace=ui && npm run lint --workspace=charts && npm run test --workspace=charts",
     "verify:packages:build": "npm run build --workspace=ui && npm run build --workspace=charts",
-    "release": "npm run verify:packages && npm run verify:packages:build && tsx scripts/publish-release.ts"
+    "release": "npm run verify:packages && npm run verify:packages:build && npm run ui:build && tsx scripts/publish-release.ts"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",

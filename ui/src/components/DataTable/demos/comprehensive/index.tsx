@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Card, Column, DataTable, Icon, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Icon, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type User = {
@@ -104,49 +104,43 @@ export default function Demo() {
   const currentPageLabel = useMemo(() => `Page ${pagination.page} of ${Math.ceil(pagination.total / pagination.pageSize)}`, [pagination]);
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Row justify="space-between" align="center">
-            <Column gap="xs">
-              <Text size="sm" weight="semibold">
-                Team directory
-              </Text>
-              <Text size="sm" colorVariant="secondary">
-                Sort, filter, and select rows to manage bulk actions.
-              </Text>
-            </Column>
-            <Row gap="sm">
-              <Button size="xs" variant="outline" onPress={() => setSelection([])} disabled={selection.length === 0}>
-                Clear selection
-              </Button>
-              <Button size="xs" variant="filled">
-                Invite member
-              </Button>
-            </Row>
-          </Row>
-          <Row gap="sm" align="center">
-            <Text size="sm" colorVariant="secondary">
-              {selection.length ? `${selection.length} selected · ${currentPageLabel}` : currentPageLabel}
-            </Text>
-          </Row>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            selectedRows={selection}
-            onSelectionChange={setSelection}
-            getRowId={(row) => row.id}
-            rowActions={rowActions}
-            searchable
-            searchPlaceholder="Search team"
-            variant="striped"
-          />
+    <Column gap="sm" fullWidth>
+      <Row justify="space-between" align="center" wrap="wrap" gap="sm">
+        <Column gap="xxs">
+          <Text size="sm" weight="semibold">
+            Team directory
+          </Text>
+          <Text size="sm" colorVariant="secondary">
+            Sort, filter, and select rows to manage bulk actions
+          </Text>
         </Column>
-      </Card>
+        <Row gap="sm">
+          <Button size="xs" variant="outline" onPress={() => setSelection([])} disabled={selection.length === 0}>
+            Clear selection
+          </Button>
+          <Button size="xs" variant="filled">
+            Invite member
+          </Button>
+        </Row>
+      </Row>
+      <Text size="sm" colorVariant="secondary">
+        {selection.length ? `${selection.length} selected · ${currentPageLabel}` : currentPageLabel}
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        selectedRows={selection}
+        onSelectionChange={setSelection}
+        getRowId={(row) => row.id}
+        rowActions={rowActions}
+        searchable
+        searchPlaceholder="Search team"
+        variant="striped"
+      />
     </Column>
   );
 }

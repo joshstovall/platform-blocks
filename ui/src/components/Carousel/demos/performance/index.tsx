@@ -12,6 +12,7 @@ export default function Demo() {
         windowSize={6}
         reducedMotion
         slideGap={12}
+        style={{ width: '100%' }}
       >
         <Column
           gap="sm"

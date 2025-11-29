@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { DatePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, DatePicker, Text } from '@platform-blocks/ui';
 
-export default function ValidationDatePickerDemo() {
+export default function Demo() {
   const [value, setValue] = useState<Date | null>(null);
-  const [inlineError, setInlineError] = useState<string>('');
+  const [inlineError, setInlineError] = useState('');
 
   const today = useMemo(() => {
     const date = new Date();
@@ -11,32 +11,22 @@ export default function ValidationDatePickerDemo() {
     return date;
   }, []);
 
-  const handleChange = (newValue: Date | [Date | null, Date | null] | Date[] | null) => {
-    const dateValue = newValue as Date | null;
+  const handleChange = (next: Date | [Date | null, Date | null] | Date[] | null) => {
+    const dateValue = next as Date | null;
     setValue(dateValue);
-    if (dateValue && dateValue < today) {
-      setInlineError('Date cannot be in the past');
-    } else {
-      setInlineError('');
-    }
+    setInlineError(dateValue && dateValue < today ? 'Date cannot be in the past' : '');
   };
 
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Inline validation</Text>
-        <DatePicker
-          value={value}
-          onChange={handleChange}
-          calendarProps={{
-            minDate: today,
-            highlightToday: true,
-          }}
-        />
-        <Text size="sm" colorVariant="secondary">
-          {inlineError || 'Only dates today or later are enabled'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="sm" fullWidth>
+      <DatePicker
+        value={value}
+        onChange={handleChange}
+        calendarProps={{ minDate: today, highlightToday: true }}
+      />
+      <Text size="sm" colorVariant={inlineError ? 'error' : 'secondary'}>
+        {inlineError || 'Only dates today or later are enabled'}
+      </Text>
+    </Column>
   );
 }

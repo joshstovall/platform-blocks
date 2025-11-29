@@ -1,49 +1,43 @@
 import { useState } from 'react';
-import { ColorPicker, Flex, Card, Text } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
+
+const sizes = [
+  { label: 'Small', size: 'sm' as const },
+  { label: 'Medium (default)', size: 'md' as const },
+  { label: 'Large', size: 'lg' as const },
+];
 
 export default function Demo() {
   const [color, setColor] = useState('#FF6B6B');
 
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Small Size</Text>
-        <ColorPicker
-          label="Small Color Picker"
-          value={color}
-          onChange={setColor}
-          size="sm"
-        />
-      </Card>
+    <Column gap="md" fullWidth>
+      {sizes.map(({ label, size }) => (
+        <Column key={label} gap="xs" fullWidth>
+          <Text size="sm" weight="semibold">
+            {label}
+          </Text>
+          <ColorPicker
+            label={`${label} picker`}
+            value={color}
+            onChange={setColor}
+            size={size}
+            fullWidth
+          />
+        </Column>
+      ))}
 
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Medium Size (Default)</Text>
-        <ColorPicker
-          label="Medium Color Picker"
-          value={color}
-          onChange={setColor}
-          size="md"
-        />
-      </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Large Size</Text>
-        <ColorPicker
-          label="Large Color Picker"
-          value={color}
-          onChange={setColor}
-          size="lg"
-        />
-      </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Custom Placeholder</Text>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Custom placeholder
+        </Text>
         <ColorPicker
           placeholder="Pick your favorite color..."
           value=""
           onChange={setColor}
+          fullWidth
         />
-      </Card>
-    </Flex>
+      </Column>
+    </Column>
   );
 }

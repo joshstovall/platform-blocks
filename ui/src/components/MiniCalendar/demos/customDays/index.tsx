@@ -1,47 +1,34 @@
 import React, { useState } from 'react';
-import { MiniCalendar, Column, Text, Row, Button } from '@platform-blocks/ui';
+import { Button, Column, MiniCalendar, Row, Text } from '@platform-blocks/ui';
+
+const DAY_OPTIONS = [3, 5, 7];
 
 export default function Demo() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [numberOfDays, setNumberOfDays] = useState(5);
 
   return (
-    <Column gap={16}>
-      <Row gap={8}>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 3 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(3)}
-        >
-          3 Days
-        </Button>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 5 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(5)}
-        >
-          5 Days
-        </Button>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 7 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(7)}
-        >
-          7 Days
-        </Button>
+    <Column gap="sm" fullWidth>
+      <Row gap="xs">
+        {DAY_OPTIONS.map((days) => (
+          <Button
+            key={days}
+            size="sm"
+            variant={numberOfDays === days ? 'filled' : 'outline'}
+            onPress={() => setNumberOfDays(days)}
+          >
+            {days} days
+          </Button>
+        ))}
       </Row>
-      
-      <MiniCalendar 
+      <MiniCalendar
         value={selectedDate}
         onChange={(date: Date | null) => setSelectedDate(date)}
         numberOfDays={numberOfDays}
       />
-      
-      {selectedDate && (
-        <Text size="sm" color="gray">
-          Selected: {selectedDate.toLocaleDateString()}
-        </Text>
-      )}
+      <Text size="sm" colorVariant="secondary">
+        {selectedDate ? `Selected: ${selectedDate.toLocaleDateString()}` : 'No date selected'}
+      </Text>
     </Column>
   );
 }

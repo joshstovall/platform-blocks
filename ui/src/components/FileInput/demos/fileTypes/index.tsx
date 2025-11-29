@@ -17,7 +17,7 @@ export default function Demo() {
         </Text>
       </Column>
 
-      <Column gap="xs">
+      <Column gap="xs" fullWidth>
         <Text size="sm" weight="semibold">
           Images only
         </Text>
@@ -26,6 +26,7 @@ export default function Demo() {
           helperText="Only image files are allowed"
           onFilesChange={setImageFiles}
           multiple
+          fullWidth
         />
         {imageFiles.length > 0 && (
           <Text size="xs" colorVariant="secondary">
@@ -34,7 +35,7 @@ export default function Demo() {
         )}
       </Column>
 
-      <Column gap="xs">
+      <Column gap="xs" fullWidth>
         <Text size="sm" weight="semibold">
           Documents only
         </Text>
@@ -43,6 +44,7 @@ export default function Demo() {
           helperText="PDF, Word documents, and text files only"
           onFilesChange={setDocumentFiles}
           multiple
+          fullWidth
         />
         {documentFiles.length > 0 && (
           <Text size="xs" colorVariant="secondary">
@@ -51,7 +53,7 @@ export default function Demo() {
         )}
       </Column>
 
-      <Column gap="xs">
+      <Column gap="xs" fullWidth>
         <Text size="sm" weight="semibold">
           Videos (max 50MB)
         </Text>
@@ -60,6 +62,7 @@ export default function Demo() {
           maxSize={50 * 1024 * 1024}
           helperText="Video files up to 50MB"
           onFilesChange={setVideoFiles}
+          fullWidth
         />
         {videoFiles.length > 0 && (
           <Text size="xs" colorVariant="secondary">

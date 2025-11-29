@@ -109,9 +109,7 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
           ? theme.colors.error[5]
           : props.focused
             ? theme.colors.primary[5]
-            : props.disabled
-              ? theme.backgrounds.border
-              : 'transparent',
+            : theme.backgrounds.border,
         // Optional focus shadow (web only) without affecting layout
         ...(props.focused && !props.disabled && typeof window !== 'undefined' && theme.states?.focusRing && {
           boxShadow: `0 0 0 2px ${theme.states.focusRing}`,

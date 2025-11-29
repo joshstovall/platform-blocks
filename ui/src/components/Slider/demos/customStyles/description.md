@@ -1,0 +1,1 @@
+Showcases how to restyle the Slider using the new color scheme, sizing, and style override props for both single-value and range scenarios.

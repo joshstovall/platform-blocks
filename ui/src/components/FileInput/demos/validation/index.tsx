@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileInput, Flex, Text, Card } from '@platform-blocks/ui';
+import { Column, FileInput, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
 
 export default function Demo() {
@@ -8,61 +8,89 @@ export default function Demo() {
   const [limitedFiles, setLimitedFiles] = useState<FileInputFile[]>([]);
 
   return (
-    <Flex direction="column" gap={16}>
-      <Text size="lg" weight="semibold">File Validation Examples</Text>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Size Validation (Max 2MB)</Text>
+    <Column gap="md" fullWidth>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Size validation (max 2MB)
+        </Text>
         <FileInput
-          label="Upload Small Files"
-          helperText="Files must be smaller than 2MB"
+          label="Upload small files"
+          helperText="Files must be below 2MB"
           onFilesChange={setValidatedFiles}
-          maxSize={2 * 1024 * 1024} // 2MB
+          maxSize={2 * 1024 * 1024}
           multiple
+          fullWidth
         />
-      </Card>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Single File Only</Text>
+        {validatedFiles.length > 0 && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {validatedFiles.length}
+          </Text>
+        )}
+      </Column>
+
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Single file only
+        </Text>
         <FileInput
-          label="Upload One File"
-          helperText="Select only one file"
+          label="Upload one file"
+          helperText="Select a single file"
           onFilesChange={setSingleFile}
           multiple={false}
+          fullWidth
         />
-      </Card>
-      
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Limited File Count</Text>
+        {singleFile[0] && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {singleFile[0].name}
+          </Text>
+        )}
+      </Column>
+
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Limited file count
+        </Text>
         <FileInput
-          label="Upload Max 3 Files"
-          helperText="You can select up to 3 files"
+          label="Upload up to 3 files"
+          helperText="Selecting more will show a validation error"
           onFilesChange={setLimitedFiles}
           multiple
           maxFiles={3}
+          fullWidth
         />
-      </Card>
+        {limitedFiles.length > 0 && (
+          <Text size="xs" colorVariant="secondary">
+            Selected: {limitedFiles.length}
+          </Text>
+        )}
+      </Column>
 
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>With Error State</Text>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          With error state
+        </Text>
         <FileInput
-          label="Required File Upload"
+          label="Required upload"
           helperText="This field is required"
           onFilesChange={() => {}}
           error="Please select at least one file"
           required
+          fullWidth
         />
-      </Card>
+      </Column>
 
-  <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Disabled State</Text>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Disabled state
+        </Text>
         <FileInput
-          label="Disabled Upload"
-          helperText="This upload is currently disabled"
+          label="Disabled upload"
+          helperText="The uploader is unavailable"
           onFilesChange={() => {}}
           disabled
+          fullWidth
         />
-      </Card>
-    </Flex>
+      </Column>
+    </Column>
   );
 }

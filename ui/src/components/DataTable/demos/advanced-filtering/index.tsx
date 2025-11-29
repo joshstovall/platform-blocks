@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Card, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTableFilter, DataTableSort } from '@platform-blocks/ui';
 
 type Employee = {
@@ -66,32 +66,28 @@ export default function Demo() {
   const activeFilters = useMemo(() => filters.length, [filters]);
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Enable per-column filters to let people slice data by text, select, or numeric operators.
-          </Text>
-          <Row gap="sm" align="center">
-            <Text size="sm" colorVariant={activeFilters ? 'primary' : 'muted'}>
-              {activeFilters ? `${activeFilters} filter${activeFilters > 1 ? 's' : ''} applied` : 'No active filters'}
-            </Text>
-            <Button size="xs" variant="ghost" onPress={() => setFilters([])} disabled={!activeFilters}>
-              Clear filters
-            </Button>
-          </Row>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            filters={filters}
-            onFilterChange={setFilters}
-            searchable
-            searchPlaceholder="Search employees"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Enable column-level filters for text, select, or numeric operators
+      </Text>
+      <Row gap="sm" align="center">
+        <Text size="sm" colorVariant={activeFilters ? 'primary' : 'muted'}>
+          {activeFilters ? `${activeFilters} filter${activeFilters > 1 ? 's' : ''} applied` : 'No active filters'}
+        </Text>
+        <Button size="xs" variant="ghost" onPress={() => setFilters([])} disabled={!activeFilters}>
+          Clear filters
+        </Button>
+      </Row>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        filters={filters}
+        onFilterChange={setFilters}
+        searchable
+        searchPlaceholder="Search employees"
+      />
     </Column>
   );
 }

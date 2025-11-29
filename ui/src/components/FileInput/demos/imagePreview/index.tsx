@@ -1,63 +1,53 @@
 import { useState } from 'react';
-import { FileInput, Flex, Text, Card, Button } from '@platform-blocks/ui';
+import { Button, Card, Column, FileInput, Flex, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [images, setImages] = useState<FileInputFile[]>([]);
 
   const handleRemoveFile = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   };
 
   return (
-    <Flex direction="column" gap={16}>
-      <Text size="lg" weight="semibold">Image Upload with Preview</Text>
-      
-      <Card p={16} variant="outline">
-        <FileInput
-          label="Upload Images"
-          accept={['image/*']}
-          helperText="Upload images to see previews"
-          onFilesChange={setImages}
-          multiple
-        />
-      </Card>
+    <Column gap="sm" fullWidth>
+      <FileInput
+        label="Upload images"
+        accept={['image/*']}
+        helperText="Add images to see inline previews"
+        onFilesChange={setImages}
+        multiple
+        fullWidth
+      />
 
       {images.length > 0 && (
-        <Card p={16} variant="outline">
-          <Text size="md" weight="semibold" mb={12}>Selected Images ({images.length})</Text>
+        <Column gap="xs" fullWidth>
+          <Text size="sm" weight="semibold">
+            Selected images ({images.length})
+          </Text>
           <Flex direction="row" gap={12} wrap="wrap">
             {images.map((file, index) => (
-              <Card key={index} p={8} variant="outline" style={{ maxWidth: 150 }}>
-                <Flex direction="column" gap={8}>
+              <Card key={file.id ?? file.name} p={8} variant="outline" style={{ width: 150 }}>
+                <Column gap="xs">
                   {file.previewUrl && (
-                    <img 
-                      src={file.previewUrl} 
+                    <img
+                      src={file.previewUrl}
                       alt={file.name}
-                      style={{ 
-                        width: '100%', 
-                        height: 100, 
-                        objectFit: 'cover', 
-                        borderRadius: 4 
-                      }}
+                      style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
                     />
                   )}
-                  <Text size="xs" weight="medium" style={{ textAlign: 'center' }}>
+                  <Text size="xs" weight="medium" align="center">
                     {file.name}
                   </Text>
-                  <Button 
-                    size="xs" 
-                    variant="outline" 
-                    onPress={() => handleRemoveFile(index)}
-                  >
+                  <Button size="xs" variant="outline" onPress={() => handleRemoveFile(index)}>
                     Remove
                   </Button>
-                </Flex>
+                </Column>
               </Card>
             ))}
           </Flex>
-        </Card>
+        </Column>
       )}
-    </Flex>
+    </Column>
   );
 }

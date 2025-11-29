@@ -15,9 +15,9 @@ export interface AvatarProps {
   textColor?: string;
   /** Whether to show online status indicator */
   online?: boolean;
-  /** Accessibility label for the avatar badge */
-  badgeColor?: string;
-  /** Accessibility label for the avatar badge */
+  /** Color override for the status indicator */
+  indicatorColor?: string;
+  /** Style override for the avatar container */
   style?: ViewStyle;
   /** Accessibility label for the avatar image */
   accessibilityLabel?: string;

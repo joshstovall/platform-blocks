@@ -1,9 +1,8 @@
-import { Markdown, Flex, Card } from '@platform-blocks/ui';
+import { Column, Markdown, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  const content = `# Table Examples
+const CONTENT = `# Table examples
 
-## Basic Table
+## Basic table
 
 | Name | Age | City |
 |------|-----|------|
@@ -11,7 +10,7 @@ export default function Demo() {
 | Jane Smith | 25 | Los Angeles |
 | Bob Johnson | 35 | Chicago |
 
-## Table with Formatting
+## Table with formatting
 
 | Feature | Status | **Priority** | Notes |
 |---------|--------|-------------|--------|
@@ -20,22 +19,29 @@ export default function Demo() {
 | Analytics | ❌ | **Low** | \`Not started\` |
 | API Integration | ✅ | **High** | [Documentation](https://example.com) |
 
-## Table with Code
+## Table with code
 
-| Language | Extension | Sample Code |
+| Language | Extension | Sample code |
 |----------|-----------|-------------|
 | TypeScript | \`.tsx\` | \`const x: string = "hello";\` |
 | JavaScript | \`.js\` | \`function hello() { return "world"; }\` |
 | Python | \`.py\` | \`def hello(): return "world"\` |
 
-## Complex Table
+## Complex table
 
 | Component | **Props** | _Description_ | Example |
 |-----------|----------|-------------|---------|
 | Button | \`variant\`, \`size\`, \`disabled\` | Interactive button element | \`<Button variant="filled">Click me</Button>\` |
 | Input | \`placeholder\`, \`value\`, \`onChange\` | Text input field | \`<Input placeholder="Enter text" />\` |
-| Card | \`variant\`, \`padding\` | Container component | \`<Card variant="outline">Content</Card>\` |
-`;
+| Card | \`variant\`, \`padding\` | Container component | \`<Card variant="outline">Content</Card>\` |`;
 
-  return <Markdown>{content}</Markdown>
+export default function Demo() {
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Multiple table layouts rendered with Markdown
+      </Text>
+    </Column>
+  );
 }

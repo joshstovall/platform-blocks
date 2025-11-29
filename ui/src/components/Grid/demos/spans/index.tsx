@@ -1,17 +1,22 @@
-import { Grid, GridItem, Card, Text } from '@platform-blocks/ui'
+import { Grid, GridItem, Card, Column, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
+  const spans = [6, 6, 4, 4, 4, 3, 3, 3, 3];
+
   return (
-    <Grid columns={12} gap={12}>
-      <GridItem span={6}><Card><Text>span=6</Text></Card></GridItem>
-      <GridItem span={6}><Card><Text>span=6</Text></Card></GridItem>
-      <GridItem span={4}><Card><Text>span=4</Text></Card></GridItem>
-      <GridItem span={4}><Card><Text>span=4</Text></Card></GridItem>
-      <GridItem span={4}><Card><Text>span=4</Text></Card></GridItem>
-      <GridItem span={3}><Card><Text>span=3</Text></Card></GridItem>
-      <GridItem span={3}><Card><Text>span=3</Text></Card></GridItem>
-      <GridItem span={3}><Card><Text>span=3</Text></Card></GridItem>
-      <GridItem span={3}><Card><Text>span=3</Text></Card></GridItem>
-    </Grid>
-  )
+    <Column gap="xs" fullWidth>
+      <Grid columns={12} gap={12}>
+        {spans.map((span, index) => (
+          <GridItem key={`${span}-${index}`} span={span}>
+            <Card p={10}>
+              <Text>{`span=${span}`}</Text>
+            </Card>
+          </GridItem>
+        ))}
+      </Grid>
+      <Text size="sm" colorVariant="secondary">
+        Mix spans within a 12-column grid to create varied layouts
+      </Text>
+    </Column>
+  );
 }

@@ -618,7 +618,7 @@ function AppShellBase(props: AppShellProps, ref: React.Ref<View>) {
   // Determine if mobile based on breakpoint and platform
   const isMobile = Platform.OS !== 'web' || breakpoint === 'xs' || breakpoint === 'sm';
 
-  const headerConfig = layoutVisibility.header && !isMobile ? header : undefined;
+  const headerConfig = layoutVisibility.header ? header : undefined;
   const navbarConfig = layoutVisibility.navbar ? navbar : undefined;
   const asideConfig = layoutVisibility.aside ? aside : undefined;
   const footerConfig = layoutVisibility.footer ? footer : undefined;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TimePicker, Text, Block } from '@platform-blocks/ui';
+import { Column, Text, TimePicker } from '@platform-blocks/ui';
 import type { TimePickerValue } from '@platform-blocks/ui';
 
 const withinBusiness = (v: TimePickerValue) => {
@@ -26,11 +26,11 @@ export default function ValidationTimePickerDemo() {
   };
 
   return (
-    <Block w="100%" gap="md">
+    <Column gap="xs" fullWidth>
       <TimePicker
         value={value}
         onChange={handleChange}
-        label="Meeting Time"
+        label="Meeting time"
         error={error}
         helperText="Business hours only"
         clearable
@@ -41,6 +41,6 @@ export default function ValidationTimePickerDemo() {
           Selected: {value.hours.toString().padStart(2, '0')}:{value.minutes.toString().padStart(2, '0')}
         </Text>
       )}
-    </Block>
+    </Column>
   );
 }

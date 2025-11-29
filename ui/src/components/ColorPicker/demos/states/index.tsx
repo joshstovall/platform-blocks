@@ -1,48 +1,67 @@
 import { useState } from 'react';
-import { ColorPicker, Flex, Card, Text } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
+
+const sections = [
+  {
+    title: 'Interactive state',
+    helper: 'Updates value immediately',
+    controlled: true,
+    pickerProps: {
+      label: 'Choose color',
+    },
+  },
+  {
+    title: 'Disabled',
+    helper: 'Preview only',
+    pickerProps: {
+      label: 'Disabled picker',
+      value: '#CCCCCC',
+      disabled: true,
+    },
+  },
+  {
+    title: 'With error',
+    pickerProps: {
+      label: 'Required color',
+      value: '',
+      error: 'Color selection is required',
+      required: true,
+    },
+  },
+  {
+    title: 'With description',
+    controlled: true,
+    pickerProps: {
+      label: 'Brand color',
+      description: "Choose your brand's primary color",
+    },
+  },
+];
 
 export default function Demo() {
   const [color, setColor] = useState('#FF6B6B');
 
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Default State</Text>
-        <ColorPicker
-          label="Choose Color"
-          value={color}
-          onChange={setColor}
-        />
-      </Card>
+    <Column gap="md" fullWidth>
+      {sections.map(({ title, helper, controlled, pickerProps }) => {
+        const sharedProps = controlled
+          ? { value: color, onChange: setColor }
+          : {};
 
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Disabled</Text>
-        <ColorPicker
-          label="Disabled Color Picker"
-          value="#CCCCCC"
-          disabled
-        />
-      </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>With Error</Text>
-        <ColorPicker
-          label="Required Color"
-          value=""
-          error="Color selection is required"
-          required
-        />
-      </Card>
-
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>With Description</Text>
-        <ColorPicker
-          label="Brand Color"
-          description="Choose your brand's primary color"
-          value={color}
-          onChange={setColor}
-        />
-      </Card>
-    </Flex>
+        return (
+          <Column key={title} gap="xs" fullWidth>
+            <Text size="sm" weight="semibold">
+              {title}
+            </Text>
+            <ColorPicker {...pickerProps} {...sharedProps} fullWidth />
+            {helper && (
+              <Text size="xs" colorVariant="secondary">
+                {helper}
+              </Text>
+            )}
+          </Column>
+        );
+      })}
+    </Column>
   );
 }

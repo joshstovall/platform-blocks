@@ -8,11 +8,23 @@ export default function Demo() {
         loop
         autoPlay
         autoPlayInterval={5000}
-        itemsPerPage={4}
-        slideSize={{ base: '60%', md: '25%' }}
-        slideGap={{ base: 12, md: 16 }}
-        showArrows
+        itemsPerPage={1}
+        slidesToScroll={1}
+        slideGap={12}
+        showArrows={false}
         showDots
+        style={{ width: '100%' }}
+        breakpoints={{
+          '@media (min-width: 768px)': {
+            itemsPerPage: 2,
+            showArrows: true,
+          },
+          '@media (min-width: 1200px)': {
+            itemsPerPage: 4,
+            showDots: false,
+            slideGap: 16,
+          },
+        }}
       >
         <Column
           gap="xs"

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Column, DataTable, Text } from '@platform-blocks/ui';
+import { Column, DataTable, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type Employee = {
@@ -67,24 +67,20 @@ export default function Demo() {
   });
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Start with column definitions and pass the dataset directly to `DataTable` for built-in sorting and pagination.
-          </Text>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            searchable
-            searchPlaceholder="Search teammates"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Sortable columns with built-in pagination and search
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        searchable
+        searchPlaceholder="Search teammates"
+      />
     </Column>
   );
 }

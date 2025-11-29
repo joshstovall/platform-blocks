@@ -1,22 +1,39 @@
-import { Grid, GridItem, Card, Text, Block, Divider } from '@platform-blocks/ui';
+import { Grid, GridItem, Card, Column, Text } from '@platform-blocks/ui';
+
+const sections = [
+  {
+    label: 'Compact gap (xs)',
+    columns: 6,
+    items: 12,
+    props: { gap: 'xs' as const, rowGap: 6, columnGap: 6 },
+  },
+  {
+    label: 'Roomy gap (24px)',
+    columns: 6,
+    items: 6,
+    props: { gap: 24, rowGap: 24, columnGap: 12 },
+  },
+];
 
 export default function GapsGridDemo() {
-  return (<Block>
-    <Grid columns={6} gap="xs" rowGap={6} columnGap={6}>
-      {Array.from({ length: 12 }).map((_, i) => (
-          <Card key={i}>
-            <Text size="sm">Item {i + 1}</Text>
-          </Card>
+  return (
+    <Column gap="md" fullWidth>
+      {sections.map(({ label, columns, items, props }) => (
+        <Column key={label} gap="xs" fullWidth>
+          <Text size="sm" weight="semibold">
+            {label}
+          </Text>
+          <Grid columns={columns} {...props}>
+            {Array.from({ length: items }).map((_, index) => (
+              <GridItem key={index} span={1}>
+                <Card p={8}>
+                  <Text size="sm">Item {index + 1}</Text>
+                </Card>
+              </GridItem>
+            ))}
+          </Grid>
+        </Column>
       ))}
-    </Grid>
-    <Divider my={24} />
-    <Grid columns={6} gap={24} rowGap={24} columnGap={12}>
-      {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <Text size="sm">Item {i + 1}</Text>
-          </Card>
-      ))}
-    </Grid>
-    </Block>
+    </Column>
   );
 }

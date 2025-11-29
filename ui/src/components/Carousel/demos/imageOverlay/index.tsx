@@ -10,6 +10,7 @@ export default function Demo() {
         loop
         showArrows
         showDots
+        style={{ width: '100%' }}
       >
         <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
           <Image

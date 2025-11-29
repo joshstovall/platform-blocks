@@ -21,6 +21,24 @@ export interface CarouselProps extends SpacingProps {
   loop?: boolean;
   /** Number of visible items per page */
   itemsPerPage?: number;
+  /** Number of slides to advance per snap (defaults to itemsPerPage for backwards compatibility) */
+  slidesToScroll?: number;
+  /** Align the visible slides within the viewport when there is extra space */
+  align?: 'start' | 'center' | 'end';
+  /** Contain leading/trailing space by trimming or keeping snap points */
+  containScroll?: false | 'trimSnaps' | 'keepSnaps';
+  /** Initial slide index to show on mount */
+  startIndex?: number;
+  /** Allow momentum scrolling without forced snaps */
+  dragFree?: boolean;
+  /** Permit gestures to skip over multiple snap points (default true) */
+  skipSnaps?: boolean;
+  /** Drag distance (in px) required before a swipe is committed */
+  dragThreshold?: number;
+  /** Duration (ms) for programmatic scroll animations */
+  duration?: number;
+  /** Embla-style breakpoint overrides applied via media queries */
+  breakpoints?: Record<string, Partial<CarouselProps>>;
   /**
    * Explicit slide size. Accepts:
    *  - percentage string: e.g. "70%"

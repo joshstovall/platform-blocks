@@ -189,6 +189,7 @@ export const DataTable = <T,>({
   onCellEdit,
   bulkActions = [],
   variant = 'default',
+  striped: stripedProp,
   density = 'normal',
   height,
   virtual = false,
@@ -228,6 +229,7 @@ export const DataTable = <T,>({
   const { spacingProps, otherProps } = extractSpacingProps(props);
   const theme = useTheme();
   const { isRTL } = useDirection();
+  const isStriped = stripedProp ?? variant === 'striped';
   
   // Local state
   const [internalSearchValue, setInternalSearchValue] = useState('');
@@ -1067,7 +1069,7 @@ export const DataTable = <T,>({
           style={{
             backgroundColor: isSelected
               ? theme.colors.primary[1]
-              : variant === 'striped' && rowIndex % 2 === 1
+              : isStriped && rowIndex % 2 === 1
                 ? theme.colors.gray[0]
                 : 'transparent',
             borderBottomWidth: rowBorderWidth || (variant === 'bordered' ? 1 : 0),
@@ -1240,7 +1242,7 @@ export const DataTable = <T,>({
         {renderHeader()}
 
         <Table
-          striped={variant === 'striped'}
+          striped={isStriped}
           withTableBorder={variant === 'bordered'}
           withRowBorders={variant !== 'default'}
           verticalSpacing={density === 'compact' ? 'xs' : density === 'comfortable' ? 'lg' : 'sm'}
@@ -1342,7 +1344,7 @@ export const DataTable = <T,>({
           >
             <View style={{ flex: 1 }}>
               <Table
-                striped={variant === 'striped'}
+                striped={isStriped}
                 withTableBorder={variant === 'bordered'}
                 withRowBorders={variant !== 'default'}
                 verticalSpacing={
@@ -1355,7 +1357,7 @@ export const DataTable = <T,>({
 
               {processedData.length === 0 ? (
                 <Table
-                  striped={variant === 'striped'}
+                  striped={isStriped}
                   withTableBorder={variant === 'bordered'}
                   withRowBorders={variant !== 'default'}
                   verticalSpacing={
@@ -1382,7 +1384,7 @@ export const DataTable = <T,>({
       ) : (
         // <TableScrollContainer style={tableBorderStyle} minWidth={minWidthValue}>
           <Table
-            striped={variant === 'striped'}
+            striped={isStriped}
             withTableBorder={variant === 'bordered'}
             withRowBorders={variant !== 'default'}
             verticalSpacing={

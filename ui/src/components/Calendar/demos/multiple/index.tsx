@@ -15,14 +15,14 @@ export default function Demo() {
   }, [selectedDates]);
 
   return (
-    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+    <Column gap="xs" fullWidth>
       <Calendar
         type="multiple"
         value={selectedDates}
         onChange={(dates) => setSelectedDates(dates as Date[])}
         highlightToday
       />
-      <Text size="sm" colorVariant="muted">
+      <Text size="sm" colorVariant="secondary">
         {summary}
       </Text>
     </Column>

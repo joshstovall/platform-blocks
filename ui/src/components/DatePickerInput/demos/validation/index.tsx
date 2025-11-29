@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Card, DatePickerInput, Flex, Text } from '@platform-blocks/ui';
+import { Column, DatePickerInput, Text } from '@platform-blocks/ui';
 
 export default function ValidationDatePickerInputDemo() {
   const [value, setValue] = useState<Date | null>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string | undefined>();
 
   const today = useMemo(() => {
     const date = new Date();
@@ -14,33 +14,32 @@ export default function ValidationDatePickerInputDemo() {
   const handleChange = (next: Date | [Date | null, Date | null] | Date[] | null) => {
     const dateValue = next as Date | null;
     setValue(dateValue);
+
     if (dateValue && dateValue < today) {
       setError('Date cannot be in the past');
     } else {
-      setError('');
+      setError(undefined);
     }
   };
 
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Validation messaging</Text>
-        <DatePickerInput
-          value={value}
-          onChange={handleChange}
-          placeholder="Select a future date"
-          label="Future Date"
-          error={error}
-          clearable
-          calendarProps={{
-            minDate: today,
-            highlightToday: true,
-          }}
-        />
-        <Text size="sm" colorVariant="secondary">
-          Try selecting a past date to see the error messaging
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <DatePickerInput
+        value={value}
+        onChange={handleChange}
+        placeholder="Select a future date"
+        label="Future date"
+        error={error}
+        clearable
+        fullWidth
+        calendarProps={{
+          minDate: today,
+          highlightToday: true,
+        }}
+      />
+      <Text size="sm" colorVariant="secondary">
+        Past dates show the validation state
+      </Text>
+    </Column>
   );
 }

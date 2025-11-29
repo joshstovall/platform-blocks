@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type Project = {
@@ -80,39 +80,35 @@ export default function Demo() {
   const [expandedRows, setExpandedRows] = useState<(string | number)[]>([rows[0].id]);
 
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Row justify="space-between" align="center">
-            <Text size="sm" colorVariant="secondary">
-              Expand a row to see project highlights and the owning lead.
-            </Text>
-            <Button
-              size="xs"
-              variant="outline"
-              onPress={() => setExpandedRows(expandedRows.length === rows.length ? [] : rows.map((project) => project.id))}
-            >
-              {expandedRows.length === rows.length ? 'Collapse all' : 'Expand all'}
-            </Button>
-          </Row>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            expandedRows={expandedRows}
-            onExpandedRowsChange={setExpandedRows}
-            renderExpandedRow={(project) => (
-              <Column gap="xs" p="md">
-                <Text weight="semibold">Summary</Text>
-                <Text colorVariant="muted">{project.summary}</Text>
-              </Column>
-            )}
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Row justify="space-between" align="center">
+        <Text size="sm" colorVariant="secondary">
+          Expand a row to see project highlights and the owning lead
+        </Text>
+        <Button
+          size="xs"
+          variant="outline"
+          onPress={() => setExpandedRows(expandedRows.length === rows.length ? [] : rows.map((project) => project.id))}
+        >
+          {expandedRows.length === rows.length ? 'Collapse all' : 'Expand all'}
+        </Button>
+      </Row>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        expandedRows={expandedRows}
+        onExpandedRowsChange={setExpandedRows}
+        renderExpandedRow={(project) => (
+          <Column gap="xs" p="md">
+            <Text weight="semibold">Summary</Text>
+            <Text colorVariant="muted">{project.summary}</Text>
+          </Column>
+        )}
+      />
     </Column>
   );
 }

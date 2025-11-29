@@ -1,7 +1,6 @@
-import { Markdown } from '@platform-blocks/ui';
+import { Column, Markdown, Text } from '@platform-blocks/ui';
 
-export default function Demo() {
-  const content = `# Media in Markdown
+const CONTENT = `# Media in Markdown
 
 ## Images
 
@@ -27,8 +26,15 @@ Content above the line.
 
 ---
 
-Content below the line.
-`;
+Content below the line.`;
 
-  return <Markdown>{content}</Markdown>
+export default function Demo() {
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Images, links, tables, and horizontal rules render inline
+      </Text>
+    </Column>
+  );
 }

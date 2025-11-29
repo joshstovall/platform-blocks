@@ -8,4 +8,4 @@ status: stable
 since: 0.3.0
 hidden: false
 ---
-Combine `itemsPerPage` with responsive `slideSize` values to show more than one card while keeping the layout adaptive.
+Combine `itemsPerPage` with the Embla-style `breakpoints` prop to promote or hide navigation controls as the viewport grows. Keep `slidesToScroll={1}` so only one card advances at a time, even when desktop layouts show multiple slides side-by-side.

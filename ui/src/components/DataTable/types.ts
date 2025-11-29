@@ -173,6 +173,8 @@ export interface DataTableProps<T = any> extends SpacingProps {
   }>;
   /** Width of the actions column */
   actionsColumnWidth?: number;
+  /** Force striped row backgrounds regardless of variant */
+  striped?: boolean;
   
   // Enhanced styling options
   /** Custom header background color */
