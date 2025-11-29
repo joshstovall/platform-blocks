@@ -1,6 +1,6 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2025-11-23T23:50:33.646Z
+Generated: 2025-11-29T20:48:43.918Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
@@ -497,7 +497,7 @@ import {
 
 ### Demos
 
-- Basic usage | (id: AppStoreButton.basic)
+- Basic usage | (id: AppStoreButton.basic) | tags: app store, download, buttons
   Use `AppStoreButton` when you need a brand-safe download CTA—set the `store` prop to any supported storefront and drop the component directly into your layout without extra wrappers.
 
 ```tsx
@@ -882,10 +882,10 @@ The Avatar component displays user profile images, initials, or icons. Supports 
   Text color for the fallback initials
 `online` (boolean) [optional]
   Whether to show online status indicator
-`badgeColor` (string) [optional]
-  Accessibility label for the avatar badge
+`indicatorColor` (string) [optional]
+  Color override for the status indicator
 `style` (ViewStyle) [optional]
-  Accessibility label for the avatar badge
+  Style override for the avatar container
 `accessibilityLabel` (string) [optional]
   Accessibility label for the avatar image
 `label` (React.ReactNode) [optional]
@@ -1744,13 +1744,13 @@ import { Calendar, Column, Text } from '@platform-blocks/ui';
 const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   return (
-    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+    <Column gap="xs" fullWidth>
       <Calendar
         value={selectedDate}
         onChange={(date) => setSelectedDate(date as Date | null)}
         highlightToday
       />
-      <Text size="sm" colorVariant="muted">
+      <Text size="sm" colorVariant="secondary">
         Selected date: {selectedDate ? formatter.format(selectedDate) : 'none'}
       </Text>
     </Column>
@@ -1774,7 +1774,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
     return { minDate: start, maxDate: end, monthLabel: monthFormatter.format(start) };
   }, []);
   return (
-    <Column gap="lg" maxWidth={360} w="100%" align="flex-start">
+    <Column gap="xs" fullWidth>
       <Calendar
         value={selectedDate}
         onChange={(date) => setSelectedDate(date as Date | null)}
@@ -1782,10 +1782,10 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
         maxDate={maxDate}
         highlightToday
       />
-      <Text size="sm" colorVariant="muted">
+      <Text size="sm" colorVariant="secondary">
         Selected date: {selectedDate ? dateFormatter.format(selectedDate) : 'none'}
       </Text>
-      <Text size="xs" colorVariant="muted">
+      <Text size="xs" colorVariant="secondary">
         Only dates in {monthLabel} are enabled.
       </Text>
     </Column>
@@ -2454,12 +2454,13 @@ The Carousel component displays a series of content in a horizontal scrollable v
   Enable looping
 `itemsPerPage` (number) [optional]
   Number of visible items per page
-`slideSize` (number | string | { base?: number | string; xs?: number | string; sm?: number | string; md?: number | string; lg?: number | string; xl?: number | string; }) [optional]
-  Explicit slide size. Accepts: - percentage string: e.g. "70%" - fraction (0..1) number: 0.7 -> 70% of container - absolute pixel number (>1) When provided it overrides width derived from itemsPerPage. itemsPerPage still controls cloning + pagination grouping.
-`slideGap` (ResponsiveSize) [optional]
-  Responsive gap between slides (overrides itemGap). Accepts spacing token string or number or responsive map.
-`itemGap` (number) [optional]
-- … 11 more props documented
+`slidesToScroll` (number) [optional]
+  Number of slides to advance per snap (defaults to itemsPerPage for backwards compatibility)
+`align` ('start' | 'center' | 'end') [optional]
+  Align the visible slides within the viewport when there is extra space
+`containScroll` (false | 'trimSnaps' | 'keepSnaps') [optional]
+  Contain leading/trailing space by trimming or keeping snap points
+- … 20 more props documented
 
 ### Demos
 
@@ -2470,7 +2471,14 @@ The Carousel component displays a series of content in a horizontal scrollable v
 import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 	return (
 		<Block gap="md" fullWidth>
-			<Carousel height={220} width={400} loop autoPlay autoPlayInterval={4500} showDots>
+			<Carousel
+				height={220}
+				loop
+				autoPlay
+				autoPlayInterval={4500}
+				showDots
+				style={{ width: '100%' }}
+			>
 				<Column
 					gap="sm"
 					bg="#4C1D95"
@@ -2538,6 +2546,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
         autoPlayInterval={4500}
         showArrows
         showDots
+        style={{ width: '100%' }}
       >
         <Column
           gap="sm"
@@ -2941,17 +2950,22 @@ The ColorPicker component provides an intuitive interface for selecting colors t
 
 ```tsx
 import { useState } from 'react';
-import { ColorPicker, Card } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
   const [color, setColor] = useState('#FF6B6B');
   return (
-    <Card p={16} variant="outline">
+    <Column gap="xs" fullWidth>
       <ColorPicker
         value={color}
         onChange={setColor}
-        label="Choose a color"
-        placeholder="Select your favorite color"
+        label="Favorite color"
+        placeholder="Select a color"
+        clearable
+        fullWidth
       />
-    </Card>
+      <Text size="sm" colorVariant="secondary">
+        Selected: {color || 'none'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -2961,7 +2975,7 @@ import { ColorPicker, Card } from '@platform-blocks/ui';
 
 ```tsx
 import { useState } from 'react';
-import { ColorPicker, Flex, Card, Text } from '@platform-blocks/ui';
+import { ColorPicker, Column, Text } from '@platform-blocks/ui';
   const [color1, setColor1] = useState('#2196F3');
   const [color2, setColor2] = useState('#4CAF50');
   const [color3, setColor3] = useState('#FF9800');
@@ -2974,35 +2988,44 @@ import { ColorPicker, Flex, Card, Text } from '@platform-blocks/ui';
     '#4CAF50', '#43A047', '#388E3C', '#2E7D32', '#1B5E20',
   ];
   return (
-    <Flex direction="column" gap={16}>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Custom Blue Palette</Text>
+    <Column gap="md" fullWidth>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Custom blue palette
+        </Text>
         <ColorPicker
           value={color1}
           onChange={setColor1}
           swatches={blueSwatches}
-          label="Blue Shades"
+          label="Blue shades"
+          fullWidth
         />
-      </Card>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>Custom Green Palette</Text>
+      </Column>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Custom green palette
+        </Text>
         <ColorPicker
           value={color2}
           onChange={setColor2}
           swatches={greenSwatches}
-          label="Green Shades"
+          label="Green shades"
+          fullWidth
         />
-      </Card>
-      <Card p={16} variant="outline">
-        <Text size="sm" weight="semibold" mb={8}>No Swatches</Text>
+      </Column>
+      <Column gap="xs" fullWidth>
+        <Text size="sm" weight="semibold">
+          Without swatches
+        </Text>
         <ColorPicker
           value={color3}
           onChange={setColor3}
           withSwatches={false}
-          label="Color Wheel Only"
+          label="Color wheel only"
+          fullWidth
         />
-      </Card>
-    </Flex>
+      </Column>
+    </Column>
   );
 }
 ```
@@ -3421,7 +3444,7 @@ The DataTable component provides a feature-rich interface for displaying tabular
 
 ```tsx
 import { useState } from 'react';
-import { Card, Column, DataTable, Text } from '@platform-blocks/ui';
+import { Column, DataTable, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 type Employee = {
   id: number;
@@ -3483,24 +3506,20 @@ const columns: DataTableColumn<Employee>[] = [
     total: rows.length,
   });
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Start with column definitions and pass the dataset directly to `DataTable` for built-in sorting and pagination.
-          </Text>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            searchable
-            searchPlaceholder="Search teammates"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Sortable columns with built-in pagination and search
+      </Text>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        searchable
+        searchPlaceholder="Search teammates"
+      />
     </Column>
   );
 }
@@ -3511,7 +3530,7 @@ const columns: DataTableColumn<Employee>[] = [
 
 ```tsx
 import { useMemo, useState } from 'react';
-import { Button, Card, Column, DataTable, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Row, Text } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTableFilter, DataTableSort } from '@platform-blocks/ui';
 type Employee = {
   id: number;
@@ -3571,32 +3590,28 @@ const columns: DataTableColumn<Employee>[] = [
   const [filters, setFilters] = useState<DataTableFilter[]>([]);
   const activeFilters = useMemo(() => filters.length, [filters]);
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Enable per-column filters to let people slice data by text, select, or numeric operators.
-          </Text>
-          <Row gap="sm" align="center">
-            <Text size="sm" colorVariant={activeFilters ? 'primary' : 'muted'}>
-              {activeFilters ? `${activeFilters} filter${activeFilters > 1 ? 's' : ''} applied` : 'No active filters'}
-            </Text>
-            <Button size="xs" variant="ghost" onPress={() => setFilters([])} disabled={!activeFilters}>
-              Clear filters
-            </Button>
-          </Row>
-          <DataTable
-            data={rows}
-            columns={columns}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            filters={filters}
-            onFilterChange={setFilters}
-            searchable
-            searchPlaceholder="Search employees"
-          />
-        </Column>
-      </Card>
+    <Column gap="sm" fullWidth>
+      <Text size="sm" colorVariant="secondary">
+        Enable column-level filters for text, select, or numeric operators
+      </Text>
+      <Row gap="sm" align="center">
+        <Text size="sm" colorVariant={activeFilters ? 'primary' : 'muted'}>
+          {activeFilters ? `${activeFilters} filter${activeFilters > 1 ? 's' : ''} applied` : 'No active filters'}
+        </Text>
+        <Button size="xs" variant="ghost" onPress={() => setFilters([])} disabled={!activeFilters}>
+          Clear filters
+        </Button>
+      </Row>
+      <DataTable
+        data={rows}
+        columns={columns}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        filters={filters}
+        onFilterChange={setFilters}
+        searchable
+        searchPlaceholder="Search employees"
+      />
     </Column>
   );
 }
@@ -3632,23 +3647,20 @@ const columns: DataTableColumn<Employee>[] = [
 
 ```tsx
 import React, { useState } from 'react';
-import { DatePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, DatePicker, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(null);
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Inline calendar</Text>
-        <DatePicker
-          value={value}
-          onChange={(newValue) => setValue(newValue as Date | null)}
-          calendarProps={{ numberOfMonths: 1, highlightToday: true }}
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value ? `Selected: ${value.toLocaleDateString()}` : 'No date selected'}
-        </Text>
-      </Flex>
-    </Card>
-  )
+    <Column gap="sm" fullWidth>
+      <DatePicker
+        value={value}
+        onChange={(next) => setValue(next as Date | null)}
+        calendarProps={{ numberOfMonths: 1, highlightToday: true }}
+      />
+      <Text size="sm" colorVariant="secondary">
+        {value ? `Selected: ${value.toLocaleDateString()}` : 'No date selected'}
+      </Text>
+    </Column>
+  );
 }
 ```
 
@@ -3657,25 +3669,24 @@ import { DatePicker, Text, Flex, Card } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { DatePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, DatePicker, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<[Date | null, Date | null] | null>(null);
+  const start = value?.[0];
+  const end = value?.[1];
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Inline date range</Text>
-        <DatePicker
-          type="range"
-          value={value}
-          onChange={(newValue) => setValue(newValue as [Date | null, Date | null] | null)}
-          calendarProps={{ numberOfMonths: 2, withCellSpacing: true }}
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value && value[0] && value[1]
-            ? `Selected: ${value[0].toLocaleDateString()} – ${value[1].toLocaleDateString()}`
-            : 'Select a start and end date'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="sm" fullWidth>
+      <DatePicker
+        type="range"
+        value={value}
+        onChange={(next) => setValue(next as [Date | null, Date | null] | null)}
+        calendarProps={{ numberOfMonths: 2, withCellSpacing: true }}
+      />
+      <Text size="sm" colorVariant="secondary">
+        {start && end
+          ? `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`
+          : 'Select a start and end date'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -3716,24 +3727,22 @@ DatePickerInput wraps the inline `DatePicker` in an accessible input experience.
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, DatePickerInput, Flex, Text } from '@platform-blocks/ui';
+import { Column, DatePickerInput, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(null);
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Modal date picker</Text>
-        <DatePickerInput
-          value={value}
-          onChange={(newValue) => setValue(newValue as Date | null)}
-          placeholder="Select a date"
-          label="Date"
-          clearable
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value ? `Selected: ${value.toLocaleDateString()}` : 'No date selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="sm" fullWidth>
+      <DatePickerInput
+        value={value}
+        onChange={(next) => setValue(next as Date | null)}
+        placeholder="Select a date"
+        label="Date"
+        clearable
+        fullWidth
+      />
+      <Text size="sm" colorVariant="secondary">
+        {value ? `Selected: ${value.toLocaleDateString()}` : 'No date selected'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -3742,26 +3751,24 @@ import { Card, DatePickerInput, Flex, Text } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, DatePickerInput, Flex, Text } from '@platform-blocks/ui';
+import { Column, DatePickerInput, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date[]>([]);
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Modal multi-select picker</Text>
-        <DatePickerInput
-          type="multiple"
-          value={value}
-          onChange={(newValue) => setValue((newValue as Date[]) || [])}
-          placeholder="Select multiple dates"
-          label="Multiple Dates"
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value.length > 0
-            ? `Selected: ${value.map((d) => d.toLocaleDateString()).join(', ')}`
-            : 'Select one or more dates'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <DatePickerInput
+        type="multiple"
+        value={value}
+        onChange={(next) => setValue((next as Date[]) || [])}
+        label="Multiple dates"
+        placeholder="Select dates"
+        fullWidth
+      />
+      <Text size="sm" colorVariant="secondary">
+        {value.length > 0
+          ? `Selected: ${value.map((date) => date.toLocaleDateString()).join(', ')}`
+          : 'Select one or more dates'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -4140,16 +4147,13 @@ import { Column, FileInput, Text } from '@platform-blocks/ui';
 import type { FileInputFile } from '@platform-blocks/ui';
   const [files, setFiles] = useState<FileInputFile[]>([]);
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Basic file input</Text>
-      <Text size="sm" colorVariant="secondary">
-        Select one or more files to upload and review the selection below.
-      </Text>
+    <Column gap="xs" fullWidth>
       <FileInput
         label="Upload files"
         helperText="Choose files from your device"
         onFilesChange={setFiles}
         multiple
+        fullWidth
       />
       {files.length > 0 && (
         <Text size="xs" colorVariant="secondary">
@@ -4175,8 +4179,7 @@ import type { FileInputFile } from '@platform-blocks/ui';
       ? 'Drag files into the dropzone or click Browse files to pick from your desktop.'
       : 'Tap the dropzone to open the native file picker on touch devices.';
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Dropzone file input</Text>
+    <Column gap="xs" fullWidth>
       <Text size="sm" colorVariant="secondary">
         {instructions}
       </Text>
@@ -4187,6 +4190,7 @@ import type { FileInputFile } from '@platform-blocks/ui';
         helperText="Drag & drop on desktop or tap to browse on mobile"
         onFilesChange={setFiles}
         showFileList
+        fullWidth
       />
       {files.length > 0 && (
         <Column gap="xs">
@@ -5003,17 +5007,24 @@ const styles = StyleSheet.create({
   Basic 12-column grid with equal width items.
 
 ```tsx
-import { Grid, GridItem, Card, Text } from '@platform-blocks/ui';
+import { Grid, GridItem, Card, Column, Text } from '@platform-blocks/ui';
   return (
-    <Grid columns={12} gap={12}>
-      {Array.from({ length: 12 }).map((_, i) => (
-        <GridItem key={i} span={1}>
-          <Card p={8} variant="outline">
-            <Text size="sm" align="center">{i + 1}</Text>
-          </Card>
-        </GridItem>
-      ))}
-    </Grid>
+    <Column gap="xs" fullWidth>
+      <Grid columns={12} gap={12}>
+        {Array.from({ length: 12 }).map((_, index) => (
+          <GridItem key={index} span={1}>
+            <Card p={8} variant="outline">
+              <Text size="sm" align="center">
+                {index + 1}
+              </Text>
+            </Card>
+          </GridItem>
+        ))}
+      </Grid>
+      <Text size="sm" colorVariant="secondary">
+        Twelve even columns, each spanning a single track
+      </Text>
+    </Column>
   );
 }
 ```
@@ -5022,24 +5033,40 @@ import { Grid, GridItem, Card, Text } from '@platform-blocks/ui';
   Custom row and column gaps using gap, rowGap, and columnGap props.
 
 ```tsx
-import { Grid, GridItem, Card, Text, Block, Divider } from '@platform-blocks/ui';
-  return (<Block>
-    <Grid columns={6} gap="xs" rowGap={6} columnGap={6}>
-      {Array.from({ length: 12 }).map((_, i) => (
-          <Card key={i}>
-            <Text size="sm">Item {i + 1}</Text>
-          </Card>
+import { Grid, GridItem, Card, Column, Text } from '@platform-blocks/ui';
+const sections = [
+  {
+    label: 'Compact gap (xs)',
+    columns: 6,
+    items: 12,
+    props: { gap: 'xs' as const, rowGap: 6, columnGap: 6 },
+  },
+  {
+    label: 'Roomy gap (24px)',
+    columns: 6,
+    items: 6,
+    props: { gap: 24, rowGap: 24, columnGap: 12 },
+  },
+];
+  return (
+    <Column gap="md" fullWidth>
+      {sections.map(({ label, columns, items, props }) => (
+        <Column key={label} gap="xs" fullWidth>
+          <Text size="sm" weight="semibold">
+            {label}
+          </Text>
+          <Grid columns={columns} {...props}>
+            {Array.from({ length: items }).map((_, index) => (
+              <GridItem key={index} span={1}>
+                <Card p={8}>
+                  <Text size="sm">Item {index + 1}</Text>
+                </Card>
+              </GridItem>
+            ))}
+          </Grid>
+        </Column>
       ))}
-    </Grid>
-    <Divider my={24} />
-    <Grid columns={6} gap={24} rowGap={24} columnGap={12}>
-      {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <Text size="sm">Item {i + 1}</Text>
-          </Card>
-      ))}
-    </Grid>
-    </Block>
+    </Column>
   );
 }
 ```
@@ -7555,16 +7582,22 @@ Markdown component provides a way to render Markdown content with custom styling
   Simple markdown rendering with headers, lists, and text formatting.
 
 ```tsx
-import { Markdown } from '@platform-blocks/ui';
-  const content = `# Hello Markdown
+import { Column, Markdown, Text } from '@platform-blocks/ui';
+const CONTENT = `# Hello Markdown
 This is a **bold** statement and this is _italic_.
 - Item one
 - Item two
 - Item three
 > Blockquote with *inline emphasis* and **strong** text.
-Inline code: \`const x = 42;\`
-`;
-  return <Markdown>{content}</Markdown>
+Inline code: \`const x = 42;\``;
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Rendered using the default Markdown renderer
+      </Text>
+    </Column>
+  );
 }
 ```
 
@@ -7572,8 +7605,8 @@ Inline code: \`const x = 42;\`
   Markdown rendering with syntax-highlighted code blocks.
 
 ```tsx
-import { Markdown } from '@platform-blocks/ui';
-  const content = `# Code Examples
+import { Column, Markdown, Text } from '@platform-blocks/ui';
+const CONTENT = `# Code examples
 Here's some JavaScript:
 \`\`\`javascript
 function fibonacci(n) {
@@ -7594,9 +7627,15 @@ const user: User = {
   email: "john@example.com"
 };
 \`\`\`
-Inline code: \`const result = fibonacci(10);\`
-`;
-  return <Markdown>{content}</Markdown>
+Inline code: \`const result = fibonacci(10);\``;
+  return (
+    <Column gap="xs" fullWidth>
+      <Markdown>{CONTENT}</Markdown>
+      <Text size="sm" colorVariant="secondary">
+        Showcases fenced code blocks with syntax highlighting
+      </Text>
+    </Column>
+  );
 }
 ```
 
@@ -8064,20 +8103,18 @@ A compact calendar component for displaying a month view with selectable dates.
 
 ```tsx
 import React, { useState } from 'react';
-import { MiniCalendar, Column, Text } from '@platform-blocks/ui';
+import { Column, MiniCalendar, Text } from '@platform-blocks/ui';
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   return (
-    <Column gap={16}>
-      <MiniCalendar 
+    <Column gap="xs" fullWidth>
+      <MiniCalendar
         value={selectedDate}
         onChange={(date: Date | null) => setSelectedDate(date)}
         numberOfDays={7}
       />
-      {selectedDate && (
-        <Text size="sm" color="gray">
-          Selected: {selectedDate.toLocaleDateString()}
-        </Text>
-      )}
+      <Text size="sm" colorVariant="secondary">
+        {selectedDate ? `Selected: ${selectedDate.toLocaleDateString()}` : 'No date selected'}
+      </Text>
     </Column>
   );
 }
@@ -8088,44 +8125,32 @@ import { MiniCalendar, Column, Text } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { MiniCalendar, Column, Text, Row, Button } from '@platform-blocks/ui';
+import { Button, Column, MiniCalendar, Row, Text } from '@platform-blocks/ui';
+const DAY_OPTIONS = [3, 5, 7];
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [numberOfDays, setNumberOfDays] = useState(5);
   return (
-    <Column gap={16}>
-      <Row gap={8}>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 3 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(3)}
-        >
-          3 Days
-        </Button>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 5 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(5)}
-        >
-          5 Days
-        </Button>
-        <Button 
-          size="sm" 
-          variant={numberOfDays === 7 ? 'filled' : 'outline'}
-          onPress={() => setNumberOfDays(7)}
-        >
-          7 Days
-        </Button>
+    <Column gap="sm" fullWidth>
+      <Row gap="xs">
+        {DAY_OPTIONS.map((days) => (
+          <Button
+            key={days}
+            size="sm"
+            variant={numberOfDays === days ? 'filled' : 'outline'}
+            onPress={() => setNumberOfDays(days)}
+          >
+            {days} days
+          </Button>
+        ))}
       </Row>
-      <MiniCalendar 
+      <MiniCalendar
         value={selectedDate}
         onChange={(date: Date | null) => setSelectedDate(date)}
         numberOfDays={numberOfDays}
       />
-      {selectedDate && (
-        <Text size="sm" color="gray">
-          Selected: {selectedDate.toLocaleDateString()}
-        </Text>
-      )}
+      <Text size="sm" colorVariant="secondary">
+        {selectedDate ? `Selected: ${selectedDate.toLocaleDateString()}` : 'No date selected'}
+      </Text>
     </Column>
   );
 }
@@ -8164,26 +8189,17 @@ import { MiniCalendar, Column, Text, Row, Button } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, Flex, MonthPicker, Text } from '@platform-blocks/ui';
+import { Column, MonthPicker, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(new Date());
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">
-          Choose a month
-        </Text>
-        <MonthPicker
-          value={value}
-          onChange={setValue}
-          monthLabelFormat="long"
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value
-            ? `Selected: ${value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
-            : 'No month selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <MonthPicker value={value} onChange={setValue} monthLabelFormat="long" />
+      <Text size="sm" colorVariant="secondary">
+        {value
+          ? value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+          : 'No month selected'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -8224,28 +8240,24 @@ import { Card, Flex, MonthPicker, Text } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, Flex, MonthPickerInput, Text } from '@platform-blocks/ui';
+import { Column, MonthPickerInput, Text } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(null);
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">
-          Modal month picker
-        </Text>
-        <MonthPickerInput
-          value={value}
-          onChange={setValue}
-          label="Billing cycle"
-          placeholder="Select a month"
-          clearable
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value
-            ? `Selected: ${value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
-            : 'No month selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <MonthPickerInput
+        value={value}
+        onChange={setValue}
+        label="Billing cycle"
+        placeholder="Select a month"
+        clearable
+        fullWidth
+      />
+      <Text size="sm" colorVariant="secondary">
+        {value
+          ? value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+          : 'No month selected'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -11242,7 +11254,7 @@ import { Skeleton, Column, Row } from '@platform-blocks/ui';
 ```
 
 ## Component: <Slider>
-The Slider component allows users to select a value or range of values by moving a handle along a track. Supports single values, ranges, and custom styling.
+The Slider component allows users to select a value or range of values by moving a handle along a track. Supports single values, ranges, vertical layouts, and rich customization hooks.
 
 ### Props
 `value` (number) [optional]
@@ -11269,7 +11281,7 @@ The Slider component allows users to select a value or range of values by moving
   Track height/width
 `thumbSize` (number) [optional]
   Thumb size
-- … 13 more props documented
+- … 19 more props documented
 
 ### Demos
 
@@ -13063,27 +13075,26 @@ const signals = [
 
 ```tsx
 import React, { useState } from 'react';
-import { TimePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, Text, TimePicker } from '@platform-blocks/ui';
 import type { TimePickerValue } from '@platform-blocks/ui';
   const [value, setValue] = useState<TimePickerValue | null>({ hours: 13, minutes: 30, seconds: 0 });
+  const formatted = value
+    ? `${String(value.hours).padStart(2, '0')}:${String(value.minutes).padStart(2, '0')}`
+    : null;
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">Basic Time Picker</Text>
-        <TimePicker
-          value={value}
-          onChange={setValue}
-          label="Time"
-          helperText="24-hour format"
-          clearable
-        />
-        {value && (
-          <Text size="sm" colorVariant="secondary">
-            Selected: {value.hours.toString().padStart(2,'0')}:{value.minutes.toString().padStart(2,'0')}
-          </Text>
-        )}
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <TimePicker
+        value={value}
+        onChange={setValue}
+        label="Time"
+        helperText="24-hour format"
+        clearable
+        fullWidth
+      />
+      {formatted && (
+        <Text size="sm" colorVariant="secondary">{`Selected: ${formatted}`}</Text>
+      )}
+    </Column>
   );
 }
 ```
@@ -13093,28 +13104,29 @@ import type { TimePickerValue } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { TimePicker, Text, Flex, Card } from '@platform-blocks/ui';
+import { Column, Text, TimePicker } from '@platform-blocks/ui';
 import type { TimePickerValue } from '@platform-blocks/ui';
   const [value, setValue] = useState<TimePickerValue | null>({ hours: 0, minutes: 15, seconds: 0 });
+  const formatted = value
+    ? `${String(value.hours).padStart(2, '0')}:${String(value.minutes).padStart(2, '0')}`
+    : null;
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">12-hour Format</Text>
-        <TimePicker
-          value={value}
-          onChange={setValue}
-          format={12}
-          label="Time"
-          helperText="12-hour clock with AM/PM"
-          clearable
-        />
-        {value && (
-          <Text size="sm" colorVariant="secondary">
-            Internal (24h): {value.hours.toString().padStart(2,'0')}:{value.minutes.toString().padStart(2,'0')}
-          </Text>
-        )}
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <TimePicker
+        value={value}
+        onChange={setValue}
+        format={12}
+        label="Time"
+        helperText="12-hour clock with AM/PM"
+        clearable
+        fullWidth
+      />
+      {formatted && (
+        <Text size="sm" colorVariant="secondary">
+          {`Internal (24h): ${formatted}`}
+        </Text>
+      )}
+    </Column>
   );
 }
 ```
@@ -13128,29 +13140,25 @@ import type { TimePickerValue } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, Flex, Text, TimePickerInput, TimePickerValue } from '@platform-blocks/ui';
+import { Column, Text, TimePickerInput } from '@platform-blocks/ui';
+import type { TimePickerValue } from '@platform-blocks/ui';
   const [value, setValue] = useState<TimePickerValue | null>({ hours: 9, minutes: 30 });
+  const formatted = value
+    ? `${((value.hours + 11) % 12) + 1}:${String(value.minutes).padStart(2, '0')} ${value.hours >= 12 ? 'PM' : 'AM'}`
+    : null;
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">
-          Modal time picker
-        </Text>
-        <TimePickerInput
-          value={value}
-          onChange={setValue}
-          label="Meeting time"
-          format={12}
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value
-            ? `Selected: ${((value.hours + 11) % 12) + 1}:${String(value.minutes).padStart(2, '0')} ${
-                value.hours >= 12 ? 'PM' : 'AM'
-              }`
-            : 'No time selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <TimePickerInput
+        value={value}
+        onChange={setValue}
+        label="Meeting time"
+        format={12}
+        fullWidth
+      />
+      <Text size="sm" colorVariant="secondary">
+        {formatted ? `Selected: ${formatted}` : 'No time selected'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -14160,24 +14168,15 @@ Grid-based selector for choosing a year within a configurable range. Supports re
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, Flex, Text, YearPicker } from '@platform-blocks/ui';
+import { Column, Text, YearPicker } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(new Date());
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">
-          Choose a year
-        </Text>
-        <YearPicker
-          value={value}
-          onChange={setValue}
-          totalYears={20}
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value ? `Selected: ${value.getFullYear()}` : 'No year selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <YearPicker value={value} onChange={setValue} totalYears={20} />
+      <Text size="sm" colorVariant="secondary">
+        {value ? `Selected: ${value.getFullYear()}` : 'No year selected'}
+      </Text>
+    </Column>
   );
 }
 ```
@@ -14215,26 +14214,22 @@ import { Card, Flex, Text, YearPicker } from '@platform-blocks/ui';
 
 ```tsx
 import React, { useState } from 'react';
-import { Card, Flex, Text, YearPickerInput } from '@platform-blocks/ui';
+import { Column, Text, YearPickerInput } from '@platform-blocks/ui';
   const [value, setValue] = useState<Date | null>(null);
   return (
-    <Card p="lg">
-      <Flex direction="column" gap={16}>
-        <Text size="lg" weight="semibold">
-          Modal year picker
-        </Text>
-        <YearPickerInput
-          value={value}
-          onChange={setValue}
-          label="Fiscal year"
-          placeholder="Select a year"
-          clearable
-        />
-        <Text size="sm" colorVariant="secondary">
-          {value ? `Selected: ${value.getFullYear()}` : 'No year selected'}
-        </Text>
-      </Flex>
-    </Card>
+    <Column gap="xs" fullWidth>
+      <YearPickerInput
+        value={value}
+        onChange={setValue}
+        label="Fiscal year"
+        placeholder="Select a year"
+        clearable
+        fullWidth
+      />
+      <Text size="sm" colorVariant="secondary">
+        {value ? `Selected: ${value.getFullYear()}` : 'No year selected'}
+      </Text>
+    </Column>
   );
 }
 ```
