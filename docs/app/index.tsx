@@ -1,4 +1,4 @@
-import { View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Button,
@@ -6,6 +6,10 @@ import {
   Title,
   Block,
   Space,
+  Card,
+  Text,
+  Image,
+  Column,
 } from '@platform-blocks/ui';
 
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
@@ -26,6 +30,9 @@ import {
 import { SliderPlayground as SliderShowcase } from 'components/showcase/SliderShowcase';
 import { PageLayout } from 'components';
 import { EverythingPlayground as EverythingShowcase } from 'components/showcase/EverythingShowcase';
+
+const EXPO_PROJECT_URL = 'https://expo.dev/@joshstovall/platform-blocks-docs';
+const QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(EXPO_PROJECT_URL)}`;
 
 
 export default function HomeScreen() {
@@ -50,6 +57,27 @@ export default function HomeScreen() {
         <Button title="100+ Components" variant="gradient" onPress={() => router.push('/components')} />
         <Button title="Get Inspired" variant="secondary" onPress={() => router.push('/examples')} />
       </Block>
+
+      {Platform.OS === 'web' && (
+        <>
+          <Space h="lg" />
+          <Card variant="outline" padding="md" style={{ alignSelf: 'flex-start' }}>
+            <Block direction="row" gap="md" align="center">
+              <Image
+                source={{ uri: QR_CODE_URL }}
+                style={{ width: 120, height: 120, borderRadius: 8 }}
+                alt="Scan to open in Expo Go"
+              />
+              <Column gap="xs">
+                <Text weight="semibold">Try it on your device</Text>
+                <Text size="sm" colorVariant="secondary">
+                  Scan with Expo Go to preview{'\n'}on iOS or Android
+                </Text>
+              </Column>
+            </Block>
+          </Card>
+        </>
+      )}
 
       <Space h="lg" />
 
