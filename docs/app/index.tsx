@@ -30,7 +30,7 @@ import { SliderPlayground as SliderShowcase } from 'components/showcase/SliderSh
 import { PageLayout } from 'components';
 import { EverythingPlayground as EverythingShowcase } from 'components/showcase/EverythingShowcase';
 
-const EXPO_PROJECT_URL = 'https://expo.dev/@joshstovall/platform-blocks-docs';
+const EXPO_PROJECT_URL = 'https://expo.dev/accounts/joshstovall/projects/platform-blocks-docs';
 const QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(EXPO_PROJECT_URL)}`;
 
 
