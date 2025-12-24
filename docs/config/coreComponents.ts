@@ -97,7 +97,6 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Flex', category: 'layout', icon: 'flex' },
   { name: 'Grid', category: 'layout', icon: 'grid' },
   { name: 'Masonry', category: 'layout', icon: 'masonry', description: 'Pinterest-style masonry layout with FlashList performance' },
-  { name: 'Container', category: 'layout', icon: 'container' },
   { name: 'AppShell', category: 'layout', icon: 'home' },
   { name: 'Divider', category: 'layout', icon: 'divider' },
   { name: 'Space', category: 'layout', icon: 'paddingFrame' },
