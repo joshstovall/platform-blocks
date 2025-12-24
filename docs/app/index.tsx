@@ -1,4 +1,4 @@
-import { View, useWindowDimensions, Platform, Image as RNImage } from 'react-native';
+import { View, useWindowDimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Button,
@@ -62,10 +62,10 @@ export default function HomeScreen() {
           <Space h="lg" />
           <Card variant="outline" padding="md" style={{ alignSelf: 'flex-start' }}>
             <Block direction="row" gap="md" align="center">
-              <RNImage
-                source={{ uri: QR_CODE_URL }}
+              <img
+                src={QR_CODE_URL}
                 style={{ width: 120, height: 120, borderRadius: 8 }}
-                accessibilityLabel="Scan to open in Expo Go"
+                alt="Scan to open in Expo Go"
               />
               <Column gap="xs">
                 <Text weight="semibold">Try it on your device</Text>
