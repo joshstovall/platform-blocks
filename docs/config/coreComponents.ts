@@ -90,14 +90,13 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
 
   // Layout Components
   { name: 'Block', category: 'layout', icon: 'block' },
-  { name: 'Can', category: 'layout', icon: 'lock', description: 'Conditional rendering based on user permissions and abilities' },
+
   // { name: 'KeyboardAwareLayout', category: 'layout', icon: 'keyboard', description: 'Layout wrapper that pads or scrolls content based on keyboard height using KeyboardManagerProvider' },
   { name: 'Card', category: 'display', icon: 'card' },
-  { name: 'HoverCard', category: 'display', icon: 'tooltip', description: 'Contextual popup card on hover or focus' },
   { name: 'Flex', category: 'layout', icon: 'flex' },
   { name: 'Grid', category: 'layout', icon: 'grid' },
   { name: 'Masonry', category: 'layout', icon: 'masonry', description: 'Pinterest-style masonry layout with FlashList performance' },
-  { name: 'AppShell', category: 'layout', icon: 'home' },
+  // { name: 'AppShell', category: 'layout', icon: 'home' },
   { name: 'Divider', category: 'layout', icon: 'divider' },
   { name: 'Space', category: 'layout', icon: 'paddingFrame' },
   { name: 'Tabs', category: 'layout', icon: 'tabs' },
@@ -108,7 +107,6 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Notice', category: 'feedback', icon: 'bell' },
   { name: 'Blockquote', category: 'typography', icon: 'quote', description: 'Stylized blockquote for highlighting quotes or important text' },
   { name: 'Dialog', category: 'feedback', icon: 'dialog' },
-  { name: 'ToastProvider', category: 'feedback', icon: 'bell', description: 'Global notification system with positioning and queuing' },
   { name: 'Toast', category: 'feedback', icon: 'toast' },
   { name: 'Progress', category: 'feedback', icon: 'progress' },
   { name: 'Ring', category: 'feedback', icon: 'chart-donut', description: 'Circular progress indicator with configurable labels, color stops, and custom center content.' },
@@ -125,7 +123,6 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Breadcrumbs', category: 'navigation', icon: 'breadcrumbs' },
   { name: 'Pagination', category: 'navigation', icon: 'pagination' },
   { name: 'Stepper', category: 'navigation', icon: 'stepper', description: 'Step-by-step navigation component for multi-step processes' },
-  { name: 'NavigationProgress', category: 'navigation', icon: 'progress', description: 'Progress indicator tied to navigation or scroll position' },
   { name: 'Spotlight', category: 'navigation', icon: 'spotlight', description: 'Command palette / global action search interface' },
   { name: 'Tree', category: 'navigation', icon: 'tree', description: 'Hierarchical tree view with expansion, selection, checkboxes, and filtering' },
 
@@ -171,7 +168,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Lottie', category: 'media', icon: 'carousel', description: 'Render and control Lottie animations from JSON data' },
 
   // Others
-  { name: 'Can', category: 'others', icon: 'lock', description: 'Conditional rendering based on user permissions and abilities' },
+
 ];
 
 /**

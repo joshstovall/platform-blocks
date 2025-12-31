@@ -240,7 +240,6 @@ export { Skeleton } from './components/Skeleton';
 export { Loader } from './components/Loader';
 export { Gauge } from './components/Gauge';
 export { Ring } from './components/Ring';
-export { NavigationProgress, navigationProgress } from './components/NavigationProgress';
 export {
   Toast,
   ToastProvider, useToast,
@@ -255,7 +254,6 @@ export { Dialog, DialogProvider, DialogRenderer, useDialog, useDialogApi, useDia
 export { Tooltip } from './components/Tooltip';
 export { Overlay } from './components/Overlay';
 export { LoadingOverlay } from './components/LoadingOverlay';
-export { HoverCard } from './components/HoverCard';
 export { ContextMenu } from './components/ContextMenu';
 export { Popover } from './components/Popover';
 export {
@@ -272,28 +270,7 @@ export {
 export { FloatingActions } from './components/FloatingActions';
 
 // Permission Components
-export {
-  Can,
-  CanWithConditions,
-  Cannot,
-  PermissionGate,
-  withCan,
-  withCannot
-} from './components/Can';
-export {
-  PermissionProvider,
-  usePermissions,
-  useAbility
-} from './components/Can';
-export {
-  AbilityCore,
-  PermissionBuilder,
-  RoleBuilder,
-  PermissionPatterns,
-  permissions,
-  defineAbility,
-  defineRoleAbility
-} from './components/Can';
+
 
 // Media Components
 export { Icon } from './components';
@@ -412,26 +389,10 @@ export type { RingProps, RingColorStop, RingRenderContext } from './components/R
 export type { ToastProps } from './components/Toast';
 export type { DialogProps, DialogConfig, UseSimpleDialogOptions } from './components/Dialog';
 export type { TooltipProps } from './components/Tooltip';
-export type { HoverCardProps } from './components/HoverCard';
 export type { ContextMenuProps } from './components/ContextMenu';
 export type { PopoverProps, PopoverTargetProps, PopoverDropdownProps } from './components/Popover';
 export type { SpotlightProps } from './components/Spotlight';
-export type {
-  Action,
-  Subject,
-  Field,
-  Conditions,
-  PermissionRule,
-  PermissionCheck,
-  Ability,
-  CanProps,
-  CanWithConditionsProps,
-  CannotProps,
-  PermissionGateProps,
-  PermissionContextValue,
-  PermissionProviderProps,
-  UsePermissionsOptions
-} from './components/Can';
+
 export type { BrandIconProps, BrandName } from './components/BrandIcon';
 export type { CollapseProps } from './components/Collapse';
 export type { IconButtonProps } from './components/IconButton';

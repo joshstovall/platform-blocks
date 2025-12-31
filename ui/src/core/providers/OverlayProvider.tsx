@@ -5,7 +5,7 @@ export interface OverlayConfig {
   id: string;
   content: ReactNode;
   trigger?: 'click' | 'hover' | 'contextmenu' | 'manual';
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
+  placement?: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end' | 'auto';
   offset?: number;
   anchor?: {
     x: number;

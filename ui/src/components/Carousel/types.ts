@@ -5,9 +5,11 @@ import type { ResponsiveSize } from '../AppShell/types';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface CarouselProps extends SpacingProps {
+  /** Array of carousel slide elements */
   children: React.ReactNode[];
   /** Orientation of the carousel */
   orientation?: 'horizontal' | 'vertical';
+  /** Show navigation arrow buttons */
   showArrows?: boolean;
   /** Show navigation dots */
   showDots?: boolean;
@@ -49,16 +51,28 @@ export interface CarouselProps extends SpacingProps {
   slideSize?: number | string | { base?: number | string; xs?: number | string; sm?: number | string; md?: number | string; lg?: number | string; xl?: number | string; };
   /** Responsive gap between slides (overrides itemGap). Accepts spacing token string or number or responsive map. */
   slideGap?: ResponsiveSize;
+  /** Gap between slides in pixels */
   itemGap?: number;
+  /** Fixed height of the carousel container */
   height?: number;
+  /** Callback fired when the active slide changes */
   onSlideChange?: (index: number) => void;
+  /** Style override for the carousel container */
   style?: ViewStyle;
+  /** Style override applied to each slide item */
   itemStyle?: ViewStyle;
+  /** Enable snapping to individual items */
   snapToItem?: boolean;
+  /** Position of navigation arrows relative to the carousel */
   arrowPosition?: 'inside' | 'outside';
+  /** Size of the navigation arrow buttons */
   arrowSize?: ComponentSizeValue;
+  /** Size of the navigation dots */
   dotSize?: ComponentSizeValue;
+  /** Enable or disable scroll gestures */
   scrollEnabled?: boolean;
-  reducedMotion?: boolean; // disable animated width/color transitions for dots & snapping
-  windowSize?: number; // number of logical pages to render (virtualization)
+  /** Disable animated width/color transitions for dots and snapping */
+  reducedMotion?: boolean;
+  /** Number of logical pages to render for virtualization */
+  windowSize?: number;
 }

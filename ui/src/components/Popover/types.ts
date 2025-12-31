@@ -28,6 +28,8 @@ export interface PopoverProps extends SpacingProps {
   onClose?: () => void;
   /** Called when popover is dismissed via outside click or escape */
   onDismiss?: () => void;
+  /** How the popover is triggered: 'click' (default) or 'hover' (mostly useful for devices with a mouse) */
+  trigger?: 'click' | 'hover';
   /** Disable popover entirely */
   disabled?: boolean;
   /** Close when clicking outside */

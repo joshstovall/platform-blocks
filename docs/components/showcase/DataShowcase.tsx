@@ -15,11 +15,11 @@ import {
   Slider,
   Input,
   Row,
-  Column,
+  Block,
   useTheme,
   Title
 } from '@platform-blocks/ui';
-import type { DataTableColumn, DataTableSort, DataTablePagination } from '@platform-blocks/ui';
+import type { DataTableDataTableSort, DataTablePagination } from '@platform-blocks/ui';
 
 // Sample data for DataTable
 interface Employee {
@@ -217,7 +217,7 @@ export default function DataShowcase() {
           Star-based rating system for feedback and reviews
         </Text>
         
-        <Column gap="md">
+        <Block direction="column" gap="md">
           <Row gap="md" align="center">
             <Text>Interactive Rating:</Text>
             <Rating value={rating} onChange={setRating} />
@@ -234,7 +234,7 @@ export default function DataShowcase() {
             <Text>Large Rating:</Text>
             <Rating value={4} size="lg" readOnly />
           </Row>
-        </Column>
+        </Block>
       </Card>
 
       {/* Gauge Section */}
@@ -244,10 +244,10 @@ export default function DataShowcase() {
           Progress and metric indicators
         </Text>
         
-        <Column gap="lg">
+        <Block direction="column" gap="lg">
           <Row gap="lg" align="center">
             <Gauge value={gaugeValue} size={120} />
-            <Column gap="sm">
+            <Block direction="column" gap="sm">
               <Text variant="h3">{gaugeValue}%</Text>
               <Text colorVariant="secondary">Project Completion</Text>
               <Slider
@@ -257,14 +257,14 @@ export default function DataShowcase() {
                 max={100}
                 step={5}
               />
-            </Column>
+            </Block>
           </Row>
           
           <Row gap="md" align="center">
             <Gauge value={85} size={80} color={theme.colors.success[5]} />
             <Text>Performance: 85%</Text>
           </Row>
-        </Column>
+        </Block>
       </Card>
 
       {/* QRCode Section */}
@@ -274,7 +274,7 @@ export default function DataShowcase() {
           Generate QR codes from text or URLs
         </Text>
         
-        <Column gap="md">
+        <Block direction="column" gap="md">
           <Input
             label="QR Code Content"
             value={qrText}
@@ -284,14 +284,14 @@ export default function DataShowcase() {
           
           <Row gap="lg" align="center">
             <QRCode value={qrText} size={120} />
-            <Column gap="sm">
+            <Block direction="column" gap="sm">
               <Text weight="medium">Scan this code</Text>
               <Text size="sm" colorVariant="secondary">
                 {qrText.length > 30 ? qrText.substring(0, 30) + '...' : qrText}
               </Text>
-            </Column>
+            </Block>
           </Row>
-        </Column>
+        </Block>
           </Card>
 
     

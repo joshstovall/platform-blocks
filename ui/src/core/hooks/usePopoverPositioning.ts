@@ -99,11 +99,13 @@ export function usePopoverPositioning(
       // Get popover dimensions
       // Always use measureElement for robustness across platforms (RNW refs may not expose getBoundingClientRect)
       let popoverDimensions = { width: 200, height: 100 }; // sensible defaults for initial calculation
+      let hasMeasuredPopover = false;
 
       if (popoverRef.current) {
         const popoverRect = await measureElement(popoverRef);
         if (popoverRect.width > 0 && popoverRect.height > 0) {
           popoverDimensions = { width: popoverRect.width, height: popoverRect.height };
+          hasMeasuredPopover = true;
         }
       }
 
@@ -113,6 +115,9 @@ export function usePopoverPositioning(
         popoverDimensions,
         positioningOptionsRef.current
       );
+
+      // Mark whether this position is based on actual measurements
+      (result as any)._hasMeasuredPopover = hasMeasuredPopover;
 
       setPosition(result);
     } catch (error) {

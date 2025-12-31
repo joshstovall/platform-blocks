@@ -25,6 +25,4 @@ examples:
   forms: Integration with form controls
 ---
 
-# Radio
-
 Radio buttons allow users to select a single option from a group of mutually exclusive choices.

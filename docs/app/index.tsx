@@ -1,4 +1,4 @@
-import { View, useWindowDimensions, Platform } from 'react-native';
+import { View, useWindowDimensions, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Button,
@@ -6,6 +6,8 @@ import {
   Title,
   Block,
   Space,
+  Text,
+  Card,
 } from '@platform-blocks/ui';
 
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
@@ -50,6 +52,20 @@ export default function HomeScreen() {
         <Button title="100+ Components" variant="gradient" onPress={() => router.push('/components')} />
         <Button title="Get Inspired" variant="secondary" onPress={() => router.push('/examples')} />
       </Block>
+
+      {Platform.OS !== 'web' ? null : (
+        <Card style={{ marginTop: 24, padding: 16, alignItems: 'center', maxWidth: 320 }}>
+          <Text size="lg" weight="semibold" style={{ marginBottom: 8 }}>Try it on Expo Go</Text>
+          <Text size="sm" colorVariant="secondary" style={{ marginBottom: 12, textAlign: 'center' }}>
+            Scan this QR code with Expo Go to experience the library on your device
+          </Text>
+          <Image
+            source={{ uri: 'https://qr.expo.dev/eas-update?slug=exp&projectId=7dfc3864-2c55-4c5f-9909-2cc188271f59&groupId=9799817e-06dd-43bd-a67f-47a1fb44b23d&host=u.expo.dev' }}
+            style={{ width: 200, height: 200, borderRadius: 8 }}
+            resizeMode="contain"
+          />
+        </Card>
+      )}
 
       <Space h="lg" />
 

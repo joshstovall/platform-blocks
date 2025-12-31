@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
-import { ToggleButton, ToggleGroup, Text, Block, Flex, Icon, Column, Title, Card } from '@platform-blocks/ui';
+import { ToggleButton, ToggleGroup, Text, Block, Icon, Title, Card } from '@platform-blocks/ui';
 
 const TogglePlayground = () => {
   const [alignment, setAlignment] = useState('center');
@@ -29,9 +29,9 @@ const TogglePlayground = () => {
 
       <Title afterline>Toggles</Title>
 
-      <Flex direction={isSmall ? 'column' : 'row'} wrap={isSmall ? undefined : 'wrap'}>
+      <Block direction={isSmall ? 'column' : 'row'} wrap={isSmall ? undefined : 'wrap'}>
       {/* Exclusive Selection */}
-      <Column style={styles.section}>
+      <Block direction="column" style={styles.section}>
       <Block>
               <Text style={styles.sectionTitle}>Exclusive Selection</Text>
   <ToggleGroup
@@ -63,7 +63,7 @@ const TogglePlayground = () => {
           Selected: {formats.length > 0 ? formats.join(', ') : 'None'}
         </Text>
       </Block>
-      </Column>
+      </Block>
        {/* Vertical Orientation */}
       <Block>
         <Text style={styles.sectionTitle}>Vertical Orientation</Text>
@@ -97,7 +97,7 @@ const TogglePlayground = () => {
       {/* Different Sizes */}
       <Block>
         <Text style={styles.sectionTitle}> Sizes</Text>
-        <Flex direction="column" gap={12}>
+        <Block direction="column" gap={12}>
           <ToggleGroup size="sm" value={toggleSide} exclusive onChange={(value) => setToggleSide(value as string)}>
             <ToggleButton value="side1">Small</ToggleButton>
             <ToggleButton value="side2">sm</ToggleButton>
@@ -114,7 +114,7 @@ const TogglePlayground = () => {
             <ToggleButton value="side1">xl</ToggleButton>
             <ToggleButton value="side2">xl</ToggleButton>
           </ToggleGroup> */}
-        </Flex>
+        </Block>
       </Block>
 
       {/* Variant Options */}
@@ -151,7 +151,7 @@ const TogglePlayground = () => {
         </ToggleGroup>
         <Text style={styles.status}>Selected color: {colorVariant}</Text>
       </Block>
-      </Flex>
+      </Block>
 
     </View>
   );

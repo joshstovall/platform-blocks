@@ -4,8 +4,6 @@ import {
   Text,
   Card,
   Row,
-  Column,
-  Flex,
   Grid,
   GridItem,
   Block,
@@ -53,11 +51,11 @@ export default function LayoutShowcase() {
         Flex wraps flexbox with simplified props like direction, gap, justify, and align.
       </Text>
       <Card>
-        <Flex direction="row" gap="md">
+        <Block direction="row" gap="md">
           <Card p="sm"><Text>Item A</Text></Card>
           <Card p="sm"><Text>Item B</Text></Card>
           <Card p="sm"><Text>Item C</Text></Card>
-        </Flex>
+        </Block>
       </Card>
 
       {/* Grid Section */}

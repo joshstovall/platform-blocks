@@ -92,6 +92,7 @@ export const TextInputBase = factory<{
   const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
 
   const [focused, setFocused] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(true);
   const theme = useTheme();
   const { isRTL } = useDirection();
   const internalInputRef = useRef<TextInput | null>(null);
@@ -175,6 +176,17 @@ export const TextInputBase = factory<{
     if (length === 0) return '';
     return '•'.repeat(length);
   }, [isSecureEntry, normalizedValue]);
+
+  // Blinking cursor for secure entry (simple interval toggle)
+  useEffect(() => {
+    if (focused && isSecureEntry) {
+      setCursorVisible(true);
+      const interval = setInterval(() => {
+        setCursorVisible(v => !v);
+      }, 530);
+      return () => clearInterval(interval);
+    }
+  }, [focused, isSecureEntry]);
 
   const textColor = (flattenedInputStyle?.color as string) ?? (styleProps.disabled ? theme.text.disabled : theme.text.primary);
 
@@ -331,16 +343,29 @@ export const TextInputBase = factory<{
             {...inputAccessibilityProps}
             {...restTextInputProps}
           />
-          {isSecureEntry && maskedValue.length > 0 && (
-            <Text
+          {isSecureEntry && (
+            <View
               pointerEvents="none"
-              accessible={false}
-              style={overlayStyle}
-              numberOfLines={1}
-              ellipsizeMode="clip"
+              style={[overlayStyle, { flexDirection: 'row', alignItems: 'center' }]}
             >
-              {maskedValue}
-            </Text>
+              <Text
+                accessible={false}
+                style={{ color: textColor, fontSize: styles.input.fontSize, fontFamily: theme.fontFamily }}
+                numberOfLines={1}
+              >
+                {maskedValue}
+              </Text>
+              {focused && cursorVisible && (
+                <View
+                  style={{
+                    width: 1,
+                    height: styles.input.fontSize || 16,
+                    backgroundColor: textColor,
+                    marginLeft: 1,
+                  }}
+                />
+              )}
+            </View>
           )}
         </View>
 

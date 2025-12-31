@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { Checkbox, Text, Block, Flex, Icon } from '@platform-blocks/ui';
+import { Checkbox, Text, Card, Block, Icon } from '@platform-blocks/ui';
 import { Title } from 'platform-blocks/components';
 
 export default function CheckboxShowcase() {
@@ -11,12 +11,12 @@ export default function CheckboxShowcase() {
     <View>
       <Title afterline>Checkbox </Title>
       
-      <Flex direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
+      <Block direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
 
         {/* Size Options */}
-        <Block>
+        <Card style={{ minWidth: 280 }}>
           <Text>Sizes</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((sz) => (
               <Checkbox
                 key={sz}
@@ -25,13 +25,13 @@ export default function CheckboxShowcase() {
                 label={`${sz.toUpperCase()} Checkbox`}
               />
             ))}
-          </Flex>
-        </Block>
+          </Block>
+        </Card>
 
         {/* Color Options */}
-        <Block>
+        <Card style={{ minWidth: 280 }}>
           <Text>Colors</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             {(['primary', 'secondary', 'success', 'error', 'warning'] as const).map((clr) => (
               <Checkbox
                 key={clr}
@@ -46,14 +46,13 @@ export default function CheckboxShowcase() {
               color="#cd4ea3ff"
               label="Custom pink color"
             />
-                      </Flex>
-
-        </Block>
+          </Block>
+        </Card>
 
         {/* States */}
-        <Block>
+        <Card style={{ minWidth: 280 }}>
           <Text>States</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Checkbox
               defaultChecked={false}
               label="Unchecked"
@@ -72,7 +71,7 @@ export default function CheckboxShowcase() {
               defaultChecked={true}
               label="Disabled checked"
             />
-             <Checkbox
+            <Checkbox
               defaultChecked
               label="Copy icon for action"
               icon={<Icon name="copy" color="blue" />}
@@ -82,12 +81,12 @@ export default function CheckboxShowcase() {
               label="Custom text icon"
               icon={<Text style={{ color: 'purple', fontWeight: 'bold' }}>✨</Text>}
             />
-          </Flex>
-        </Block>
+          </Block>
+        </Card>
 
-        <Block>
+        <Card style={{ minWidth: 280 }}>
           <Text>Label Positions</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Checkbox
               defaultChecked
               label="Label on right (default)"
@@ -112,13 +111,13 @@ export default function CheckboxShowcase() {
               labelPosition="bottom"
               icon={<Icon name="trash" color="white" />}
             />
-          </Flex>
-        </Block>
+          </Block>
+        </Card>
 
         {/* With Descriptions and Errors */}
-        <Block>
+        <Card style={{ minWidth: 280 }}>
           <Text>Additional Props</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Checkbox
               defaultChecked
               label="With description"
@@ -134,11 +133,11 @@ export default function CheckboxShowcase() {
               label="Checkbox with error"
               error="There was an error with this selection"
             />
-          </Flex>
-        </Block>
+          </Block>
+        </Card>
 
        
-      </Flex>
+      </Block>
     </View>
   );
 }

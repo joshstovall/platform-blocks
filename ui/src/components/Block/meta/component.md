@@ -9,8 +9,4 @@ status: stable
 since: 1.0.0
 ---
 
-A polymorphic building block component that serves as a foundational element to replace View components throughout the application.
-
-The Block component provides a consistent API for styling, spacing, and layout while supporting polymorphic rendering (can render as any HTML element or React component). It includes built-in spacing utilities, flexbox controls, theming support, and accessibility features.
-
-Key features include spacing shorthand props, layout utilities, consistent theming, polymorphic rendering, and full accessibility support.
+A polymorphic building block component that serves as a foundational element to replace View components throughout the application. Similar to a `<div>` in web development.

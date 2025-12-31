@@ -12,9 +12,6 @@ export default function Demo() {
     <Column gap="lg">
       <Card p="md">
         <Column gap="sm">
-          <Text size="sm" colorVariant="secondary">
-            Set the `position` prop to control where the dropdown renders relative to its trigger.
-          </Text>
           <Row gap="md" justify="center" wrap="wrap">
             {OPTIONS.map(({ label, position, description }) => (
               <Popover key={position} position={position} withArrow>

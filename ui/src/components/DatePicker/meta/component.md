@@ -1,6 +1,6 @@
 ------
 
-title: DatePickertitle: DatePicker
+title: DatePicker
 
 description: Inline calendar component for selecting single dates, ranges, and multiple values without an input trigger.description: Inline calendar component for selecting single dates, ranges, and multiple values without an input trigger.
 
@@ -100,5 +100,4 @@ props:    description: "Controlled value for the inline calendar."
 
 
 
-DatePicker renders an inline calendar focused on keyboard-friendly, accessible selection flows. Pair it with `DatePickerInput` when you need an input trigger and modal or popover calendar.DatePicker renders an inline calendar focused on keyboard-friendly, accessible selection flows. Pair it with DatePickerInput when you need an input trigger and modal or popover calendar.
-
+DatePicker renders an inline calendar focused on keyboard-friendly, accessible selection flows. Pair it with `DatePickerInput` when you need an input trigger and modal or popover calendar. DatePicker renders an inline calendar focused on keyboard-friendly, accessible selection flows. 

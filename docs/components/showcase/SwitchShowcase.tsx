@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { Switch, Text, Card, Flex, Button } from '@platform-blocks/ui';
-import { Block, Title } from 'platform-blocks/components';
+import { Switch, Text, Card, Button, Block } from '@platform-blocks/ui';
+import { Title } from 'platform-blocks/components';
 import { router } from 'expo-router';
 
 export default function SwitchShowcase() {
@@ -17,12 +17,12 @@ export default function SwitchShowcase() {
       >go to docs</Button>}
       >Switches</Title>
       
-      <Flex direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
+      <Block direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
 
         {/* Size Options */}
         <Card>
           <Text>Sizes</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((sz) => (
               <Switch
                 key={sz}
@@ -31,13 +31,13 @@ export default function SwitchShowcase() {
                 label={`${sz.toUpperCase()} Switch`}
               />
             ))}
-          </Flex>
+          </Block>
         </Card>
 
         {/* Color Options */}
         <Card>
           <Text>Colors</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             {(['primary', 'secondary', 'success', 'error', 'warning'] as const).map((clr) => (
               <Switch
                 key={clr}
@@ -46,13 +46,13 @@ export default function SwitchShowcase() {
                 label={`${clr.charAt(0).toUpperCase() + clr.slice(1)} color`}
               />
             ))}
-          </Flex>
+          </Block>
         </Card>
 
         {/* States */}
         <Card>
           <Text>States</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Switch
               defaultChecked={false}
               label="Unchecked"
@@ -71,13 +71,13 @@ export default function SwitchShowcase() {
               defaultChecked={true}
               label="Disabled checked"
             />
-          </Flex>
+          </Block>
         </Card>
 
         {/* Label Positions */}
         <Card>
           <Text>Label Positions</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Switch
               defaultChecked
               label="Label on right (default)"
@@ -88,13 +88,13 @@ export default function SwitchShowcase() {
               label="Label on left"
               labelPosition="left"
             />
-          </Flex>
+          </Block>
         </Card>
 
         {/* With Descriptions and Errors */}
         <Card>
           <Text>Additional Props</Text>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Switch
               defaultChecked
               label="With description"
@@ -110,10 +110,10 @@ export default function SwitchShowcase() {
               label="Switch with error"
               error="This field is required"
             />
-          </Flex>
+          </Block>
         </Card>
 
-      </Flex>
+      </Block>
     </Block>
   );
 }

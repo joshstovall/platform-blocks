@@ -2,7 +2,7 @@ import React from 'react';
 import { ViewStyle, View } from 'react-native';
 import { SizeValue } from '../../core/theme/sizes';
 
-export type HoverCardPosition = 'top' | 'bottom' | 'left' | 'right';
+export type HoverCardPosition = 'top' | 'bottom' | 'left' | 'right' | 'auto';
 export type HoverCardShadow = 'none' | 'sm' | 'md' | 'lg';
 
 export interface HoverCardProps {
@@ -24,7 +24,7 @@ export interface HoverCardProps {
   shadow?: HoverCardShadow;
   /** Corner radius */
   radius?: SizeValue;
-  /** Whether rendered in portal (not yet implemented) */
+  /** Whether rendered in portal (deprecated - always uses portal) */
   withinPortal?: boolean;
   /** Fixed width */
   width?: number;
@@ -48,6 +48,8 @@ export interface HoverCardProps {
   keepMounted?: boolean;
   /** Trigger mode */
   trigger?: 'hover' | 'click';
+  /** Positioning strategy: 'fixed' for web, 'portal' for native */
+  strategy?: 'fixed' | 'portal';
 }
 
 export interface HoverCardFactoryPayload {

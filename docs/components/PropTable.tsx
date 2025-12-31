@@ -73,7 +73,7 @@ export function PropTable({ props }: PropTableProps) {
               {value}
             </TextAny>
             <TextAny variant="small" colorVariant="secondary">
-              {value}
+              {row.description || '—'}
             </TextAny>
           </Block>
         </Flex>

@@ -136,6 +136,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
         <View
           style={{
             marginBottom: shouldShowCode ? 12 : 0,
+            width: '100%',
             alignItems: previewCenter ? 'center' : undefined,
             justifyContent: previewCenter ? 'center' : undefined
           }}
@@ -149,6 +150,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
     <View
           style={{
             marginTop: shouldShowCode ? 12 : 0,
+            width: '100%',
             alignItems: previewCenter ? 'center' : undefined,
             justifyContent: previewCenter ? 'center' : undefined
           }}

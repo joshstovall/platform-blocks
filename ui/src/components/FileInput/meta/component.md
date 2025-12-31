@@ -55,28 +55,3 @@ examples:
 ---
 
 The FileInput component provides a user-friendly interface for file uploads with drag-and-drop functionality, file validation, and preview capabilities.
-
-## Features
-
-- Drag-and-drop file upload
-- Multiple file selection
-- File type validation (MIME types)
-- File size limits
-- Image preview thumbnails
-- Upload progress indicators
-- Error handling and validation
-- Custom styling variants
-
-## Usage
-
-```tsx
-import { FileInput } from '@platform-blocks/ui';
-
-<FileInput
-  label="Upload Files"
-  onFilesChange={setFiles}
-  multiple
-  accept="image/*"
-  maxSize={5000000}
-/>
-```

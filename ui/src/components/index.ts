@@ -82,7 +82,6 @@ export { Row, Column } from './Layout';
 export { ToastProvider, useToast, useToastApi } from './Toast';
 export { Progress } from './Progress';
 export { QRCode } from './QRCode';
-export { NavigationProgress, navigationProgress } from './NavigationProgress';
 export { Radio, RadioGroup } from './Radio';
 export { Rating } from './Rating';
 export { Collapse } from './Collapse';
@@ -115,7 +114,6 @@ export { ShimmerText } from './ShimmerText';
 export { Highlight } from './Highlight';
 export { Title } from './Title/Title';
 export { TableOfContents } from './TableOfContents/TableOfContents';
-export { HoverCard } from './HoverCard/HoverCard';
 export { ContextMenu } from './ContextMenu';
 export { Popover } from './Popover';
 

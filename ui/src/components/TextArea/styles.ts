@@ -109,18 +109,19 @@ export const useTextAreaStyles = (props: TextAreaProps & { theme: PlatformBlocks
           ? theme.colors.error[5]
           : styleProps.focused
             ? theme.colors.primary[5]
-            : styleProps.disabled
-              ? theme.backgrounds.border
-              : 'transparent',
+            : theme.backgrounds.border,
         borderRadius: DESIGN_TOKENS.radius.lg,
-        borderWidth: DESIGN_TOKENS.radius.xs,
+        borderWidth: 2,
         paddingHorizontal: DESIGN_TOKENS.spacing.sm,
         paddingVertical: DESIGN_TOKENS.spacing.xs,
+        // Match Input focus treatment on web
         ...(styleProps.focused && !styleProps.disabled && Platform.OS === 'web' && {
           boxShadow: `0 0 0 2px ${theme.states?.focusRing || theme.colors.primary[2]}`,
         }),
+        // Light elevation similar to Input
         ...(!styleProps.disabled && theme.colorScheme === 'light' && {
           elevation: 1,
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
         }),
         opacity: styleProps.disabled ? DESIGN_TOKENS.opacity.disabled : 1,
       },

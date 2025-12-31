@@ -11,28 +11,20 @@ const POSITIONS = [
 
 export default function Demo() {
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="sm">
-          <Text size="sm" colorVariant="secondary">
-            Menus follow the trigger by default; override `position` to align to an edge or axis.
-          </Text>
-          <Row gap="md" justify="center" wrap="wrap">
-            {POSITIONS.map(({ label, position }) => (
-              <Menu key={position} position={position}>
-                <Button size="sm" variant="outline">
-                  {label}
-                </Button>
-                <MenuDropdown>
-                  <MenuItem>{label} menu action</MenuItem>
-                  <MenuItem>Duplicate</MenuItem>
-                  <MenuItem>Archive</MenuItem>
-                </MenuDropdown>
-              </Menu>
-            ))}
-          </Row>
-        </Column>
-      </Card>
+    <Column gap="sm">
+      <Row gap="md" justify="center" wrap="wrap">
+        {POSITIONS.map(({ label, position }) => (
+          <Menu key={position} position={position}>
+            <Button size="sm" variant="outline">
+              {label}
+            </Button>
+            <MenuDropdown>
+              <MenuItem>Duplicate</MenuItem>
+              <MenuItem>Archive</MenuItem>
+            </MenuDropdown>
+          </Menu>
+        ))}
+      </Row>
     </Column>
   );
 }

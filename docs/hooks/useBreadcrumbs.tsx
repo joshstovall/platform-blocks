@@ -138,8 +138,9 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
     const navMatch = findNavItem(currentPath);
 
     if (navMatch) {
+      // Prefer mapped labels (e.g., Components), else use nav item's label
       breadcrumbs.push(pathToBreadcrumbMap[currentPath] || {
-        label: navMatch.label,
+        label: navMatch.item.label,
         href: currentPath,
         onPress: () => {
           router.push(currentPath);

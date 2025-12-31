@@ -262,6 +262,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
       const overlayId = openOverlay({
         content: menuDropdown,
         anchor: { x: positionResult.x, y: positionResult.y, width: overlaySize.width, height: overlaySize.height },
+        placement: (positionResult as any).placement || position,
         closeOnClickOutside,
         closeOnEscape,
         strategy,

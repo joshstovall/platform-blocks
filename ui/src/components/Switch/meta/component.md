@@ -26,6 +26,4 @@ examples:
   states: Different states and behaviors
 ---
 
-# Switch
-
 Switch components provide a way to toggle between two states, typically representing on/off or enabled/disabled states.

@@ -216,8 +216,8 @@ export const Switch = factory<{
   
   // For vertical layouts (top/bottom), we want tighter spacing and center alignment
   const layoutProps = isVertical 
-    ? { gap: 'xs' as const, style: { alignItems: 'center' as const } }
-    : { gap: 'sm' as const, style: { alignItems: 'center' as const } };
+    ? { gap: 'xs' as const, align: 'center' as const }
+    : { gap: 'sm' as const, align: 'center' as const };
 
   const disclaimerNode = renderDisclaimer();
 

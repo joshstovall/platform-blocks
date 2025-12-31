@@ -40,24 +40,3 @@ examples:
 ---
 
 The Spoiler component automatically collapses content that exceeds a specified height, providing a show/hide toggle to reveal the full content.
-
-## Features
-
-- Automatic content collapsing based on height
-- Smooth expand/collapse animations
-- Customizable show/hide labels
-- Configurable maximum height
-- Control positioning options
-- Initially open state support
-
-## Usage
-
-```tsx
-import { Spoiler, Text } from '@platform-blocks/ui';
-
-<Spoiler maxHeight={80}>
-  <Text>
-    Long content that will be collapsed...
-  </Text>
-</Spoiler>
-```

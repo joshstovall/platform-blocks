@@ -6,6 +6,7 @@ import { QRCodeSVG } from './QRCodeSVG';
 import { CopyButton } from '../CopyButton/CopyButton';
 import { useClipboard } from '../../hooks';
 import { useToast } from '../Toast/ToastProvider';
+import { useTheme } from '../../core/theme';
 
 /**
  * QRCode Component
@@ -13,6 +14,7 @@ import { useToast } from '../Toast/ToastProvider';
  * Generates QR codes using the internal full-spec SVG engine.
  */
 export function QRCode(props: QRCodeProps) {
+  const theme = useTheme();
   const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(props);
   const { layoutProps, otherProps } = extractLayoutProps(propsAfterSpacing);
   
@@ -20,7 +22,7 @@ export function QRCode(props: QRCodeProps) {
     value,
     size = 400,
     backgroundColor = 'transparent',
-    color = '#000000',
+    color,
     errorCorrectionLevel = 'M',
     quietZone = 4,
     logo,
@@ -32,6 +34,9 @@ export function QRCode(props: QRCodeProps) {
     onLoadEnd,   // deprecated noop
     ...rest
   } = otherProps;
+
+  // Default color to theme's primary text color for dark mode support
+  const resolvedColor = color ?? theme.text.primary;
 
   const { copy } = useClipboard();
   const toast = useToast();
@@ -59,7 +64,7 @@ export function QRCode(props: QRCodeProps) {
         size={size}
         maxWidth={'100%'}
         backgroundColor={backgroundColor}
-        color={color}
+        color={resolvedColor}
         errorCorrectionLevel={errorCorrectionLevel}
         quietZone={quietZone}
         logo={logo}

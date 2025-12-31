@@ -13,8 +13,6 @@ import { UniversalCSS } from '../utils/UniversalCSS';
 import type { HighlightProps as HighlightComponentProps } from '../../components/Highlight';
 import { HapticsProvider } from '../haptics/HapticsProvider';
 import type { HapticsProviderProps } from '../haptics/HapticsProvider';
-import { PermissionProvider } from '../../components/Can';
-import type { PermissionProviderProps } from '../../components/Can';
 import {
   ThemeModeProvider,
   ThemeModeConfig,
@@ -82,9 +80,6 @@ const I18nBoundary = React.memo<I18nBoundaryProps>(function I18nBoundary({ local
 
 type DirectionProviderConfig = Omit<DirectionProviderProps, 'children'>;
 type HapticsProviderConfig = Omit<HapticsProviderProps, 'children'>;
-type PermissionProviderConfig = Omit<PermissionProviderProps, 'children'>;
-
-const DEFAULT_PERMISSION_RULES = [{ action: '*', subject: '*' }];
 
 export interface PlatformBlocksProviderProps extends Omit<PlatformBlocksThemeProviderProps, 'children'> {
   /** Your application */
@@ -137,8 +132,6 @@ export interface PlatformBlocksProviderProps extends Omit<PlatformBlocksThemePro
   direction?: false | DirectionProviderConfig;
   /** Haptics context configuration (pass false to opt out) */
   haptics?: false | HapticsProviderConfig;
-  /** Permission context configuration (pass false to opt out) */
-  permissions?: false | PermissionProviderConfig;
 }
 
 /**
@@ -202,16 +195,14 @@ function PlatformBlocksContent({
       cssVariablesSelector={cssVariablesSelector}
       withGlobalCSS={withGlobalCSS}
     >
-      {children}
-      {withSpotlight && <SpotlightController config={spotlightConfig} />}
+      <OverlayBoundary enabled={withOverlays}>
+        {children}
+        {withSpotlight && <SpotlightController config={spotlightConfig} />}
+      </OverlayBoundary>
     </ThemeBoundary>
   );
 
-  return (
-    <OverlayBoundary enabled={withOverlays}>
-      {mainContent}
-    </OverlayBoundary>
-  );
+  return mainContent;
 }
 
 /**
@@ -234,8 +225,7 @@ export function PlatformBlocksProvider({
   fallbackLocale = 'en',
   i18nResources,
   direction,
-  haptics,
-  permissions
+  haptics
 }: PlatformBlocksProviderProps) {
   const i18nStore = useMemo(
     () => i18nResources || { en: { translation: {} } },
@@ -269,23 +259,8 @@ export function PlatformBlocksProvider({
 
   const directionConfig: DirectionProviderConfig | null = direction === false ? null : (direction ?? {});
   const hapticsConfig: HapticsProviderConfig | null = haptics === false ? null : (haptics ?? {});
-  const permissionConfig: PermissionProviderConfig | null = permissions === false ? null : (() => {
-    const base: PermissionProviderConfig = { ...(permissions ?? {}) };
-    if (base.rules === undefined) {
-      base.rules = DEFAULT_PERMISSION_RULES;
-    }
-    return base;
-  })();
 
   let enhancedTree = themedTree;
-
-  if (permissionConfig) {
-    enhancedTree = (
-      <PermissionProvider {...permissionConfig}>
-        {enhancedTree}
-      </PermissionProvider>
-    );
-  }
 
   if (hapticsConfig) {
     enhancedTree = (

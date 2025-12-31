@@ -33,6 +33,8 @@ interface PopoverContextValue {
   open: () => void;
   close: () => void;
   toggle: () => void;
+  hoverOpen: () => void;
+  hoverClose: () => void;
   registerDropdown: (dropdown: RegisteredDropdown) => void;
   unregisterDropdown: () => void;
   anchorRef: React.MutableRefObject<any>;
@@ -41,6 +43,7 @@ interface PopoverContextValue {
   withRoles: boolean;
   disabled: boolean;
   returnFocus: boolean;
+  trigger: 'click' | 'hover';
 }
 
 const PopoverContext = createContext<PopoverContextValue | null>(null);
@@ -66,6 +69,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     onOpen,
     onClose,
     onDismiss,
+    trigger = 'click',
     disabled = false,
     closeOnClickOutside = true,
     closeOnEscape = true,
@@ -126,10 +130,20 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
   const openedRef = useRef(opened);
   const closingReasonRef = useRef<CloseReason | null>(null);
   const anchorMeasurementsRef = useRef<{ width: number; height: number } | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     openedRef.current = opened;
   }, [opened]);
+
+  // Cleanup hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const resolvedOffset = typeof offset === 'number' ? offset : offset?.mainAxis ?? 8;
   const resolvedFlip = preventPositionChangeWhenVisible
@@ -144,7 +158,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
       : true;
   const resolvedStrategy = floatingStrategy ?? 'fixed';
 
-  const { position: positioningResult, anchorRef, popoverRef, showOverlay, hideOverlay, updatePosition } = useDropdownPositioning({
+  const { position: positioningResult, anchorRef, popoverRef, showOverlay, hideOverlay, updatePosition, isPositioning } = useDropdownPositioning({
     isOpen: opened && !disabled && !!dropdownState,
     placement: position,
     offset: resolvedOffset,
@@ -156,9 +170,21 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     fallbackPlacements,
     viewport,
     onClose: () => handleOverlayClose('dismiss'),
-    closeOnClickOutside,
+    closeOnClickOutside: trigger === 'hover' ? false : closeOnClickOutside,
     closeOnEscape,
   });
+
+  // Track if we've done measurement-based positioning to avoid flicker
+  const hasPositionedRef = useRef(false);
+  useEffect(() => {
+    // Only mark as positioned when we have a measurement-based position
+    if (opened && positioningResult && (positioningResult as any)._hasMeasuredPopover) {
+      hasPositionedRef.current = true;
+    }
+    if (!opened) {
+      hasPositionedRef.current = false;
+    }
+  }, [opened, positioningResult]);
 
   const popoverStyles = useMemo(() => createPopoverStyles(theme)({
     radius,
@@ -270,6 +296,31 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     }
   }, [closePopover, openPopover]);
 
+  // Hover-specific handlers with delay to prevent glitching when moving between target and dropdown
+  const handleHoverOpen = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    openPopover();
+  }, [openPopover]);
+
+  const handleHoverClose = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      closePopover('programmatic');
+      hoverTimeoutRef.current = null;
+    }, 150); // Delay to allow mouse to move to dropdown
+  }, [closePopover]);
+
+  // Store hover handlers in refs to avoid causing re-renders in useEffect
+  const hoverHandlersRef = useRef({ open: handleHoverOpen, close: handleHoverClose });
+  useEffect(() => {
+    hoverHandlersRef.current = { open: handleHoverOpen, close: handleHoverClose };
+  }, [handleHoverOpen, handleHoverClose]);
+
   useEffect(() => {
     if (opened) {
       updateAnchorMeasurements();
@@ -333,13 +384,28 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
 
     const dropdownStyle = [popoverStyles.dropdown, dropdownState.style, sizeStyles];
 
+    // Hover handlers for the dropdown to keep it open when mouse moves from target to dropdown
+    const dropdownHoverHandlers = trigger === 'hover' && Platform.OS === 'web'
+      ? {
+          onMouseEnter: () => hoverHandlersRef.current.open(),
+          onMouseLeave: () => hoverHandlersRef.current.close(),
+        }
+      : {};
+
+    // Hide content until we have measurement-based positioning to prevent visual "snap"
+    const hasMeasuredPosition = (positioningResult as any)?._hasMeasuredPopover === true;
+    const visibilityStyle = !hasMeasuredPosition && Platform.OS === 'web'
+      ? { opacity: 0 } as const
+      : {};
+
     const content = (
       <View
         ref={popoverRef}
-        style={[popoverStyles.wrapper, widthOverride ? { width: widthOverride } : null]}
-        pointerEvents={dropdownState.trapFocus ? 'auto' : 'box-none'}
+        style={[popoverStyles.wrapper, widthOverride ? { width: widthOverride } : null, visibilityStyle]}
+        pointerEvents={trigger === 'hover' ? 'auto' : (dropdownState.trapFocus ? 'auto' : 'box-none')}
         testID={dropdownState.testID}
         onLayout={handleDropdownLayout}
+        {...dropdownHoverHandlers}
         {...dropdownState.containerProps}
       >
         <View style={dropdownStyle as any}>
@@ -358,7 +424,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     });
 
     onPositionChange?.(positioningResult.placement as PlacementType);
-  }, [opened, dropdownState, positioningResult, popoverRef, showOverlay, hideOverlay, popoverStyles.dropdown, popoverStyles.wrapper, width, maxHeight, minWidth, minHeight, maxWidth, withArrow, arrowSize, arrowRadius, arrowOffset, arrowPosition, theme, zIndex, onPositionChange, schedulePositionUpdate]);
+  }, [opened, dropdownState, positioningResult, popoverRef, showOverlay, hideOverlay, popoverStyles.dropdown, popoverStyles.wrapper, width, maxHeight, minWidth, minHeight, maxWidth, withArrow, arrowSize, arrowRadius, arrowOffset, arrowPosition, theme, zIndex, onPositionChange, schedulePositionUpdate, trigger, isPositioning]);
 
   useEffect(() => {
     return () => {
@@ -384,6 +450,8 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     open: openPopover,
     close: () => closePopover('programmatic'),
     toggle: togglePopover,
+    hoverOpen: handleHoverOpen,
+    hoverClose: handleHoverClose,
     registerDropdown,
     unregisterDropdown,
     anchorRef,
@@ -392,7 +460,8 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     withRoles,
     disabled,
     returnFocus,
-  }), [opened, openPopover, closePopover, togglePopover, registerDropdown, unregisterDropdown, anchorRef, targetId, dropdownId, withRoles, disabled, returnFocus]);
+    trigger,
+  }), [opened, openPopover, closePopover, togglePopover, handleHoverOpen, handleHoverClose, registerDropdown, unregisterDropdown, anchorRef, targetId, dropdownId, withRoles, disabled, returnFocus, trigger]);
 
   const setContainerRef = useCallback((node: View | null) => {
     if (typeof ref === 'function') {
@@ -454,17 +523,46 @@ const PopoverTargetBase = (props: PopoverTargetProps, ref: React.Ref<any>) => {
   const composedRef = mergeRefs<any>((children as any).ref, externalTargetRef);
 
   const triggerHandlers: Record<string, any> = {};
+  const wrapperHoverHandlers: Record<string, any> = {};
 
-  triggerHandlers.onPress = (...args: any[]) => {
-    const tgt = targetProps as Record<string, any> | undefined;
-    if (tgt && typeof tgt.onPress === 'function') {
-      tgt.onPress(...args);
-    }
-    if (typeof childProps.onPress === 'function') {
-      childProps.onPress(...args);
-    }
-    context.toggle();
-  };
+  // Click trigger: toggle on press
+  if (context.trigger === 'click') {
+    triggerHandlers.onPress = (...args: any[]) => {
+      const tgt = targetProps as Record<string, any> | undefined;
+      if (tgt && typeof tgt.onPress === 'function') {
+        tgt.onPress(...args);
+      }
+      if (typeof childProps.onPress === 'function') {
+        childProps.onPress(...args);
+      }
+      context.toggle();
+    };
+  }
+
+  // Hover trigger: open/close on mouse enter/leave (web only)
+  // Applied to the wrapper View for reliable hover detection
+  if (context.trigger === 'hover' && Platform.OS === 'web') {
+    wrapperHoverHandlers.onMouseEnter = (...args: any[]) => {
+      const tgt = targetProps as Record<string, any> | undefined;
+      if (tgt && typeof tgt.onMouseEnter === 'function') {
+        tgt.onMouseEnter(...args);
+      }
+      if (typeof childProps.onMouseEnter === 'function') {
+        childProps.onMouseEnter(...args);
+      }
+      context.hoverOpen();
+    };
+    wrapperHoverHandlers.onMouseLeave = (...args: any[]) => {
+      const tgt = targetProps as Record<string, any> | undefined;
+      if (tgt && typeof tgt.onMouseLeave === 'function') {
+        tgt.onMouseLeave(...args);
+      }
+      if (typeof childProps.onMouseLeave === 'function') {
+        childProps.onMouseLeave(...args);
+      }
+      context.hoverClose();
+    };
+  }
 
   if (Platform.OS === 'web') {
     triggerHandlers.onKeyDown = (event: any) => {
@@ -488,7 +586,14 @@ const PopoverTargetBase = (props: PopoverTargetProps, ref: React.Ref<any>) => {
 
   const dynamicRefProp: Record<string, any> = { [refProp]: composedRef };
 
-  delete sanitizedTargetProps.onPress;
+  // Remove handlers that we're overriding from sanitizedTargetProps
+  if (context.trigger === 'click') {
+    delete sanitizedTargetProps.onPress;
+  }
+  if (context.trigger === 'hover') {
+    delete sanitizedTargetProps.onMouseEnter;
+    delete sanitizedTargetProps.onMouseLeave;
+  }
   delete sanitizedTargetProps.onKeyDown;
 
   const mergedProps: Record<string, any> = {
@@ -505,7 +610,7 @@ const PopoverTargetBase = (props: PopoverTargetProps, ref: React.Ref<any>) => {
   const anchorWrapperRef = mergeRefs(context.anchorRef, ref);
 
   return (
-    <View ref={anchorWrapperRef} collapsable={false}>
+    <View ref={anchorWrapperRef} collapsable={false} {...wrapperHoverHandlers}>
       {cloneElement(children, mergedProps)}
     </View>
   );
@@ -575,8 +680,11 @@ function getArrowStyle(
 
   switch (side) {
     case 'top':
+      // Arrow points down, hide the borders that overlap with content (top-left corner after rotation)
       return {
         ...base,
+        borderTopWidth: 0,
+        borderLeftWidth: 0,
         bottom: -arrowSize,
         left: alignment === 'end'
           ? `calc(100% - ${(arrowPosition === 'side' ? arrowOffset : arrowSize)}px)`
@@ -586,8 +694,11 @@ function getArrowStyle(
         marginLeft: alignment || arrowPosition === 'side' ? 0 : -arrowSize,
       };
     case 'bottom':
+      // Arrow points up, hide the borders that overlap with content (bottom-right corner after rotation)
       return {
         ...base,
+        borderBottomWidth: 0,
+        borderRightWidth: 0,
         top: -arrowSize,
         left: alignment === 'end'
           ? `calc(100% - ${(arrowPosition === 'side' ? arrowOffset : arrowSize)}px)`
@@ -597,8 +708,11 @@ function getArrowStyle(
         marginLeft: alignment || arrowPosition === 'side' ? 0 : -arrowSize,
       };
     case 'left':
+      // Arrow points right, hide the borders that overlap with content (bottom-left corner after rotation)
       return {
         ...base,
+        borderBottomWidth: 0,
+        borderLeftWidth: 0,
         right: -arrowSize,
         top: alignment === 'end'
           ? `calc(100% - ${(arrowPosition === 'side' ? arrowOffset : arrowSize)}px)`
@@ -608,8 +722,11 @@ function getArrowStyle(
         marginTop: alignment || arrowPosition === 'side' ? 0 : -arrowSize,
       };
     case 'right':
+      // Arrow points left, hide the borders that overlap with content (top-right corner after rotation)
       return {
         ...base,
+        borderTopWidth: 0,
+        borderRightWidth: 0,
         left: -arrowSize,
         top: alignment === 'end'
           ? `calc(100% - ${(arrowPosition === 'side' ? arrowOffset : arrowSize)}px)`

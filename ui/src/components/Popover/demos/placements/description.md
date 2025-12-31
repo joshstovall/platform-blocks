@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Use the `position` prop to align the dropdown above, below, or beside its trigger.
+Set the `position` prop to control where the dropdown renders relative to its trigger.

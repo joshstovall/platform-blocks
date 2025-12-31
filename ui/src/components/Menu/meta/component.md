@@ -34,26 +34,3 @@ examples:
 ---
 
 The Menu component provides a dropdown interface for navigation links, actions, and contextual options. It supports flexible positioning, keyboard navigation, and customizable triggers.
-
-## Features
-
-- Dropdown menu with customizable trigger
-- Flexible positioning and offset
-- Keyboard navigation support
-- Menu items with icons and descriptions
-- Menu dividers for grouping
-- Context menu support
-- Automatic focus management
-
-## Usage
-
-```tsx
-import { Menu, MenuItem, MenuDivider, Button } from '@platform-blocks/ui';
-
-<Menu trigger={<Button>Open Menu</Button>}>
-  <MenuItem>Profile</MenuItem>
-  <MenuItem>Settings</MenuItem>
-  <MenuDivider />
-  <MenuItem>Logout</MenuItem>
-</Menu>
-```

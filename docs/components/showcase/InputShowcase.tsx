@@ -1,5 +1,5 @@
 import { View, ScrollView } from 'react-native';
-import { Card, Flex, Text, DatePickerInput, TimePicker, Input, PasswordInput, NumberInput, PinInput, Checkbox, RadioGroup, Switch, Slider, RangeSlider, Select, AutoComplete, FileInput, PhoneInput, Divider, Column, Icon, ColorPicker } from '@platform-blocks/ui';
+import { Card, Text, DatePickerInput, TimePicker, Input, PasswordInput, NumberInput, PinInput, Checkbox, RadioGroup, Switch, Slider, RangeSlider, Select, AutoComplete, FileInput, PhoneInput, Divider, Icon, ColorPicker, Block } from '@platform-blocks/ui';
 import React from 'react';
 
 interface FormState {
@@ -133,10 +133,10 @@ export function InputShowcase() {
       <View style={{ padding: 16 }}>
 
 
-        <Flex direction="row" gap={20} wrap="wrap">
+        <Block direction="row" gap={20} wrap="wrap">
           {/* Text Input Section */}
           <Card padding={20} style={{ minWidth: 280, flex: 1 }}>
-            <Column gap={16}>
+            <Block direction="column" gap={16}>
               <Text variant="h6" color="primary">Text Inputs</Text>
 
               <Input
@@ -207,7 +207,7 @@ export function InputShowcase() {
                   <Text size="xs" color="dimmed">Phone (formatted): {state.phoneFormatted || '—'}</Text>
                 </Card>
               )}
-            </Column>
+            </Block>
           </Card>
 
           <Card padding={20} style={{ minWidth: 280, flex: 1 }}>
@@ -223,7 +223,7 @@ export function InputShowcase() {
 
 
           <Card style={{ flex: 1, minWidth: 280 }} padding={20}>
-            <Column gap={12}>
+            <Block direction="column" gap={12}>
               <Text size="sm" weight="medium">Checkboxes</Text>
               <Checkbox
                 label="Enable notifications"
@@ -240,14 +240,14 @@ export function InputShowcase() {
                 color="#f59e0b" // amber-500
                 icon={<Icon name={state.checkbox3 ? 'star' : 'star-outline'} size={14} color="#fff" />}
               />
-            </Column>
+            </Block>
           </Card>
 
           {/* Selection Components */}
           <Card padding={20} style={{ minWidth: 280 }}>
-            <Column gap={16}>
+            <Block direction="column" gap={16}>
 
-              <Column gap={12}>
+              <Block direction="column" gap={12}>
                 <Text size="sm" weight="medium">Switches</Text>
                 <Switch
                   label="Dark mode"
@@ -267,7 +267,7 @@ export function InputShowcase() {
                   onChange={(checked) => updateState('switch3', checked)}
                   color="warning"
                 />
-              </Column>
+              </Block>
 
               {showValues && (
                 <Card padding={12} style={{ backgroundColor: '#f8fafc' }}>
@@ -278,15 +278,15 @@ export function InputShowcase() {
                   <Text size="xs" color="dimmed">Switches: [{state.switch1 ? 'ON' : 'OFF'}, {state.switch2 ? 'ON' : 'OFF'}, {state.switch3 ? 'ON' : 'OFF'}]</Text>
                 </Card>
               )}
-            </Column>
+            </Block>
           </Card>
 
           {/* Range & Slider Components */}
           {/* <Card padding={20} >
-            <Column gap={16}>
+            <Block direction="column" gap={16}>
               <Text variant="h6" color="primary">Sliders</Text>
 
-              <Column gap={12}>
+              <Block direction="column" gap={12}>
                 <Slider
                   label="Volume Level"
                   value={state.sliderValue}
@@ -307,7 +307,7 @@ export function InputShowcase() {
                   ticks={[{ value: 0 }, { value: 250 }, { value: 500 }, { value: 750 }, { value: 1000 }]}
                   description={`Range: $${state.rangeValue[0]} - $${state.rangeValue[1]}`}
                 />
-              </Column>
+              </Block>
 
               {showValues && (
                 <Card padding={12} style={{ backgroundColor: '#f8fafc' }}>
@@ -316,12 +316,12 @@ export function InputShowcase() {
                   <Text size="xs" color="dimmed">Range: [{state.rangeValue[0]}, {state.rangeValue[1]}]</Text>
                 </Card>
               )}
-            </Column>
+            </Block>
           </Card> */}
 
           {/* Dropdown Components */}
           <Card padding={20} style={{ minWidth: 280, flex: 1 }}>
-            <Column gap={16}>
+            <Block direction="column" gap={16}>
               <Text variant="h6" color="primary">Dropdown Inputs</Text>
 
               <Select
@@ -363,7 +363,7 @@ export function InputShowcase() {
                   <Text size="xs" color="dimmed">AutoComplete: {state.autoCompleteValue || 'none'}</Text>
                 </Card>
               )}
-            </Column>
+            </Block>
           </Card>
 
           {/* Date & Time Components */}
@@ -406,7 +406,7 @@ export function InputShowcase() {
 
           {/* File Input */}
           <Card padding={20} style={{ minWidth: 280, flex: 1 }}>
-            <Column gap={16}>
+            <Block direction="column" gap={16}>
               <Text variant="h6" color="primary">File Input</Text>
 
               <FileInput
@@ -423,9 +423,9 @@ export function InputShowcase() {
                   <Text size="xs" color="dimmed">Size: {state.fileValue?.size ? `${Math.round(state.fileValue.size / 1024)} KB` : 'N/A'}</Text>
                 </Card>
               )}
-            </Column>
+            </Block>
           </Card>
-        </Flex>
+        </Block>
 
       </View>
     </ScrollView>

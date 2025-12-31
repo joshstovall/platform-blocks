@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, useWindowDimensions } from 'react-native';
 import { Block, Title } from 'platform-blocks/components';
-import { Waveform, Flex, Card, Text, useTheme, Video, Gallery, Lottie, Slider, Button, Image } from '@platform-blocks/ui';
+import { Waveform, Card, Text, useTheme, Video, Gallery, Lottie, Slider, Button, Image } from '@platform-blocks/ui';
 
 const androidWave = require('../../assets/AndroidWave.json');
 
@@ -150,7 +150,7 @@ export function MediaShowcase() {
     <Block direction="column" gap="xl">
             <Title afterline>Waveform</Title>
 
-      <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
+      <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
         <Card p={16} style={{ flexGrow: 1, minWidth: 320 }}>
             <Text weight="semibold">Bars (Rounded) Variant</Text>
             <Waveform
@@ -168,7 +168,7 @@ export function MediaShowcase() {
         </Card>
      
         <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Text weight="semibold">Line Variant</Text>
             <Waveform
               peaks={peaks}
@@ -181,9 +181,9 @@ export function MediaShowcase() {
               progressColor="warning"
             />
             <Text size="xs" colorVariant="muted">Continuous line waveform with animated progress overlay.</Text>
-          </Flex>
+          </Block>
         </Card>
-      </Flex>
+      </Block>
 
       <Title afterline>Video</Title>
       <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
@@ -221,11 +221,11 @@ export function MediaShowcase() {
       </Block>
 
       <Title afterline>Gallery</Title>
-      <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
+      <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
         <Card style={{ flexGrow: 1, minWidth: 320 }} p={16}>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Text weight="semibold">Interactive Lightbox</Text>
-            <Flex gap="sm" wrap="wrap">
+            <Block gap="sm" wrap="wrap">
               {galleryImages.slice(0, 4).map((image, index) => (
                 <Pressable
                   key={image.id}
@@ -250,21 +250,21 @@ export function MediaShowcase() {
                   />
                 </Pressable>
               ))}
-            </Flex>
-            <Flex gap="sm" align="center" wrap="wrap">
+            </Block>
+            <Block gap="sm" align="center" wrap="wrap">
               <Button size="sm" onPress={() => openGalleryAt(0)}>Open Gallery</Button>
               <Text size="xs" colorVariant="muted">
                 Tap a thumbnail or use the button to launch the full-screen gallery.
               </Text>
-            </Flex>
-          </Flex>
+            </Block>
+          </Block>
         </Card>
-      </Flex>
+      </Block>
 
       <Title afterline>Lottie Animation</Title>
-      <Flex direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
+      <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
         <Card style={{ flexGrow: 1, minWidth: 280 }} p={16}>
-          <Flex direction="column" gap={12} align="center">
+          <Block direction="column" gap={12} align="center">
             <Text weight="semibold">Autoplay Loop</Text>
             <Lottie
               source={androidWave}
@@ -275,10 +275,10 @@ export function MediaShowcase() {
             <Text size="xs" colorVariant="muted">
               Seamless looping animation renders via platform Lottie engines.
             </Text>
-          </Flex>
+          </Block>
         </Card>
         <Card style={{ flexGrow: 1, minWidth: 280 }} p={16}>
-          <Flex direction="column" gap={12}>
+          <Block direction="column" gap={12}>
             <Text weight="semibold">Manual Progress Control</Text>
             <Lottie
               source={androidWave}
@@ -296,20 +296,20 @@ export function MediaShowcase() {
               valueLabel={(value) => `${Math.round(value * 100)}%`}
               fullWidth
             />
-            <Flex gap="sm" wrap="wrap">
+            <Block gap="sm" wrap="wrap">
               <Button size="sm" variant="secondary" onPress={() => setManualProgress(0)}>
                 Reset
               </Button>
               <Button size="sm" variant="secondary" onPress={() => setManualProgress((prev) => Math.min(1, parseFloat((prev + 0.1).toFixed(2))))}>
                 +10%
               </Button>
-            </Flex>
+            </Block>
             <Text size="xs" colorVariant="muted">
               Tie progress to scrubbing, loading states, or playback syncing.
             </Text>
-          </Flex>
+          </Block>
         </Card>
-      </Flex>
+      </Block>
 
       <Gallery
         visible={galleryOpen}

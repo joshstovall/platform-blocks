@@ -11,11 +11,9 @@ import {
   Checkbox,
   Chip,
   Code,
-  Column,
   DatePicker,
   DatePickerInput,
   Divider,
-  Flex,
   Gauge,
   Icon,
   Input,
@@ -119,7 +117,7 @@ export const EverythingPlayground = () => {
       id: 'hero',
       content: (
         <Card p="lg">
-          <Column gap="md">
+          <Block direction="column" gap="md">
 
             <Row gap="sm" wrap="wrap">
               <Button
@@ -148,7 +146,7 @@ export const EverythingPlayground = () => {
               </Badge>
             </Row>
 
-          </Column>
+          </Block>
         </Card>
       ),
     },
@@ -181,7 +179,7 @@ export const EverythingPlayground = () => {
       id: 'forms',
       content: (
         <Card p="lg">
-          <Column gap="md">
+          <Block direction="column" gap="md">
             <Input
               label="Project name"
               placeholder="New app launch"
@@ -206,7 +204,7 @@ export const EverythingPlayground = () => {
               onChangeText={setPasswordInputValue}
             />
 
-          </Column>
+          </Block>
         </Card>
       ),
     },
@@ -242,22 +240,22 @@ export const EverythingPlayground = () => {
             }}
           >
             <ToggleButton value="grid">
-              <Flex direction="row" align="center" gap="xs">
+              <Block direction="row" align="center" gap="xs">
                 <Icon name="grid" size="sm" />
                 {/* <Text size="sm">Grid</Text> */}
-              </Flex>
+              </Block>
             </ToggleButton>
             <ToggleButton value="list">
-              <Flex direction="row" align="center" gap="xs">
+              <Block direction="row" align="center" gap="xs">
                 <Icon name="list" size="sm" />
                 {/* <Text size="sm">List</Text> */}
-              </Flex>
+              </Block>
             </ToggleButton>
             <ToggleButton value="analytics">
-              <Flex direction="row" align="center" gap="xs">
+              <Block direction="row" align="center" gap="xs">
                 <Icon name="chart-line" size="sm" />
                 {/* <Text size="sm">Analytics</Text> */}
-              </Flex>
+              </Block>
             </ToggleButton>
           </ToggleGroup>
 
@@ -282,7 +280,7 @@ export const EverythingPlayground = () => {
       id: 'data-display',
       content: (
         <Card p="lg">
-          <Column gap="md">
+          <Block direction="column" gap="md">
             {/* <Text variant="h4">Data display & people</Text> */}
             <AvatarGroup size="sm" spacing={-8}>
               <Avatar fallback="JS" backgroundColor="#2563eb" />
@@ -290,7 +288,7 @@ export const EverythingPlayground = () => {
               <Avatar fallback="LM" backgroundColor="#10b981" />
               <Avatar fallback="+7" backgroundColor="#9333ea" />
             </AvatarGroup>
-          </Column>
+          </Block>
         </Card>
       ),
     },
@@ -337,20 +335,20 @@ export const EverythingPlayground = () => {
     {
       id: 'alert',
       content: (<Notice variant="light" color="primary" sev="info">
-        <Flex direction="column" gap="xs">
+        <Block direction="column" gap="xs">
           <Text weight="semibold">Live preview deployed</Text>
           <Text size="sm" colorVariant="secondary">
             Press <KeyCap>⌘</KeyCap> + <KeyCap>K</KeyCap> to open the <Code>Spotlight</Code> command palette.
             {/* Your documentation site was rebuilt 2 minutes ago. */}
           </Text>
-        </Flex>
+        </Block>
       </Notice>),
     },
     {
       id: 'feedback',
       content: (
         <Card p="lg">
-          <Column gap="md">
+          <Block direction="column" gap="md">
             <Text variant="h4">Feedback & status</Text>
 
             <Text size="sm" weight="medium">
@@ -372,7 +370,7 @@ export const EverythingPlayground = () => {
               />
             </Row>
 
-          </Column>
+          </Block>
         </Card>
       ),
     },
@@ -381,13 +379,13 @@ export const EverythingPlayground = () => {
       id: 'gauge',
       content: (
         <Notice variant="light" color="primary" sev="warning" icon={false}>
-          <Column gap="sm" align="center">
+          <Block direction="column" gap="sm" align="center">
             <Text size="sm" weight="medium">
               Delivery health — {gaugeValue}%
             </Text>
             <Gauge value={gaugeValue} size={120} />
             <Slider value={gaugeValue} onChange={setGaugeValue} min={0} max={100} step={5} width="100%" />
-          </Column>
+          </Block>
         </Notice>
       ),
     },
@@ -417,8 +415,8 @@ export const EverythingPlayground = () => {
     {
       id: 'media-utilities',
       content: (
-        <Column gap="md">
-          <Column gap="sm">
+        <Block direction="column" gap="md">
+          <Block direction="column" gap="sm">
             <Text size="sm" weight="medium">
               Rating & icons
             </Text>
@@ -433,9 +431,9 @@ export const EverythingPlayground = () => {
               <Icon name="check" size="md" color="#22c55e" />
               <Icon name="info" size="md" color="#3b82f6" />
             </Row>
-          </Column>
+          </Block>
           <Divider />
-        </Column>
+        </Block>
       ),
     },
   ]

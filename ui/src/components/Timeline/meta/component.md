@@ -27,6 +27,4 @@ examples:
   sizes: Various sizes and spacing
 ---
 
-# Timeline
-
 Timeline component displays a sequence of events or steps in chronological order with customizable styling and layout options.

@@ -42,25 +42,3 @@ examples:
 ---
 
 The Stepper component provides a step-by-step navigation interface, perfect for multi-step forms, wizards, and progress tracking.
-
-## Features
-
-- Horizontal and vertical orientations
-- Multiple size variants
-- Custom icons for steps
-- Loading states
-- Clickable steps for navigation
-- Color themes
-- Progress tracking
-
-## Usage
-
-```tsx
-import { Stepper } from '@platform-blocks/ui';
-
-<Stepper active={1}>
-  <Stepper.Step title="Step 1">First step content</Stepper.Step>
-  <Stepper.Step title="Step 2">Second step content</Stepper.Step>
-  <Stepper.Step title="Step 3">Third step content</Stepper.Step>
-</Stepper>
-```

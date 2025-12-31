@@ -97,20 +97,47 @@ function OverlayContent({ overlay, isTopmost, onBackdropPress }: OverlayContentP
   if (DEBUG) {
     console.log('Rendering overlay content:');
     console.log('- anchor:', overlay.anchor);
+    console.log('- placement:', overlay.placement);
     console.log('- strategy:', overlay.strategy);
     console.log('- zIndex:', overlay.zIndex);
   }
 
+  // Check if this is a top-positioned overlay
+  const isTopPlacement = overlay.placement?.startsWith('top');
+  
+  // For top placements, we need to anchor from the bottom of the overlay
+  // The anchor.y represents where the bottom of the overlay should be (top of the trigger minus offset)
+  // So we use the estimated height to calculate where the top of the overlay would be
   const overlayStyle: ViewStyle & any = {
     // Use fixed positioning on web for viewport-anchored overlays
     position: (Platform.OS === 'web' && overlay.strategy === 'fixed') ? ('fixed' as any) : 'absolute',
-    top: overlay.anchor?.y || 0,
     left: overlay.anchor?.x || 0,
     zIndex: overlay.zIndex,
     width: overlay.width || (overlay.anchor?.width ? overlay.anchor.width : undefined),
     maxWidth: overlay.maxWidth,
     maxHeight: overlay.maxHeight,
   };
+
+  if (isTopPlacement && Platform.OS === 'web') {
+    // For top placements, position from the bottom of the overlay
+    // anchor.y is where the top of the overlay should be, but we want to anchor from the bottom
+    // so the overlay can grow upward naturally
+    // The "bottom" of the anchor point is: viewport.height - (anchor.y + estimatedHeight)
+    // But since we don't know actual height, use bottom anchoring relative to the trigger
+    // Actually, anchor.y already accounts for the estimated height, so:
+    // anchor.y = trigger.y - estimatedHeight - offset
+    // We want the overlay's bottom edge to be at: trigger.y - offset
+    // Which means: bottom = viewport.height - (trigger.y - offset) = viewport.height - anchor.y - estimatedHeight
+    // Simpler: just set top and let it render, but the issue is the estimate is wrong
+    
+    // Better approach: use the anchor.y + anchor.height as the "bottom anchor point"
+    // This is where the bottom of the overlay should be
+    const bottomAnchorPoint = (overlay.anchor?.y || 0) + (overlay.anchor?.height || 0);
+    overlayStyle.top = undefined;
+    overlayStyle.bottom = `calc(100vh - ${bottomAnchorPoint}px)`;
+  } else {
+    overlayStyle.top = overlay.anchor?.y || 0;
+  }
 
   if (DEBUG) {
     console.log('- overlayStyle:', overlayStyle);

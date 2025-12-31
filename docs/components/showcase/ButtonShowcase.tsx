@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
-import { Button, Text, Card, Flex, BrandButton } from '@platform-blocks/ui';
+import { Button, Text, Card, Block, BrandButton } from '@platform-blocks/ui';
 import { Title } from 'platform-blocks/components';
 
 export default function ButtonShowcase() {
@@ -10,12 +10,12 @@ export default function ButtonShowcase() {
   return (
     <View>
       <Title afterline>Buttons</Title>
-      <Flex direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
+      <Block direction={isSmall ? 'column' : 'row'} gap={20} wrap={isSmall ? undefined : 'wrap'}>
 
         {/* Size Options */}
         <Card>
           <Text >Sizes</Text>
-          <Flex direction="column" gap={6}>
+          <Block direction="column" gap={6}>
             {['xs', 'sm', 'md', 'lg', 'xl'].map((sz) => (
               <Button
                 key={sz}
@@ -28,12 +28,12 @@ export default function ButtonShowcase() {
                 {sz.toUpperCase()}
               </Button>
             ))}
-          </Flex>
+          </Block>
         </Card>
         {/* Variant Options */}
         <Card>
           <Text>Variants</Text>
-          <Flex direction="column" gap={6}>
+          <Block direction="column" gap={6}>
       {(['filled', 'outline', 'ghost', 'link', 'gradient'] as const).map((variant) => (
               <Button
                 key={variant}
@@ -44,13 +44,13 @@ export default function ButtonShowcase() {
                 {variant.charAt(0).toUpperCase() + variant.slice(1)}
               </Button>
             ))}
-          </Flex>
+          </Block>
         </Card>
 
         {/* Color Options */}
         <Card>
           <Text>Colors</Text>
-          <Flex direction="column" gap={6}>
+          <Block direction="column" gap={6}>
             {['primary', 'secondary', 'success', 'error', 'warning', 'gray'].map((clr) => (
               <Button
                 key={clr}
@@ -61,13 +61,13 @@ export default function ButtonShowcase() {
                 {clr.charAt(0).toUpperCase() + clr.slice(1)}
               </Button>
             ))}
-          </Flex>
+          </Block>
         </Card>
 
         {/* Disabled and Loading States */}
         <Card>
           <Text>Disabled and Loading States</Text>
-          <Flex direction="column" gap={6}>
+          <Block direction="column" gap={6}>
            
             <Button
               key="loading"
@@ -90,13 +90,13 @@ export default function ButtonShowcase() {
             >
               Disabled
             </Button>
-          </Flex>
+          </Block>
         </Card>
 
         {/* Brand Buttons */}
         <Card>
           <Text>Brand Buttons</Text>
-          <Flex direction="column" gap={6} wrap="wrap">
+          <Block direction="column" gap={6} wrap="wrap">
             {[
               'facebook', 'x', 'google', 'github', 'apple', 'linkedin', 
             ].map((brand,i) => (
@@ -116,9 +116,9 @@ export default function ButtonShowcase() {
               >
               </BrandButton>
             ))}
-          </Flex>
+          </Block>
         </Card>
-      </Flex>
+      </Block>
     </View>
   );
 }

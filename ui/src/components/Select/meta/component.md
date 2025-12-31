@@ -54,5 +54,3 @@ props:
 ---
 
 Select provides a dropdown interface for choosing from predefined options. It supports single and multi-selection modes, disabled states, validation, and customizable styling.
-
-Pair `Select` with the shared `KeyboardManagerProvider` when targeting native platforms so dismissals respect the current keyboard state. The component exposes `refocusAfterSelect` to opt into web-style refocus behavior; by default single-select usage dismisses the keyboard after a choice, while multi-select scenarios keep the trigger focused for quick additional selections.

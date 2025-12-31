@@ -63,6 +63,4 @@ props:
     description: "Test identifier for testing frameworks"
 ---
 
-Masonry provides an efficient way to create Pinterest-style layouts where items are arranged in columns with varying heights. Built on FlashList for optimal performance with large datasets, it automatically handles item positioning and provides smooth scrolling even with hundreds of items.
-
-The component supports dynamic heights through the heightRatio property on items, custom renderers, and responsive column counts. Perfect for image galleries, card layouts, or any scenario where you need an organic, space-efficient arrangement of content.
+Masonry provides an efficient way to create Pinterest-style layouts where items are arranged in columns with varying heights. Built on FlashList for optimal performance with large datasets, it automatically handles item positioning and provides smooth scrolling even with hundreds of items. The component supports dynamic heights through the heightRatio property on items, custom renderers, and responsive column counts. Perfect for image galleries, card layouts, or any scenario where you need an organic, space-efficient arrangement of content.

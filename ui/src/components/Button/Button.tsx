@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Pressable, View, Animated, Easing, Platform } from 'react-native';
+import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
+import { Pressable, View, Animated, Easing, Platform, LayoutChangeEvent } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
@@ -190,36 +190,32 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const { announce } = useAnnouncer();
   const { ref: focusRef, focus, isFocused } = useFocus(`button-${title || 'button'}`);
 
+  // Track measured width for loading state preservation
+  const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
+  const wasLoadingRef = useRef(loading);
+
+  // When loading starts, we want to preserve the current measured width
+  // When loading ends, clear the preserved width so it can resize naturally
+  useEffect(() => {
+    if (!loading && wasLoadingRef.current) {
+      // Loading just ended, allow width to be recalculated
+      setMeasuredWidth(null);
+    }
+    wasLoadingRef.current = loading;
+  }, [loading]);
+
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    // Only update measured width when not loading, so we capture the natural content width
+    if (!loading) {
+      const { width } = event.nativeEvent.layout;
+      setMeasuredWidth(width);
+    }
+    // Call user's onLayout if provided
+    onLayout?.(event);
+  }, [loading, onLayout]);
+
   // Determine button content - children takes precedence over title
   const buttonContent = children ?? title;
-
-  // Calculate minimum width for loading state based on content and size
-  const calculateMinWidth = () => {
-    if (!buttonContent || typeof buttonContent !== 'string') return undefined;
-
-    // Base character width estimates based on size
-    const charWidthBySize = {
-      xs: 6,
-      sm: 7,
-      md: 8,
-      lg: 9,
-      xl: 10,
-      '2xl': 11,
-      '3xl': 12
-    };
-
-    const sizeKey = typeof size === 'string' ? size : 'md';
-    const charWidth = charWidthBySize[sizeKey as keyof typeof charWidthBySize] || 8;
-    const horizontalPadding = getSpacing(size) * 2; // Left + right padding
-
-    // Estimate content width: character count * average char width + padding
-    const contentWidth = buttonContent.length * charWidth + horizontalPadding;
-
-    // Add space for loader and gap when loading
-    const loaderWidth = getFontSize(size) + getSpacing(size) / 2; // Loader + margin
-
-    return Math.max(contentWidth, contentWidth + loaderWidth);
-  };
 
   // Determine what content to show based on loading state
   const displayContent = loading
@@ -268,12 +264,12 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const spacingStyles = getSpacingStyles(spacingProps);
   const baseLayoutStyles = getLayoutStyles(layoutProps);
 
-  // Apply minimum width when loading to prevent size changes
-  const calculatedMinWidth = calculateMinWidth();
+  // Apply measured width when loading to prevent size changes
+  // Use the actual measured width instead of character-based estimates
   const layoutStyles = {
     ...baseLayoutStyles,
-    ...(loading && calculatedMinWidth && !layoutProps.width && !layoutProps.w && !layoutProps.fullWidth
-      ? { minWidth: calculatedMinWidth }
+    ...(loading && measuredWidth && !layoutProps.width && !layoutProps.w && !layoutProps.fullWidth
+      ? { width: measuredWidth, minWidth: measuredWidth }
       : {})
   };
 
@@ -487,7 +483,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
             style,
           ]}
           onPress={handleInternalPress}
-          onLayout={onLayout}
+          onLayout={handleLayout}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           onHoverIn={onHoverIn}

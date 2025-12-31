@@ -62,7 +62,7 @@ export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlock
     },
     
     labelContainer: {
-      flex: 1,
+      flexShrink: 1,
       justifyContent: 'center',
     },
     

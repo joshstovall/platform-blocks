@@ -87,7 +87,7 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
   );
 
   return (
-    <View>
+    <View style={{ alignSelf: 'flex-start' }}>
       <Flex
         direction="row"
         justify="space-between"
@@ -127,7 +127,12 @@ export const MiniCalendar: React.FC<MiniCalendarProps> = ({
         </Pressable>
       </Flex>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 0 }}
+        style={{ flexGrow: 0 }}
+      >
         <Flex direction="row" gap={4}>
           {days.map((date) => {
             const isSelected = selectedDate ? dateUtils.isSameDay(date, selectedDate) : false;
