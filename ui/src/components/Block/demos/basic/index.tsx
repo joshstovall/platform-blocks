@@ -2,7 +2,7 @@ import { Block, Column, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap="lg" w="100%" maxWidth={420}>
+    <Column gap="lg" w="100%" maxW={420}>
       <Block bg="#111827" radius="lg" p="lg">
         <Column gap="sm">
           <Text weight="semibold" color="white">

@@ -65,7 +65,7 @@ function SpotlightRoot({
       variant={fullscreen ? 'fullscreen' : 'modal'}
       backdrop
       backdropClosable
-      width={fullscreen ? undefined : targetWidth}
+      w={fullscreen ? undefined : targetWidth}
       title={null}
       style={[
         styles.spotlightModal,

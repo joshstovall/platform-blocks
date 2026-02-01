@@ -27,7 +27,7 @@ export interface HoverCardProps {
   /** Whether rendered in portal (deprecated - always uses portal) */
   withinPortal?: boolean;
   /** Fixed width */
-  width?: number;
+  w?: number;
   /** Show directional arrow */
   withArrow?: boolean;
   /** Close on Escape (web) */

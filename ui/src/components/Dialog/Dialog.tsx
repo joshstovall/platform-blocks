@@ -47,9 +47,11 @@ export function Dialog({
   backdropClosable = true,
   shouldClose = false,
   onClose,
-  width,
-  height,
+  w,
+  h,
+  radius,
   style,
+  showHeader = true,
   bottomSheetSwipeZone = 'container',
 }: DialogProps) {
   const theme = useTheme();
@@ -58,14 +60,18 @@ export function Dialog({
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const horizontalMargin = 32; // safety margin so dialog never touches edges
   const isNativePlatform = Platform.OS === 'ios' || Platform.OS === 'android';
-  const defaultModalMaxWidth = Math.min((width || 500), Math.max(200, screenWidth - horizontalMargin));
+  const defaultModalMaxWidth = Math.min((w || 500), Math.max(200, screenWidth - horizontalMargin));
   const modalEffectiveWidth = variant !== 'modal'
     ? undefined
     : Math.min(defaultModalMaxWidth, screenWidth - horizontalMargin);
   const bottomSheetMaxWidth = Math.min(
-    width ? width : (isNativePlatform ? 720 : Math.min(600, screenWidth - horizontalMargin)),
+    w ? w : (isNativePlatform ? 720 : Math.min(600, screenWidth - horizontalMargin)),
     screenWidth,
   );
+  const resolvedRadius = radius ?? (variant === 'bottomsheet' ? 20 : 16);
+  const resolvedMaxHeight = variant === 'bottomsheet'
+    ? (h ?? Math.max(200, screenHeight - insets.top - 24))
+    : (variant === 'fullscreen' ? '100%' : (h || '90%'));
 
   const invokeOnClose = useCallback(() => {
     onClose?.();
@@ -132,20 +138,13 @@ export function Dialog({
             }
           }
 
-          // Allow dragging in both directions but apply rubber band for upward movement
-          const dragDistance = gestureState.dy;
+          // Only allow downward movement (dismiss gesture)
+          const dragDistance = Math.max(0, gestureState.dy);
           
-          if (dragDistance >= 0) {
-            // Downward movement - apply subtle resistance for better feel
-            const resistance = 0.8;
-            const resistedDistance = dragDistance * resistance + (dragDistance > 100 ? (dragDistance - 100) * 0.2 : 0);
-            slideAnim.value = resistedDistance;
-          } else {
-            // Upward movement - apply rubber band effect
-            const upwardResistance = 0.3;
-            const rubberBandDistance = dragDistance * upwardResistance;
-            slideAnim.value = rubberBandDistance;
-          }
+          // Downward movement - apply subtle resistance for better feel
+          const resistance = 0.8;
+          const resistedDistance = dragDistance * resistance + (dragDistance > 100 ? (dragDistance - 100) * 0.2 : 0);
+          slideAnim.value = resistedDistance;
         }
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -311,7 +310,7 @@ export function Dialog({
   const isDark = theme.colorScheme === 'dark';
   const surfaceColor = isDark ? theme.backgrounds.surface : '#FFFFFF';
   const borderColor = isDark ? theme.colors.gray[6] : '#E1E3E6';
-  const headerBg = isDark ? theme.backgrounds.subtle : surfaceColor;
+  const headerBg = surfaceColor;
   const contentBg = surfaceColor;
 
   const dynamicStyles = StyleSheet.create({
@@ -323,24 +322,28 @@ export function Dialog({
     } as any, // Allow backdropFilter on web
     modalContainer: {
       backgroundColor: contentBg,
-      borderRadius: variant === 'fullscreen' ? 0 : (variant === 'bottomsheet' ? 20 : 16),
-      borderBottomLeftRadius: variant === 'bottomsheet' ? 0 : undefined,
-      borderBottomRightRadius: variant === 'bottomsheet' ? 0 : undefined,
+      borderRadius: variant === 'fullscreen' ? 0 : resolvedRadius,
+      ...(variant === 'bottomsheet' ? {
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+      } : {}),
+      overflow: 'hidden', // Clip content to border radius
       // Clamp width to viewport (minus margins) while respecting provided width
       maxWidth: variant === 'fullscreen'
         ? '100%'
         : variant === 'bottomsheet'
           ? bottomSheetMaxWidth
           : defaultModalMaxWidth,
-      maxHeight: variant === 'fullscreen' ? '100%' : (height || '90%'),
+      maxHeight: resolvedMaxHeight,
       width: variant === 'fullscreen'
         ? '100%'
         : variant === 'modal'
           ? modalEffectiveWidth || 'auto'
           : '100%',
-      height: variant === 'fullscreen' ? '100%' : (variant === 'modal' ? undefined : undefined),
-      // For modal variant, remove flex to allow fit-content behavior
-      ...(variant === 'modal' ? {} : { flex: 1 }),
+      // Fullscreen uses 100% height, others auto-size to content
+      height: variant === 'fullscreen' ? '100%' : undefined,
+      // Only fullscreen should stretch to fill
+      ...(variant === 'fullscreen' ? { flex: 1 } : {}),
       // Ensure minWidth never exceeds viewport clamp
       minWidth: variant === 'modal' ? Math.min(300, Math.max(200, screenWidth - horizontalMargin)) : undefined,
       alignSelf: variant === 'bottomsheet' ? 'center' : 'center',
@@ -366,24 +369,27 @@ export function Dialog({
           }
         : Platform.OS === 'android' && variant !== 'fullscreen'
         ? { elevation: 16, }
-        : {
+        : variant === 'fullscreen'
+        ? {
             boxShadow: 'none',
             height: '100%',
             position: 'absolute',
-        }),
+        }
+        : { boxShadow: 'none' }),
     } as any, // Allow boxShadow on web
     header: {
       alignItems: 'center',
-      backgroundColor: headerBg,
-      borderBottomColor: borderColor,
-      borderBottomWidth: variant === 'fullscreen' ? 0 : 1,
+      backgroundColor: showHeader ? headerBg : 'transparent',
+      // borderBottomColor: showHeader ? borderColor : 'transparent',
+      // borderBottomWidth: showHeader && variant !== 'fullscreen' ? 1 : 0,
       flexDirection: isRTL ? 'row-reverse' : 'row',
       justifyContent: 'space-between',
       padding: 20,
+      paddingBottom: title ? 0 : 20,
     },
     content: {
-      // For modal variant, remove flex to allow fit-content behavior
-      ...(variant === 'modal' ? {} : { flex: 1 }),
+      // Only fullscreen content should stretch
+      ...(variant === 'fullscreen' ? { flex: 1 } : {}),
       alignSelf: 'stretch',
       backgroundColor: contentBg,
       padding: variant === 'fullscreen' ? 0 : 20,
@@ -443,8 +449,10 @@ export function Dialog({
 
   const bottomSheetAnimatedStyle = useAnimatedStyle(() => {
     if (variant === 'bottomsheet') {
+      // Clamp to 0 minimum to prevent seeing "under" the sheet
+      const clampedY = Math.max(0, slideAnim.value);
       return {
-        transform: [{ translateY: slideAnim.value }],
+        transform: [{ translateY: clampedY }],
       };
     }
     return {};
@@ -486,7 +494,7 @@ export function Dialog({
             <Text variant="h3" color="text">
               {title || ''}
             </Text>
-            {closable && (
+            {closable && variant !== 'bottomsheet' && (
               <Button
                 variant="ghost"
                 onPress={handleClose}

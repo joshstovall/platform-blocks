@@ -19,7 +19,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
     opened: controlledOpened,
     shadow = 'md',
     radius = 'md',
-    width,
+    w,
     withArrow = false,
     closeOnEscape = true,
     onOpen,
@@ -132,7 +132,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
       }
 
       // Calculate overlay size
-      const overlayWidth = width || 240;
+      const overlayWidth = w || 240;
       const overlayHeight = 120; // estimate
       const overlaySize = { width: overlayWidth, height: overlayHeight };
 
@@ -155,8 +155,8 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
               paddingVertical: getSpacing('sm'),
               borderWidth: 1,
               borderColor: theme.colors.gray[3],
-              minWidth: width || 160,
-              maxWidth: width || 320,
+              minWidth: w || 160,
+              maxWidth: w || 320,
             },
             shadowStyle,
           ]}
@@ -195,7 +195,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
     } catch (error) {
       console.warn('Failed to open hover card:', error);
     }
-  }, [disabled, width, position, offset, strategy, closeOnEscape, zIndex, trigger, theme, radius, shadowStyle, children, onOpen, onClose, openOverlay, clearTimers, scheduleClose, renderArrow]);
+  }, [disabled, w, position, offset, strategy, closeOnEscape, zIndex, trigger, theme, radius, shadowStyle, children, onOpen, onClose, openOverlay, clearTimers, scheduleClose, renderArrow]);
 
   const scheduleOpen = useCallback(() => {
     clearTimers();

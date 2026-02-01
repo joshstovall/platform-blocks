@@ -6,6 +6,4 @@ tags: [keycap, keyboard, shortcut, key, hotkey]
 playground: true
 ---
 
-# KeyCap
-
 A visual component for displaying keyboard keys, shortcuts, and key combinations with proper styling.

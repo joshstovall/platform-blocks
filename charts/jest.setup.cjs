@@ -1,5 +1,8 @@
 require('react-native-gesture-handler/jestSetup');
 
+// Mock worklets first before reanimated
+jest.mock('react-native-worklets', () => ({}));
+
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
   Reanimated.default && (Reanimated.default.call = () => {});

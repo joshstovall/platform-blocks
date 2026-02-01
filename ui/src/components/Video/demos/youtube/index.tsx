@@ -17,8 +17,8 @@ export default function Demo() {
           </Text>
           <Video
             source={YOUTUBE_SOURCE}
-            width={420}
-            height={280}
+            w={420}
+            h={280}
             controls={{
               play: true,
               pause: true,

@@ -268,7 +268,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   // Use the actual measured width instead of character-based estimates
   const layoutStyles = {
     ...baseLayoutStyles,
-    ...(loading && measuredWidth && !layoutProps.width && !layoutProps.w && !layoutProps.fullWidth
+    ...(loading && measuredWidth && !layoutProps.w && !layoutProps.fullWidth
       ? { width: measuredWidth, minWidth: measuredWidth }
       : {})
   };

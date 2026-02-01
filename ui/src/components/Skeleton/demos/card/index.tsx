@@ -15,14 +15,14 @@ export default function Demo() {
         <Row gap="md" align="center">
           <Skeleton shape="avatar" size="lg" />
           <Column gap="xs" grow={1}>
-            <Skeleton shape="text" width="32%" />
-            <Skeleton shape="text" width="48%" />
+            <Skeleton shape="text" w="32%" />
+            <Skeleton shape="text" w="48%" />
           </Column>
         </Row>
-        <Skeleton shape="rectangle" height={120} />
+        <Skeleton shape="rectangle" h={120} />
         <Column gap="xs">
-          <Skeleton shape="text" width="100%" />
-          <Skeleton shape="text" width="78%" />
+          <Skeleton shape="text" w="100%" />
+          <Skeleton shape="text" w="78%" />
         </Column>
         <Row gap="sm" wrap="wrap">
           <Skeleton shape="chip" />

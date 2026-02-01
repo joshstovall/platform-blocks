@@ -348,8 +348,12 @@ const getContrastPreference = (): ContrastPreference => {
   return 'no-preference';
 };
 
-const getColorScheme = (): DeviceInfo['appearance']['colorScheme'] =>
-  Appearance?.getColorScheme?.() ?? 'no-preference';
+const getColorScheme = (): DeviceInfo['appearance']['colorScheme'] => {
+  const scheme = Appearance?.getColorScheme?.();
+  // Handle 'unspecified' from newer React Native versions
+  if (scheme === 'light' || scheme === 'dark') return scheme;
+  return 'no-preference';
+};
 
 const getReducedMotion = async () => {
   if (Platform.OS === 'web') {
@@ -575,7 +579,12 @@ export function useDeviceInfo(options: UseDeviceInfoOptions = {}): DeviceInfo {
   // Appearance (color scheme + contrast) listeners
   useEffect(() => {
     const colorSubscription = Appearance?.addChangeListener?.(({ colorScheme: scheme }) => {
-      setColorScheme(scheme ?? 'no-preference');
+      // Handle 'unspecified' from newer React Native versions
+      if (scheme === 'light' || scheme === 'dark') {
+        setColorScheme(scheme);
+      } else {
+        setColorScheme('no-preference');
+      }
     });
 
     const mediaListeners: Array<{ mq: MediaQueryList; handler: () => void }> = [];

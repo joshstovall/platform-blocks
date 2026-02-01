@@ -308,7 +308,7 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
           visible={isOpen}
           variant="modal"
           onClose={handleClose}
-          width={numberOfMonths > 1 ? Math.min(700, 380 * numberOfMonths + 40) : 400}
+          w={numberOfMonths > 1 ? Math.min(700, 380 * numberOfMonths + 40) : 400}
           title={
             type === 'range'
               ? 'Select Date Range'
@@ -393,7 +393,7 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
         visible={isOpen}
         variant="modal"
         onClose={handleClose}
-        width={numberOfMonths > 1 ? Math.min(600, 320 * numberOfMonths + 40) : 350}
+        w={numberOfMonths > 1 ? Math.min(600, 320 * numberOfMonths + 40) : 350}
       >
         <View
           ref={focusTrapRef}

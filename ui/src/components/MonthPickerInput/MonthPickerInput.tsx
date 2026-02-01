@@ -154,7 +154,7 @@ export const MonthPickerInput = forwardRef<View, MonthPickerInputProps>(function
         variant="modal"
         onClose={handleClose}
         title={modalTitle}
-        width={360}
+        w={360}
       >
         <View
           style={{

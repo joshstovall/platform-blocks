@@ -14,6 +14,8 @@ export interface TimelineItemProps extends Omit<ViewProps, 'children'> {
   children?: ReactNode;
   /** Item title */
   title?: string;
+  /** Optional timestamp text or node */
+  timestamp?: ReactNode;
   /** Custom bullet content (icon, avatar, etc.) */
   bullet?: ReactNode;
   /** Line variant for this item */
@@ -22,6 +24,12 @@ export interface TimelineItemProps extends Omit<ViewProps, 'children'> {
   color?: string;
   /** Item color variant token (e.g. primary.5 or primary) used if color not provided */
   colorVariant?: string;
+  /** Override title text color for this item */
+  titleColor?: string;
+  /** Override description text color for this item */
+  descriptionColor?: string;
+  /** Override timestamp text color for this item */
+  timestampColor?: string;
   /** Whether this item is active */
   active?: boolean;
   /** Override timeline alignment for this specific item */
@@ -37,6 +45,12 @@ export interface TimelineProps extends Omit<ViewProps, 'children'> {
   color?: string;
   /** Timeline color variant token (e.g. primary.5) used when color not provided */
   colorVariant?: string;
+  /** Default title color for all items */
+  titleColor?: string;
+  /** Default description color for all items */
+  descriptionColor?: string;
+  /** Default timestamp color for all items */
+  timestampColor?: string;
   /** Line width */
   lineWidth?: number;
   /** Bullet size */
@@ -62,4 +76,10 @@ export interface TimelineContextValue {
   metrics: TimelineSizeMetrics;
   /** Whether layout is split with centered vertical line */
   centerMode?: boolean;
+  /** Default title color for items */
+  titleColor?: string;
+  /** Default description color for items */
+  descriptionColor?: string;
+  /** Default timestamp color for items */
+  timestampColor?: string;
 }

@@ -19,7 +19,7 @@ export default function Demo() {
         peaks={WAVEFORM_DEMO_PEAKS}
         progress={progress}
         fullWidth
-        height={72}
+        h={72}
         color="primary"
         interactive
         showProgressLine

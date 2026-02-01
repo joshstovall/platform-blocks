@@ -46,8 +46,8 @@ export default function Demo() {
           <Video
             ref={videoRef}
             source={SOURCE}
-            width="100%"
-            height={300}
+            w="100%"
+            h={300}
             controls={{
               play: true,
               pause: true,

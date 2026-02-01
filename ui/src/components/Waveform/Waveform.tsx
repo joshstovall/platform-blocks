@@ -8,8 +8,8 @@ import { WaveformSkeleton } from './WaveformSkeleton';
 
 export const Waveform: React.FC<WaveformProps> = React.memo(({
   peaks,
-  width = 300,
-  height = 60,
+  w = 300,
+  h = 60,
   color = 'primary',
   barWidth = 2,
   barGap = 1,
@@ -146,13 +146,13 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
       // For fullWidth, use maxVisibleBars or render all peaks
       targetBars = maxVisibleBars || peaks.length;
     } else {
-      // For fixed width, calculate how many bars fit
-      const maxBars = Math.floor(width / totalBarSpace);
+      // For fixed w, calculate how many bars fit
+      const maxBars = Math.floor(w / totalBarSpace);
       targetBars = maxVisibleBars ? Math.min(maxBars, maxVisibleBars) : maxBars;
     }
 
     if (targetBars <= 0) {
-      console.warn('Waveform: Not enough width to render any bars');
+      console.warn('Waveform: Not enough w to render any bars');
       return [];
     }
 
@@ -180,7 +180,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
     }
 
     return downsampled;
-  }, [peaks, width, barWidth, barGap, fullWidth, maxVisibleBars]);
+  }, [peaks, w, barWidth, barGap, fullWidth, maxVisibleBars]);
 
   // Normalize peaks if requested
   const normalizedPeaks = useMemo(() => {
@@ -209,16 +209,16 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
     if (fullWidth) {
       return {
         width: '100%',
-        height: height,
-        viewBox: `0 0 ${actualWaveformWidth} ${height}`,
+        height: h,
+        viewBox: `0 0 ${actualWaveformWidth} ${h}`,
         preserveAspectRatio: 'none'
       };
     }
     return {
-      width: width,
-      height: height
+      width: w,
+      height: h
     };
-  }, [fullWidth, actualWaveformWidth, height, width]);
+  }, [fullWidth, actualWaveformWidth, h, w]);
 
   const handleLayout = useCallback((event: any) => {
     const { width: containerWidth, height: containerHeight } = event.nativeEvent.layout;
@@ -235,7 +235,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         position = locationX / containerWidth;
       } else {
         // Fallback if container hasn't been measured yet
-        position = locationX / (width || 300);
+        position = locationX / (w || 300);
       }
     } else {
       // For fixed width, calculate position relative to actual waveform width
@@ -243,7 +243,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
     }
     
     return Math.max(0, Math.min(1, position));
-  }, [fullWidth, containerDimensions.width, width, actualWaveformWidth]);
+  }, [fullWidth, containerDimensions.width, w, actualWaveformWidth]);
 
   const handleResponderGrant = useCallback((event: any) => {
     if (!interactive) return;
@@ -328,8 +328,8 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
   const renderBars = () => {
     return normalizedPeaks.map((peak, index) => {
       const x = index * (barWidth + barGap);
-      const barHeight = Math.max(minBarHeight, Math.abs(peak) * height * 0.8);
-      const y = (height - barHeight) / 2;
+      const barHeight = Math.max(minBarHeight, Math.abs(peak) * h * 0.8);
+      const y = (h - barHeight) / 2;
 
       const isProgress = x < progressX;
       const fillColor = isProgress ? actualProgressColor : waveformColor;
@@ -357,7 +357,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
 
     normalizedPeaks.forEach((peak, index) => {
       const x = index * stepX;
-      const y = height / 2 + (peak * height * 0.4);
+      const y = h / 2 + (peak * h * 0.4);
 
       const lineCommand = index === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
       pathData += lineCommand;
@@ -411,8 +411,8 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         </Defs>
         {normalizedPeaks.map((peak, index) => {
           const x = index * (barWidth + barGap);
-          const barHeight = Math.max(minBarHeight, Math.abs(peak) * height * 0.8);
-          const y = (height - barHeight) / 2;
+          const barHeight = Math.max(minBarHeight, Math.abs(peak) * h * 0.8);
+          const y = (h - barHeight) / 2;
 
           return (
             <Rect
@@ -441,13 +441,13 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         x1={progressX}
         y1={0}
         x2={progressX}
-        y2={height}
+        y2={h}
         stroke={progressLineStyle?.color || theme.colors.gray[7]}
         strokeWidth={progressLineStyle?.width || 2}
         strokeOpacity={progressLineStyle?.opacity || 0.8}
       />
     );
-  }, [showProgressLine, progress, actualWaveformWidth, height, progressLineStyle, theme.colors.gray]);
+  }, [showProgressLine, progress, actualWaveformWidth, h, progressLineStyle, theme.colors.gray]);
 
   // Timestamp markers component
   const TimeStamps = useMemo(() => {
@@ -477,16 +477,16 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         <G key={i}>
           <Line
             x1={x}
-            y1={height - 10}
+            y1={h - 10}
             x2={x}
-            y2={height}
+            y2={h}
             stroke={theme.colors.gray[5]}
             strokeWidth={1}
             strokeOpacity={0.6}
           />
           <SvgText
             x={x}
-            y={height + 15}
+            y={h + 15}
             fill={theme.colors.gray[6]}
             fontSize={10}
             textAnchor="middle"
@@ -499,7 +499,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
     }
 
     return <G>{timestamps}</G>;
-  }, [showTimeStamps, duration, timeStampInterval, actualWaveformWidth, height, theme.colors]);
+  }, [showTimeStamps, duration, timeStampInterval, actualWaveformWidth, h, theme.colors]);
 
   // Selection overlay component
   const SelectionOverlay = useMemo(() => {
@@ -515,7 +515,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         x={startX}
         y={0}
         width={selectionWidth}
-        height={height}
+        height={h}
         fill={theme.colors.primary[3]}
         opacity={0.3}
         stroke={theme.colors.primary[5]}
@@ -523,7 +523,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         strokeOpacity={0.8}
       />
     );
-  }, [selection, actualWaveformWidth, height, theme.colors.primary]);
+  }, [selection, actualWaveformWidth, h, theme.colors.primary]);
 
   // Markers component
   const Markers = useMemo(() => {
@@ -543,7 +543,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
                     x1={x}
                     y1={0}
                     x2={x}
-                    y2={height}
+                    y2={h}
                     stroke={markerColor}
                     strokeWidth={2}
                     strokeOpacity={0.8}
@@ -569,7 +569,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
                     x1={x}
                     y1={0}
                     x2={x}
-                    y2={height}
+                    y2={h}
                     stroke={markerColor}
                     strokeWidth={1}
                     strokeOpacity={0.6}
@@ -600,7 +600,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
                 <G key={index}>
                   <circle
                     cx={x}
-                    cy={height / 2}
+                    cy={h / 2}
                     r={4}
                     fill={markerColor}
                     stroke="white"
@@ -609,7 +609,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
                   {marker.label && (
                     <SvgText
                       x={x}
-                      y={height / 2 + 20}
+                      y={h / 2 + 20}
                       fill={markerColor}
                       fontSize={10}
                       textAnchor="middle"
@@ -626,7 +626,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         })}
       </G>
     );
-  }, [markers, actualWaveformWidth, height, theme.colors.warning]);
+  }, [markers, actualWaveformWidth, h, theme.colors.warning]);
 
   // RMS visualization component
   const RMSBars = useMemo(() => {
@@ -638,8 +638,8 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
       <G opacity={0.5}>
         {processedRMS.map((rms, index) => {
           const x = index * (barWidth + barGap);
-          const rmsHeight = Math.max(minBarHeight, Math.abs(rms) * height * 0.4); // RMS bars are shorter
-          const y = (height - rmsHeight) / 2;
+          const rmsHeight = Math.max(minBarHeight, Math.abs(rms) * h * 0.4); // RMS bars are shorter
+          const y = (h - rmsHeight) / 2;
 
           return (
             <Rect
@@ -655,7 +655,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
         })}
       </G>
     );
-  }, [showRMS, rmsData, normalizedPeaks, barWidth, barGap, minBarHeight, height, variant, theme.colors.gray]);
+  }, [showRMS, rmsData, normalizedPeaks, barWidth, barGap, minBarHeight, h, variant, theme.colors.gray]);
 
   const renderWaveform = () => {
     switch (variant) {
@@ -697,7 +697,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
   if (normalizedPeaks.length === 0) {
     return (
       <View
-        style={[style, fullWidth ? { width: '100%' } : { width }, { height, justifyContent: 'center', alignItems: 'center' }]}
+        style={[style, fullWidth ? { width: '100%' } : { width: w }, { height: h, justifyContent: 'center', alignItems: 'center' }]}
         accessibilityRole="image"
         accessibilityLabel={accessibilityLabel || 'Empty waveform'}
         {...restProps}
@@ -706,8 +706,8 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
           {/* Render a minimal placeholder */}
           <Rect
             x={0}
-            y={height / 2 - 1}
-            width={fullWidth ? '100%' : width}
+            y={h / 2 - 1}
+            width={fullWidth ? '100%' : w}
             height={2}
             fill={waveformColor}
             opacity={0.3}
@@ -720,8 +720,8 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
   if (loading) {
     return (
       <WaveformSkeleton
-        width={width}
-        height={height}
+        w={w}
+        h={h}
         fullWidth={fullWidth}
         barsCount={maxVisibleBars || 20}
       />
@@ -733,9 +733,9 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
       <View
         style={[
           style,
-          fullWidth ? { width: '100%' } : { width },
+          fullWidth ? { width: '100%' } : { width: w },
           {
-            height,
+            height: h,
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme.colors.error[1],
@@ -758,7 +758,7 @@ export const Waveform: React.FC<WaveformProps> = React.memo(({
   return (
     <WrapperComponent
       ref={containerRef}
-      style={[style, fullWidth ? { width: '100%' } : { width }]}
+      style={[style, fullWidth ? { width: '100%' } : { width: w }]}
       accessible={true}
       focusable={interactive}
       onFocus={() => setIsFocused(true)}

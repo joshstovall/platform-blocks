@@ -20,6 +20,11 @@ export function DialogRenderer() {
       backdropClosable={topDialog.backdropClosable}
       shouldClose={topDialog.isClosing}
       onClose={() => removeDialog(topDialog.id)}
+      w={topDialog.w}
+      h={topDialog.h}
+      radius={topDialog.radius}
+      style={topDialog.style}
+      showHeader={topDialog.showHeader}
     >
       {topDialog.content}
     </Dialog>

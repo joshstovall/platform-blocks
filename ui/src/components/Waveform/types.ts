@@ -8,9 +8,9 @@ export interface WaveformProps extends Omit<ViewProps, 'children'> {
   /** Array of peak values (normalized between -1 and 1) */
   peaks: number[];
   /** Width of the waveform */
-  width?: number;
+  w?: number;
   /** Height of the waveform */
-  height?: number;
+  h?: number;
   /** Color of the waveform */
   color?: string;
   /** Visual variant of the waveform */

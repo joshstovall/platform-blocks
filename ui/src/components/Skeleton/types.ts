@@ -16,9 +16,9 @@ export interface SkeletonProps extends SpacingProps {
   /** Shape of the skeleton placeholder */
   shape?: SkeletonShape;
   /** Width of the skeleton component */
-  width?: DimensionValue;
+  w?: DimensionValue;
   /** Height of the skeleton component */
-  height?: DimensionValue;
+  h?: DimensionValue;
   /** Size of the skeleton component (overrides width/height) */
   size?: SizeValue;
   /** Border radius for rectangle/rounded shapes */

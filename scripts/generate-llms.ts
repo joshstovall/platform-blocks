@@ -18,6 +18,9 @@ const outputPathTxt = path.join(publicDir, 'llms.txt');
 const allowedDocExtensions = new Set(['.md', '.mdx', '.ts', '.tsx', '.json']);
 const ignoredDirectories = new Set(['node_modules', '.expo', '.next', 'dist', 'build', 'lib', '.turbo', '.git', 'generated']);
 
+// Set to false to generate full llms.txt without limits
+const USE_LIMITS = true;
+
 const MAX_LIST_ITEMS = 12;
 const MAX_DEMO_ENTRIES = 2;
 const MAX_PROP_ENTRIES = 12;
@@ -48,9 +51,9 @@ function formatKeyValueBlock(title: string, record: Record<string, string> | und
 		return null;
 	}
 	const sorted = Object.entries(record).sort(([a], [b]) => a.localeCompare(b));
-	const trimmed = sorted.slice(0, limit);
+	const trimmed = USE_LIMITS ? sorted.slice(0, limit) : sorted;
 	const lines = trimmed.map(([key, value]) => `- ${key}: ${value}`);
-	if (sorted.length > trimmed.length) {
+	if (USE_LIMITS && sorted.length > trimmed.length) {
 		lines.push(`- … ${sorted.length - trimmed.length} more`);
 	}
 	return `### ${title}\n${lines.join('\n')}`;
@@ -136,7 +139,7 @@ function formatMetaSection(name: string, meta: JSONObject | undefined): string {
 	if (meta.description) {
 		const rawDescription = String(meta.description);
 		const primaryParagraph = rawDescription.split(/\n\n+/)[0]?.trim() ?? rawDescription.trim();
-		const snippet = primaryParagraph.length > SUMMARY_CHAR_LIMIT
+		const snippet = USE_LIMITS && primaryParagraph.length > SUMMARY_CHAR_LIMIT
 			? `${primaryParagraph.slice(0, SUMMARY_CHAR_LIMIT - 1)}…`
 			: primaryParagraph;
 		// lines.push('### Description');
@@ -149,7 +152,7 @@ function formatMetaSection(name: string, meta: JSONObject | undefined): string {
 function formatPropsSection(props: Array<Record<string, any>>): string | null {
 	if (!props || props.length === 0) return null;
 	const lines: string[] = ['### Props'];
-	const limitedProps = props.slice(0, MAX_PROP_ENTRIES);
+	const limitedProps = USE_LIMITS ? props.slice(0, MAX_PROP_ENTRIES) : props;
 	for (const prop of limitedProps) {
 		const type = prop.type ? ` (${prop.type})` : '';
 		const requirement = prop.required ? 'required' : 'optional';
@@ -162,7 +165,7 @@ function formatPropsSection(props: Array<Record<string, any>>): string | null {
 		lines.push(indentBlock(description));
 	}
 	}
-	if (props.length > limitedProps.length) {
+	if (USE_LIMITS && props.length > limitedProps.length) {
 		lines.push(`- … ${props.length - limitedProps.length} more props documented`);
 	}
 	return lines.join('\n');
@@ -210,7 +213,9 @@ async function buildComponentSection(
 	if (propsSection) parts.push(propsSection);
 
 	const demos = demosByComponent.get(name) || [];
-  demos.splice(MAX_DEMO_ENTRIES);
+  if (USE_LIMITS) {
+    demos.splice(MAX_DEMO_ENTRIES);
+  }
 
 		if (demos.length) {
 		parts.push('### Demos');
@@ -262,14 +267,14 @@ async function gatherDocsSections(): Promise<string[]> {
 		}
 		const files = await collectFiles(dir, docsDir);
 		if (!files.length) continue;
-		const limitedFiles = files.slice(0, MAX_DOC_FILES);
+		const limitedFiles = USE_LIMITS ? files.slice(0, MAX_DOC_FILES) : files;
 		const lines: string[] = [`## ${label}`];
 		for (const file of limitedFiles) {
 			const ext = path.extname(file.relative).toLowerCase();
 			const summary = summarizeContent(file.content, ext);
 			lines.push(`- ${file.relative}: ${summary}`);
 		}
-		if (files.length > limitedFiles.length) {
+		if (USE_LIMITS && files.length > limitedFiles.length) {
 			lines.push(`- … ${files.length - limitedFiles.length} more files`);
 		}
 		docSections.push(lines.join('\n'));
@@ -290,7 +295,8 @@ function summarizeContent(content: string, ext: string): string {
       }
       if (parsed && typeof parsed === 'object') {
         const keys = Object.keys(parsed as Record<string, unknown>);
-        return `JSON object with keys: ${keys.slice(0, MAX_LIST_ITEMS).join(', ')}${keys.length > MAX_LIST_ITEMS ? ', …' : ''}`;
+        const displayKeys = USE_LIMITS ? keys.slice(0, MAX_LIST_ITEMS) : keys;
+        return `JSON object with keys: ${displayKeys.join(', ')}${USE_LIMITS && keys.length > MAX_LIST_ITEMS ? ', …' : ''}`;
       }
     } catch {
       /* ignore parse errors */
@@ -312,7 +318,7 @@ function summarizeContent(content: string, ext: string): string {
 }
 
 function truncate(value: string): string {
-  if (value.length <= SUMMARY_CHAR_LIMIT) return value;
+  if (!USE_LIMITS || value.length <= SUMMARY_CHAR_LIMIT) return value;
   return `${value.slice(0, SUMMARY_CHAR_LIMIT - 1)}…`;
 }
 

@@ -140,7 +140,7 @@ export const YearPickerInput = forwardRef<View, YearPickerInputProps>(function Y
         variant="modal"
         onClose={handleClose}
         title={modalTitle}
-        width={360}
+        w={360}
       >
         <View
           style={{

@@ -50,7 +50,7 @@ export interface SelectProps<T = any> extends SpacingProps, LayoutProps {
   /** Stretches the trigger to occupy the full width of its container. */
   fullWidth?: boolean;
   /** Maximum height the dropdown may reach before it scrolls. */
-  maxHeight?: number;
+  maxH?: number;
   /** Whether the dropdown should close immediately after selection. */
   closeOnSelect?: boolean;
   /** Allows the user to clear the current selection. */

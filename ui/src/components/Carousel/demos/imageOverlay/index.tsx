@@ -2,7 +2,7 @@ import { Block, Button, Carousel, Column, Image, Row, Text } from '@platform-blo
 
 export default function Demo() {
   return (
-    <Column gap="md" w="100%" maxWidth={920}>
+    <Column gap="md" w="100%" maxW={920}>
       <Carousel
         height={360}
         autoPlay
@@ -15,8 +15,8 @@ export default function Demo() {
         <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
           <Image
             src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=60"
-            width="100%"
-            height="100%"
+            w="100%"
+            h="100%"
             resizeMode="cover"
           />
           <Block
@@ -29,7 +29,7 @@ export default function Demo() {
             p="xl"
             justify="flex-end"
           >
-            <Column gap="md" maxWidth={420}>
+            <Column gap="md" maxW={420}>
               <Text variant="h2" color="white">
                 Mountain escape
               </Text>
@@ -49,8 +49,8 @@ export default function Demo() {
         <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
           <Image
             src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=60"
-            width="100%"
-            height="100%"
+            w="100%"
+            h="100%"
             resizeMode="cover"
           />
           <Block
@@ -63,7 +63,7 @@ export default function Demo() {
             p="xl"
             justify="flex-end"
           >
-            <Column gap="md" maxWidth={420}>
+            <Column gap="md" maxW={420}>
               <Text variant="h2" color="white">
                 Forest retreat
               </Text>
@@ -83,8 +83,8 @@ export default function Demo() {
         <Block position="relative" h={360} radius="xl" style={{ overflow: 'hidden' }}>
           <Image
             src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=60"
-            width="100%"
-            height="100%"
+            w="100%"
+            h="100%"
             resizeMode="cover"
           />
           <Block
@@ -97,7 +97,7 @@ export default function Demo() {
             p="xl"
             justify="flex-end"
           >
-            <Column gap="md" maxWidth={420}>
+            <Column gap="md" maxW={420}>
               <Text variant="h2" color="white">
                 Desert journey
               </Text>

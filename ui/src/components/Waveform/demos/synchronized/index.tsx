@@ -19,7 +19,7 @@ export default function Demo() {
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
           progress={progress}
-          height={80}
+          h={80}
           fullWidth
           color="primary"
           interactive
@@ -32,7 +32,7 @@ export default function Demo() {
         <Waveform
           peaks={TRACK_TWO_PEAKS}
           progress={progress}
-          height={80}
+          h={80}
           fullWidth
           color="secondary"
           interactive

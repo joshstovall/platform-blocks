@@ -12,7 +12,7 @@ export interface BaseComponentProps extends SpacingProps {
   style?: any;
 }
 
-export interface ImageProps extends BaseComponentProps, Omit<LayoutProps, 'width' | 'height'>, BorderRadiusProps {
+export interface ImageProps extends BaseComponentProps, Omit<LayoutProps, 'w' | 'h'>, BorderRadiusProps {
   /** Image source URI */
   src: string;
   
@@ -32,10 +32,10 @@ export interface ImageProps extends BaseComponentProps, Omit<LayoutProps, 'width
   size?: SizeValue | number;
   
   /** Custom width */
-  width?: number | string;
+  w?: number | string;
   
   /** Custom height */
-  height?: number | string;
+  h?: number | string;
   
   /** Aspect ratio */
   aspectRatio?: number;

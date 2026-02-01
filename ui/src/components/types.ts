@@ -39,7 +39,6 @@ export type { SliderProps, RangeSliderProps } from './Slider';
 export type { KnobProps, KnobMark } from './Knob';
 export type { AutoCompleteProps, AutoCompleteOption } from './AutoComplete';
 export type { FileInputProps, FileInputFile } from './FileInput';
-export type { RichTextEditorProps } from './RichTextEditor';
 export type { FormProps } from './Form';
 export type { RowProps, ColumnProps } from './Layout';
 export type { ProgressProps } from './Progress';

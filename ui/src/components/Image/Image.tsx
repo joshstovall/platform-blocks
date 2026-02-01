@@ -22,8 +22,8 @@ export function Image({
   accessibilityLabel,
   resizeMode = 'cover',
   size,
-  width,
-  height,
+  w,
+  h,
   aspectRatio,
   borderWidth,
   borderColor,
@@ -48,8 +48,8 @@ export function Image({
   const { spacingProps } = extractSpacingProps(rest);
   
   // Determine dimensions
-  let finalWidth: DimensionValue | undefined = width as DimensionValue;
-  let finalHeight: DimensionValue | undefined = height as DimensionValue;
+  let finalWidth: DimensionValue | undefined = w as DimensionValue;
+  let finalHeight: DimensionValue | undefined = h as DimensionValue;
   
   if (size && typeof size === 'string' && IMAGE_SIZES[size]) {
     finalWidth = finalWidth || IMAGE_SIZES[size];

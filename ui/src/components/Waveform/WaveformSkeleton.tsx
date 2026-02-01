@@ -3,15 +3,15 @@ import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
 
 interface WaveformSkeletonProps {
-  width?: number;
-  height?: number;
+  w?: number;
+  h?: number;
   fullWidth?: boolean;
   barsCount?: number;
 }
 
 export const WaveformSkeleton: React.FC<WaveformSkeletonProps> = ({
-  width = 300,
-  height = 60,
+  w = 300,
+  h = 60,
   fullWidth = false,
   barsCount = 20,
 }) => {
@@ -31,10 +31,10 @@ export const WaveformSkeleton: React.FC<WaveformSkeletonProps> = ({
       backgroundColor: theme.colors.gray[1],
       borderRadius: 4,
       flexDirection: 'row',
-      height,
+      height: h,
       justifyContent: 'space-between',
       paddingHorizontal: 4,
-      width: fullWidth ? '100%' : width,
+      width: fullWidth ? '100%' : w,
     },
   });
 
@@ -43,12 +43,12 @@ export const WaveformSkeleton: React.FC<WaveformSkeletonProps> = ({
     Math.random() * 0.6 + 0.2 // Heights between 20% and 80% of container
   );
 
-  const barWidth = fullWidth ? 'auto' : Math.max(1, (width - 40) / barsCount - 2);
+  const barWidth = fullWidth ? 'auto' : Math.max(1, (w - 40) / barsCount - 2);
 
   return (
     <View style={styles.container}>
       {barHeights.map((heightRatio, index) => {
-        const barHeight = height * heightRatio;
+        const barHeight = h * heightRatio;
         const isAnimated = index % 3 === 0; // Animate every 3rd bar for shimmer effect
         
         return (

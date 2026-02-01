@@ -81,7 +81,6 @@ export function resolveComponentSize<T>(
 
   const firstAvailable = allowed.find(key => scale[key] !== undefined);
   if (firstAvailable && scale[firstAvailable] !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return scale[firstAvailable]!;
   }
 

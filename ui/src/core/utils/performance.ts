@@ -51,7 +51,7 @@ export const buildInputComponents = () => ({
   optional: ['NumberInput', 'DateInput', 'ColorInput', 'Slider', 'PinInput'],
   
   // Advanced inputs (lazy-loaded)
-  advanced: ['RichTextEditor', 'FileInput', 'AutoComplete'],
+  advanced: ['FileInput', 'AutoComplete'],
   
   // Validation rules (tree-shakable)
   validation: ['required', 'email', 'pattern', 'passwordStrength'],

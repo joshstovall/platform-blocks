@@ -2,7 +2,7 @@ import { Card, Column, Text, Button } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Card p="lg" radius="lg" shadow="md" maxWidth={320}>
+    <Card p="lg" radius="lg" shadow="md" maxW={320}>
       <Column gap="md">
         <Column gap="xs">
           <Text variant="small" colorVariant="muted">

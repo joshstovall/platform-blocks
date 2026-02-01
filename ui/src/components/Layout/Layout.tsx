@@ -21,9 +21,10 @@ export const Row: React.FC<RowProps> = ({ direction = 'row', gap = 'sm', ...prop
 
 /**
  * Column component - alias for Flex with direction="column"
+ * Defaults to fullWidth={true} since vertical layouts typically fill available width
  */
-export const Column: React.FC<ColumnProps> = ({ direction = 'column', gap = 'sm', ...props }) => {
-  return <Flex direction={direction} gap={gap} {...props} />;
+export const Column: React.FC<ColumnProps> = ({ direction = 'column', gap = 'sm', fullWidth = true, ...props }) => {
+  return <Flex direction={direction} gap={gap} fullWidth={fullWidth} {...props} />;
 };
 
 Row.displayName = 'Row';

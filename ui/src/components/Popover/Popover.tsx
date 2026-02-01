@@ -80,11 +80,11 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     withinPortal = true,
     withOverlay = false,
     overlayProps,
-    width,
-    minWidth,
-    minHeight,
-    maxWidth,
-    maxHeight,
+    w,
+    minW,
+    minH,
+    maxW,
+    maxH,
     radius,
     shadow,
     zIndex = 300,
@@ -110,7 +110,6 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     ...rest
   } = props;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   void clickOutsideEvents; // reserved for future implementation
   const theme = useTheme();
   const { spacingProps } = extractSpacingProps(rest);
@@ -357,27 +356,27 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
       : undefined;
 
     const widthOverride = (() => {
-      if (typeof width === 'number') return width;
-      if (width === 'target') {
+      if (typeof w === 'number') return w;
+      if (w === 'target') {
         return anchorMeasurementsRef.current?.width ?? computedFinalWidth;
       }
       return computedFinalWidth;
     })();
 
     const sizeStyles: Record<string, number> = {};
-    if (typeof minWidth === 'number') sizeStyles.minWidth = minWidth;
-    if (typeof minHeight === 'number') sizeStyles.minHeight = minHeight;
-    if (typeof maxWidth === 'number') sizeStyles.maxWidth = maxWidth;
+    if (typeof minW === 'number') sizeStyles.minWidth = minW;
+    if (typeof minH === 'number') sizeStyles.minHeight = minH;
+    if (typeof maxW === 'number') sizeStyles.maxWidth = maxW;
 
     const computedMaxHeight = positioningResult.maxHeight;
     const resolvedMaxHeight = (() => {
-      if (typeof maxHeight === 'number') {
+      if (typeof maxH === 'number') {
         if (typeof computedMaxHeight === 'number') {
-          return Math.min(maxHeight, computedMaxHeight);
+          return Math.min(maxH, computedMaxHeight);
         }
-        return maxHeight;
+        return maxH;
       }
-      return typeof computedMaxHeight === 'number' ? computedMaxHeight : maxHeight;
+      return typeof computedMaxHeight === 'number' ? computedMaxHeight : maxH;
     })();
 
     if (typeof resolvedMaxHeight === 'number') sizeStyles.maxHeight = resolvedMaxHeight;
@@ -424,7 +423,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     });
 
     onPositionChange?.(positioningResult.placement as PlacementType);
-  }, [opened, dropdownState, positioningResult, popoverRef, showOverlay, hideOverlay, popoverStyles.dropdown, popoverStyles.wrapper, width, maxHeight, minWidth, minHeight, maxWidth, withArrow, arrowSize, arrowRadius, arrowOffset, arrowPosition, theme, zIndex, onPositionChange, schedulePositionUpdate, trigger, isPositioning]);
+  }, [opened, dropdownState, positioningResult, popoverRef, showOverlay, hideOverlay, popoverStyles.dropdown, popoverStyles.wrapper, w, maxH, minW, minH, maxW, withArrow, arrowSize, arrowRadius, arrowOffset, arrowPosition, theme, zIndex, onPositionChange, schedulePositionUpdate, trigger, isPositioning]);
 
   useEffect(() => {
     return () => {

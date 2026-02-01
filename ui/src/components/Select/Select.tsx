@@ -50,7 +50,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     error,
     renderOption,
     fullWidth,
-    maxHeight = 260,
+    maxH = 260,
     closeOnSelect = true,
     clearable,
     clearButtonLabel,
@@ -90,6 +90,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     keyboardAvoidance,
     closeOnClickOutside: true,
     closeOnEscape: true,
+    matchAnchorWidth: true,
     onClose: () => setOpen(false),
   });
 
@@ -240,11 +241,11 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
 
   const resolvedDropdownMaxHeight = useMemo(() => {
     const keyboardMax = typeof position?.maxHeight === 'number' ? position.maxHeight : undefined;
-    if (typeof maxHeight === 'number') {
-      return keyboardMax ? Math.min(maxHeight, keyboardMax) : maxHeight;
+    if (typeof maxH === 'number') {
+      return keyboardMax ? Math.min(maxH, keyboardMax) : maxH;
     }
-    return keyboardMax ?? maxHeight;
-  }, [maxHeight, position?.maxHeight]);
+    return keyboardMax ?? maxH;
+  }, [maxH, position?.maxHeight]);
 
   const handleSelect = useCallback((opt: SelectOption) => {
     if (opt.disabled) return;
@@ -272,7 +273,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     }
   }, [closeOnSelect, close, onChange, valueProp, refocusAfterSelect, keyboardManager, focusTrigger, blurTrigger]);
 
-  const listMaxHeight = resolvedDropdownMaxHeight ?? maxHeight;
+  const listMaxHeight = resolvedDropdownMaxHeight ?? maxH;
   const menu = useMemo(() => {
     const widthStyle = resolvedDropdownWidth && resolvedDropdownWidth > 0
       ? { width: resolvedDropdownWidth, minWidth: resolvedDropdownWidth }
@@ -304,8 +305,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
 
               const primaryPalette = theme.colors.primary || [];
               const highlightColor = theme.colorScheme === 'dark'
-                ? primaryPalette[2] || primaryPalette[3] || theme.text.onPrimary || theme.text.primary
-                : primaryPalette[6] || primaryPalette[5] || theme.colors.secondary?.[6] || '#6941C6';
+                ? primaryPalette[5] || primaryPalette[4] || '#60A5FA'
+                : primaryPalette[6] || primaryPalette[5] || '#3B82F6';
               const baseTextColor = item.disabled ? theme.text.disabled : theme.text.primary;
               const accentTextColor = item.disabled ? theme.text.disabled : highlightColor;
 
@@ -313,13 +314,14 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
                 <MenuItemButton
                   onPress={() => handleSelect(item)}
                   disabled={!!item.disabled}
-                  active={selected}
-                  tone={selected ? 'primary' : 'default'}
-                  hoverTone="primary"
-                  activeTone="primary"
+                  active={false}
+                  tone="default"
+                  hoverTone="default"
+                  activeTone="default"
                   textColor={baseTextColor}
-                  hoverTextColor={accentTextColor}
-                  activeTextColor={accentTextColor}
+                  hoverTextColor={baseTextColor}
+                  activeTextColor={baseTextColor}
+                  startIcon={selected ? <Icon name="check" size={16} color={highlightColor} /> : <View style={{ width: 16 }} />}
                   compact
                   rounded={false}
                   style={{ borderRadius: 0 }}

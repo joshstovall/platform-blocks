@@ -7,7 +7,7 @@ export default function Demo() {
     <Column gap="lg">
       <Block gap="xs" w="100%" maxW={320}>
         <Text variant="small">Fixed width waveform</Text>
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={0.35} height={56} />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={0.35} h={56} />
       </Block>
 
       <Block gap="xs" w="100%">
@@ -15,7 +15,7 @@ export default function Demo() {
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
           progress={0.6}
-          height={56}
+          h={56}
           fullWidth
           color="primary"
         />

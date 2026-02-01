@@ -8,7 +8,7 @@ export default function Demo() {
   };
 
   return (
-    <Column gap="lg" maxWidth={420} w="100%">
+    <Column gap="lg" maxW={420} w="100%">
       <Column gap="sm">
         <Text size="xs" colorVariant="muted">
           Default Spotlight launcher

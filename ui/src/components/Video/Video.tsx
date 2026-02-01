@@ -37,8 +37,8 @@ const DEFAULT_CONTROLS = {
 
 export const Video = forwardRef<VideoRef, VideoProps>(({
   source,
-  width,
-  height,
+  w,
+  h,
   aspectRatio = 16 / 9,
   poster,
   autoPlay = false,
@@ -351,22 +351,22 @@ export const Video = forwardRef<VideoRef, VideoProps>(({
       // position: 'relative',
     };
 
-    if (width && height) {
-      baseStyle.width = width as any;
-      baseStyle.height = height as any;
-    } else if (width) {
-      baseStyle.width = width as any;
-      baseStyle.height = typeof width === 'number' ? width / aspectRatio : '100%';
-    } else if (height) {
-      baseStyle.height = height as any;
-      baseStyle.width = typeof height === 'number' ? height * aspectRatio : '100%';
+    if (w && h) {
+      baseStyle.width = w as any;
+      baseStyle.height = h as any;
+    } else if (w) {
+      baseStyle.width = w as any;
+      baseStyle.height = typeof w === 'number' ? w / aspectRatio : '100%';
+    } else if (h) {
+      baseStyle.height = h as any;
+      baseStyle.width = typeof h === 'number' ? h * aspectRatio : '100%';
     } else {
       baseStyle.width = '100%';
       baseStyle.aspectRatio = aspectRatio;
     }
 
     return baseStyle;
-  }, [theme.colors.surface, width, height, aspectRatio]);
+  }, [theme.colors.surface, w, h, aspectRatio]);
 
   // Handle touch events for control visibility
   const handleContainerPress = useCallback(() => {

@@ -366,10 +366,15 @@ export const Text: React.FC<TextProps> = (allProps) => {
 
   // Platform-specific rendering
   if (Platform.OS === 'web' && isHTMLVariant(htmlTag)) {
-    const webStyles = convertToWebStyles([textStyles, spacingStyles, style,
+    const styleArray = Array.isArray(style) ? style : [style];
+    const hasDisplayOverride = styleArray.some((item) => item && (((item as any).display !== undefined) || ((item as any).whiteSpace !== undefined)));
 
-      // make sure text is side to side
-      { display: 'inline' }
+    const webStyles = convertToWebStyles([
+      textStyles,
+      spacingStyles,
+      style,
+      // default to inline unless caller explicitly requests display/whitespace behavior
+      ...(hasDisplayOverride ? [] : [{ display: 'inline' }]),
     ]);
 
     // Handle text selection for web

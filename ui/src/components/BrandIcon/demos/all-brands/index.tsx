@@ -1,4 +1,4 @@
-import { BrandIcon, Card, Column, Row, Text } from '@platform-blocks/ui';
+import { Block, BrandIcon, Card, Row, Text } from '@platform-blocks/ui';
 import { ALL_BRANDS } from '../data';
 
 export default function Demo() {
@@ -6,12 +6,12 @@ export default function Demo() {
     <Card variant="outline" p="xl">
       <Row align="center" gap="md" wrap="wrap">
         {ALL_BRANDS.map((brand) => (
-          <Column key={brand} align="center" gap="xs" minWidth={60}>
+          <Block key={brand} align="center" gap="xs" minW={60}>
             <BrandIcon brand={brand} size={36} />
             <Text variant="small" align="center" size={10}>
               {brand}
             </Text>
-          </Column>
+          </Block>
         ))}
       </Row>
     </Card>

@@ -491,14 +491,14 @@ describe('Select - Type Safety and Prop Validation', () => {
   });
 
   describe('MaxHeight Prop', () => {
-    it('should accept maxHeight', () => {
+    it('should accept maxH', () => {
       const { getByRole } = render(
-        <Select options={mockOptions} maxHeight={300} />
+        <Select options={mockOptions} maxH={300} />
       );
       expect(getByRole('button')).toBeTruthy();
     });
 
-    it('should default to maxHeight={260}', () => {
+    it('should default to maxH={260}', () => {
       const { getByRole } = render(<Select options={mockOptions} />);
       expect(getByRole('button')).toBeTruthy();
     });
@@ -608,16 +608,16 @@ describe('Select - Type Safety and Prop Validation', () => {
   });
 
   describe('Layout Props', () => {
-    it('should accept width prop', () => {
+    it('should accept w prop', () => {
       const { getByRole } = render(
-        <Select options={mockOptions} width={300} />
+        <Select options={mockOptions} w={300} />
       );
       expect(getByRole('button')).toBeTruthy();
     });
 
-    it('should accept minWidth prop', () => {
+    it('should accept minW prop', () => {
       const { getByRole } = render(
-        <Select options={mockOptions} minWidth={200} />
+        <Select options={mockOptions} minW={200} />
       );
       expect(getByRole('button')).toBeTruthy();
     });
@@ -691,14 +691,14 @@ describe('Select - Type Safety and Prop Validation', () => {
           error="Error message"
           renderOption={(opt) => <Text>{opt.label}</Text>}
           fullWidth={true}
-          maxHeight={300}
+          maxH={300}
           closeOnSelect={true}
           clearable={true}
           clearButtonLabel="Clear"
           onClear={() => console.log('cleared')}
           m="md"
           p="sm"
-          width={400}
+          w={400}
         />
       );
       

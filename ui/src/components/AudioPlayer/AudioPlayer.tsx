@@ -61,8 +61,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   onError,
   onBuffer,
   // Waveform props
-  width = 300,
-  height = 60,
+  w = 300,
+  h = 60,
   color = 'primary',
   interactive = true,
   onSeek,
@@ -549,8 +549,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         <View style={{ marginVertical: DESIGN_TOKENS.spacing.sm }}>
           <Waveform
             peaks={peaks}
-            width={width}
-            height={height}
+            w={w}
+            h={h}
             color={color}
             progress={progress}
             interactive={interactive}

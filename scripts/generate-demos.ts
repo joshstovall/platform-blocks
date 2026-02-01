@@ -494,6 +494,8 @@ function collectDemos() {
       path.join(compDir, `${comp}.ts`),
       path.join(compDir, 'index.ts'),
       path.join(compDir, 'types.ts'), // component-local types
+      path.join(compDir, `${comp}.types.ts`),
+      path.join(compDir, `${comp}.types.tsx`),
       // For charts, also fallback to shared root types file so interfaces like HeatmapChartProps are discovered.
       /charts\/src\//.test(compDir.replace(/\\/g, '/')) ? path.join(ROOT, 'charts', 'src', 'types.ts') : ''
     ].filter(f => f && fs.existsSync(f));
@@ -502,8 +504,8 @@ function collectDemos() {
     let collected: any[] = [];
     const dedupe = new Set<string>();
     function extractPropsShape(name: string, source: string): { body: string | null } {
-      const iface = new RegExp(`(?:export\\s+)?interface\\s+${name}Props(?:\\s+extends[^{]+)?\\s*{`, 'm');
-      const typeAlias = new RegExp(`(?:export\\s+)?type\\s+${name}Props\\s*=\\s*{`, 'm');
+      const iface = new RegExp(`(?:export\\s+)?interface\\s+${name}Props(?:\\s*<[^>]+>)?(?:\\s+extends[^{]+)?\\s*{`, 'm');
+      const typeAlias = new RegExp(`(?:export\\s+)?type\\s+${name}Props(?:\\s*<[^>]+>)?\\s*=\\s*{`, 'm');
       let m = iface.exec(source);
       if (!m) m = typeAlias.exec(source);
       if (!m) return { body: null };

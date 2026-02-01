@@ -17,7 +17,7 @@ export default function Demo() {
           Form layout example
         </Text>
         <Row gap="sm" wrap="wrap">
-          <Column grow={1} minWidth={220}>
+          <Column grow={1} minW={220}>
             <Input
               label="First name"
               placeholder="Enter first name"
@@ -26,7 +26,7 @@ export default function Demo() {
               fullWidth
             />
           </Column>
-          <Column grow={1} minWidth={220}>
+          <Column grow={1} minW={220}>
             <Input
               label="Last name"
               placeholder="Enter last name"

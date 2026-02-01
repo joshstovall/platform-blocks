@@ -495,7 +495,7 @@ export const DataTable = <T,>({
       <Flex gap={8}>
         {/* Search & Filter Popover */}
         {(searchable || columns.some(c => c.filterable)) && (
-          <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={320} trapFocus>
+          <Popover position="bottom-end" offset={{ mainAxis: 12 }} w={320} trapFocus>
             <Popover.Target>
               <Button
                 variant="outline"
@@ -628,7 +628,7 @@ export const DataTable = <T,>({
           </Button>
         )}
         {showColumnVisibilityManager && (
-          <Popover position="bottom-end" offset={{ mainAxis: 12 }} width={280} trapFocus>
+          <Popover position="bottom-end" offset={{ mainAxis: 12 }} w={280} trapFocus>
             <Popover.Target>
               <Button
                 variant="outline"

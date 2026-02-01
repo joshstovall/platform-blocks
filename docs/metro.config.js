@@ -38,8 +38,5 @@ config.resolver.nodeModulesPaths = [
 // Make sure source files from the UI package are transformed (not the prebuilt lib)
 config.resolver.sourceExts = config.resolver.sourceExts.concat(['cjs']);
 
-// Add .lottie files as assets
-config.resolver.assetExts = config.resolver.assetExts.concat(['lottie']);
-
 // Keep the default transformer; Reanimated plugin is handled in root babel.config.js
 module.exports = config;

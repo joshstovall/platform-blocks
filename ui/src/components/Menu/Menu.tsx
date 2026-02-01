@@ -58,8 +58,8 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
     closeOnEscape = true,
     onOpen,
     onClose,
-  width = 'auto',
-    maxHeight = 300,
+  w = 'auto',
+    maxH = 300,
     shadow = 'md',
     radius = 'md',
     children,
@@ -148,7 +148,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
     const listGroupStyle: ViewStyle = {
       ...(styles.dropdown as any),
       ...(dropdownSpacingStyles || {}),
-      maxHeight,
+      maxHeight: maxH,
       width: resolvedWidth,
     };
 
@@ -163,19 +163,19 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
             <ScrollView
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              style={{ maxHeight }}
+              style={{ maxHeight: maxH }}
             >
               <ListGroupBody>{menuItems}</ListGroupBody>
             </ScrollView>
           ) : (
-            <View style={{ maxHeight, overflow: 'hidden' }}>
+            <View style={{ maxHeight: maxH, overflow: 'hidden' }}>
               <ListGroupBody>{menuItems}</ListGroupBody>
             </View>
           )}
         </ListGroup>
       </MenuContext.Provider>
     );
-  }, [menuItems, menuDropdownProps, styles.dropdown, dropdownSpacingStyles, maxHeight, menuContextValueOpened]);
+  }, [menuItems, menuDropdownProps, styles.dropdown, dropdownSpacingStyles, maxH, menuContextValueOpened]);
 
   const handleOpen = useCallback(async (opts?: { clientX?: number; clientY?: number }) => {
     // Use ref to avoid stale isOpened value after async close from backdrop click
@@ -212,7 +212,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
       
       // Calculate base overlay size
       const estimatedMenuHeight = 120; // Estimate for typical menu with 3-4 items
-      const resolvedWidth = width === 'target' ? triggerRect.width : (typeof width === 'number' ? width : (width === 'auto' ? 200 : 200));
+      const resolvedWidth = w === 'target' ? triggerRect.width : (typeof w === 'number' ? w : (w === 'auto' ? 200 : 200));
       const overlaySize = {
         width: resolvedWidth,
         height: estimatedMenuHeight,
@@ -282,7 +282,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
     } catch (error) {
       console.warn('Failed to open menu:', error);
     }
-  }, [disabled, width, position, offset, strategy, closeOnClickOutside, closeOnEscape, onOpen, menuItems, trigger, buildMenuDropdown, onClose]);
+  }, [disabled, w, position, offset, strategy, closeOnClickOutside, closeOnEscape, onOpen, menuItems, trigger, buildMenuDropdown, onClose]);
 
   // When menu content changes while open, update overlay content in place
   useEffect(() => {
@@ -291,13 +291,13 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
     if (lastSignatureRef.current === menuItemsSignature) return; // no structural change
     lastSignatureRef.current = menuItemsSignature;
     const currentId = overlayIdRef.current;
-    const resolvedWidth = lastResolvedWidthRef.current ?? (typeof width === 'number' ? width : undefined);
+    const resolvedWidth = lastResolvedWidthRef.current ?? (typeof w === 'number' ? w : undefined);
     const menuDropdown = buildMenuDropdown(resolvedWidth);
     if (!menuDropdown) return;
     updateOverlay(currentId, {
       content: menuDropdown,
     });
-  }, [menuItemsSignature, menuItems, updateOverlay, width, buildMenuDropdown]);
+  }, [menuItemsSignature, menuItems, updateOverlay, w, buildMenuDropdown]);
 
   const handleToggle = useCallback(() => {
     if (isOpenedRef.current) {

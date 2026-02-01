@@ -21,7 +21,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={180}
+          minH={180}
         >
           <Text variant="h4" color="white">
             Caching layer
@@ -38,7 +38,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={180}
+          minH={180}
         >
           <Text variant="h4" color="white">
             Log streaming
@@ -55,7 +55,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={180}
+          minH={180}
         >
           <Text variant="h4" color="white">
             Metrics digest
@@ -72,7 +72,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={180}
+          minH={180}
         >
           <Text variant="h4" color="white">
             Incident updates

@@ -53,7 +53,7 @@ function Card({ title, body, color }: { title: string; body: string; color: stri
       bg={color}
       radius="xl"
       p="lg"
-      minHeight={180}
+      minH={180}
       justify="center"
     >
       <Text variant="h4" color="white">

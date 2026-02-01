@@ -19,6 +19,8 @@ const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !=
 type OptionalModuleLoader = () => any;
 
 // Metro bundler requires static string literals for require; keep all optional modules here.
+// NOTE: Do NOT add react-syntax-highlighter here - it causes Metro to fail on native
+// when the package isn't installed. Instead, pass the loader dynamically from web-only code.
 const optionalModuleLoaders: Record<string, OptionalModuleLoader> = {
   'react-native': () => require('react-native'),
   'expo-clipboard': () => require('expo-clipboard'),
@@ -27,29 +29,9 @@ const optionalModuleLoaders: Record<string, OptionalModuleLoader> = {
   'expo-document-picker': () => require('expo-document-picker'),
   'react-native-webview': () => require('react-native-webview'),
   'lodash.debounce': () => require('lodash.debounce'),
-  'react-syntax-highlighter': () => require('react-syntax-highlighter'),
-  'react-syntax-highlighter/dist/esm/languages/prism/jsx': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/jsx'),
-  'react-syntax-highlighter/dist/esm/languages/prism/tsx': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/tsx'),
-  'react-syntax-highlighter/dist/esm/languages/prism/typescript': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/typescript'),
-  'react-syntax-highlighter/dist/esm/languages/prism/javascript': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/javascript'),
-  'react-syntax-highlighter/dist/esm/languages/prism/json': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/json'),
-  'react-syntax-highlighter/dist/esm/languages/prism/bash': () =>
-    require('react-syntax-highlighter/dist/esm/languages/prism/bash'),
-  'react-syntax-highlighter/dist/esm/styles/prism/prism': () =>
-    require('react-syntax-highlighter/dist/esm/styles/prism/prism'),
-  'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus': () =>
-    require('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus'),
   'expo-audio': () => require('expo-audio'),
   'react-native-gesture-handler': () => require('react-native-gesture-handler'),
   'expo-status-bar': () => require('expo-status-bar'),
-  'lottie-react': () => require('lottie-react'),
-  '@lottiefiles/dotlottie-react': () => require('@lottiefiles/dotlottie-react'),
-  'lottie-react-native': () => require('lottie-react-native'),
   'expo-navigation-bar': () => require('expo-navigation-bar'),
 };
 

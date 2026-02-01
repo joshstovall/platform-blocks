@@ -1,3 +1,1 @@
-# MonthPickerInput
-
 Form-friendly wrapper around `MonthPicker` that renders an input field and opens the picker in a modal dialog. Mirrors the `DatePickerInput` API for consistency while focusing on month-level selection workflows.

@@ -17,7 +17,7 @@ export default function Demo() {
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Weekly highlights
@@ -33,7 +33,7 @@ export default function Demo() {
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Product updates
@@ -49,7 +49,7 @@ export default function Demo() {
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Team spotlights

@@ -32,7 +32,7 @@ export default function Demo() {
           radius="lg"
           p="lg"
           justify="center"
-          minHeight={200}
+          minH={200}
         >
           <Text variant="h4" color="white">
             Soccer weekly
@@ -48,7 +48,7 @@ export default function Demo() {
           radius="lg"
           p="lg"
           justify="center"
-          minHeight={200}
+          minH={200}
         >
           <Text variant="h4" color="white">
             Basketball insights
@@ -64,7 +64,7 @@ export default function Demo() {
           radius="lg"
           p="lg"
           justify="center"
-          minHeight={200}
+          minH={200}
         >
           <Text variant="h4" color="white">
             Tennis rankings
@@ -80,7 +80,7 @@ export default function Demo() {
           radius="lg"
           p="lg"
           justify="center"
-          minHeight={200}
+          minH={200}
         >
           <Text variant="h4" color="white">
             Baseball stat pack
@@ -96,7 +96,7 @@ export default function Demo() {
           radius="lg"
           p="lg"
           justify="center"
-          minHeight={200}
+          minH={200}
         >
           <Text variant="h4" color="white">
             Cycling bulletins

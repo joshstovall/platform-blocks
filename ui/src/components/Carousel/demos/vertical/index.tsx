@@ -21,7 +21,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Breaking news
@@ -38,7 +38,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Weather alerts
@@ -55,7 +55,7 @@ export default function Demo() {
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Schedule changes

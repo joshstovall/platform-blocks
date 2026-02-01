@@ -22,6 +22,8 @@ const commonConfig = {
     resolve({
       preferBuiltins: false,
       browser: true,
+      // Prefer .web.ts extensions for web build (React Native convention)
+      extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js', '.json'],
     }),
     commonjs({
       include: ['node_modules/**'],

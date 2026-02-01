@@ -8,8 +8,8 @@ import { extractSpacingProps, getSpacingStyles } from '../../core/utils';
 import { Text } from '../Text';
 import { CopyButton } from '../CopyButton/CopyButton';
 import { Spoiler } from '../Spoiler';
-import { resolveOptionalModule } from '../../utils/optionalModule';
 import { normalizeLanguage, parseHighlightLines, createNativeHighlighter } from './utils';
+import { resolveOptionalModule } from '../../utils/optionalModule';
 import type {
   CodeBlockColorOverrides,
   CodeBlockProps,
@@ -17,39 +17,94 @@ import type {
   CodeBlockTextPalette,
 } from './types';
 
-// Prism light build for JSX/TSX (react-syntax-highlighter)
+// Syntax highlighter - only loaded on web, native uses built-in tokenizer
+// These are initialized lazily on first use to avoid Metro bundling issues
 let PrismSyntaxHighlighter: any = null;
 let prismLightTheme: any = null;
 let prismDarkTheme: any = null;
-if (Platform.OS === 'web') {
-  PrismSyntaxHighlighter = resolveOptionalModule<any>('react-syntax-highlighter', {
-    accessor: (module) => module.PrismLight,
-    devWarning: 'react-syntax-highlighter not found, CodeBlock will use basic formatting',
-  });
+let syntaxHighlighterInitialized = false;
 
-  if (PrismSyntaxHighlighter) {
-    const registerLanguage = (moduleId: string, name: string) => {
-      const languageModule = resolveOptionalModule<any>(moduleId, { accessor: (mod) => mod.default });
-      if (languageModule) {
-        PrismSyntaxHighlighter.registerLanguage(name, languageModule);
+// Use indirect require via new Function to prevent Metro from statically analyzing imports
+// Metro bundles ALL require() calls it finds, even in try-catch blocks
+// new Function() creates a runtime-evaluated require that Metro can't see
+const safeRequire: ((name: string) => any) | null = (() => {
+  try {
+    // This creates: function(moduleName) { return require(moduleName); }
+    // The string 'require' is not statically analyzable by Metro
+    return new Function('moduleName', 'return require(moduleName)') as (name: string) => any;
+  } catch {
+    return null;
+  }
+})();
+
+function initSyntaxHighlighter() {
+  if (syntaxHighlighterInitialized) return;
+  syntaxHighlighterInitialized = true;
+
+  // Only attempt to load on web
+  if (Platform.OS !== 'web') return;
+  if (!safeRequire) return;
+
+  try {
+    const rsh = safeRequire('react-syntax-highlighter');
+    PrismSyntaxHighlighter = rsh.PrismLight;
+
+    if (PrismSyntaxHighlighter) {
+      // Register languages
+      try {
+        const jsx = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/jsx').default;
+        PrismSyntaxHighlighter.registerLanguage('jsx', jsx);
+      } catch {
+        // Language not available
       }
-    };
+      try {
+        const tsx = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/tsx').default;
+        PrismSyntaxHighlighter.registerLanguage('tsx', tsx);
+      } catch {
+        // Language not available
+      }
+      try {
+        const ts = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/typescript').default;
+        PrismSyntaxHighlighter.registerLanguage('typescript', ts);
+      } catch {
+        // Language not available
+      }
+      try {
+        const js = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/javascript').default;
+        PrismSyntaxHighlighter.registerLanguage('javascript', js);
+      } catch {
+        // Language not available
+      }
+      try {
+        const json = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/json').default;
+        PrismSyntaxHighlighter.registerLanguage('json', json);
+      } catch {
+        // Language not available
+      }
+      try {
+        const bash = safeRequire('react-syntax-highlighter/dist/esm/languages/prism/bash').default;
+        PrismSyntaxHighlighter.registerLanguage('bash', bash);
+      } catch {
+        // Language not available
+      }
 
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/jsx', 'jsx');
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/tsx', 'tsx');
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/typescript', 'typescript');
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/javascript', 'javascript');
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/json', 'json');
-    registerLanguage('react-syntax-highlighter/dist/esm/languages/prism/bash', 'bash');
-
-    prismLightTheme = resolveOptionalModule<any>('react-syntax-highlighter/dist/esm/styles/prism/prism', {
-      accessor: (mod) => mod.default,
-    });
-
-    prismDarkTheme = resolveOptionalModule<any>('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus', {
-      accessor: (mod) => mod.default,
-      devWarning: 'Failed to load prism vsc-dark-plus theme, falling back to prism',
-    });
+      // Load themes
+      try {
+        prismLightTheme = safeRequire('react-syntax-highlighter/dist/esm/styles/prism/prism').default;
+      } catch {
+        // Theme not available
+      }
+      try {
+        prismDarkTheme = safeRequire('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus').default;
+      } catch {
+        // Theme not available
+      }
+    }
+  } catch {
+    // react-syntax-highlighter not installed, will use native fallback
+    if (__DEV__) {
+      console.warn('[platform-blocks] react-syntax-highlighter not found, CodeBlock will use basic formatting');
+    }
   }
 }
 
@@ -409,6 +464,9 @@ const FloatingCopyControls: React.FC<FloatingCopyControlsProps> = ({ visible, co
 );
 
 export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
+  // Initialize syntax highlighter on first render (web only)
+  React.useMemo(() => initSyntaxHighlighter(), []);
+
   const {
     children,
     title,
@@ -449,6 +507,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
   const [hovered, setHovered] = React.useState(false);
   const [codeHeight, setCodeHeight] = React.useState<number | null>(null);
   const isWeb = Platform.OS === 'web';
+  const webWhitespaceStyle = React.useMemo(() => (
+    isWeb ? { whiteSpace: wrap ? 'pre-wrap' : 'pre', display: 'block' } : null
+  ), [isWeb, wrap]);
   const showFloatingCopy = showCopyButton && !title && !fileName;
   const showCopyVisible = !isWeb ? showFloatingCopy : showFloatingCopy && hovered;
 
@@ -486,6 +547,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     boxSizing: 'border-box',
     paddingLeft: showLineNumbers ? 0 : 12,
     paddingRight: showLineNumbers ? 0 : 12,
+    whiteSpace: wrap ? 'pre-wrap' : 'pre',
   }), [showLineNumbers, wrap]);
 
   const highlightedLineStyle = React.useMemo<CSSProperties>(() => ({
@@ -502,6 +564,18 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
   const shouldVirtualizeNative = !isWeb && codeData.lineCount >= LONG_LIST_THRESHOLD;
   const lineHeight = styles.codeText.lineHeight ?? 18;
 
+  const normalizeTokenText = React.useCallback((text: string, tokenIndex: number) => {
+    if (!isWeb || !text) return text;
+    const replaceSpaces = (value: string) => value.replace(/\t/g, '  ').replace(/ /g, '\u00A0');
+    if (tokenIndex === 0) {
+      return text.replace(/^[\t ]+/, (match) => replaceSpaces(match));
+    }
+    if (text.trim().length === 0) {
+      return replaceSpaces(text);
+    }
+    return text;
+  }, [isWeb]);
+
   const buildNativeLine = React.useCallback(
     (line: string, index: number, appendNewline: boolean, includeKey: boolean) => {
       const lineNumber = index + 1;
@@ -511,6 +585,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
       const lineStyles = [
         styles.codeText,
         textStyle,
+        webWhitespaceStyle,
         wrap ? { flexWrap: 'wrap' as const } : { flexWrap: 'nowrap' as const, width: 'auto' as const },
       ];
       if (isLineHighlighted) {
@@ -526,14 +601,14 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
           ) : null}
           {tokens.map((token, tokenIdx) => (
             <Text key={`${lineNumber}-${tokenIdx}`} style={{ color: token.color }}>
-              {token.text || ' '}
+              {normalizeTokenText(token.text || ' ', tokenIdx)}
             </Text>
           ))}
           {appendNewline ? '\n' : null}
         </Text>
       );
     },
-    [fallbackColor, highlightColors, highlightSet, isDark, lineNumberColor, lineNumberWidth, showLineNumbers, styles.codeText, styles.highlightedLine, textStyle, tokenLines, wrap]
+    [fallbackColor, highlightColors, highlightSet, isDark, lineNumberColor, lineNumberWidth, normalizeTokenText, showLineNumbers, styles.codeText, styles.highlightedLine, textStyle, tokenLines, webWhitespaceStyle, wrap]
   );
 
   const renderWebCode = React.useMemo(() => {
@@ -555,8 +630,14 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
           lineHeight: '18px',
           display: 'block',
           width: '100%',
+          whiteSpace: wrap ? 'pre-wrap' : 'pre',
         }}
-        codeTagProps={{ style: { fontFamily: styles.codeText.fontFamily } }}
+        codeTagProps={{
+          style: {
+            fontFamily: styles.codeText.fontFamily,
+            whiteSpace: wrap ? 'pre-wrap' : 'pre',
+          },
+        }}
   wrapLongLines={wrap}
   wrapLines={wrap}
         showLineNumbers={prismShowLineNumbers}
@@ -602,7 +683,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
   const renderNativeCode = React.useMemo(() => {
     if (!codeData.lineCount) {
       return (
-        <Text selectable style={[styles.codeText, textStyle]}>
+        <Text selectable style={[styles.codeText, textStyle, webWhitespaceStyle]}>
           {' '}
         </Text>
       );
@@ -624,11 +705,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     }
 
     return (
-      <Text selectable style={[styles.codeText, textStyle]}>
+      <Text selectable style={[styles.codeText, textStyle, webWhitespaceStyle]}>
         {codeData.lines.map((line, idx) => buildNativeLine(line, idx, idx < codeData.lineCount - 1, true))}
       </Text>
     );
-  }, [buildNativeLine, codeData.lineCount, codeData.lines, lineHeight, shouldVirtualizeNative, styles.codeText, textStyle]);
+  }, [buildNativeLine, codeData.lineCount, codeData.lines, lineHeight, shouldVirtualizeNative, styles.codeText, textStyle, webWhitespaceStyle]);
 
   const codeContent = renderWebCode ?? renderNativeCode;
 

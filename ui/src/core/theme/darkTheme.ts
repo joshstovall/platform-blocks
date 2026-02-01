@@ -102,16 +102,16 @@ export const DARK_THEME: PlatformBlocksTheme = {
       '#F2F2F7'
     ],
     highlight: [
-      '#2A2313',
-      '#3D3320',
-      '#4F422D',
-      '#61523A',
-      '#736247',
-      '#FBBF24', // Keep same base as light mode for consistency
-      '#FCD34D',
-      '#FDE68A',
-      '#FEF3C7',
-      '#FFFBEB'
+      '#1E3A5F', // Deep blue
+      '#1E4976', // 
+      '#1D5A8F', // 
+      '#2563EB', // Bright blue
+      '#3B82F6', // Primary blue
+      '#60A5FA', // Light blue
+      '#93C5FD', // 
+      '#BFDBFE', // 
+      '#DBEAFE', // 
+      '#EFF6FF'  // Very light blue
     ],
     pink: [
       '#831843', '#9D174D', '#BE185D', '#DB2777', '#EC4899',
@@ -170,9 +170,9 @@ export const DARK_THEME: PlatformBlocksTheme = {
 
   states: {
     focusRing: 'rgba(10,132,255,0.55)',
-    textSelection: 'rgba(251, 191, 36, 0.2)', // Slightly more subtle for dark mode
-    highlightText: '#FDE68A', // highlight[7] for good contrast on dark
-    highlightBackground: 'rgba(97, 82, 58, 0.8)' // Darker highlight[3] with more opacity
+    textSelection: 'rgba(10, 132, 255, 0.25)', // Primary blue for selection
+    highlightText: '#60A5FA', // primary[4] - bright blue for good contrast on dark
+    highlightBackground: 'rgba(59, 130, 246, 0.35)' // primary[5] with transparency
   },
 
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',

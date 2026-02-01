@@ -48,8 +48,8 @@ export default function Demo() {
           </Text>
           <Video
             source={SOURCE}
-            width="100%"
-            height={300}
+            w="100%"
+            h={300}
             controls
             timeline={timelineEvents}
             onTimelineEvent={handleTimelineEvent}

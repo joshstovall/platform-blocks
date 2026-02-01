@@ -28,7 +28,8 @@ const createOverlayCacheKey = (
   strategy: string,
   flip: boolean,
   shift: boolean,
-  boundary: number
+  boundary: number,
+  matchAnchorWidth: boolean
 ) => {
   return [
     formatNumber(anchorX),
@@ -46,6 +47,7 @@ const createOverlayCacheKey = (
     flip ? '1' : '0',
     shift ? '1' : '0',
     formatNumber(boundary),
+    matchAnchorWidth ? '1' : '0',
     Platform.OS,
   ].join('|');
 };
@@ -143,6 +145,8 @@ export interface PositioningOptions {
   boundary?: number;
   /** Fallback placements to try if primary placement doesn't fit */
   fallbackPlacements?: PlacementType[];
+  /** Match the anchor element's width (useful for dropdown inputs) */
+  matchAnchorWidth?: boolean;
 }
 
 /**
@@ -161,13 +165,15 @@ export function calculateOverlayPositionEnhanced(
     flip = true,
     shift = true,
     boundary = 8,
-    fallbackPlacements = ['bottom', 'top', 'right', 'left']
+    fallbackPlacements = ['bottom', 'top', 'right', 'left'],
+    matchAnchorWidth = false,
   } = options;
 
   // If overlay height is unknown/small (pre-measure), use a heuristic height for decision-making
   // This helps avoid choosing "bottom" when near the bottom of the viewport.
   const heuristicHeight = Math.max(overlay.height || 0, 240);
-  const overlayWidth = overlay.width;
+  // When matchAnchorWidth is true, use anchor width for overlay width calculations
+  const overlayWidth = matchAnchorWidth ? anchor.width : overlay.width;
   const overlayHeight = overlay.height > 0 ? overlay.height : heuristicHeight;
   
   // Account for scroll if using absolute positioning
@@ -194,7 +200,8 @@ export function calculateOverlayPositionEnhanced(
     strategy,
     flip,
     shift,
-    boundary
+    boundary,
+    matchAnchorWidth
   );
 
   const cached = getCachedOverlayPosition(cacheKey);
@@ -300,10 +307,15 @@ export function calculateOverlayPositionEnhanced(
   // reflect that in the returned placement so arrows/styles are consistent.
   const resolvedPlacement = adjustPlacementIfMoved(finalPlacement, result, anchorRect);
 
+  // When matchAnchorWidth is true, preserve anchor width without constraining to maxWidth
+  const computedFinalWidth = matchAnchorWidth 
+    ? anchor.width 
+    : Math.min(result.finalWidth || overlay.width, result.maxWidth || overlay.width);
+
   const finalResult = {
     ...result,
     placement: resolvedPlacement,
-    finalWidth: Math.min(result.finalWidth || overlay.width, result.maxWidth || overlay.width),
+    finalWidth: computedFinalWidth,
     finalHeight: Math.min(result.finalHeight || overlay.height, result.maxHeight || overlay.height),
   };
 

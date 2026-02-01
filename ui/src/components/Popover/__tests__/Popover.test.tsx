@@ -131,7 +131,7 @@ describe('Popover - behavior', () => {
 
   it('passes an explicit width override to the overlay', async () => {
     const widthOverride = 260;
-    const { getByText } = renderPopover({ width: widthOverride });
+    const { getByText } = renderPopover({ w: widthOverride });
 
     fireEvent.press(getByText('Toggle Popover'));
 

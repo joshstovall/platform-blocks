@@ -9,9 +9,9 @@ export default function Demo() {
         <Text variant="small" weight="medium">
           Semantic colors
         </Text>
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.25} color="primary" />
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.5} color="success" />
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.75} color="warning" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.25} color="primary" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.5} color="success" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.75} color="warning" />
       </Column>
 
       <Column gap="sm">
@@ -20,14 +20,14 @@ export default function Demo() {
         </Text>
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
-          height={72}
+          h={72}
           progress={0.4}
           variant="line"
           color="primary"
         />
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
-          height={72}
+          h={72}
           progress={0.4}
           variant="rounded"
           color="success"
@@ -38,10 +38,10 @@ export default function Demo() {
         <Text variant="small" weight="medium">
           Normalized quiet tracks
         </Text>
-        <Waveform peaks={QUIET_WAVEFORM_PEAKS} height={56} progress={0.45} color="surface" />
+        <Waveform peaks={QUIET_WAVEFORM_PEAKS} h={56} progress={0.45} color="surface" />
         <Waveform
           peaks={QUIET_WAVEFORM_PEAKS}
-          height={56}
+          h={56}
           progress={0.45}
           normalize
           color="surface"

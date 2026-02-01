@@ -71,10 +71,14 @@ const resolveTokenColor = (token: string | undefined, theme: any): string | unde
 const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; isLastItem?: boolean }>(({
   children,
   title,
+  timestamp,
   bullet,
   colorVariant,
   lineVariant = 'solid',
   color,
+  titleColor,
+  descriptionColor,
+  timestampColor,
   active,
   itemIndex = 0,
   isLastItem = false,
@@ -92,6 +96,9 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
     size,
     centerMode,
     metrics,
+    titleColor: timelineTitleColor,
+    descriptionColor: timelineDescriptionColor,
+    timestampColor: timelineTimestampColor,
   } = useTimelineContext();
 
   const sizeConfig = metrics;
@@ -109,6 +116,10 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
   const resolvedItemColor = color
     ? color
     : (colorVariant ? resolveTokenColor(colorVariant, theme) : timelineColor);
+
+  const resolvedTitleColor = titleColor ?? timelineTitleColor;
+  const resolvedDescriptionColor = descriptionColor ?? timelineDescriptionColor;
+  const resolvedTimestampColor = timestampColor ?? timelineTimestampColor;
 
   // Active logic
   const isActive = showAllColored
@@ -230,8 +241,15 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
   const getTitleStyle = (): TextStyle => ({
     fontSize: sizeConfig.fontSize,
     fontWeight: '600',
-    color: theme.text.primary,
+    color: resolvedTitleColor ?? theme.text.primary,
     marginBottom: title && children ? 4 : 0,
+    textAlign: effectiveAlign === 'right' ? 'right' : 'left',
+  });
+
+  const getTimestampStyle = (): TextStyle => ({
+    fontSize: Math.max(10, Math.round(sizeConfig.fontSize * 0.8)),
+    color: resolvedTimestampColor ?? theme.text.secondary,
+    marginBottom: (title || children) ? 4 : 0,
     textAlign: effectiveAlign === 'right' ? 'right' : 'left',
   });
 
@@ -251,6 +269,28 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
     } as ViewStyle;
   };
 
+  const applyTextStyle = (nodes: React.ReactNode, styleOverride?: TextStyle): React.ReactNode => {
+    if (!styleOverride) return nodes;
+    return React.Children.map(nodes, (child): React.ReactNode => {
+      if (typeof child === 'string' || typeof child === 'number') {
+        return <Text style={styleOverride}>{child}</Text>;
+      }
+      if (!React.isValidElement(child)) return child;
+      const props: any = child.props || {};
+      const isTextLike = (child.type as any)?.displayName === 'Text' || child.type === Text || typeof props.children === 'string';
+      if (isTextLike) {
+        const mergedStyle = Array.isArray(props.style)
+          ? [...props.style, styleOverride]
+          : [props.style, styleOverride];
+        return React.cloneElement(child as any, { style: mergedStyle });
+      }
+      if (props.children) {
+        return React.cloneElement(child as any, { children: applyTextStyle(props.children, styleOverride) });
+      }
+      return child;
+    });
+  };
+
   if (centerMode) {
     // Three column layout: left content | bullet/line | right content
     const leftContent = effectiveAlign === 'left' && (title || children);
@@ -258,21 +298,11 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
 
     // Helper to clone Text children with alignment
     const alignChildText = (nodes: React.ReactNode, side: 'left' | 'right'): React.ReactNode => {
-      return React.Children.map(nodes, (child): React.ReactNode => {
-        if (!React.isValidElement(child)) return child;
-        const props: any = child.props || {};
-        const isTextLike = (child.type as any)?.displayName === 'Text' || (typeof props.children === 'string');
-        if (isTextLike) {
-          const mergedStyle = Array.isArray(props.style)
-            ? [...props.style, { textAlign: side }]
-            : [props.style, { textAlign: side }];
-          return React.cloneElement(child as any, { style: mergedStyle });
-        }
-        if (props.children) {
-          return React.cloneElement(child as any, { children: alignChildText(props.children, side) });
-        }
-        return child;
-      });
+      const styleOverride: TextStyle = {
+        textAlign: side,
+        ...(resolvedDescriptionColor ? { color: resolvedDescriptionColor } : {}),
+      } as TextStyle;
+      return applyTextStyle(nodes, styleOverride);
     };
     return (
       <View ref={ref} style={getItemWrapperStyle()} {...rest}>
@@ -280,6 +310,11 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
   <View style={{ flex: 1, paddingRight: sizeConfig.spacing, alignItems: 'flex-end' }}>
           {leftContent && (
             <View style={{ width: '100%', alignItems: 'flex-end' }}>
+              {timestamp && (
+                <Text style={[getTimestampStyle(), { textAlign: 'right' }]}> 
+                  {timestamp}
+                </Text>
+              )}
               {title && <Text style={[getTitleStyle(), { textAlign: 'right' }]}>{title}</Text>}
               {alignChildText(children, 'right')}
             </View>
@@ -294,6 +329,11 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
   <View style={{ flex: 1, paddingLeft: sizeConfig.spacing, alignItems: 'flex-start' }}>
           {rightContent && (
             <View style={{ width: '100%', alignItems: 'flex-start' }}>
+              {timestamp && (
+                <Text style={[getTimestampStyle(), { textAlign: 'left' }]}> 
+                  {timestamp}
+                </Text>
+              )}
               {title && <Text style={[getTitleStyle(), { textAlign: 'left' }]}>{title}</Text>}
               {alignChildText(children, 'left')}
             </View>
@@ -309,8 +349,14 @@ const TimelineItem = forwardRef<View, TimelineItemProps & { itemIndex?: number; 
       <View style={getBulletStyle()}>{bullet}</View>
       {(title || children) && (
         <View style={getContentStyle()}>
+          {timestamp && <Text style={getTimestampStyle()}>{timestamp}</Text>}
           {title && <Text style={getTitleStyle()}>{title}</Text>}
-          {children}
+          {resolvedDescriptionColor
+            ? applyTextStyle(children, {
+                color: resolvedDescriptionColor,
+                textAlign: effectiveAlign === 'right' ? 'right' : 'left',
+              })
+            : children}
         </View>
       )}
     </View>
@@ -323,6 +369,9 @@ const Timeline = forwardRef<View, TimelineProps>(({
   active,
   color,
   colorVariant,
+  titleColor,
+  descriptionColor,
+  timestampColor,
   lineWidth,
   bulletSize,
   align = 'left',
@@ -355,6 +404,9 @@ const Timeline = forwardRef<View, TimelineProps>(({
     size: clampedSize,
     metrics,
     centerMode,
+    titleColor,
+    descriptionColor,
+    timestampColor,
   };
 
   const items: React.ReactElement[] = [];

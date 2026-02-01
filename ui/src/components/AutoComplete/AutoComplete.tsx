@@ -236,6 +236,7 @@ export const AutoComplete = factory<{
       offset,
       autoUpdate: autoReposition,
       fallbackPlacements,
+      matchAnchorWidth: true,
     }
   );
 
@@ -266,10 +267,10 @@ export const AutoComplete = factory<{
   const menuHighlightColor = useMemo(() => {
     const primaryPalette = theme.colors.primary || [];
     if (theme.colorScheme === 'dark') {
-      return primaryPalette[2] || primaryPalette[3] || theme.text.onPrimary || theme.text.primary;
+      return primaryPalette[5] || primaryPalette[4] || '#60A5FA';
     }
-    return primaryPalette[6] || primaryPalette[5] || theme.colors.secondary?.[6] || '#6941C6';
-  }, [theme.colors.primary, theme.colors.secondary, theme.colorScheme, theme.text.onPrimary, theme.text.primary]);
+    return primaryPalette[6] || primaryPalette[5] || '#3B82F6';
+  }, [theme.colors.primary, theme.colorScheme]);
 
   const selectedCount = selectedValues?.length ?? 0;
   const hasSelectedValues = multiSelect && selectedCount > 0;
@@ -638,13 +639,14 @@ export const AutoComplete = factory<{
       <MenuItemButton
         onPress={() => handleSelectSuggestion(item)}
         disabled={item.disabled}
-        active={isSelected}
-        tone={isSelected ? 'primary' : 'default'}
-        hoverTone="primary"
-        activeTone="primary"
+        active={false}
+        tone="default"
+        hoverTone="default"
+        activeTone="default"
         textColor={baseTextColor}
-        hoverTextColor={accentTextColor}
-        activeTextColor={accentTextColor}
+        hoverTextColor={baseTextColor}
+        activeTextColor={baseTextColor}
+        startIcon={isSelected ? <Icon name="check" size={16} color={menuHighlightColor} /> : <View style={{ width: 16 }} />}
         compact
         rounded={false}
         style={[styles.menuItemButton, suggestionItemStyle]}

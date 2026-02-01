@@ -68,7 +68,7 @@ export const TextArea = factory<{
     ...rest
   } = otherProps;
 
-  const { height } = layoutProps;
+  const { h } = layoutProps;
 
   const theme = useTheme();
   const { getTextAreaStyles } = useTextAreaStyles({ theme } as any);
@@ -147,13 +147,13 @@ export const TextArea = factory<{
   const inputContainerStyles = [
     styles.inputContainer,
     radiusStyles,
-    { height }
+    { height: h }
   ];
 
   const textInputStyles = [
     styles.textInput,
     
-    { height: height || (autoResize ? currentRows * 24 : rows * 24), // Approximate row height
+    { height: h || (autoResize ? currentRows * 24 : rows * 24), // Approximate row height
       textAlignVertical: resize === 'none' ? 'top' : undefined,
       // Disable resizing by user if resize is 'none'
       ...(resize === 'none' ? { resizeMode: 'none' } : {})
@@ -200,7 +200,7 @@ export const TextArea = factory<{
         <TextInput
           ref={assignRef}
           // style={]}
-          style={{height: height || (autoResize ? currentRows * 24 : rows * 24), // Approximate row height
+          style={{height: h || (autoResize ? currentRows * 24 : rows * 24), // Approximate row height
             ...textInputStyles.reduce((acc, style) => ({ ...acc, ...style }), {}),
             textAlignVertical: resize === 'none' ? 'top' : undefined,
             // Disable resizing by user if resize is 'none'

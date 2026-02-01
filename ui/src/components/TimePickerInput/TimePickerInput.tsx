@@ -263,7 +263,7 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
         visible={open}
         // variant="fullscreen"
         onClose={handleClose}
-        width={typeof computedPanelWidth === 'number' ? computedPanelWidth : 360}
+        w={typeof computedPanelWidth === 'number' ? computedPanelWidth : 360}
         title={title || 'Select Time'}
       >
         <Pressable

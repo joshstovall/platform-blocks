@@ -60,11 +60,13 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
         return {
           backgroundColor: 'transparent',
           borderColor: brandConfig.borderColor || brandConfig.backgroundColor,
+          paddingHorizontal: 16,
         };
       case 'ghost':
         return {
           backgroundColor: 'transparent',
           borderColor: 'transparent',
+          paddingHorizontal: 16,
         };
       case 'link':
         return { backgroundColor: 'transparent', borderColor: 'transparent' };
@@ -72,7 +74,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
         return {
           backgroundColor: 'white',
           borderColor: 'transparent',
-          paddingHorizontal: 0,
+          paddingHorizontal: 16,
           minWidth: 0,
           height: 'auto',
           color: 'black'
@@ -81,6 +83,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
         return {
           backgroundColor: brandConfig.backgroundColor,
           borderColor: brandConfig.borderColor || brandConfig.backgroundColor,
+          paddingHorizontal: 16,
         };
     }
   })();

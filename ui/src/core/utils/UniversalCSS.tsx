@@ -20,6 +20,23 @@ export function generateUniversalCSS(): string {
   };
 
   const universalCSS = `
+    /* Reset browser default input styles to prevent double borders */
+    input, textarea, select {
+      outline: none !important;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none !important;
+    }
+
+    /* Ensure React Native Web focusable elements don't show browser outlines */
+    [data-focusable="true"]:focus {
+      outline: none !important;
+    }
+
     /* Color scheme based visibility */
     .platform-blocks-light-hidden {
       display: none !important;
@@ -70,13 +87,16 @@ export function UniversalCSS() {
     }
 
     // Check if styles are already injected
-    const existingStyle = document.getElementById('platform-blocks-universal-css');
-    if (existingStyle) {
+    let styleElement = document.getElementById('platform-blocks-universal-css') as HTMLStyleElement | null;
+    
+    if (styleElement) {
+      // Update content if it exists (in case CSS changed)
+      styleElement.textContent = css;
       return;
     }
 
     // Create and inject styles
-    const styleElement = document.createElement('style');
+    styleElement = document.createElement('style');
     styleElement.id = 'platform-blocks-universal-css';
     styleElement.textContent = css;
     document.head.appendChild(styleElement);

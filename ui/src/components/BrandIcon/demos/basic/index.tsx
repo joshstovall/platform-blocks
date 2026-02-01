@@ -1,19 +1,19 @@
-import { BrandIcon, Column, Row, Text } from '@platform-blocks/ui';
+import { BrandIcon, Block, Row, Text } from '@platform-blocks/ui';
 import { SAMPLE_BRANDS } from '../data';
 
 export default function Demo() {
   return (
-    <Column gap="lg">
+    <Block gap="lg">
       <Row align="center" gap="md" wrap="wrap">
         {SAMPLE_BRANDS.map((brand) => (
-          <Column key={brand} align="center" gap="xs" minWidth={72}>
+          <Block key={brand} align="center" gap="xs" minW={72}>
             <BrandIcon brand={brand} size="xl" />
             <Text variant="small" align="center">
               {brand}
             </Text>
-          </Column>
+          </Block>
         ))}
       </Row>
-    </Column>
+    </Block>
   );
 }

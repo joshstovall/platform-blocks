@@ -18,7 +18,7 @@ export default function Demo() {
 
   return (
     <Column gap="md">
-      <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={progress} height={64} />
+      <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={progress} h={64} />
       <Row gap="sm" align="center">
         <Button onPress={handleAdvance}>Skip 10%</Button>
         <Button variant="outline" onPress={handleReset}>

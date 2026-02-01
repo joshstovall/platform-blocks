@@ -14,8 +14,8 @@ export default function UniversalSpacingDemo() {
             <Image 
               src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=100&h=100&fit=crop" 
               alt="Centered image"
-              width={100}
-              height={100}
+              w={100}
+              h={100}
               m="auto"
             />
           </View>
@@ -31,8 +31,8 @@ export default function UniversalSpacingDemo() {
             <Image 
               src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=80&h=80&fit=crop" 
               alt="Image with theme spacing"
-              width={80}
-              height={80}
+              w={80}
+              h={80}
               m="lg"
             />
           </View>
@@ -48,8 +48,8 @@ export default function UniversalSpacingDemo() {
             <Image 
               src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=60&h=60&fit=crop" 
               alt="Image with numeric spacing"
-              width={60}
-              height={60}
+              w={60}
+              h={60}
               m={20}
             />
           </View>
@@ -65,8 +65,8 @@ export default function UniversalSpacingDemo() {
             <Image 
               src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=60&h=60&fit=crop" 
               alt="Image with zero margin"
-              width={60}
-              height={60}
+              w={60}
+              h={60}
               m="0"
             />
           </View>
@@ -82,8 +82,8 @@ export default function UniversalSpacingDemo() {
             <Image 
               src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=80&h=80&fit=crop" 
               alt="Image with mixed spacing"
-              width={80}
-              height={80}
+              w={80}
+              h={80}
               mx="auto"
               my="md"
               p="sm"

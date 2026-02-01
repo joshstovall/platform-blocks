@@ -13,7 +13,7 @@ export default function Demo() {
           <Text size="sm" colorVariant="secondary">
             Wrap wide datasets in `Table.ScrollContainer` to enable horizontal scrolling.
           </Text>
-          <Table.ScrollContainer minWidth={900}>
+          <Table.ScrollContainer minW={900}>
             <Table
               data={{ head: columns, body, caption: 'Wide matrix sample (scroll to explore)' }}
               withTableBorder

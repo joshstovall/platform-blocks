@@ -62,7 +62,7 @@ export function QRCode(props: QRCodeProps) {
       <QRCodeSVG
         value={value}
         size={size}
-        maxWidth={'100%'}
+        maxW={'100%'}
         backgroundColor={backgroundColor}
         color={resolvedColor}
         errorCorrectionLevel={errorCorrectionLevel}

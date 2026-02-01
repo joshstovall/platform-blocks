@@ -51,15 +51,15 @@ export interface PopoverProps extends SpacingProps {
   /** Overlay component props */
   overlayProps?: Record<string, unknown>;
   /** Dropdown width, number or 'target' to match target width */
-  width?: number | 'target';
+  w?: number | 'target';
   /** Dropdown max-width */
-  maxWidth?: number;
+  maxW?: number;
   /** Dropdown max-height */
-  maxHeight?: number;
+  maxH?: number;
   /** Dropdown min-width */
-  minWidth?: number;
+  minW?: number;
   /** Dropdown min-height */
-  minHeight?: number;
+  minH?: number;
   /** Border radius */
   radius?: RadiusValue | number;
   /** Box shadow */

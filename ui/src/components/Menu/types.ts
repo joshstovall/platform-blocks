@@ -18,9 +18,9 @@ export interface MenuProps extends SpacingProps {
   /** Callback when menu closes */
   onClose?: () => void;
   /** Menu content width */
-  width?: number | 'target' | 'auto';
+  w?: number | 'target' | 'auto';
   /** Maximum height for scrollable content */
-  maxHeight?: number;
+  maxH?: number;
   /** Menu content shadow */
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   /** Border radius */

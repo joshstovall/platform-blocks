@@ -4,20 +4,18 @@ import { ViewStyle, DimensionValue } from 'react-native';
 export interface LayoutProps {
   /** Makes the component fill the full width of its parent */
   fullWidth?: boolean;
-  /** Sets a specific width (shorthand for width) */
-  w?: DimensionValue;
   /** Sets a specific width */
-  width?: DimensionValue;
+  w?: DimensionValue;
   /** Sets a specific height */
-  height?: DimensionValue;
+  h?: DimensionValue;
   /** Sets the maximum width */
-  maxWidth?: DimensionValue;
+  maxW?: DimensionValue;
   /** Sets the minimum width */
-  minWidth?: DimensionValue;
+  minW?: DimensionValue;
   /** Sets the maximum height */
-  maxHeight?: DimensionValue;
+  maxH?: DimensionValue;
   /** Sets the minimum height */
-  minHeight?: DimensionValue;
+  minH?: DimensionValue;
 }
 
 // Utility function to generate layout styles from props
@@ -26,18 +24,17 @@ export interface LayoutProps {
  * 
  * @param props - The layout properties object
  * @param props.fullWidth - When true, sets width to 100%
- * @param props.w - Shorthand width property (overrides fullWidth)
- * @param props.width - Specific width value (overrides fullWidth and w)
- * @param props.height - Height value
- * @param props.maxWidth - Maximum width constraint
- * @param props.minWidth - Minimum width constraint
- * @param props.maxHeight - Maximum height constraint
- * @param props.minHeight - Minimum height constraint
+ * @param props.w - Width property (overrides fullWidth)
+ * @param props.h - Height value
+ * @param props.maxW - Maximum width constraint
+ * @param props.minW - Minimum width constraint
+ * @param props.maxH - Maximum height constraint
+ * @param props.minH - Minimum height constraint
  * 
  * @returns A partial ViewStyle object containing the computed layout styles
  * 
  * @remarks
- * Property precedence for width: width > w > fullWidth
+ * Property precedence for width: w > fullWidth
  * The function processes width properties in order of specificity, with more specific
  * properties overriding more general ones.
  */
@@ -49,34 +46,29 @@ export function getLayoutStyles(props: LayoutProps): Partial<ViewStyle> {
     styles.width = '100%';
   }
 
-  // Handle shorthand width prop first
+  // Handle width prop (overrides fullWidth)
   if (props.w !== undefined) {
     styles.width = props.w;
   }
 
-  // Handle specific dimensions (override fullWidth and w if specified)
-  if (props.width !== undefined) {
-    styles.width = props.width;
+  if (props.h !== undefined) {
+    styles.height = props.h;
   }
 
-  if (props.height !== undefined) {
-    styles.height = props.height;
+  if (props.maxW !== undefined) {
+    styles.maxWidth = props.maxW;
   }
 
-  if (props.maxWidth !== undefined) {
-    styles.maxWidth = props.maxWidth;
+  if (props.minW !== undefined) {
+    styles.minWidth = props.minW;
   }
 
-  if (props.minWidth !== undefined) {
-    styles.minWidth = props.minWidth;
+  if (props.maxH !== undefined) {
+    styles.maxHeight = props.maxH;
   }
 
-  if (props.maxHeight !== undefined) {
-    styles.maxHeight = props.maxHeight;
-  }
-
-  if (props.minHeight !== undefined) {
-    styles.minHeight = props.minHeight;
+  if (props.minH !== undefined) {
+    styles.minHeight = props.minH;
   }
 
   return styles;
@@ -89,24 +81,22 @@ export function extractLayoutProps<T extends LayoutProps>(
   const {
     fullWidth,
     w,
-    width,
-    height,
-    maxWidth,
-    minWidth,
-    maxHeight,
-    minHeight,
+    h,
+    maxW,
+    minW,
+    maxH,
+    minH,
     ...otherProps
   } = props;
 
   const layoutProps: LayoutProps = {
     fullWidth,
     w,
-    width,
-    height,
-    maxWidth,
-    minWidth,
-    maxHeight,
-    minHeight
+    h,
+    maxW,
+    minW,
+    maxH,
+    minH
   };
 
   return { layoutProps, otherProps };

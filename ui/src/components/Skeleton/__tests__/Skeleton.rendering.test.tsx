@@ -18,8 +18,8 @@ describe('Skeleton - rendering', () => {
     const tree = render(
       <View>
         <Skeleton shape="text" size="sm" mt="sm" />
-        <Skeleton shape="text" size="sm" width="90%" mt="xs" />
-        <Skeleton shape="text" size="sm" width="70%" mt="xs" />
+        <Skeleton shape="text" size="sm" w="90%" mt="xs" />
+        <Skeleton shape="text" size="sm" w="70%" mt="xs" />
       </View>
     ).toJSON();
 
@@ -30,8 +30,8 @@ describe('Skeleton - rendering', () => {
     const tree = render(
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Skeleton shape="avatar" size="lg" />
-        <Skeleton shape="chip" size="md" width={140} />
-        <Skeleton shape="button" size="sm" width={110} />
+        <Skeleton shape="chip" size="md" w={140} />
+        <Skeleton shape="button" size="sm" w={110} />
       </View>
     ).toJSON();
 

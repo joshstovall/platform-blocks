@@ -10,22 +10,22 @@ export default function Demo() {
         <Skeleton shape="avatar" size="xl" />
       </Row>
       <Column gap="sm">
-        <Skeleton shape="text" width="100%" />
-        <Skeleton shape="text" width="90%" />
-        <Skeleton shape="text" width="70%" />
+        <Skeleton shape="text" w="100%" />
+        <Skeleton shape="text" w="90%" />
+        <Skeleton shape="text" w="70%" />
       </Column>
       <Row gap="md" wrap="wrap">
-        <Skeleton shape="button" width={80} />
-        <Skeleton shape="button" width={100} />
-        <Skeleton shape="button" width={120} />
+        <Skeleton shape="button" w={80} />
+        <Skeleton shape="button" w={100} />
+        <Skeleton shape="button" w={120} />
       </Row>
       <Row gap="sm" wrap="wrap">
         <Skeleton shape="chip" />
         <Skeleton shape="chip" />
         <Skeleton shape="chip" />
       </Row>
-      <Skeleton shape="rectangle" height={60} />
-      <Skeleton shape="card" height={200} />
+      <Skeleton shape="rectangle" h={60} />
+      <Skeleton shape="card" h={200} />
     </Column>
   );
 }

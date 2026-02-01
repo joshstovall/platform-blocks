@@ -26,7 +26,7 @@ export interface TextAreaProps extends BaseInputProps {
   showCharCounter?: boolean;
 
   /** Fixed height for the TextArea */
-  height?: number;
+  h?: number;
   
   /** Resize behavior */
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';
@@ -42,5 +42,5 @@ export interface TextAreaStyleProps {
   error?: boolean;
   rows?: number;
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';
-  height?: number;
+  h?: number;
 }

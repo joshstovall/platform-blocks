@@ -1,10 +1,10 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2025-11-29T20:48:43.918Z
+Generated: 2026-02-01T05:57:36.172Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
-- Version: 0.4.0
+- Version: 0.6.1
 - Description: A React Native UI library
 - Main: lib/cjs/index.js
 - Module: lib/esm/index.js
@@ -27,34 +27,34 @@ Generated: 2025-11-29T20:48:43.918Z
 - … 6 more
 
 ### Peer Dependencies
-- @react-native-masked-view/masked-view: >=0.2.9
+- @react-native-masked-view/masked-view: >=0.3.0
 - @shopify/flash-list: >=1.6.0
 - expo-audio: >=1.0.0
 - expo-document-picker: >=13.0.0
 - expo-haptics: >=14.0.0
 - expo-linear-gradient: >=12.0.0
 - expo-status-bar: >=1.12.0
-- react: >=18.0.0 <20.0.0
+- react: >=18.0.0
 - react-native: >=0.73.0
 - react-native-reanimated: >=3.4.0
 - react-native-reanimated-carousel: >=3.4.0
 - react-native-safe-area-context: >=4.5.0
-- … 2 more
+- … 3 more
 
 ### Dev Dependencies (not exhaustive)
-- @babel/core: ^7.25.2
-- @babel/preset-env: ^7.25.0
-- @babel/preset-flow: ^7.27.1
-- @babel/preset-react: ^7.25.0
-- @babel/preset-typescript: ^7.25.0
-- @eslint/js: ^8.57.1
+- @babel/core: ^7.28.0
+- @babel/preset-env: ^7.28.0
+- @babel/preset-flow: ^7.27.0
+- @babel/preset-react: ^7.28.0
+- @babel/preset-typescript: ^7.28.0
 - @react-native-masked-view/masked-view: ^0.3.2
-- @react-native/babel-preset: ^0.81.4
-- @rollup/plugin-commonjs: ^28.0.6
+- @react-native/babel-preset: ^0.83.0
+- @rollup/plugin-commonjs: ^29.0.0
 - @rollup/plugin-json: ^6.1.0
-- @rollup/plugin-node-resolve: ^16.0.1
-- @rollup/plugin-typescript: ^12.1.4
-- … 36 more
+- @rollup/plugin-node-resolve: ^16.0.0
+- @rollup/plugin-typescript: ^12.3.0
+- @shopify/flash-list: ^2.2.0
+- … 32 more
 
 ## UI README
 
@@ -120,7 +120,7 @@ export function App() {
 For direct inputs, you can pass `keyboardFocusId` to make a field eligible for deferred refocus requests triggered via `KeyboardManagerProvider` (for example, when an overlay completes a selection and needs to restore focus to a specific input).
 
 ## Component: <Accordion>
-The Accordion component groups related content into expandable sections. It supports:
+The Accordion component groups related content into expandable sections.
 
 ### Props
 `items` (AccordionItem[]) [required]
@@ -1139,7 +1139,7 @@ const formatAccounts = (value: number) => `${value.toLocaleString()} accounts`;
 ```
 
 ## Component: <Block>
-A polymorphic building block component that serves as a foundational element to replace View components throughout the application.
+A polymorphic building block component that serves as a foundational element to replace View components throughout the application. Similar to a `<div>` in web development.
 
 ### Props
 `children` (React.ReactNode) [optional]
@@ -1167,7 +1167,7 @@ A polymorphic building block component that serves as a foundational element to 
 ```tsx
 import { Block, Column, Text } from '@platform-blocks/ui';
   return (
-    <Column gap="lg" w="100%" maxWidth={420}>
+    <Column gap="lg" w="100%" maxW={420}>
       <Block bg="#111827" radius="lg" p="lg">
         <Column gap="sm">
           <Text weight="semibold" color="white">
@@ -1412,18 +1412,18 @@ Brand icons for popular platforms (e.g. Apple, Google, Facebook, etc.) with buil
   Icons displayed in their authentic brand palettes.
 
 ```tsx
-import { BrandIcon, Card, Column, Row, Text } from '@platform-blocks/ui';
+import { BrandIcon, Card, Block, Row, Text } from '@platform-blocks/ui';
 import { FEATURED_BRANDS } from '../data';
   return (
     <Card variant="outline" p="xl">
       <Row align="center" gap="md" wrap="wrap">
         {FEATURED_BRANDS.map((brand) => (
-          <Column key={brand} align="center" gap="xs">
+          <Block key={brand} align="center" gap="xs">
             <BrandIcon brand={brand} size="xl" />
             <Text variant="small" align="center">
               {brand}
             </Text>
-          </Column>
+          </Block>
         ))}
       </Row>
     </Card>
@@ -1435,26 +1435,26 @@ import { FEATURED_BRANDS } from '../data';
   Size presets from small through extra large for consistent placement.
 
 ```tsx
-import { BrandIcon, Card, Column, Row, Text } from '@platform-blocks/ui';
+import { BrandIcon, Card, Block, Row, Text } from '@platform-blocks/ui';
   return (
     <Card variant="outline" p="xl">
       <Row align="center" gap="lg" wrap="wrap">
-        <Column align="center" gap="sm">
+        <Block align="center">
           <BrandIcon brand="google" size="sm" />
           <Text variant="small">sm</Text>
-        </Column>
-        <Column align="center" gap="sm">
+        </Block>
+        <Block align="center">
           <BrandIcon brand="google" size="md" />
           <Text variant="small">md</Text>
-        </Column>
-        <Column align="center" gap="sm">
+        </Block>
+        <Block align="center">
           <BrandIcon brand="google" size="lg" />
           <Text variant="small">lg</Text>
-        </Column>
-        <Column align="center" gap="sm">
+        </Block>
+        <Block align="center">
           <BrandIcon brand="google" size="xl" />
           <Text variant="small">xl</Text>
-        </Column>
+        </Block>
       </Row>
     </Card>
   );
@@ -1793,383 +1793,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
 }
 ```
 
-## Component: <Can>
-The Can component provides conditional rendering based on user permissions and abilities. It integrates with permission systems to show or hide UI elements based on what the current user is allowed to do.
-
-### Props
-`I` (Action) [required]
-  Action to check
-`a` (Subject) [optional]
-  Subject to check against
-`field` (Field) [optional]
-  Specific field to check (optional)
-`children` (React.ReactNode) [optional]
-  Children to render when permission is granted
-`fallback` (React.ReactNode) [optional, default: null]
-  Alternative content when permission is denied
-`ability` (Ability) [optional]
-  Custom ability instance (optional)
-`style` (ViewStyle) [optional]
-  Additional styles
-`testID` (string) [optional]
-  Test ID for testing
-`passthrough` (boolean) [optional, default: false }) => { const { ability: contextAbility } = usePermissions(); const abi...]
-  Whether to passthrough (render children regardless) for development
-
-### Demos
-
-- Role toggle | (id: Can.basic) | tags: permissions, gating
-  Switch between viewer, editor, and admin roles to see how `Can` and `Cannot` update messaging in real time.
-
-```tsx
-import { useMemo, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import {
-  Button,
-  Can,
-  Cannot,
-  Card,
-  Column,
-  PermissionProvider,
-  Row,
-  Text,
-  defineAbility,
-  type PermissionRule,
-} from '@platform-blocks/ui';
-type RoleKey = 'viewer' | 'editor' | 'admin';
-type DemoUser = {
-  id: string;
-  name: string;
-  role: RoleKey;
-};
-type RoleOption = {
-  key: RoleKey;
-  label: string;
-  summary: string;
-  buildRules: (user: DemoUser) => PermissionRule[];
-};
-const ROLE_OPTIONS: RoleOption[] = [
-  {
-    key: 'viewer',
-    label: 'Viewer',
-    summary: 'Reads published content and comments only.',
-    buildRules: () =>
-      defineAbility((builder) => {
-        builder.allow('read', 'Post');
-        builder.allow('read', 'Comment');
-        builder.forbid('publish', 'Post');
-        builder.forbid('manage', 'Billing');
-      }).getRules(),
-  },
-  {
-    key: 'editor',
-    label: 'Editor',
-    summary: 'Creates and publishes posts but not billing settings.',
-    buildRules: (user) =>
-      defineAbility((builder) => {
-        builder.allow('read', 'Post');
-        builder.allow('read', 'Comment');
-        builder.allow('create', 'Post');
-        builder.allow('edit', 'Post');
-        builder.allow('manage', 'Comment');
-        builder.allow('publish', 'Post');
-        builder.forbid('manage', 'Billing');
-        builder.allowIf('edit', 'Profile', { ownerId: user.id });
-      }).getRules(),
-  },
-  {
-    key: 'admin',
-    label: 'Admin',
-    summary: 'Manages every surface across the product.',
-    buildRules: () =>
-      defineAbility((builder) => {
-        builder.manage('*');
-      }).getRules(),
-  },
-];
-  const [role, setRole] = useState<RoleKey>('viewer');
-  const user = useMemo<DemoUser>(
-    () => ({ id: 'user-42', name: 'Kai Rivera', role }),
-    [role]
-  );
-  const activeRole = useMemo(
-    () => ROLE_OPTIONS.find((option) => option.key === role) ?? ROLE_OPTIONS[0],
-    [role]
-  );
-  const rules = useMemo(() => activeRole.buildRules(user), [activeRole, user]);
-  return (
-    <PermissionProvider key={`${role}-${user.id}`} user={user} rules={rules}>
-      <Column gap="lg" align="stretch" style={styles.wrapper}>
-        <Column gap="xs">
-          <Text variant="h4" weight="semibold">
-            Role-based gating
-          </Text>
-          <Text variant="p" colorVariant="muted">
-            Switch roles to preview how <Text weight="semibold">Can</Text> and <Text weight="semibold">Cannot</Text>{' '}
-            respond to the active ability.
-          </Text>
-        </Column>
-        <Column gap="sm">
-          <Row gap="sm" wrap="wrap">
-            {ROLE_OPTIONS.map(({ key, label }) => (
-              <Button
-                key={key}
-                variant={key === role ? 'filled' : 'outline'}
-                onPress={() => setRole(key)}
-              >
-                {label}
-              </Button>
-            ))}
-          </Row>
-          <Text variant="small" colorVariant="muted">
-            {activeRole.summary}
-          </Text>
-        </Column>
-        <Card variant="subtle" style={styles.card}>
-          <Column gap="lg">
-            <Column gap="xs">
-              <Text variant="h5" weight="semibold">
-                Publishing drafts
-              </Text>
-              <Text variant="p" colorVariant="muted">
-                Only editors and admins can approve posts for publication.
-              </Text>
-            </Column>
-            <Can
-              style={styles.section}
-              I="publish"
-              a="Post"
-              fallback={
-                <Column gap="xs">
-                  <Text weight="semibold" colorVariant="error">
-                    Publishing restricted
-                  </Text>
-                  <Text variant="p" colorVariant="muted">
-                    Upgrade to the editor or admin role to publish drafts.
-                  </Text>
-                </Column>
-              }
-            >
-              <Column gap="xs">
-                <Text weight="semibold" colorVariant="success">
-                  Publishing allowed
-                </Text>
-                <Text variant="p" colorVariant="muted">
-                  You can approve and publish content from the editorial queue.
-                </Text>
-              </Column>
-            </Can>
-            <Cannot I="manage" a="Billing" fallback={null} style={styles.section}>
-              <Column gap="xs">
-                <Text weight="semibold">
-                  Billing hidden
-                </Text>
-                <Text variant="p" colorVariant="muted">
-                  Billing controls stay hidden from non-admin roles.
-                </Text>
-              </Column>
-            </Cannot>
-          </Column>
-        </Card>
-      </Column>
-    </PermissionProvider>
-  );
-}
-const styles = StyleSheet.create({
-  wrapper: {
-    width: '100%',
-  },
-  card: {
-    width: '100%',
-  },
-  section: {
-    width: '100%',
-  },
-});
-```
-
-- Object rules | (id: Can.object-level) | tags: permissions, conditions
-  Evaluates ownership- and status-aware rules with `CanWithConditions` for each post in a list.
-
-```tsx
-import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
-import {
-  CanWithConditions,
-  Card,
-  Column,
-  PermissionProvider,
-  Text,
-  defineAbility,
-  type PermissionRule,
-} from '@platform-blocks/ui';
-type PostStatus = 'draft' | 'ready' | 'published';
-type Post = {
-  id: string;
-  title: string;
-  status: PostStatus;
-  authorId: string;
-};
-type DemoUser = {
-  id: string;
-  name: string;
-};
-const CURRENT_USER: DemoUser = {
-  id: 'writer-42',
-  name: 'Kai Rivera',
-};
-const POSTS: Post[] = [
-  {
-    id: 'draft-announcement',
-    title: 'Draft: Transit pilot announcement',
-    status: 'draft',
-    authorId: CURRENT_USER.id,
-  },
-  {
-    id: 'ready-release',
-    title: 'Ready: Fall product release notes',
-    status: 'ready',
-    authorId: CURRENT_USER.id,
-  },
-  {
-    id: 'published-highlight',
-    title: 'Published: Community success stories',
-    status: 'published',
-    authorId: 'team-ops',
-  },
-];
-const abilityRules: PermissionRule[] = defineAbility((builder) => {
-  builder.allow('read', 'Post');
-  builder.allowIf('edit', 'Post', { authorId: CURRENT_USER.id });
-  builder.allowIf('delete', 'Post', { authorId: CURRENT_USER.id, status: 'draft' });
-  builder.allowIf('publish', 'Post', { authorId: CURRENT_USER.id, status: 'ready' });
-  builder.forbid('archive', 'Post');
-}).getRules();
-const STATUS_COPY: Record<PostStatus, string> = {
-  draft: 'Draft — not yet visible to readers',
-  ready: 'Ready for review and publishing',
-  published: 'Published — locked against edits',
-};
-  const rules = useMemo(() => abilityRules, []);
-  return (
-    <PermissionProvider user={CURRENT_USER} rules={rules}>
-      <Column gap="lg" align="stretch" style={styles.wrapper}>
-        <Column gap="xs">
-          <Text variant="h4" weight="semibold">
-            Object-level permissions
-          </Text>
-          <Text variant="p" colorVariant="muted">
-            `CanWithConditions` evaluates each post against rule conditions like ownership and status.
-          </Text>
-        </Column>
-        {POSTS.map((post) => {
-          const isOwner = post.authorId === CURRENT_USER.id;
-          return (
-            <Card key={post.id} variant="subtle" style={styles.card}>
-              <Column gap="md">
-                <Column gap="xs">
-                  <Text variant="h5" weight="semibold">
-                    {post.title}
-                  </Text>
-                  <Text variant="p" colorVariant="muted">
-                    {STATUS_COPY[post.status]}
-                  </Text>
-                  <Text variant="small" colorVariant="muted">
-                    {isOwner ? 'You are the author.' : 'Owned by another teammate.'}
-                  </Text>
-                </Column>
-                <CanWithConditions
-                  I="edit"
-                  this={post}
-                  fallback={
-                    <Column gap="xs">
-                      <Text weight="semibold" colorVariant="error">
-                        Editing blocked
-                      </Text>
-                      <Text variant="p" colorVariant="muted">
-                        {isOwner
-                          ? 'Published posts are locked to preserve the public record.'
-                          : 'You can only edit posts that you authored.'}
-                      </Text>
-                    </Column>
-                  }
-                >
-                  <Column gap="xs">
-                    <Text weight="semibold" colorVariant="success">
-                      Editing allowed
-                    </Text>
-                    <Text variant="p" colorVariant="muted">
-                      This post matches your ownership rules, so inline edits are enabled.
-                    </Text>
-                  </Column>
-                </CanWithConditions>
-                <CanWithConditions
-                  I="delete"
-                  this={post}
-                  fallback={
-                    <Column gap="xs">
-                      <Text weight="semibold">
-                        Deletion limited
-                      </Text>
-                      <Text variant="p" colorVariant="muted">
-                        Only drafts you created can be deleted. Publish-ready or published posts remain.
-                      </Text>
-                    </Column>
-                  }
-                >
-                  <Column gap="xs">
-                    <Text weight="semibold" colorVariant="warning">
-                      Draft can be deleted
-                    </Text>
-                    <Text variant="p" colorVariant="muted">
-                      Remove the draft entirely or start over from a fresh outline.
-                    </Text>
-                  </Column>
-                </CanWithConditions>
-                <CanWithConditions
-                  I="publish"
-                  this={post}
-                  fallback={
-                    <Column gap="xs">
-                      <Text weight="semibold">
-                        Waiting on review
-                      </Text>
-                      <Text variant="p" colorVariant="muted">
-                        Publishing unlocks when a post you authored reaches the "ready" stage.
-                      </Text>
-                    </Column>
-                  }
-                >
-                  <Column gap="xs">
-                    <Text weight="semibold" colorVariant="success">
-                      Ready to publish
-                    </Text>
-                    <Text variant="p" colorVariant="muted">
-                      Move the post to production and notify subscribers with one click.
-                    </Text>
-                  </Column>
-                </CanWithConditions>
-              </Column>
-            </Card>
-          );
-        })}
-        <Text variant="small" colorVariant="muted" align="center">
-          Conditional checks compare each object to your rules without duplicating permission logic in UI components.
-        </Text>
-      </Column>
-    </PermissionProvider>
-  );
-}
-const styles = StyleSheet.create({
-  wrapper: {
-    width: '100%',
-  },
-  card: {
-    width: '100%',
-  },
-});
-```
-
 ## Component: <CandlestickChart>
 Visualizes financial OHLC price movements over time.
 
@@ -2388,7 +2011,7 @@ The Card component provides a flexible container for displaying content with con
 ```tsx
 import { Card, Column, Text, Button } from '@platform-blocks/ui';
   return (
-    <Card p="lg" radius="lg" shadow="md" maxWidth={320}>
+    <Card p="lg" radius="lg" shadow="md" maxW={320}>
       <Column gap="md">
         <Column gap="xs">
           <Text variant="small" colorVariant="muted">
@@ -2439,9 +2062,11 @@ The Carousel component displays a series of content in a horizontal scrollable v
 
 ### Props
 `children` (React.ReactNode[]) [required]
+  Array of carousel slide elements
 `orientation` ('horizontal' | 'vertical') [optional]
   Orientation of the carousel
 `showArrows` (boolean) [optional]
+  Show navigation arrow buttons
 `showDots` (boolean) [optional]
   Show navigation dots
 `autoPlay` (boolean) [optional]
@@ -2485,7 +2110,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Weekly highlights
@@ -2500,7 +2125,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Product updates
@@ -2515,7 +2140,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					radius="xl"
 					p="xl"
 					justify="center"
-					minHeight={220}
+					minH={220}
 				>
 					<Text variant="h3" color="white">
 						Team spotlights
@@ -2555,7 +2180,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Breaking news
@@ -2571,7 +2196,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Weather alerts
@@ -2587,7 +2212,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           p="lg"
           justify="center"
           align="center"
-          minHeight={140}
+          minH={140}
         >
           <Text variant="h4" color="white">
             Schedule changes
@@ -3437,6 +3062,33 @@ import { CopyButton, Card, Flex, Text } from '@platform-blocks/ui';
 ## Component: <DataTable>
 The DataTable component provides a feature-rich interface for displaying tabular data with sorting, pagination, row selection, and customizable columns.
 
+### Props
+`id` (string) [optional]
+  Stable id for user preference persistence
+`data` (T[]) [required]
+  Data rows
+`columns` (DataTableColumn<T>[]) [required]
+  Column definitions
+`loading` (boolean) [optional]
+  Loading state
+`error` (string | null) [optional]
+  Error message (when defined overrides table body)
+`emptyMessage` (string) [optional]
+  Message to display when there is no data
+`searchable` (boolean) [optional]
+  Enable global search input
+`searchPlaceholder` (string) [optional]
+  Placeholder text for global search
+`searchValue` (string) [optional]
+  Controlled global search value
+`onSearchChange` ((value: string) => void) [optional]
+  Global search change handler
+`sortBy` (DataTableSort[]) [optional]
+  Current sorting state
+`onSortChange` ((sort: DataTableSort[]) => void) [optional]
+  Sorting change callback
+- … 66 more props documented
+
 ### Demos
 
 - Getting Started | (id: DataTable.basic) | tags: datatable
@@ -3778,19 +3430,30 @@ The Dialog component presents content above the app, supporting focus trapping, 
 
 ### Props
 `visible` (boolean) [required]
+  Controls whether the dialog is visible.
 `variant` ('modal' | 'bottomsheet' | 'fullscreen') [optional]
+  Presentation style of the dialog.
 `title` (string | null) [optional]
+  Optional title text shown in the header area.
 `children` (ReactNode) [required]
+  Dialog body content.
 `closable` (boolean) [optional]
+  Allows the user to close the dialog via UI controls or escape/back.
 `backdrop` (boolean) [optional]
+  Whether to render the dimming backdrop behind the dialog.
 `backdropClosable` (boolean) [optional]
+  Whether tapping the backdrop should close the dialog.
 `shouldClose` (boolean) [optional]
-  Triggers close animation when set to true
+  Triggers close animation when set to true.
 `onClose` (() => void) [optional]
-`width` (number) [optional]
-`height` (number) [optional]
-`style` (object) [optional]
-- … 1 more props documented
+  Called when the dialog requests to close.
+`w` (number) [optional]
+  Optional explicit width for the dialog content (modal/bottomsheet).
+`h` (number) [optional]
+  Optional explicit height for the dialog content.
+`radius` (number) [optional]
+  Corner radius for the dialog container (bottom sheet rounds top corners only).
+- … 3 more props documented
 
 ### Demos
 
@@ -4261,25 +3924,25 @@ import { Flex, Card, Text, Column } from '@platform-blocks/ui';
           <Text variant="span" size="sm" colorVariant="muted">align=&quot;{value}&quot;</Text>
           <Card variant="outline" p="sm">
             {value === 'baseline' ? (
-              <Flex direction="row" align={value as any} gap="sm" height={80}>
+              <Flex direction="row" align={value as any} gap="sm" h={80}>
                 {/* Use Text of varying sizes directly to demonstrate baseline alignment */}
                 <Text variant="h3" style={{ backgroundColor: '#eee', paddingHorizontal: 8 }}>Aa</Text>
                 <Text variant="p" style={{ backgroundColor: '#eee', paddingHorizontal: 8 }}>Bb</Text>
                 <Text variant="small" style={{ backgroundColor: '#eee', paddingHorizontal: 8 }}>Cc</Text>
               </Flex>
             ) : value === 'stretch' ? (
-              <Flex direction="row" align={value as any} gap="sm" height={80}>
+              <Flex direction="row" align={value as any} gap="sm" h={80}>
                 {/* No fixed heights so children stretch to the container's cross-size */}
                 <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">1</Text></Card>
                 <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">2</Text></Card>
                 <Card p="xs" style={{ minWidth: 32 }}><Text variant="small">3</Text></Card>
               </Flex>
             ) : (
-              <Flex direction="row" align={value as any} gap="sm" height={80}>
+              <Flex direction="row" align={value as any} gap="sm" h={80}>
                 {/* Different heights to showcase flex-start/center/flex-end */}
-                <Card p="xs" height={40}><Text variant="small">A</Text></Card>
-                <Card p="xs" height={60}><Text variant="small">B</Text></Card>
-                <Card p="xs" height={30}><Text variant="small">C</Text></Card>
+                <Card p="xs" h={40}><Text variant="small">A</Text></Card>
+                <Card p="xs" h={60}><Text variant="small">B</Text></Card>
+                <Card p="xs" h={30}><Text variant="small">C</Text></Card>
               </Flex>
             )}
           </Card>
@@ -4856,7 +4519,7 @@ const goalProgress = Math.min(1, CURRENT_REDUCTION / TARGET_REDUCTION);
 ```
 
 ## Component: <GradientText>
-# GradientText
+A text component that displays text with gradient colors. Supports customizable gradients with multiple colors, different angles, and animated transitions (web only).
 
 ### Props
 `colors` (string[]) [required]
@@ -4981,7 +4644,7 @@ const styles = StyleSheet.create({
 ```
 
 ## Component: <Grid>
-# Grid
+Responsive 12‑column layout primitive with span-based children. Each `GridItem` declares how many columns it consumes; container controls total columns and gaps. Supports responsive values for `columns` and `span` using breakpoint-aware pr…
 
 ### Props
 `columns` (ResponsiveProp<number>) [optional]
@@ -5552,79 +5215,6 @@ const median = sortedLengths[Math.floor(sortedLengths.length / 2)];
       }}
       valueFormatter={(count) => `${count} customers`}
     />
-  );
-}
-```
-
-## Component: <HoverCard>
-The `HoverCard` component displays rich content when users hover (web) or tap/click a target element. It is more substantial than a tooltip and suited for previewing user profiles, link summaries, or supplementary UI controls.
-
-### Props
-`children` (React.ReactNode) [required]
-  Floating content
-`target` (React.ReactElement) [required]
-  Target element that triggers hover card
-`position` (HoverCardPosition) [optional, default: 'top']
-  Position relative to target
-`offset` (number) [optional, default: 8]
-  Offset gap between target and card
-`openDelay` (number) [optional, default: 100]
-  Delay before opening (ms)
-`closeDelay` (number) [optional, default: 150]
-  Delay before closing (ms)
-`opened` (boolean) [optional]
-  Controlled opened state
-`shadow` (HoverCardShadow) [optional, default: 'md']
-  Shadow size
-`radius` (SizeValue) [optional, default: 'md']
-  Corner radius
-`withinPortal` (boolean) [optional, default: true]
-  Whether rendered in portal (not yet implemented)
-`width` (number) [optional]
-  Fixed width
-`withArrow` (boolean) [optional, default: false]
-  Show directional arrow
-- … 9 more props documented
-
-### Demos
-
-- HoverCard Basic Usage | (id: HoverCard.basic) | tags: hovercard, floating, overlay, interaction
-  A lightweight floating panel that appears when the user hovers or focuses a target element. Useful for rich previews without committing navigation.
-
-```tsx
-import { View } from 'react-native';
-import { Text, HoverCard, Button, Flex } from '../../../';
-  return (
-    <Flex gap={24} style={{ padding: 16 }}>
-      <HoverCard
-        target={<Button variant="outline" size="sm">Hover me</Button>}
-        position="top"
-        withArrow
-      >
-        <Text variant="p" weight="semibold">Simple hover card</Text>
-        <Text variant="small" colorVariant="muted" style={{ marginTop: 4 }}>
-          Appears when you hover or tap (on mobile) the target.
-        </Text>
-      </HoverCard>
-      <HoverCard
-        target={<Text style={{ textDecorationLine: 'underline' }}>Inline text trigger</Text>}
-        position="right"
-        offset={12}
-        shadow="lg"
-        radius="lg"
-        withArrow
-      >
-        <Text variant="p">You can wrap any element.</Text>
-      </HoverCard>
-      <HoverCard
-        target={<Button variant="filled" size="sm">Click trigger</Button>}
-        trigger="click"
-        position="bottom"
-        withArrow
-      >
-        <Text variant="p">Opened via click. Click again (or outside) to close.</Text>
-      </HoverCard>
-    </Flex>
   );
 }
 ```
@@ -6377,9 +5967,9 @@ The `Image` component displays images with optional captions and overlays, provi
   Image resize mode
 `size` (SizeValue | number) [optional]
   Image size preset
-`width` (number | string) [optional]
+`w` (number | string) [optional]
   Custom width
-`height` (number | string) [optional]
+`h` (number | string) [optional]
   Custom height
 `aspectRatio` (number) [optional]
   Aspect ratio
@@ -6405,8 +5995,8 @@ import { Image } from '../../Image';
         <Image 
           src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=300&h=200&fit=crop" 
           alt="Mountain landscape"
-          width={300}
-          height={200}
+          w={300}
+          h={200}
         />
         <Text size="sm" color="gray.6">
           A simple image with specified dimensions
@@ -6428,8 +6018,8 @@ import { Image, Card, Text, Row, Icon, Block } from '@platform-blocks/ui';
         <Block>
           <Image 
             src="https://invalid-url-that-will-fail.com/image.jpg"
-            width={120}
-            height={80}
+            w={120}
+            h={80}
             fallback={
               <Icon name="image-off" size={24} color="gray.5" />
             }
@@ -6440,8 +6030,8 @@ import { Image, Card, Text, Row, Icon, Block } from '@platform-blocks/ui';
         <Block>
           <Image 
             src="https://another-invalid-url.com/image.jpg"
-            width={120}
-            height={80}
+            w={120}
+            h={80}
             fallback={
               <Text size="sm" color="gray.6" style={{ textAlign: 'center' }}>
                 Image not found
@@ -6744,7 +6334,7 @@ import { Column, Input, Text } from '@platform-blocks/ui';
 ```
 
 ## Component: <KeyCap>
-# KeyCap
+A visual component for displaying keyboard keys, shortcuts, and key combinations with proper styling.
 
 ### Props
 `children` (ReactNode) [required]
@@ -7119,7 +6709,7 @@ const SERIES = [
 ```
 
 ## Component: <Link>
-# Link
+A versatile component for creating styled hyperlinks and navigation elements with hover states and accessibility features.
 
 ### Props
 `children` (React.ReactNode) [required]
@@ -7362,62 +6952,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-```
-
-## Component: <Lottie>
-Lottiefile rendering/playback
-
-### Props
-`source` (any) [required]
-  Required Lottie animation JSON (require or imported object)
-`autoPlay` (boolean) [optional, default: true]
-  Auto play animation
-`loop` (boolean) [optional, default: true]
-  Loop animation
-`progress` (number) [optional]
-  Progress prop (0-1) for manual control
-`speed` (number) [optional, default: 1]
-  Speed multiplier
-`style` (ViewStyle) [optional]
-  Style for container
-`testID` (string) [optional]
-  Test ID
-`paused` (boolean) [optional]
-  Pause state
-`resizeMode` ('cover' | 'contain' | 'center') [optional, default: 'contain']
-  Optional resize mode (cover/contain/center)
-`onAnimationFinish` ((isCancelled: boolean) => void) [optional]
-  Called when animation finishes (loop false)
-
-### Demos
-
-- Basic | (id: Lottie.basic)
-
-```tsx
-import { Lottie } from '@platform-blocks/ui';
-import file from '../../../../../../docs/assets/Blocks.lottie';
-  return (
-    <Lottie source={file} autoPlay loop />
-  )
-}
-```
-
-- Speed | (id: Lottie.speed)
-
-```tsx
-import { useState } from 'react';
-import { Lottie, Text, Slider, Block } from '@platform-blocks/ui';
-import file from '../../../../../../docs/assets/Blocks.lottie';
-  const [speed, setSpeed] = useState(1);
-  return (
-    <Block>
-      <Lottie source={file} autoPlay loop speed={speed} />
-      <Block direction="row" >
-        <Slider label={<Text>Speed: {speed}x</Text>} value={speed} min={0.25} max={2} step={0.25} onChange={val => setSpeed(val)} fullWidth />
-      </Block>
-    </Block>
-  );
-}
 ```
 
 ## Component: <MarimekkoChart>
@@ -7910,9 +7444,9 @@ The Menu component provides a dropdown interface for navigation links, actions, 
   Callback when menu opens
 `onClose` (() => void) [optional]
   Callback when menu closes
-`width` (number | 'target' | 'auto') [optional, default: 'auto']
+`w` (number | 'target' | 'auto') [optional, default: 'auto']
   Menu content width
-`maxHeight` (number) [optional, default: 300]
+`maxH` (number) [optional, default: 300]
   Maximum height for scrollable content
 `shadow` ('none' | 'sm' | 'md' | 'lg' | 'xl') [optional, default: 'md']
   Menu content shadow
@@ -7938,34 +7472,27 @@ import {
   Text,
 } from '@platform-blocks/ui';
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="sm">
-          <Text size="sm" colorVariant="secondary">
-            Wrap a trigger and dropdown in `Menu` to present grouped actions.
-          </Text>
-          <Menu>
-            <Button size="sm" variant="outline">
-              Open menu
-            </Button>
-            <MenuDropdown>
-              <MenuItem startSection={<Icon name="user" size="sm" />}>
-                Profile
-              </MenuItem>
-              <MenuItem startSection={<Icon name="settings" size="sm" />}>
-                Settings
-              </MenuItem>
-              <MenuItem startSection={<Icon name="info" size="sm" />}>
-                Help & Support
-              </MenuItem>
-              <MenuDivider />
-              <MenuItem startSection={<Icon name="arrow-left" size="sm" />}>
-                Logout
-              </MenuItem>
-            </MenuDropdown>
-          </Menu>
-        </Column>
-      </Card>
+    <Column gap="sm">
+      <Menu>
+        <Button size="sm" variant="outline">
+          Open menu
+        </Button>
+        <MenuDropdown>
+          <MenuItem startSection={<Icon name="user" size="sm" />}>
+            Profile
+          </MenuItem>
+          <MenuItem startSection={<Icon name="settings" size="sm" />}>
+            Settings
+          </MenuItem>
+          <MenuItem startSection={<Icon name="info" size="sm" />}>
+            Help & Support
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem startSection={<Icon name="arrow-left" size="sm" />}>
+            Logout
+          </MenuItem>
+        </MenuDropdown>
+      </Menu>
     </Column>
   );
 }
@@ -7986,49 +7513,42 @@ import {
   Text,
 } from '@platform-blocks/ui';
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="md">
-          <Text size="sm" colorVariant="secondary">
-            Set `trigger="contextmenu"` to open the menu with a right-click or long press.
-          </Text>
-          <Menu trigger="contextmenu">
-            <Card
-              p="lg"
-              variant="outline"
-              style={{
-                borderStyle: 'dashed',
-                cursor: 'context-menu',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 140,
-              }}
-            >
-              <Column gap="sm" align="center">
-                <Icon name="mouse" size="lg" color="tertiary" />
-                <Text size="sm" colorVariant="secondary">
-                  Right-click or long-press this area
-                </Text>
-              </Column>
-            </Card>
-            <MenuDropdown>
-              <MenuItem startSection={<Icon name="copy" size="sm" />}>
-                Copy link
-              </MenuItem>
-              <MenuItem startSection={<Icon name="edit" size="sm" />}>
-                Rename
-              </MenuItem>
-              <MenuItem startSection={<Icon name="share" size="sm" />}>
-                Share
-              </MenuItem>
-              <MenuDivider />
-              <MenuItem startSection={<Icon name="trash" size="sm" />}>
-                Delete
-              </MenuItem>
-            </MenuDropdown>
-          </Menu>
-        </Column>
-      </Card>
+    <Column gap="sm">
+      <Menu trigger="contextmenu">
+        <Card
+          p="lg"
+          variant="outline"
+          style={{
+            borderStyle: 'dashed',
+            cursor: 'context-menu',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 140,
+          }}
+        >
+          <Column gap="sm" align="center">
+            <Icon name="star" size="lg" color="gold" />
+            <Text size="sm" colorVariant="secondary">
+              Right-click or long-press this area
+            </Text>
+          </Column>
+        </Card>
+        <MenuDropdown>
+          <MenuItem startSection={<Icon name="copy" size="sm" />}>
+            Copy link
+          </MenuItem>
+          <MenuItem startSection={<Icon name="edit" size="sm" />}>
+            Rename
+          </MenuItem>
+          <MenuItem startSection={<Icon name="share" size="sm" />}>
+            Share
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem startSection={<Icon name="trash" size="sm" />}>
+            Delete
+          </MenuItem>
+        </MenuDropdown>
+      </Menu>
     </Column>
   );
 }
@@ -8157,7 +7677,7 @@ const DAY_OPTIONS = [3, 5, 7];
 ```
 
 ## Component: <MonthPicker>
-# MonthPicker
+Interactive grid for selecting a month within a given year. Renders a responsive layout that adapts to screen width and respects locale formatting as well as min/max date constraints.
 
 ### Props
 `value` (Date | null) [optional]
@@ -8205,7 +7725,7 @@ import { Column, MonthPicker, Text } from '@platform-blocks/ui';
 ```
 
 ## Component: <MonthPickerInput>
-# MonthPickerInput
+Form-friendly wrapper around `MonthPicker` that renders an input field and opens the picker in a modal dialog. Mirrors the `DatePickerInput` API for consistency while focusing on month-level selection workflows.
 
 ### Props
 `value` (Date | null) [optional]
@@ -8257,86 +7777,6 @@ import { Column, MonthPickerInput, Text } from '@platform-blocks/ui';
           ? value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
           : 'No month selected'}
       </Text>
-    </Column>
-  );
-}
-```
-
-## Component: <NavigationProgress>
-A lightweight global top progress bar for indicating navigation or route-loading states.
-
-### Props
-`value` (number) [optional]
-  Controlled progress value (0-100). If omitted, internal controller progress is used
-`size` (number) [optional, default: 3]
-  Height (px)
-`color` (string) [optional, default: 'primary']
-  Color token key or raw color
-`active` (boolean) [optional]
-  Whether bar is active/visible when value is controlled
-`zIndex` (number) [optional, default: 9999]
-  z-index layering
-`overlay` (boolean) [optional, default: true]
-  If true position absolute at top full width
-`stepInterval` (number) [optional, default: 500]
-  Step interval in ms for internal progression animation
-`radius` (number) [optional, default: 0]
-  Border radius
-`style` (any) [optional]
-  Custom styles
-
-### Demos
-
-- Basics | (id: NavigationProgress.basic) | tags: navigation
-  Start the shared navigation progress bar, adjust its value, and reset it through the imperative controller.
-
-```tsx
-import { useEffect } from 'react';
-import { Button, Column, NavigationProgress, Row, navigationProgress } from '@platform-blocks/ui';
-const AUTO_COMPLETE_DELAY = 1500;
-  useEffect(() => {
-    navigationProgress.start();
-    const timer = setTimeout(() => navigationProgress.complete(), AUTO_COMPLETE_DELAY);
-    return () => {
-      clearTimeout(timer);
-      navigationProgress.reset();
-    };
-  }, []);
-  return (
-    <Column gap="sm" align="flex-start">
-      <NavigationProgress overlay={false} />
-      <Row gap="sm" wrap="wrap">
-        <Button size="sm" onPress={() => navigationProgress.start()}>Start</Button>
-        <Button size="sm" onPress={() => navigationProgress.increment(10)}>Increment</Button>
-        <Button size="sm" variant="outline" onPress={() => navigationProgress.complete()}>Complete</Button>
-        <Button size="sm" variant="ghost" onPress={() => navigationProgress.reset()}>Reset</Button>
-      </Row>
-    </Column>
-  );
-}
-```
-
-- Controller | (id: NavigationProgress.controller)
-  title: Controller actions
-
-```tsx
-import { useEffect } from 'react';
-import { Button, Column, NavigationProgress, Row, navigationProgress } from '@platform-blocks/ui';
-  useEffect(() => {
-    navigationProgress.reset();
-  }, []);
-  return (
-    <Column gap="sm" align="flex-start">
-      <NavigationProgress />
-      <Row gap="sm" wrap="wrap">
-        <Button size="sm" onPress={() => navigationProgress.start()}>Start</Button>
-        <Button size="sm" onPress={() => navigationProgress.stop()}>Stop</Button>
-        <Button size="sm" onPress={() => navigationProgress.increment()}>Increment</Button>
-        <Button size="sm" onPress={() => navigationProgress.decrement()}>Decrement</Button>
-        <Button size="sm" onPress={() => navigationProgress.set(50)}>Set 50%</Button>
-        <Button size="sm" onPress={() => navigationProgress.reset()}>Reset</Button>
-        <Button size="sm" variant="outline" onPress={() => navigationProgress.complete()}>Complete</Button>
-      </Row>
     </Column>
   );
 }
@@ -9016,7 +8456,7 @@ const SUPPORT_CASES = [
 ```
 
 ## Component: <PhoneInput>
-# PhoneInput
+The `PhoneInput` component provides a flexible way to capture telephone numbers with built-in masking and formatting.
 
 ### Props
 `value` (string) [optional, default: '']
@@ -9358,6 +8798,8 @@ Popover sits on the same overlay primitives as Menu and Tooltip, making it suita
   Called when popover closes
 `onDismiss` (() => void) [optional]
   Called when popover is dismissed via outside click or escape
+`trigger` ('click' | 'hover') [optional, default: 'click']
+  How the popover is triggered: 'click' (default) or 'hover' (mostly useful for devices with a mouse)
 `disabled` (boolean) [optional, default: false]
   Disable popover entirely
 `closeOnClickOutside` (boolean) [optional, default: true]
@@ -9366,9 +8808,7 @@ Popover sits on the same overlay primitives as Menu and Tooltip, making it suita
   Close when pressing Escape
 `clickOutsideEvents` (string[]) [optional]
   Events considered for outside click detection (web only)
-`trapFocus` (boolean) [optional]
-  Trap focus within dropdown (web only)
-- … 32 more props documented
+- … 33 more props documented
 
 ### Demos
 
@@ -9407,45 +8847,29 @@ import { Button, Card, Column, Popover, Text } from '@platform-blocks/ui';
 }
 ```
 
-- Controlled State | (id: Popover.controlled) | tags: popover, state
-  Control the `opened` prop and respond to `onChange` when the popover needs to sync with surrounding form state.
+- Hover Trigger | (id: Popover.hover) | tags: popover, hover, trigger
+  Set `trigger="hover"` to open the popover when the user hovers over the target element. This is useful for mouse users who want quick access to additional content without clicking.
 
 ```tsx
-import { useState } from 'react';
-import { Button, Card, Column, Input, Popover, Text } from '@platform-blocks/ui';
-  const [opened, setOpened] = useState(false);
-  const [email, setEmail] = useState('team@example.com');
+import { Button, Card, Column, Popover, Text } from '@platform-blocks/ui';
   return (
     <Column gap="lg">
       <Card p="md">
-        <Column gap="md">
-          <Button size="xs" variant="ghost" onPress={() => setOpened((value) => !value)}>
-            {opened ? 'Close popover' : 'Open popover'}
-          </Button>
-          <Popover opened={opened} onChange={setOpened} trapFocus>
-            <Popover.Target>
-              <Button size="sm" variant="outline">
-                Invite teammate
-              </Button>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <Column gap="sm" p="sm" style={{ width: 260 }}>
-                <Text weight="semibold">Invite team member</Text>
-                <Input
-                  label="Email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChangeText={setEmail}
-                  size="sm"
-                  fullWidth
-                />
-                <Button size="xs" onPress={() => setOpened(false)}>
-                  Send invite
-                </Button>
-              </Column>
-            </Popover.Dropdown>
-          </Popover>
-        </Column>
+        <Popover trigger="hover">
+          <Popover.Target>
+            <Button size="sm" variant="outline">
+              Hover over me
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Column gap="xs" p="sm" style={{ maxWidth: 240 }}>
+              <Text weight="semibold">Hover popover</Text>
+              <Text variant="small" colorVariant="secondary">
+                This popover opens on hover, ideal for mouse users who want quick access to additional content.
+              </Text>
+            </Column>
+          </Popover.Dropdown>
+        </Popover>
       </Card>
     </Column>
   );
@@ -9838,7 +9262,7 @@ const METRICS = [
 ```
 
 ## Component: <Radio>
-# Radio
+Radio buttons allow users to select a single option from a group of mutually exclusive choices.
 
 ### Props
 `value` (string) [required]
@@ -10031,93 +9455,6 @@ import { Rating, Block } from '@platform-blocks/ui';
       <Rating value={4} readOnly size="xl" label="Extra Large" />
     </Block>
   )
-}
-```
-
-## Component: <RichTextEditor>
-Editable rich text surface with formatting toolbar, selection tracking, autosave hooks, length limits, and extensibility points for images, links, plugins, and custom toolbars.
-
-### Props
-`defaultValue` (RichTextEditorContent) [optional]
-  Initial content
-`value` (RichTextEditorContent) [optional]
-  Current content
-`onChange` ((content: RichTextEditorContent) => void) [optional]
-  Content change handler
-`onSelectionChange` ((selection: RichTextEditorSelection) => void) [optional]
-  Selection change handler
-`onFocus` (() => void) [optional]
-  Focus handler
-`onBlur` (() => void) [optional]
-  Blur handler
-`placeholder` (string) [optional]
-  Editor placeholder
-`readOnly` (boolean) [optional]
-  Whether editor is read-only
-`toolbar` ({ /** Show toolbar */) [optional]
-  Toolbar configuration
-`enabled` (boolean) [optional]
-`position` ('top' | 'bottom' | 'floating') [optional]
-  Toolbar position
-`tools` (Array< | 'bold' | 'italic' | 'underline' | 'strikethrough' | 'color' | 'backgroundColor' | 'fontSize' | 'fontFamily' | 'align' | 'list' | 'heading' | 'link' | 'image' | 'code' | 'quote' | 'separator' | { type: 'custom'; component: React.ComponentType<any>; props?: any }) [optional]
-  Available tools
-- … 29 more props documented
-
-### Demos
-
-- Basic | (id: RichTextEditor.basic)
-  Basic rich text editor with default toolbar (top) and placeholder.
-
-```tsx
-import React, { useState } from 'react';
-import { RichTextEditor, Card, Flex, Text } from '@platform-blocks/ui';
-import type { RichTextEditorContent } from '@platform-blocks/ui';
-  const [value, setValue] = useState<RichTextEditorContent>({ html: '', text: '' });
-  return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={12}>
-        <Text weight="semibold">Article Body</Text>
-        <RichTextEditor
-          value={value}
-          onChange={setValue}
-          placeholder="Write something..."
-          helperText="Formatting toolbar above"
-          minHeight={160}
-        />
-        <Text size="xs" colorVariant="muted">Chars: {value.text.length}</Text>
-      </Flex>
-    </Card>
-  );
-}
-```
-
-- Custom Toolbar | (id: RichTextEditor.custom-toolbar)
-  Custom minimal toolbar configuration (bold, italic, underline only).
-
-```tsx
-import React, { useState } from 'react';
-import { RichTextEditor, Card, Flex, Text, Button } from '@platform-blocks/ui';
-import type { RichTextEditorContent } from '@platform-blocks/ui';
-  const [value, setValue] = useState<RichTextEditorContent>({ html: '', text: '' });
-  const [saved, setSaved] = useState<RichTextEditorContent | null>(null);
-  return (
-    <Card p={16} variant="outline">
-      <Flex direction="column" gap={12}>
-        <Text weight="semibold">Minimal Editor</Text>
-        <RichTextEditor
-          value={value}
-          onChange={setValue}
-          toolbar={{ enabled: true, position: 'top', tools: ['bold','italic','underline'] }}
-          placeholder="Quick note..."
-          minHeight={100}
-        />
-        <Button title="Save" size="sm" onPress={() => setSaved(value)} />
-        {saved && (
-          <Text size="xs" colorVariant="muted">Saved length: {saved.text.length}</Text>
-        )}
-      </Flex>
-    </Card>
-  );
 }
 ```
 
@@ -10805,7 +10142,7 @@ import { useState } from 'react';
 import { Column, Search, Text } from '@platform-blocks/ui';
   const [query, setQuery] = useState('');
   return (
-    <Column gap="sm" maxWidth={320} w="100%">
+    <Column gap="sm" maxW={320} w="100%">
       <Search value={query} onChange={setQuery} placeholder="Search docs" />
       <Text size="xs" colorVariant="muted">
         Current query: {query || '—'}
@@ -10825,7 +10162,7 @@ import { Column, KeyCap, Row, Search, Text, useToast } from '@platform-blocks/ui
     toast.show({ message: 'Launching saved search…' });
   };
   return (
-    <Column gap="lg" maxWidth={420} w="100%">
+    <Column gap="lg" maxW={420} w="100%">
       <Column gap="sm">
         <Text size="xs" colorVariant="muted">
           Default Spotlight launcher
@@ -10966,6 +10303,33 @@ const frameworks = [
 
 ## Component: <Select>
 Select provides a dropdown interface for choosing from predefined options. It supports single and multi-selection modes, disabled states, validation, and customizable styling.
+
+### Props
+`value` (T | null) [optional]
+  Current value when the component is controlled.
+`defaultValue` (T | null) [optional]
+  Initial value when the component manages its own state.
+`onChange` ((value: T | null, option?: SelectOption<T> | null) => void) [optional]
+  Callback fired whenever the selection changes.
+`options` (SelectOption<T>[]) [required]
+  Collection of options available to choose from.
+`placeholder` (string) [optional]
+  Placeholder text shown when no value is selected.
+`size` (SizeValue) [optional]
+  Size token controlling trigger height and typography.
+`radius` (any) [optional]
+  Corner radius token applied to the trigger and dropdown.
+`disabled` (boolean) [optional]
+  Disables the control when set to true.
+`label` (string) [optional]
+  Optional label rendered above the trigger.
+`description` (string) [optional]
+  Optional short descriptive text shown directly under the label (above the field).
+`helperText` (string) [optional]
+  Helper copy displayed beneath the control.
+`error` (string) [optional]
+  Error message shown beneath the control in error state.
+- … 10 more props documented
 
 ### Demos
 
@@ -11173,9 +10537,9 @@ Skeleton components provide visual placeholders for text, avatars, and blocks to
 ### Props
 `shape` (SkeletonShape) [optional, default: 'rectangle']
   Shape of the skeleton placeholder
-`width` (DimensionValue) [optional]
+`w` (DimensionValue) [optional]
   Width of the skeleton component
-`height` (DimensionValue) [optional]
+`h` (DimensionValue) [optional]
   Height of the skeleton component
 `size` (SizeValue) [optional, default: 'md']
   Size of the skeleton component (overrides width/height)
@@ -11201,18 +10565,18 @@ Skeleton components provide visual placeholders for text, avatars, and blocks to
 import { Skeleton, Column, Row } from '@platform-blocks/ui';
   return (
     <Column gap="lg">
-      <Skeleton shape="text" width="60%" />
-      <Skeleton shape="text" width="80%" />
-      <Skeleton shape="text" width="40%" />
+      <Skeleton shape="text" w="60%" />
+      <Skeleton shape="text" w="80%" />
+      <Skeleton shape="text" w="40%" />
       <Row gap="md" align="center">
         <Skeleton shape="avatar" size="lg" />
         <Column gap="sm" grow={1}>
-          <Skeleton shape="text" width="40%" />
-          <Skeleton shape="text" width="60%" />
+          <Skeleton shape="text" w="40%" />
+          <Skeleton shape="text" w="60%" />
         </Column>
       </Row>
-      <Skeleton shape="rectangle" height={120} />
-      <Skeleton shape="button" width={120} />
+      <Skeleton shape="rectangle" h={120} />
+      <Skeleton shape="button" w={120} />
     </Column>
   );
 }
@@ -11232,22 +10596,22 @@ import { Skeleton, Column, Row } from '@platform-blocks/ui';
         <Skeleton shape="avatar" size="xl" />
       </Row>
       <Column gap="sm">
-        <Skeleton shape="text" width="100%" />
-        <Skeleton shape="text" width="90%" />
-        <Skeleton shape="text" width="70%" />
+        <Skeleton shape="text" w="100%" />
+        <Skeleton shape="text" w="90%" />
+        <Skeleton shape="text" w="70%" />
       </Column>
       <Row gap="md" wrap="wrap">
-        <Skeleton shape="button" width={80} />
-        <Skeleton shape="button" width={100} />
-        <Skeleton shape="button" width={120} />
+        <Skeleton shape="button" w={80} />
+        <Skeleton shape="button" w={100} />
+        <Skeleton shape="button" w={120} />
       </Row>
       <Row gap="sm" wrap="wrap">
         <Skeleton shape="chip" />
         <Skeleton shape="chip" />
         <Skeleton shape="chip" />
       </Row>
-      <Skeleton shape="rectangle" height={60} />
-      <Skeleton shape="card" height={200} />
+      <Skeleton shape="rectangle" h={60} />
+      <Skeleton shape="card" h={200} />
     </Column>
   );
 }
@@ -12212,7 +11576,7 @@ const totalSteps = steps.length;
 ```
 
 ## Component: <Switch>
-# Switch
+Switch components provide a way to toggle between two states, typically representing on/off or enabled/disabled states.
 
 ### Props
 `checked` (boolean) [optional]
@@ -12394,7 +11758,7 @@ const data = {
 ```
 
 ## Component: <TableOfContents>
-# TableOfContents
+The `TableOfContents` component automatically discovers headings on the page (h1–h6) and renders a navigable outline with active section tracking. It supports scroll‑spy highlighting, deep-link copying, custom initial data (SSR / virtual d…
 
 ### Props
 `variant` ('filled' | 'outline' | 'ghost' | 'none') [optional, default: 'none']
@@ -12767,7 +12131,7 @@ The TextArea component provides a multi-line text input with support for auto-re
   Character limit
 `showCharCounter` (boolean) [optional]
   Show character counter
-`height` (number) [optional]
+`h` (number) [optional]
   Fixed height for the TextArea
 `resize` ('none' | 'vertical' | 'horizontal' | 'both') [optional]
   Resize behavior
@@ -12916,7 +12280,7 @@ import { Column, Text, TextArea } from '@platform-blocks/ui';
 ```
 
 ## Component: <Timeline>
-# Timeline
+Timeline component displays a sequence of events or steps in chronological order with customizable styling and layout options.
 
 ### Props
 `children` (ReactNode) [required]
@@ -12927,6 +12291,12 @@ import { Column, Text, TextArea } from '@platform-blocks/ui';
   Timeline color
 `colorVariant` (string) [optional]
   Timeline color variant token (e.g. primary.5) used when color not provided
+`titleColor` (string) [optional]
+  Default title color for all items
+`descriptionColor` (string) [optional]
+  Default description color for all items
+`timestampColor` (string) [optional]
+  Default timestamp color for all items
 `lineWidth` (number) [optional]
   Line width
 `bulletSize` (number) [optional]
@@ -12937,8 +12307,7 @@ import { Column, Text, TextArea } from '@platform-blocks/ui';
   Reverse active highlighting
 `size` (ComponentSizeValue) [optional]
   Component size
-`centerMode` (boolean) [optional]
-  Center mode renders a single central spine allowing items on both sides via itemAlign prop
+- … 1 more props documented
 
 ### Demos
 
@@ -13050,7 +12419,7 @@ const signals = [
 ```
 
 ## Component: <TimePicker>
-# TimePicker
+Interactive input for selecting a time value with hour/minute (and optional seconds) precision. Opens a modal dialog (parity with `DatePicker`) for a consistent selection experience. Supports 12-hour or 24-hour clocks, manual text entry, a…
 
 ### Props
 `value` (TimePickerValue | null) [optional]
@@ -13132,7 +12501,7 @@ import type { TimePickerValue } from '@platform-blocks/ui';
 ```
 
 ## Component: <TimePickerInput>
-# TimePickerInput
+Alias for `TimePicker` tailored for form inputs. Presents a read-only input that opens the time selection panel in a dialog, mirroring the behavior of other picker inputs across the design system.
 
 ### Demos
 
@@ -13668,14 +13037,14 @@ const treeData: TreeNode[] = [
 ```
 
 ## Component: <Video>
-# Video Component
+A comprehensive video player component that supports YouTube videos, MP4 files, and file buffers with advanced timeline synchronization capabilities.
 
 ### Props
 `source` (VideoSource) [required]
   Video source configuration
-`width` (number | string) [optional]
+`w` (number | string) [optional]
   Display and sizing
-`height` (number | string) [optional]
+`h` (number | string) [optional]
 `aspectRatio` (number) [optional]
 `poster` (string) [optional]
 `autoPlay` (boolean) [optional]
@@ -13737,8 +13106,8 @@ const SOURCE = {
           <Video
             ref={videoRef}
             source={SOURCE}
-            width="100%"
-            height={300}
+            w="100%"
+            h={300}
             controls={{
               play: true,
               pause: true,
@@ -13831,8 +13200,8 @@ const SOURCE = {
           </Text>
           <Video
             source={SOURCE}
-            width="100%"
-            height={300}
+            w="100%"
+            h={300}
             controls
             timeline={timelineEvents}
             onTimelineEvent={handleTimelineEvent}
@@ -14028,9 +13397,9 @@ Waveform component provides visualization and interaction capabilities for audio
 ### Props
 `peaks` (number[]) [required]
   Array of peak values (normalized between -1 and 1)
-`width` (number) [optional]
+`w` (number) [optional]
   Width of the waveform
-`height` (number) [optional]
+`h` (number) [optional]
   Height of the waveform
 `color` (string) [optional]
   Color of the waveform
@@ -14050,7 +13419,7 @@ Waveform component provides visualization and interaction capabilities for audio
   Color for the progress indicator
 `interactive` (boolean) [optional]
   Whether the waveform is interactive (clickable for seeking)
-- … 30 more props documented
+- … 31 more props documented
 
 ### Demos
 
@@ -14071,7 +13440,7 @@ const PROGRESS_STEP = 0.1;
   };
   return (
     <Column gap="md">
-      <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={progress} height={64} />
+      <Waveform peaks={WAVEFORM_DEMO_PEAKS} progress={progress} h={64} />
       <Row gap="sm" align="center">
         <Button onPress={handleAdvance}>Skip 10%</Button>
         <Button variant="outline" onPress={handleReset}>
@@ -14096,9 +13465,9 @@ import { QUIET_WAVEFORM_PEAKS, WAVEFORM_DEMO_PEAKS } from '../data';
         <Text variant="small" weight="medium">
           Semantic colors
         </Text>
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.25} color="primary" />
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.5} color="success" />
-        <Waveform peaks={WAVEFORM_DEMO_PEAKS} height={56} progress={0.75} color="warning" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.25} color="primary" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.5} color="success" />
+        <Waveform peaks={WAVEFORM_DEMO_PEAKS} h={56} progress={0.75} color="warning" />
       </Column>
       <Column gap="sm">
         <Text variant="small" weight="medium">
@@ -14106,14 +13475,14 @@ import { QUIET_WAVEFORM_PEAKS, WAVEFORM_DEMO_PEAKS } from '../data';
         </Text>
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
-          height={72}
+          h={72}
           progress={0.4}
           variant="line"
           color="primary"
         />
         <Waveform
           peaks={WAVEFORM_DEMO_PEAKS}
-          height={72}
+          h={72}
           progress={0.4}
           variant="rounded"
           color="success"
@@ -14123,10 +13492,10 @@ import { QUIET_WAVEFORM_PEAKS, WAVEFORM_DEMO_PEAKS } from '../data';
         <Text variant="small" weight="medium">
           Normalized quiet tracks
         </Text>
-        <Waveform peaks={QUIET_WAVEFORM_PEAKS} height={56} progress={0.45} color="surface" />
+        <Waveform peaks={QUIET_WAVEFORM_PEAKS} h={56} progress={0.45} color="surface" />
         <Waveform
           peaks={QUIET_WAVEFORM_PEAKS}
-          height={56}
+          h={56}
           progress={0.45}
           normalize
           color="surface"
@@ -14182,7 +13551,7 @@ import { Column, Text, YearPicker } from '@platform-blocks/ui';
 ```
 
 ## Component: <YearPickerInput>
-# YearPickerInput
+Input component that opens `YearPicker` inside a modal dialog. Ideal for settings where only the year matters (fiscal periods, graduation year, etc.) while keeping the UI aligned with the rest of our picker inputs.
 
 ### Props
 `value` (Date | null) [optional]

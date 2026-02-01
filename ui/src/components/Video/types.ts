@@ -82,8 +82,8 @@ export interface VideoProps extends SpacingProps {
   source: VideoSource;
   
   /** Display and sizing */
-  width?: number | string;
-  height?: number | string;
+  w?: number | string;
+  h?: number | string;
   aspectRatio?: number;
   poster?: string;
   

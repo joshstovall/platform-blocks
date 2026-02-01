@@ -9,8 +9,8 @@ export default function BasicImageDemo() {
         <Image 
           src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=300&h=200&fit=crop" 
           alt="Mountain landscape"
-          width={300}
-          height={200}
+          w={300}
+          h={200}
         />
         <Text size="sm" color="gray.6">
           A simple image with specified dimensions

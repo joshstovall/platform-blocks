@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, useWindowDimensions } from 'react-native';
 import { Block, Title } from 'platform-blocks/components';
-import { Waveform, Card, Text, useTheme, Video, Gallery, Lottie, Slider, Button, Image } from '@platform-blocks/ui';
+import { Waveform, Card, Text, useTheme, Video, Gallery, Slider, Button, Image } from '@platform-blocks/ui';
 
 const androidWave = require('../../assets/AndroidWave.json');
 
@@ -257,56 +257,6 @@ export function MediaShowcase() {
                 Tap a thumbnail or use the button to launch the full-screen gallery.
               </Text>
             </Block>
-          </Block>
-        </Card>
-      </Block>
-
-      <Title afterline>Lottie Animation</Title>
-      <Block direction={isSmall ? 'column' : 'row'} gap="lg" wrap="wrap">
-        <Card style={{ flexGrow: 1, minWidth: 280 }} p={16}>
-          <Block direction="column" gap={12} align="center">
-            <Text weight="semibold">Autoplay Loop</Text>
-            <Lottie
-              source={androidWave}
-              autoPlay
-              loop
-              style={{ width: 180, height: 180 }}
-            />
-            <Text size="xs" colorVariant="muted">
-              Seamless looping animation renders via platform Lottie engines.
-            </Text>
-          </Block>
-        </Card>
-        <Card style={{ flexGrow: 1, minWidth: 280 }} p={16}>
-          <Block direction="column" gap={12}>
-            <Text weight="semibold">Manual Progress Control</Text>
-            <Lottie
-              source={androidWave}
-              autoPlay={false}
-              loop={false}
-              progress={manualProgress}
-              style={{ width: 180, height: 180, alignSelf: 'center' }}
-            />
-            <Slider
-              value={manualProgress}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={setManualProgress}
-              valueLabel={(value) => `${Math.round(value * 100)}%`}
-              fullWidth
-            />
-            <Block gap="sm" wrap="wrap">
-              <Button size="sm" variant="secondary" onPress={() => setManualProgress(0)}>
-                Reset
-              </Button>
-              <Button size="sm" variant="secondary" onPress={() => setManualProgress((prev) => Math.min(1, parseFloat((prev + 0.1).toFixed(2))))}>
-                +10%
-              </Button>
-            </Block>
-            <Text size="xs" colorVariant="muted">
-              Tie progress to scrubbing, loading states, or playback syncing.
-            </Text>
           </Block>
         </Card>
       </Block>

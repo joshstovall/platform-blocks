@@ -61,9 +61,9 @@ export interface TableProps extends SpacingProps {
 export interface TableScrollContainerProps extends SpacingProps {
   children?: React.ReactNode;
   /** Minimum width before scrolling kicks in */
-  minWidth?: number;
+  minW?: number;
   /** Maximum height before vertical scrolling */
-  maxHeight?: number;
+  maxH?: number;
   /** Scroll type for web */
   type?: 'native' | 'custom';
   style?: any;
@@ -95,9 +95,9 @@ export interface TableCellProps extends SpacingProps {
   /** Text alignment */
   align?: 'left' | 'center' | 'right';
   /** Minimum width for auto-sizing */
-  minWidth?: number;
+  minW?: number;
   /** Maximum width for auto-sizing */
-  maxWidth?: number;
+  maxW?: number;
   /** Flex grow factor for flexible sizing */
   flex?: number;
   /** Width strategy for responsive behavior */
@@ -123,7 +123,7 @@ const getSpacingValue = (spacing: TableProps['horizontalSpacing'], theme: any): 
 // Table Cell Components
 export const TableTh: React.FC<TableCellProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, w, align = 'left', minWidth, maxWidth, flex, widthStrategy = 'auto', style } = otherProps;
+  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style } = otherProps;
   const theme = useTheme();
   const { isRTL } = useDirection();
 
@@ -152,8 +152,8 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
       widthStyle.flex = 1;
     }
     
-    if (minWidth) widthStyle.minWidth = minWidth;
-    if (maxWidth) widthStyle.maxWidth = maxWidth;
+    if (minW) widthStyle.minWidth = minW;
+    if (maxW) widthStyle.maxWidth = maxW;
     
     return widthStyle;
   };
@@ -188,7 +188,7 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
 
 export const TableTd: React.FC<TableCellProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, w, align = 'left', minWidth, maxWidth, flex, widthStrategy = 'auto', style } = otherProps;
+  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style } = otherProps;
   const theme = useTheme();
   const { isRTL } = useDirection();
 
@@ -217,8 +217,8 @@ export const TableTd: React.FC<TableCellProps> = (allProps) => {
       widthStyle.flex = 1;
     }
     
-    if (minWidth) widthStyle.minWidth = minWidth;
-    if (maxWidth) widthStyle.maxWidth = maxWidth;
+    if (minW) widthStyle.minWidth = minW;
+    if (maxW) widthStyle.maxWidth = maxW;
     
     return widthStyle;
   };
@@ -360,18 +360,18 @@ export const TableCaption: React.FC<TableSectionProps> = (allProps) => {
 // Scroll Container Component
 export const TableScrollContainer: React.FC<TableScrollContainerProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, minWidth = 500, maxHeight, type = 'native', style } = otherProps;
+  const { children, minW = 500, maxH, type = 'native', style } = otherProps;
 
   const containerStyle = [
     {
       width: '100%',
-      maxHeight
+      maxHeight: maxH
     },
     getSpacingStyles(spacingProps),
     style
   ];
 
-  const scrollViewStyle = minWidth ? { minWidth } : undefined;
+  const scrollViewStyle = minW ? { minWidth: minW } : undefined;
 
   return (
     <View style={containerStyle}>

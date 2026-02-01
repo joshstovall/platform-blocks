@@ -17,7 +17,7 @@ export default function JustifyFlexDemo() {
             <Flex
               direction="row"
               justify={value as any}
-              minHeight={60}
+              minH={60}
               style={{
                 // Give the row a large track to clearly expose free space
                 width: 600,

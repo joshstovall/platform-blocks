@@ -53,7 +53,7 @@ export default function HomeScreen() {
         <Button title="Get Inspired" variant="secondary" onPress={() => router.push('/examples')} />
       </Block>
 
-      {Platform.OS !== 'web' ? null : (
+      {/* {Platform.OS !== 'web' ? null : (
         <Card style={{ marginTop: 24, padding: 16, alignItems: 'center', maxWidth: 320 }}>
           <Text size="lg" weight="semibold" style={{ marginBottom: 8 }}>Try it on Expo Go</Text>
           <Text size="sm" colorVariant="secondary" style={{ marginBottom: 12, textAlign: 'center' }}>
@@ -65,7 +65,7 @@ export default function HomeScreen() {
             resizeMode="contain"
           />
         </Card>
-      )}
+      )} */}
 
       <Space h="lg" />
 

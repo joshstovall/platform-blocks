@@ -223,8 +223,8 @@ export const AudioPlayerDemo: React.FC = () => {
             ref={playerRef}
             source={currentAudio.uri}
             peaks={samplePeaks}
-            width={280}
-            height={80}
+            w={280}
+            h={80}
             color="primary"
             showControls={showControls}
             controls={{

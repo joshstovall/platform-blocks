@@ -18,8 +18,8 @@ import { SkeletonProps, SkeletonShape, SkeletonFactoryPayload } from './types';
 function SkeletonBase(props: SkeletonProps, ref: React.Ref<View>) {
   const {
     shape = 'rectangle',
-    width,
-    height,
+    w,
+    h,
     size = 'md',
     radius,
     animate = true,
@@ -59,36 +59,36 @@ function SkeletonBase(props: SkeletonProps, ref: React.Ref<View>) {
     switch (shape) {
       case 'text':
         return {
-          width: width || '100%',
-          height: height || getSpacing('md')
+          width: w || '100%',
+          height: h || getSpacing('md')
         };
       case 'chip':
         return {
-          width: width || (sizeValue * 3),
-          height: height || sizeValue
+          width: w || (sizeValue * 3),
+          height: h || sizeValue
         };
       case 'avatar':
       case 'circle':
         return {
-          width: width || sizeValue,
-          height: height || sizeValue
+          width: w || sizeValue,
+          height: h || sizeValue
         };
       case 'button':
         return {
-          width: width || (sizeValue * 4),
-          height: height || sizeValue
+          width: w || (sizeValue * 4),
+          height: h || sizeValue
         };
       case 'card':
         return {
-          width: width || '100%',
-          height: height || (sizeValue * 6)
+          width: w || '100%',
+          height: h || (sizeValue * 6)
         };
       case 'rectangle':
       case 'rounded':
       default:
         return {
-          width: width || '100%',
-          height: height || sizeValue
+          width: w || '100%',
+          height: h || sizeValue
         };
     }
   };

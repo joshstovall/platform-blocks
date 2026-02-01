@@ -88,9 +88,13 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         // Remove any web-specific styling that could interfere
         ...(typeof window !== 'undefined' && {
           outlineWidth: 0,
+          outlineStyle: 'none',
           border: 'none',
+          borderWidth: 0,
+          boxShadow: 'none',
           backgroundColor: 'transparent',
-        }),
+          boxSizing: 'border-box',
+        } as any),
       },
       
       inputContainer: {

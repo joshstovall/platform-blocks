@@ -17,42 +17,42 @@ export interface CoreComponentConfig {
  * Components not in this list will be hidden from the main /components page
  */
 export const CORE_COMPONENTS: CoreComponentConfig[] = [
-  // Input Components
+
+  // Basic Components
   { name: 'Button', category: 'input', icon: 'button' },
   { name: 'Checkbox', category: 'input', icon: 'check' },
-  { name: 'ColorSwatch', category: 'input', icon: 'colors', description: 'Individual color swatch for use in color palettes and pickers' },
+  { name: 'Switch', category: 'input', icon: 'toggle' },
+  { name: 'Toggle', category: 'input', icon: 'toggle', description: 'Toggle button group for single or multiple selection' },
+  { name: 'BrandButton', category: 'input', icon: 'bolt', description: 'Branded action button variant supporting themes & states' },
+  { name: 'AppStoreBadge', category: 'input', icon: 'badge', description: 'Badge for App Store with customizable text and icon' },
+  { name: 'Radio', category: 'input', icon: 'radio' },
+
+  // Input Components
+  { name: 'Input', category: 'input', icon: 'input', description: 'Base text field surface with keyboard-manager integration' },
+  { name: 'FileInput', category: 'input', icon: 'file', description: 'File input with drag-and-drop support' },
+  { name: 'NumberInput', category: 'input', icon: 'number', description: 'Numeric text input with step controls and formatting options' },
+  { name: 'PhoneInput', category: 'input', icon: 'phone', description: 'Masked phone number input with international support' },
+  { name: 'PinInput', category: 'input', icon: 'pin' },
+  { name: 'Search', category: 'input', icon: 'search', description: 'Search input with debouncing and customizable features' },
+  { name: 'Select', category: 'input', icon: 'select', description: 'Dropdown selection input with keyboard-aware dismissal defaults' },
+  { name: 'Slider', category: 'input', icon: 'slider' },
+  { name: 'Knob', category: 'input', icon: 'knob', description: 'Rotary knob input for selecting values within a range' },
+  { name: 'TextArea', category: 'input', icon: 'textarea', description: 'Multi-line text input with auto-resize and character counter' },
+  { name: 'AutoComplete', category: 'input', icon: 'autocomplete', description: 'Predictive text input with keyboard-aware suggestions and async loading' },
   { name: 'ColorPicker', category: 'input', icon: 'colors', description: 'Color selection input with swatches and hex input' },
-  
-  // dates
+  { name: 'EmojiPicker', category: 'input', icon: 'emoji', description: 'Emoji selection panel with categories, search, and skin tone support' },
+
+  // Date Components
   { name: 'Calendar', category: 'dates', icon: 'calendar', description: 'A versatile calendar component for selecting dates, months, and years with customizable styles and behaviors.' },
   { name: 'MiniCalendar', category: 'dates', icon: 'calendar', description: 'A compact calendar component for displaying a month view with selectable dates.' },
+  { name: 'TimePicker', category: 'dates', icon: 'clock', description: 'Time selection input with hour/minute interaction' },
+  { name: 'TimePickerInput', category: 'dates', icon: 'clock', description: 'Time selection input with dropdown clock interface' },
   { name: 'DatePicker', category: 'dates', icon: 'calendar' },
   { name: 'DatePickerInput', category: 'dates', icon: 'calendar', description: 'Date selection input with dropdown calendar' },
   { name: 'MonthPicker', category: 'dates', icon: 'calendar', description: 'Month selection input with dropdown calendar' },
   { name: 'MonthPickerInput', category: 'dates', icon: 'calendar', description: 'Month selection input with dropdown calendar interface' },
   { name: 'YearPicker', category: 'dates', icon: 'calendar', description: 'Year selection input with dropdown calendar' },
   { name: 'YearPickerInput', category: 'dates', icon: 'calendar', description: 'Year selection input with dropdown calendar interface' },
-  { name: 'TimePicker', category: 'dates', icon: 'clock', description: 'Time selection input with hour/minute interaction' },
-  { name: 'TimePickerInput', category: 'dates', icon: 'clock', description: 'Time selection input with dropdown clock interface' },
-
-  { name: 'FileInput', category: 'input', icon: 'file', description: 'File input with drag-and-drop support' },
-  { name: 'Input', category: 'input', icon: 'input', description: 'Base text field surface with keyboard-manager integration' },
-  { name: 'NumberInput', category: 'input', icon: 'number', description: 'Numeric text input with step controls and formatting options' },
-  { name: 'PhoneInput', category: 'input', icon: 'phone', description: 'Masked phone number input with international support' },
-  { name: 'PinInput', category: 'input', icon: 'pin' },
-  { name: 'Radio', category: 'input', icon: 'radio' },
-  { name: 'Search', category: 'input', icon: 'search', description: 'Search input with debouncing and customizable features' },
-  { name: 'Select', category: 'input', icon: 'select', description: 'Dropdown selection input with keyboard-aware dismissal defaults' },
-  { name: 'Slider', category: 'input', icon: 'slider' },
-  { name: 'Knob', category: 'input', icon: 'knob', description: 'Rotary knob input for selecting values within a range' },
-  { name: 'Switch', category: 'input', icon: 'toggle' },
-  { name: 'TextArea', category: 'input', icon: 'textarea', description: 'Multi-line text input with auto-resize and character counter' },
-  { name: 'Toggle', category: 'input', icon: 'toggle', description: 'Toggle button group for single or multiple selection' },
-  { name: 'BrandButton', category: 'input', icon: 'bolt', description: 'Branded action button variant supporting themes & states' },
-  { name: 'AppStoreBadge', category: 'input', icon: 'badge', description: 'Badge for App Store with customizable text and icon' },
-  { name: 'AutoComplete', category: 'input', icon: 'autocomplete', description: 'Predictive text input with keyboard-aware suggestions and async loading' },
-  { name: 'RichTextEditor', category: 'input', icon: 'richtext', description: 'Rich text editing surface with formatting toolbar' },
-  { name: 'EmojiPicker', category: 'input', icon: 'emoji', description: 'Emoji selection panel with categories, search, and skin tone support' },
 
   // Display Components
   { name: 'Avatar', category: 'display', icon: 'avatar' },
@@ -62,6 +62,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Popover', category: 'display', icon: 'popover' },
   { name: 'Carousel', category: 'display', icon: 'carousel' },
   { name: 'Spoiler', category: 'display', icon: 'spoiler', description: 'Hides content until clicked' },
+  { name: 'ColorSwatch', category: 'display', icon: 'colors', description: 'Individual color swatch for use in color palettes and pickers' },
 
   // Typography Components
   { name: 'Text', category: 'typography', icon: 'text' },
@@ -70,33 +71,28 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'CodeBlock', category: 'typography', icon: 'code' },
   { name: 'CopyButton', category: 'typography', icon: 'copy', description: 'Utility to copy content to clipboard with feedback' },
   { name: 'KeyCap', category: 'typography', icon: 'keycap', description: 'Display keyboard shortcuts with press animations' },
-  // { name: 'SyntaxHighlighter', category: 'typography', icon: 'code' },
   { name: 'GradientText', category: 'typography', icon: 'text', description: 'Text component with gradient color support' },
   { name: 'ShimmerText', category: 'typography', icon: 'text', description: 'Animated shimmering text placeholder for loading states' },
   { name: 'Icon', category: 'typography', icon: 'star' },
   { name: 'BrandIcon', category: 'typography', icon: 'star', description: 'Brand icons for popular platforms (e.g. Apple, Google, Facebook, etc.) with built-in dark mode support.'},
 
-  // data display
+  // Data Components
   { name: 'Indicator', category: 'data', icon: 'indicator', description: 'Status indicator dot with color and size options' },
   { name: 'Chip', category: 'data', icon: 'chip' },
   { name: 'Badge', category: 'data', icon: 'badge', description: 'Small status or counter indicator positioned on a parent element' },
   { name: 'Table', category: 'display', icon: 'table' },
   { name: 'DataTable', category: 'data', icon: 'datatable', description: 'Data grid with sorting, filtering, and pagination' },
   { name: 'QRCode', category: 'data', icon: 'qrcode' },
-  // { name: 'Gauge', category: 'data', icon: 'chart-donut' }, // change this to semicircal progress?
   { name: 'Markdown', category: 'data', icon: 'markdown' },
   { name: 'Rating', category: 'data', icon: 'rating' },
   { name: 'Timeline', category: 'data', icon: 'timeline', description: 'Display sequence of events in chronological order' },
 
   // Layout Components
   { name: 'Block', category: 'layout', icon: 'block' },
-
-  // { name: 'KeyboardAwareLayout', category: 'layout', icon: 'keyboard', description: 'Layout wrapper that pads or scrolls content based on keyboard height using KeyboardManagerProvider' },
   { name: 'Card', category: 'display', icon: 'card' },
   { name: 'Flex', category: 'layout', icon: 'flex' },
   { name: 'Grid', category: 'layout', icon: 'grid' },
   { name: 'Masonry', category: 'layout', icon: 'masonry', description: 'Pinterest-style masonry layout with FlashList performance' },
-  // { name: 'AppShell', category: 'layout', icon: 'home' },
   { name: 'Divider', category: 'layout', icon: 'divider' },
   { name: 'Space', category: 'layout', icon: 'paddingFrame' },
   { name: 'Tabs', category: 'layout', icon: 'tabs' },
@@ -126,14 +122,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Spotlight', category: 'navigation', icon: 'spotlight', description: 'Command palette / global action search interface' },
   { name: 'Tree', category: 'navigation', icon: 'tree', description: 'Hierarchical tree view with expansion, selection, checkboxes, and filtering' },
 
-  // // Form Components
-  // { name: 'LoginForm', category: 'form', icon: 'user' },
-  // { name: 'SignupForm', category: 'form', icon: 'user' },
-  // { name: 'ContactForm', category: 'form', icon: 'mail' },
-  // { name: 'ForgotPasswordForm', category: 'form', icon: 'settings' },
-  // { name: 'Form', category: 'form', icon: 'form', description: 'Declarative form system with validation and layout primitives' },
-
-  // Charts
+  // Chart Components
   { name: 'AreaChart', category: 'charts', icon: 'chart-area' },
   { name: 'BarChart', category: 'charts', icon: 'chart-bar' },
   { name: 'BubbleChart', category: 'charts', icon: 'chart-scatter' },
@@ -165,9 +154,6 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Gallery', category: 'media', icon: 'gallery', description: 'A fullscreen image viewer with navigation, thumbnails, and metadata display' },
   { name: 'Video', category: 'media', icon: 'play', description: 'Video player for YouTube, MP4, and other formats with timeline synchronization' },
   { name: 'Waveform', category: 'media', icon: 'waveform', description: 'Audio waveform visualization component' },
-  { name: 'Lottie', category: 'media', icon: 'carousel', description: 'Render and control Lottie animations from JSON data' },
-
-  // Others
 
 ];
 

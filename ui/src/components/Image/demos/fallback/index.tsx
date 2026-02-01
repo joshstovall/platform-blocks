@@ -8,8 +8,8 @@ export default function ImageFallbackDemo() {
         <Block>
           <Image 
             src="https://invalid-url-that-will-fail.com/image.jpg"
-            width={120}
-            height={80}
+            w={120}
+            h={80}
             fallback={
               <Icon name="image-off" size={24} color="gray.5" />
             }
@@ -21,8 +21,8 @@ export default function ImageFallbackDemo() {
         <Block>
           <Image 
             src="https://another-invalid-url.com/image.jpg"
-            width={120}
-            height={80}
+            w={120}
+            h={80}
             fallback={
               <Text size="sm" color="gray.6" style={{ textAlign: 'center' }}>
                 Image not found
