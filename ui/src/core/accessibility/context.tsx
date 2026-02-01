@@ -20,7 +20,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
   const [announcements, setAnnouncements] = useState<string[]>([]);
   
   // Refs for cleanup
-  const announcementTimeouts = useRef<Set<NodeJS.Timeout>>(new Set());
+  const announcementTimeouts = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // Check for screen reader on mount
   useEffect(() => {

@@ -41,7 +41,7 @@ export const Gallery: React.FC<GalleryModalProps> = ({
   const [metadataVisible, setMetadataVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset to initial index when modal opens
   useEffect(() => {

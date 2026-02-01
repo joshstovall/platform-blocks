@@ -52,7 +52,7 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
   const [resolvedPlacement, setResolvedPlacement] = useState<TooltipPositionType>(position);
   const [overlayStyle, setOverlayStyle] = useState<ViewStyle | null>(null);
 
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<View | null>(null);
 
   const theme = useTheme();

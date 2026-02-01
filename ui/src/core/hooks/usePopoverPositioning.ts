@@ -51,7 +51,7 @@ export function usePopoverPositioning(
   
   const anchorRef = useRef<any>(null);
   const popoverRef = useRef<any>(null);
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const positioningOptionsRef = useRef(positioningOptions);
 
   const keyboardManager = useKeyboardManagerOptional();

@@ -111,7 +111,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
   const fadeAnimation = useSharedValue(0);
   const swipeX = useSharedValue(0);
   const swipeY = useSharedValue(0);
-  const autoHideTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const autoHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Get screen dimensions for swipe calculations
   const screenWidth = Dimensions.get('window').width;

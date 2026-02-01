@@ -203,7 +203,7 @@ export const isFocusable = (element: any): boolean => {
  * Debounce announcements to prevent spam
  */
 export const debounceAnnouncement = (() => {
-  const timeouts = new Map<string, NodeJS.Timeout>();
+  const timeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
   return (key: string, announcement: () => void, delay: number = 500) => {
     if (timeouts.has(key)) {

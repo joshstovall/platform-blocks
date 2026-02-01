@@ -129,7 +129,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
   const openedRef = useRef(opened);
   const closingReasonRef = useRef<CloseReason | null>(null);
   const anchorMeasurementsRef = useRef<{ width: number; height: number } | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     openedRef.current = opened;
@@ -191,7 +191,7 @@ const PopoverBase = (props: PopoverProps, ref: React.Ref<View>) => {
     arrowSize,
   }), [theme, radius, shadow, arrowSize]);
 
-  const layoutUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const layoutUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasMeasuredLayoutRef = useRef(false);
 
   // Defer re-measuring to the next frame so overlay position uses final layout metrics

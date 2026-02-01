@@ -263,7 +263,7 @@ const useOptimizedBreakpoint = () => {
   const [state, setState] = useState<{ breakpoint: BreakpointKey; width: number }>(computeState);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const update = () => {
       const next = computeState();

@@ -15,7 +15,7 @@ console.log(\`5 + 3 = \${result}\`);`;
 
 export default function Demo() {
   const [copiedLength, setCopiedLength] = useState<number | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {

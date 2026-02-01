@@ -52,7 +52,7 @@ export function VideoControls({
   const [showRateMenu, setShowRateMenu] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubbingValue, setScrubbingValue] = useState(0);
-  const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const seekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Notify parent when scrubbing state changes
   useEffect(() => {

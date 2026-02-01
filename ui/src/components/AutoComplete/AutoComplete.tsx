@@ -243,7 +243,7 @@ export const AutoComplete = factory<{
   // Guard: remember last popover size to avoid re-triggering updatePosition on position-only changes
   const lastPopoverSizeRef = useRef<{ w: number; h: number } | null>(null);
   const didInitialMeasureRef = useRef(false);
-  const updatePositionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updatePositionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [inputHeight, setInputHeight] = useState(0);
   const [measuredWidth, setMeasuredWidth] = useState<number | undefined>(
     Platform.OS === 'web' ? undefined : 300 // Default fallback for mobile
@@ -1063,7 +1063,7 @@ export const AutoComplete = factory<{
 
   // Update overlay position when positioning changes (for real-time repositioning)
   // Deduplicate overlay updates: only push changes when something actually changed
-  const positionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const positionUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (overlayIdRef.current && position && usePortal && !useModal) {

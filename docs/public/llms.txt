@@ -1,6 +1,6 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2026-02-01T05:57:36.172Z
+Generated: 2026-02-01T06:09:27.438Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
@@ -17,11 +17,11 @@ Generated: 2026-02-01T05:57:36.172Z
 - build:esm: tsc -p tsconfig.esm.json
 - build:types: tsc -p tsconfig.json --emitDeclarationOnly
 - clean: rm -rf lib || true
-- format: eslint src --ext .ts,.tsx --fix && echo 'Code formatted successfully!'
+- format: eslint src --fix && echo 'Code formatted successfully!'
 - generate:llms: tsx ../scripts/generate-llms.ts
-- lint: eslint src --ext .ts,.tsx --ignore-path .eslintignore
-- lint:check: eslint src --ext .ts,.tsx --max-warnings 0
-- lint:fix: eslint src --ext .ts,.tsx --fix --ignore-path .eslintignore
+- lint: eslint src
+- lint:check: eslint src --max-warnings 0
+- lint:fix: eslint src --fix
 - precommit: npm run lint:check && npm run test
 - prepare: sh -c 'if [ "$BUILD_ON_PREPARE" = "1" ]; then npm run build; else echo "ui: skipping build on prepare (set BUILD_ON_PREPARE=1 to enable)"; fi'
 - … 6 more

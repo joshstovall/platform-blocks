@@ -33,8 +33,8 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
   } = props;
 
   const [opened, setOpened] = useState(false);
-  const openTimeout = useRef<NodeJS.Timeout | null>(null);
-  const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const openTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<View>(null);
   const overlayIdRef = useRef<string | null>(null);
   const isHoveringTargetRef = useRef(false);

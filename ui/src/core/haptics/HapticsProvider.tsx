@@ -15,7 +15,7 @@ export interface HapticsProviderProps {
 
 export const HapticsProvider: React.FC<HapticsProviderProps> = ({ children, defaultEnabled = true }) => {
   const [enabled, setEnabled] = React.useState(defaultEnabled);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const temporarilyDisable = React.useCallback((ms: number) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

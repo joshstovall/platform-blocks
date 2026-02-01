@@ -40,7 +40,7 @@ export const Search = factory<{ props: SearchProps; ref: TextInput }>((props, re
     isControlled: value !== undefined
   }));
   const debouncedValueRef = useRef(internal.value);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync controlled value
   useEffect(() => {

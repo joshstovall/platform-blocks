@@ -95,7 +95,7 @@ export const Video = forwardRef<VideoRef, VideoProps>(({
 
   // Refs
   const timelineProcessedEvents = useRef<Set<string>>(new Set());
-  const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hideControlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoPlayerRef = useRef<any>(null);
   const hasCalledOnLoad = useRef<boolean>(false);
   const videoStateRef = useRef<VideoState>(videoState);
