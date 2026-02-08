@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, View } from 'react-native';
+import { ViewStyle, View, StyleProp } from 'react-native';
 import { SizeValue } from '../../core/theme/sizes';
 
 export type HoverCardPosition = 'top' | 'bottom' | 'left' | 'right' | 'auto';
@@ -39,7 +39,7 @@ export interface HoverCardProps {
   /** Disable interactions */
   disabled?: boolean;
   /** Style override */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test id */
   testID?: string;
   /** z-index layering */

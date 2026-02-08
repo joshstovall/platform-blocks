@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, StyleProp } from 'react-native';
 import type { SpacingProps, LayoutProps } from '../../core/utils';
 import type { BorderRadiusProps } from '../../core/theme/radius';
 import type { SizeValue } from '../../core/theme/sizes';
@@ -56,11 +56,11 @@ export interface SegmentedControlProps
   /** Visual style variant */
   variant?: 'default' | 'filled' | 'outline' | 'ghost';
   /** Custom style for indicator */
-  indicatorStyle?: ViewStyle;
+  indicatorStyle?: StyleProp<ViewStyle>;
   /** Custom style applied to every item */
-  itemStyle?: ViewStyle;
+  itemStyle?: StyleProp<ViewStyle>;
   /** Style applied to the container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test identifier applied to container */
   testID?: string;
   /** Accessibility label for the entire control */

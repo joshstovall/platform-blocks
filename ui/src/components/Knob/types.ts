@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import type { TextStyle, ViewStyle } from 'react-native';
+import type { TextStyle, ViewStyle, StyleProp } from 'react-native';
 import type { SpacingProps, LayoutProps } from '../../core/utils';
 
 export interface KnobMark {
@@ -27,17 +27,17 @@ export interface KnobValueLabelConfig {
   /** Optional suffix rendered after the value */
   suffix?: ReactNode;
   /** Style overrides for the wrapper */
-  containerStyle?: ViewStyle;
+  containerStyle?: StyleProp<ViewStyle>;
   /** Style overrides for the primary text */
-  textStyle?: TextStyle;
+  textStyle?: StyleProp<TextStyle>;
   /** Secondary readout rendered at an independent slot */
   secondary?: {
     formatter?: (value: number) => ReactNode;
     position?: KnobValueLabelPosition;
     prefix?: ReactNode;
     suffix?: ReactNode;
-    containerStyle?: ViewStyle;
-    textStyle?: TextStyle;
+    containerStyle?: StyleProp<ViewStyle>;
+    textStyle?: StyleProp<TextStyle>;
   };
 }
 
@@ -122,7 +122,7 @@ export interface KnobThumbStyle {
   strokeColor?: string;
   offset?: number;
   glow?: KnobThumbGlow;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   renderThumb?: (context: KnobThumbRenderContext) => ReactNode;
 }
 
@@ -134,7 +134,7 @@ export interface KnobTickLabelConfig {
   formatter?: (mark: KnobMark, index: number) => ReactNode;
   position?: 'inner' | 'center' | 'outer';
   offset?: number;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
 }
 
 export interface KnobTickLayer {
@@ -256,13 +256,13 @@ export interface KnobProps extends SpacingProps, LayoutProps {
   /** Placement for the external label */
   labelPosition?: 'left' | 'right' | 'top' | 'bottom';
   /** Style overrides for the outer container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Style overrides for the circular track */
-  trackStyle?: ViewStyle;
+  trackStyle?: StyleProp<ViewStyle>;
   /** Style overrides for the thumb */
-  thumbStyle?: ViewStyle;
+  thumbStyle?: StyleProp<ViewStyle>;
   /** Style overrides for mark labels */
-  markLabelStyle?: TextStyle;
+  markLabelStyle?: StyleProp<TextStyle>;
   /** Accessibility identifier */
   testID?: string;
   /** Screen reader label */

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, StyleProp } from 'react-native';
 import type { FlashListProps } from '@shopify/flash-list';
 
 import type { SpacingProps } from '../../core/utils/spacing';
@@ -13,7 +13,7 @@ export interface MasonryItem {
   /** Optional custom height ratio (default: 1) */
   heightRatio?: number;
   /** Optional custom styling for the item */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface MasonryProps extends SpacingProps {
@@ -28,9 +28,9 @@ export interface MasonryProps extends SpacingProps {
   /** Custom item renderer - receives item and index */
   renderItem?: (item: MasonryItem, index: number) => ReactNode;
   /** Content container style */
-  contentContainerStyle?: ViewStyle;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   /** Custom styles */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test ID for testing */
   testID?: string;
   /** Loading state */

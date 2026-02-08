@@ -3,7 +3,7 @@ import type { SpacingProps } from '../../core/utils';
 // Using generic radius via style props; no dedicated BorderRadiusProps available
 interface RadiusProp { radius?: number | string; }
 import type { SizeValue } from '../../core/theme/sizes';
-import type { ViewStyle, TextStyle } from 'react-native';
+import type { ViewStyle, TextStyle, StyleProp } from 'react-native';
 
 /**
  * Describes a single tab rendered by the {@link Tabs} component.
@@ -116,19 +116,19 @@ export interface TabsProps extends SpacingProps, RadiusProp {
   /**
    * Style overrides for the outer container.
    */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /**
    * Style overrides applied to each tab pressable.
    */
-  tabStyle?: ViewStyle;
+  tabStyle?: StyleProp<ViewStyle>;
   /**
    * Style for the active tab content wrapper.
    */
-  contentStyle?: ViewStyle;
+  contentStyle?: StyleProp<ViewStyle>;
   /**
    * Additional text style applied to tab labels.
    */
-  textStyle?: TextStyle;
+  textStyle?: StyleProp<TextStyle>;
   /**
    * Array of tab keys that should be rendered disabled.
    */

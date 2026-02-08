@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { SizeValue } from '../../core/theme/types';
 import type { DisclaimerSupport } from '../_internal/Disclaimer';
 
@@ -134,7 +134,7 @@ export interface DayProps {
   
   // Styling
   size?: SizeValue;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   // Custom content
   children?: React.ReactNode;

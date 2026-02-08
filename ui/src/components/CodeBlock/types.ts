@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 
 export type CodeBlockToken =
@@ -54,11 +54,11 @@ export interface CodeBlockProps extends SpacingProps {
   /** Callback when code is copied */
   onCopy?: (code: string) => void;
   /** Custom styles for the code block container and text */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Custom styles for the code text */
-  textStyle?: TextStyle;
+  textStyle?: StyleProp<TextStyle>;
   /** Custom styles for the title text */
-  titleStyle?: TextStyle;
+  titleStyle?: StyleProp<TextStyle>;
   /** Lines to highlight, e.g. ["1", "3-5"] */
   highlightLines?: string[];
   /** Show a spoiler for the code block */

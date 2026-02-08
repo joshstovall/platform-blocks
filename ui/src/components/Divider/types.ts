@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, View } from 'react-native';
+import { ViewStyle, View, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { SizeValue } from '../../core/theme/sizes';
 
@@ -15,7 +15,7 @@ export interface DividerProps extends SpacingProps {
   size?: SizeValue | number;
   label?: React.ReactNode;
   labelPosition?: 'left' | 'center' | 'right';
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

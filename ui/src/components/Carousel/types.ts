@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import type { ResponsiveSize } from '../AppShell/types';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
@@ -58,9 +58,9 @@ export interface CarouselProps extends SpacingProps {
   /** Callback fired when the active slide changes */
   onSlideChange?: (index: number) => void;
   /** Style override for the carousel container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Style override applied to each slide item */
-  itemStyle?: ViewStyle;
+  itemStyle?: StyleProp<ViewStyle>;
   /** Enable snapping to individual items */
   snapToItem?: boolean;
   /** Position of navigation arrows relative to the carousel */

@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { SizeValue } from '../../core/theme/sizes';
 import { SpacingProps } from '../../core/utils';
 
@@ -14,7 +14,7 @@ export interface LoaderProps extends SpacingProps {
   /** Animation speed in milliseconds */
   speed?: number;
   /** Container style */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test ID for testing */
   testID?: string;
 }

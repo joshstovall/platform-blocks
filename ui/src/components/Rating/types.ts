@@ -1,4 +1,4 @@
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { SizeValue } from '../../core/theme/sizes';
 import type { DisclaimerSupport } from '../_internal/Disclaimer';
@@ -23,7 +23,7 @@ export interface RatingProps extends SpacingProps, DisclaimerSupport {
   character?: string | React.ReactNode;
   emptyCharacter?: string | React.ReactNode;
   gap?: SizeValue | number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityLabel?: string;
   accessibilityHint?: string;

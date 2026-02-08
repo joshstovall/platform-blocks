@@ -1,4 +1,4 @@
-import type { View, Text, ViewStyle } from 'react-native';
+import type { View, Text, ViewStyle, StyleProp } from 'react-native';
 import type { SpacingProps } from '../../core/utils';
 import type { SizeValue } from '../../core/theme/sizes';
 
@@ -13,7 +13,7 @@ export interface ProgressProps extends SpacingProps {
   animate?: boolean;
   transitionDuration?: number; // ms
   fullWidth?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   'aria-label'?: string;
   testID?: string;
 }
@@ -28,7 +28,7 @@ export interface ProgressRootProps extends SpacingProps {
   size?: SizeValue;
   radius?: SizeValue;
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

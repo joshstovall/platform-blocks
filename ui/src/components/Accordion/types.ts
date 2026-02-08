@@ -3,7 +3,7 @@
 // to introspect prop surfaces without parsing component implementation details.
 
 import type { ReactNode } from 'react';
-import type { ViewStyle, TextStyle } from 'react-native';
+import type { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import type { SizeValue } from '../../core/theme/sizes';
 import type { BorderRadiusProps } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
@@ -107,19 +107,19 @@ export interface AccordionProps extends SpacingProps, BorderRadiusProps {
   /**
    * Root container style override.
    */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /**
    * Header row style override applied to each item.
    */
-  headerStyle?: ViewStyle;
+  headerStyle?: StyleProp<ViewStyle>;
   /**
    * Collapsible content container style override.
    */
-  contentStyle?: ViewStyle;
+  contentStyle?: StyleProp<ViewStyle>;
   /**
    * Text style applied to the header label.
    */
-  headerTextStyle?: TextStyle;
+  headerTextStyle?: StyleProp<TextStyle>;
   /**
    * Explicit persistence key. If omitted, an automatic hash key will be generated when uncontrolled.
    */

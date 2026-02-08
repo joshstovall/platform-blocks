@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps, LayoutProps } from '../../core/utils';
 
 export interface QRCodeProps extends SpacingProps, LayoutProps {
@@ -54,7 +54,7 @@ export interface QRCodeProps extends SpacingProps, LayoutProps {
   };
   
   /** Custom container style */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Test ID for testing */
   testID?: string;

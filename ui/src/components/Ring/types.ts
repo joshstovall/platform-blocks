@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 
 export interface RingColorStop {
@@ -52,17 +52,17 @@ export interface RingProps extends SpacingProps {
   /** Controls whether the progress stroke has rounded caps. Defaults to true. */
   roundedCaps?: boolean;
   /** Container style for the outer wrapper */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Style applied to the ring wrapper */
-  ringStyle?: ViewStyle;
+  ringStyle?: StyleProp<ViewStyle>;
   /** Style applied to the center content container */
-  contentStyle?: ViewStyle;
+  contentStyle?: StyleProp<ViewStyle>;
   /** Style overrides for the main label */
-  labelStyle?: TextStyle;
+  labelStyle?: StyleProp<TextStyle>;
   /** Style overrides for the secondary label */
-  subLabelStyle?: TextStyle;
+  subLabelStyle?: StyleProp<TextStyle>;
   /** Style overrides for the caption */
-  captionStyle?: TextStyle;
+  captionStyle?: StyleProp<TextStyle>;
   /** Color override for the main label */
   labelColor?: string;
   /** Color override for the secondary label */

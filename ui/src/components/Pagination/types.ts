@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
@@ -55,19 +55,19 @@ export interface PaginationProps extends SpacingProps {
   disabled?: boolean;
   
   /** Custom styles */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Custom button styles */
-  buttonStyle?: ViewStyle;
+  buttonStyle?: StyleProp<ViewStyle>;
   
   /** Custom active button styles */
-  activeButtonStyle?: ViewStyle;
+  activeButtonStyle?: StyleProp<ViewStyle>;
   
   /** Custom text styles */
-  textStyle?: TextStyle;
+  textStyle?: StyleProp<TextStyle>;
   
   /** Custom active text styles */
-  activeTextStyle?: TextStyle;
+  activeTextStyle?: StyleProp<TextStyle>;
   
   /** Hide pagination when there's only one page */
   hideOnSinglePage?: boolean;

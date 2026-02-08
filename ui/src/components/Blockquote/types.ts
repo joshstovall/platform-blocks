@@ -1,4 +1,4 @@
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, StyleProp } from 'react-native';
 import type { SizeValue } from '../../core/theme/types';
 import type { BrandName } from '../BrandIcon/brands';
 
@@ -68,7 +68,7 @@ export interface BlockquoteProps {
   shadow?: boolean;
   
   // Standard props
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { type ComponentSizeValue } from '../../core/theme/componentSize';
 import { SpacingProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
@@ -20,8 +20,8 @@ export interface BadgeProps extends SpacingProps, BorderRadiusProps, ShadowProps
   onRemove?: () => void;
   removePosition?: 'left' | 'right';
   disabled?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   radius?: any;
   shadow?: any;
 }

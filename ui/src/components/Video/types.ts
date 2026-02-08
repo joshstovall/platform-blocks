@@ -1,4 +1,4 @@
-import { ViewStyle, ImageStyle } from 'react-native';
+import { ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import type { SpacingProps } from '../../core/utils';
 
 export type VideoSource = {
@@ -132,9 +132,9 @@ export interface VideoProps extends SpacingProps {
   onTimelineEvent?: (event: VideoTimelineEvent, state: VideoState) => void;
   
   /** Styling */
-  style?: ViewStyle;
-  videoStyle?: ImageStyle;
-  controlsStyle?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  videoStyle?: StyleProp<ImageStyle>;
+  controlsStyle?: StyleProp<ViewStyle>;
   
   /** Accessibility */
   accessibilityLabel?: string;

@@ -1,4 +1,4 @@
-import type { ViewStyle, TextStyle } from 'react-native';
+import type { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface ListGroupMetrics {
@@ -16,7 +16,7 @@ export interface ListGroupProps {
   radius?: 'sm' | 'md' | 'lg' | number;
   dividers?: boolean;
   insetDividers?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface ListGroupItemProps {
@@ -27,8 +27,8 @@ export interface ListGroupItemProps {
   danger?: boolean;
   startSection?: React.ReactNode;
   endSection?: React.ReactNode;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export interface ListGroupContextValue {

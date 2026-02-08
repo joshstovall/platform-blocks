@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInputProps, ViewStyle } from 'react-native';
+import { TextInputProps, ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps, LayoutProps } from '../../core/utils';
 import type { SizeValue } from '../../core/theme/types';
 import type { RadiusValue } from '../../core/theme/radius';
@@ -57,7 +57,7 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
   onClear?: () => void;
   
   /** Custom style */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Data source for suggestions */
   data?: AutoCompleteOption[];
@@ -133,7 +133,7 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
   ) => React.ReactNode;
 
   /** Optional style override for the selected values container */
-  selectedValuesContainerStyle?: ViewStyle;
+  selectedValuesContainerStyle?: StyleProp<ViewStyle>;
 
   /** Additional props applied to the default Chip renderer for selected values */
   selectedValueChipProps?: Partial<ChipProps>;

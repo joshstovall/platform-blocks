@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { BorderRadiusProps, createRadiusStyles } from '../../core/theme/radius';
 import { getSpacing } from '../../core/theme/sizes';
@@ -19,7 +19,7 @@ export interface NoticeProps extends SpacingProps, BorderRadiusProps {
   withCloseButton?: boolean;
   closeButtonLabel?: string;
   onClose?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 

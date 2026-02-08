@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, View } from 'react-native';
+import { ViewStyle, View, StyleProp } from 'react-native';
 import { SizeValue } from '../../core/theme/sizes';
 
 export type TooltipPositionType =
@@ -40,7 +40,7 @@ export interface TooltipProps {
   /** Children element to attach tooltip to */
   children: React.ReactElement;
   /** Container style */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test ID for testing */
   testID?: string;
 }

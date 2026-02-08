@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, StyleProp } from 'react-native';
 
 export interface NavigationState {
   routes: Route[];
@@ -46,7 +46,7 @@ export interface DrawerScreenProps extends Omit<ScreenProps, 'options'> {
 
 export interface DrawerNavigatorProps extends NavigatorProps {
   screenOptions?: DrawerOptions;
-  drawerStyle?: ViewStyle;
+  drawerStyle?: StyleProp<ViewStyle>;
   drawerContent?: (props: any) => ReactNode;
 }
 

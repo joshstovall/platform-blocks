@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import type { SpacingProps } from '../../core/utils/spacing';
 import type { PolymorphicFactory } from '../../core/factory';
 
@@ -113,7 +113,7 @@ export interface BlockProps extends SpacingProps, BlockStyleProps {
   component?: React.ElementType;
   
   /** Custom style object */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Test ID for testing purposes */
   testID?: string;

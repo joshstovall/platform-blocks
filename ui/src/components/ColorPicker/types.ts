@@ -1,4 +1,4 @@
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import { LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
@@ -86,13 +86,13 @@ export interface ColorPickerProps extends SpacingProps, LayoutProps, BorderRadiu
   keyboardAvoidance?: boolean;
   
   /** Custom style for the container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Custom style for the preview */
-  previewStyle?: ViewStyle;
+  previewStyle?: StyleProp<ViewStyle>;
   
   /** Custom style for the input */
-  inputStyle?: TextStyle;
+  inputStyle?: StyleProp<TextStyle>;
   
   /** Whether the picker should display a clear button */
   clearable?: boolean;

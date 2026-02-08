@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { BaseInputProps } from '../Input/types';
 import { SizeValue } from '../../core/theme/types';
 import type {
@@ -22,7 +22,7 @@ export interface DatePickerProps {
   calendarProps?: Partial<CoreCalendarProps>;
 
   /** Optional container style for the inline calendar */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test identifier */
   testID?: string;
   /** Accessibility label for the inline calendar region */

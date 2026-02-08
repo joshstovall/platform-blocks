@@ -1,4 +1,4 @@
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface CopyButtonProps {
@@ -17,7 +17,7 @@ export interface CopyButtonProps {
   /** Visual size token */
   size?: ComponentSizeValue;
   /** Style overrides for the button container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Disable the "copied to clipboard" toast */
   disableToast?: boolean;
   /** Tooltip text */

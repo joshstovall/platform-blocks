@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 
@@ -63,7 +63,7 @@ export interface ToastProps extends SpacingProps, BorderRadiusProps {
   /** Position of the toast for animation direction */
   position?: ToastPosition;
   /** Container style */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Test ID for testing */
   testID?: string;
   /** Action buttons */

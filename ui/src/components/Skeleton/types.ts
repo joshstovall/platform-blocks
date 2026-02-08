@@ -1,4 +1,4 @@
-import { DimensionValue, ViewStyle, View } from 'react-native';
+import { DimensionValue, ViewStyle, View, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { SizeValue } from '../../core/theme/sizes';
 
@@ -30,7 +30,7 @@ export interface SkeletonProps extends SpacingProps {
   /** Gradient colors for the shimmer effect */
   colors?: [string, string];
   /** Style overrides for the skeleton container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Optional test identifier */
   testID?: string;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import { BaseInputProps } from '../Input/types';
 import { ColorValue, SizeValue, PlatformBlocksTheme } from '../../core/theme/types';
 
@@ -54,13 +54,13 @@ export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeTex
   colorScheme?: SliderColorScheme;
 
   /** Additional styling for the inactive track */
-  trackStyle?: ViewStyle;
+  trackStyle?: StyleProp<ViewStyle>;
 
   /** Additional styling for the active track */
-  activeTrackStyle?: ViewStyle;
+  activeTrackStyle?: StyleProp<ViewStyle>;
 
   /** Additional styling for the thumb */
-  thumbStyle?: ViewStyle;
+  thumbStyle?: StyleProp<ViewStyle>;
 
   /** Override inactive tick color */
   tickColor?: ColorValue;
@@ -156,8 +156,8 @@ export interface SliderTrackProps {
   isRange?: boolean;
   trackColor?: ColorValue;
   activeTrackColor?: ColorValue;
-  trackStyle?: ViewStyle;
-  activeTrackStyle?: ViewStyle;
+  trackStyle?: StyleProp<ViewStyle>;
+  activeTrackStyle?: StyleProp<ViewStyle>;
   trackHeight?: number;
   thumbSize?: number;
 }
@@ -185,7 +185,7 @@ export interface SliderThumbProps {
   zIndex?: number;
   panHandlers?: any;
   thumbColor?: ColorValue;
-  thumbStyle?: ViewStyle;
+  thumbStyle?: StyleProp<ViewStyle>;
   thumbSize?: number;
 }
 

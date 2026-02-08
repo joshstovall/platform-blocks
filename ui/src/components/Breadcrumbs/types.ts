@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import { type ComponentSizeValue } from '../../core/theme/componentSize';
 
@@ -37,13 +37,13 @@ export interface BreadcrumbsProps extends SpacingProps {
   showIcons?: boolean;
   
   /** Custom styles */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   
   /** Custom text styles */
-  textStyle?: TextStyle;
+  textStyle?: StyleProp<TextStyle>;
   
   /** Custom separator styles */
-  separatorStyle?: ViewStyle;
+  separatorStyle?: StyleProp<ViewStyle>;
   
   /** Accessibility label */
   accessibilityLabel?: string;

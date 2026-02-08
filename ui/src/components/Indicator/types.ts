@@ -1,4 +1,4 @@
-import type { ViewStyle } from 'react-native';
+import type { ViewStyle, StyleProp } from 'react-native';
 import type { SizeValue } from '../../core/theme/types';
 
 export interface IndicatorProps {
@@ -8,7 +8,7 @@ export interface IndicatorProps {
   borderWidth?: number;
   placement?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   offset?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   invisible?: boolean;
 }

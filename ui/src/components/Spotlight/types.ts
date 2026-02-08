@@ -1,4 +1,4 @@
-import type { ViewStyle, TextInput } from 'react-native';
+import type { ViewStyle, TextInput, StyleProp } from 'react-native';
 import React from 'react';
 import { SpotlightItem } from './SpotlightTypes';
 import type { HighlightProps as HighlightComponentProps } from '../Highlight';
@@ -25,7 +25,7 @@ export interface SpotlightRootProps {
   opened?: boolean;
   onClose?: () => void;
   shortcut?: string | string[] | null;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface SpotlightSearchProps {
@@ -45,7 +45,7 @@ export interface SpotlightActionsListProps {
   children: React.ReactNode;
   scrollable?: boolean;
   maxHeight?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   scrollRef?: any; // internal usage for auto-scroll
   onScrollChange?: (y: number) => void; // internal usage for auto-scroll
 }
@@ -59,7 +59,7 @@ export interface SpotlightActionProps {
   disabled?: boolean;
   selected?: boolean;
   children?: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   innerRef?: any; // internal usage for auto-scroll
   onLayout?: (e: any) => void; // layout capture for auto-scroll
   highlightQuery?: HighlightComponentProps['highlight'];
@@ -68,10 +68,10 @@ export interface SpotlightActionProps {
 export interface SpotlightActionsGroupProps {
   label: string;
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface SpotlightEmptyProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }

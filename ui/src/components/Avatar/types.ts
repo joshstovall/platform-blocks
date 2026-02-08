@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { ViewStyle, StyleProp } from 'react-native';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
 
 export interface AvatarProps {
@@ -18,7 +18,7 @@ export interface AvatarProps {
   /** Color override for the status indicator */
   indicatorColor?: string;
   /** Style override for the avatar container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Accessibility label for the avatar image */
   accessibilityLabel?: string;
   /** Primary label displayed to the right of the avatar (string or custom React node) */
@@ -35,7 +35,7 @@ export interface AvatarGroupProps {
   children: React.ReactNode;
   limit?: number;
   spacing?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   size?: ComponentSizeValue;
   /** Whether to add borders around avatars for separation */
   bordered?: boolean;

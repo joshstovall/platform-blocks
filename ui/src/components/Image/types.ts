@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle, ImageStyle } from 'react-native';
+import { ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import { SizeValue, ColorValue, SpacingProps } from '../../core/theme/types';
 import { LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
@@ -71,8 +71,8 @@ export interface ImageProps extends BaseComponentProps, Omit<LayoutProps, 'w' | 
   onLoadEnd?: () => void;
   
   /** Container style */
-  containerStyle?: ViewStyle;
+  containerStyle?: StyleProp<ViewStyle>;
   
   /** Image style overrides */
-  imageStyle?: ImageStyle;
+  imageStyle?: StyleProp<ImageStyle>;
 }
