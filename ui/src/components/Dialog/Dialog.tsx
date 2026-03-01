@@ -92,24 +92,26 @@ export function Dialog({
   // Pan responder for bottomsheet swipe-to-dismiss
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponderCapture: () => {
+        // Never capture on touch start — let events reach children (buttons) first
+        return false;
+      },
       onStartShouldSetPanResponder: () => {
-        // Only allow responder when swipe gestures are enabled for bottom sheet
+        // Claim in bubble phase (after children had their chance to claim).
+        // If a Button/Pressable already claimed the touch, this won't fire.
+        // If nothing claimed (e.g. drag handle, empty space), we take over for swipe tracking.
         return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
       },
-      onStartShouldSetPanResponderCapture: () => {
-        // Capture immediately for bottom sheet to ensure gesture responsiveness on native
-        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
+      onMoveShouldSetPanResponderCapture: () => {
+        // Never capture moves — let children handle their own gestures
+        return false;
       },
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Allow movement in any direction but prioritize downward movement
+        // Claim the gesture when there's a clear vertical swipe movement
         return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none' && (
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && 
           Math.abs(gestureState.dy) > 2
         );
-      },
-      onMoveShouldSetPanResponderCapture: () => {
-        // Already captured on start; keep returning true for consistency
-        return variant === 'bottomsheet' && bottomSheetSwipeZone !== 'none';
       },
       onPanResponderGrant: (evt) => {
         // Prevent default browser behavior (text selection, etc.) on web
