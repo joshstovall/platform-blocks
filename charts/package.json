@@ -1,6 +1,6 @@
 {
   "name": "@platform-blocks/charts",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Chart components for Platform Blocks (React Native + SVG)",
   "type": "module",
   "main": "lib/cjs/index.js",
