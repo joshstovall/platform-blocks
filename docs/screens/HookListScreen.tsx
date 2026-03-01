@@ -99,7 +99,7 @@ const HookListScreen: React.FC = () => {
                 accessibilityRole="link"
                 style={{ height: '100%' }}
               >
-                <Card variant="elevated" height="100%">
+                <Card variant="elevated" h="100%">
                   <Block gap={4}>
                     <Title order={2} size={18} weight="600">
                       {meta.title || entry.title || entry.name}

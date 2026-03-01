@@ -28,7 +28,7 @@ export function PhotoGalleryExample() {
          
             <Image
               src={p.uri}
-              width="100%"
+              w="100%"
               aspectRatio={p.ratio}
               resizeMode="cover"
             />

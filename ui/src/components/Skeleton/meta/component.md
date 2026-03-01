@@ -5,6 +5,7 @@ source: ui/src/components/Skeleton
 status: stable
 category: Feedback
 tags: [loading, placeholder, skeleton]
+playground: true
 examples:
   - basic
   - card

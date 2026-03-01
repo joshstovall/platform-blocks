@@ -4,6 +4,7 @@ description: Layered surface that displays contextual content next to a trigger 
 source: "@platform-blocks/ui"
 status: "beta"
 category: "Overlay"
+playground: true
 accessibility: "Supports keyboard navigation, Escape to close, focus return, and optional focus trapping"
 variants:
   - name: "basic"

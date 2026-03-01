@@ -335,8 +335,11 @@ const getContrastPreference = (): ContrastPreference => {
   return 'no-preference';
 };
 
-const getColorScheme = (): DeviceInfo['appearance']['colorScheme'] =>
-  Appearance?.getColorScheme?.() ?? 'no-preference';
+const getColorScheme = (): DeviceInfo['appearance']['colorScheme'] => {
+  const scheme = Appearance?.getColorScheme?.();
+  if (scheme === 'light' || scheme === 'dark') return scheme;
+  return 'no-preference';
+};
 
 const getReducedMotion = async () => {
   if (Platform.OS === 'web') {
@@ -562,7 +565,7 @@ export function useDeviceInfo(options: UseDeviceInfoOptions = {}): DeviceInfo {
   // Appearance (color scheme + contrast) listeners
   useEffect(() => {
     const colorSubscription = Appearance?.addChangeListener?.(({ colorScheme: scheme }) => {
-      setColorScheme(scheme ?? 'no-preference');
+      setColorScheme(scheme === 'light' || scheme === 'dark' ? scheme : 'no-preference');
     });
 
     const mediaListeners: Array<{ mq: MediaQueryList; handler: () => void }> = [];

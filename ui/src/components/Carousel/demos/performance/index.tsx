@@ -1,8 +1,8 @@
-import { Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap="md" w="100%">
+    <Block gap="md" w="100%">
       <Carousel
         height={200}
         loop
@@ -14,7 +14,7 @@ export default function Demo() {
         slideGap={12}
         style={{ width: '100%' }}
       >
-        <Column
+        <Block
           gap="sm"
           bg="#1E3A8A"
           radius="lg"
@@ -29,9 +29,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)" align="center">
             Trim animations with `reducedMotion` when throughput matters more than flair.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="sm"
           bg="#047857"
           radius="lg"
@@ -46,9 +46,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)" align="center">
             Set `windowSize` so virtualization only renders the next few slides.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="sm"
           bg="#9333EA"
           radius="lg"
@@ -63,9 +63,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)" align="center">
             Disable dots on dense feeds to reduce re-render work.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="sm"
           bg="#B91C1C"
           radius="lg"
@@ -80,12 +80,12 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)" align="center">
             Keep manual arrows available so responders can move at their own pace.
           </Text>
-        </Column>
+        </Block>
       </Carousel>
 
       <Text align="center" size="sm" colorVariant="secondary">
         This setup renders four slides but only keeps six in memory at once for smooth scrolling.
       </Text>
-    </Column>
+    </Block>
   );
 }

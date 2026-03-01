@@ -1,4 +1,4 @@
-import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
 	return (
@@ -11,7 +11,7 @@ export default function Demo() {
 				showDots
 				style={{ width: '100%' }}
 			>
-				<Column
+				<Block
 					gap="sm"
 					bg="#4C1D95"
 					radius="xl"
@@ -25,9 +25,9 @@ export default function Demo() {
 					<Text color="rgba(255,255,255,0.85)">
 						Rotate through featured stories without building pagination controls.
 					</Text>
-				</Column>
+				</Block>
 
-				<Column
+				<Block
 					gap="sm"
 					bg="#155E75"
 					radius="xl"
@@ -41,9 +41,9 @@ export default function Demo() {
 					<Text color="rgba(255,255,255,0.85)">
 						Enable `autoPlay` and `loop` to keep the carousel moving hands-free.
 					</Text>
-				</Column>
+				</Block>
 
-				<Column
+				<Block
 					gap="sm"
 					bg="#166534"
 					radius="xl"
@@ -57,7 +57,7 @@ export default function Demo() {
 					<Text color="rgba(255,255,255,0.85)">
 						Add a few slides to share wins, announcements, or campaign promos.
 					</Text>
-				</Column>
+				</Block>
 			</Carousel>
 		</Block>
 	);

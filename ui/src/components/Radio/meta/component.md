@@ -5,6 +5,7 @@ category: Input System
 subcategory: Form Controls
 tags: [input, form, selection, choice]
 status: stable
+playground: true
 since: 1.0.0
 platform:
   web: true

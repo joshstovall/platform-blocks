@@ -365,7 +365,7 @@ export function SettingsExample() {
             <Button 
               variant="outline" 
               title="Delete My Account"
-              color="error"
+              colorVariant="error"
               startIcon={<Icon name="trash" size="sm" />}
               onPress={() => {}}
             />

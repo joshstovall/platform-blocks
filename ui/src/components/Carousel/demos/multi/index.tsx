@@ -1,8 +1,8 @@
-import { Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
-    <Column gap="md" w="100%">
+    <Block gap="md" w="100%">
       <Carousel
         height={220}
         loop
@@ -26,7 +26,7 @@ export default function Demo() {
           },
         }}
       >
-        <Column
+        <Block
           gap="xs"
           bg="#1D4ED8"
           radius="lg"
@@ -40,9 +40,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)">
             Star midfielders and highlight reels in one glance.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="xs"
           bg="#0F766E"
           radius="lg"
@@ -56,9 +56,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)">
             League standings refresh every Monday morning.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="xs"
           bg="#C026D3"
           radius="lg"
@@ -72,9 +72,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)">
             Track tournament seeds as the tour moves cities.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="xs"
           bg="#B45309"
           radius="lg"
@@ -88,9 +88,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)">
             Show on-base percentages and bullpen usage per club.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="xs"
           bg="#7C3AED"
           radius="lg"
@@ -104,8 +104,8 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.85)">
             Surface stage previews while still showing other sports.
           </Text>
-        </Column>
+        </Block>
       </Carousel>
-    </Column>
+    </Block>
   );
 }

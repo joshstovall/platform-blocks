@@ -55,8 +55,8 @@ export const DocsHeaderMobile: React.FC<DocsHeaderMobileProps> = ({ orientation 
         <Image
           source={require('../../assets/favicon.png')}
           src="docs-mobile-header-logo"
-          width={24}
-          height={24}
+          w={24}
+          h={24}
           resizeMode="contain"
           style={{ marginRight: 8 }}
         />
@@ -67,7 +67,7 @@ export const DocsHeaderMobile: React.FC<DocsHeaderMobileProps> = ({ orientation 
 
       <IconButton
         icon={themeIcon as any}
-        iconVariant={ mode !== 'light' && mode !== 'dark' && 'filled'}
+        iconVariant={ mode !== 'light' && mode !== 'dark' ? 'filled' : undefined}
         variant="ghost"
         size="lg"
         accessibilityLabel="Toggle theme mode"

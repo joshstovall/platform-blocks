@@ -5,6 +5,7 @@ category: Input System
 subcategory: Selection Controls
 tags: [input, segmentation, toggle, selection]
 status: beta
+playground: true
 since: 1.0.0
 platform:
   web: true

@@ -34,7 +34,7 @@ export default function SkeletonShowcase() {
         </Card>
 
         {/* Instagram Card */}
-        <Card p={16} width={300}>
+        <Card p={16} w={300}>
           <Row gap={12} mb={16} align="center">
             <Skeleton shape="avatar" size="md" />
             <Block direction="column" gap={6} grow={1}>

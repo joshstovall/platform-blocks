@@ -5,6 +5,7 @@ category: navigation
 status: stable
 since: 1.0.0
 tags: [pagination, navigation, pages, data]
+playground: true
 props:
   currentPage: The currently active page number
   totalPages: Total number of pages available

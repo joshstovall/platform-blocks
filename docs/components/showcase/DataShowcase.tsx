@@ -19,7 +19,7 @@ import {
   useTheme,
   Title
 } from '@platform-blocks/ui';
-import type { DataTableDataTableSort, DataTablePagination } from '@platform-blocks/ui';
+import type { DataTableSort, DataTableColumn, DataTablePagination } from '@platform-blocks/ui';
 
 // Sample data for DataTable
 interface Employee {

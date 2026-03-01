@@ -102,7 +102,7 @@ export default function ButtonShowcase() {
             ].map((brand,i) => (
               <BrandButton
 
-              variant={'mono' }
+              variant={'outline' }
 
                 key={brand}
                              title={

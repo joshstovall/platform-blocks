@@ -4,6 +4,7 @@ description: "A toggle button group component for selecting between multiple opt
 source: "@platform-blocks/ui"
 status: "stable"  
 category: "Input"
+playground: true
 accessibility: "Supports keyboard navigation, ARIA attributes, and screen readers with proper toggle state announcements"
 variants:
   - name: "basic"

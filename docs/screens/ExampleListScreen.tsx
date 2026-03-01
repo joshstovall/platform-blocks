@@ -144,7 +144,7 @@ export default function ExampleListScreen() {
 
             <GridItem key={app.id} >
               <AnimatedPressable onPress={() => handleExamplePress(app.id)} style={{ height: "100%" }}>
-                <Card key={app.id} variant="elevated" height="100%">
+                <Card key={app.id} variant="elevated" h="100%">
                   <Flex direction="row" align="center" gap={12}>
                     <Flex
                       align="center"

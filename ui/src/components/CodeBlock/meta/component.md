@@ -6,6 +6,7 @@ source: ui/src/components/CodeBlock
 status: stable
 category: Data Display
 tags: [code, syntax, formatting, developer, github]
+playground: true
 examples:
   - basic
   - features

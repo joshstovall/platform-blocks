@@ -9,17 +9,17 @@ export const SliderPlayground = () => {
     {
       id: '1',
       content: (
-        <Switch value={true} onValueChange={() => {}} />
+        <Switch checked={true} onChange={() => {}} />
       ),
     }, {
       id: '4',
       content: (
-        <Switch value={true} onValueChange={() => {}} />
+        <Switch checked={true} onChange={() => {}} />
       ),
     }, {
       id: '5',
       content: (
-        <Switch value={true} onValueChange={() => {}} />
+        <Switch checked={true} onChange={() => {}} />
       ),
     },
     ]

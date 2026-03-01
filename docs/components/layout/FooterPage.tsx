@@ -35,8 +35,8 @@ export function FooterContent() {
                 <Image
                   source={require('../../assets/favicon.png')}
                   src="footer-logo"
-                  width={26}
-                  height={26}
+                  w={26}
+                  h={26}
                   resizeMode="contain"
                 />
               )}

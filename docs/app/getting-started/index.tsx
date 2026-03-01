@@ -58,7 +58,7 @@ export default function GettingStartedOverviewScreen() {
             {/* <Flex> */}
               <Title weight="black" size={40} afterline
                             subtitle="One component model. Native feel everywhere."
-                subtitleProps={{ variant: 'body' }}
+                subtitleProps={{ variant: 'p' }}
 
               > Platforms</Title>
             

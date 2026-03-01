@@ -384,7 +384,7 @@ export const EverythingPlayground = () => {
               Delivery health — {gaugeValue}%
             </Text>
             <Gauge value={gaugeValue} size={120} />
-            <Slider value={gaugeValue} onChange={setGaugeValue} min={0} max={100} step={5} width="100%" />
+            <Slider value={gaugeValue} onChange={setGaugeValue} min={0} max={100} step={5} fullWidth />
           </Block>
         </Notice>
       ),
@@ -405,7 +405,6 @@ export const EverythingPlayground = () => {
               to: theme.colors.primary[8],
               rotation: 45
             }}
-            width={'100%'}
           />
           <Input value={qrValue} onChangeText={setQrValue} placeholder="https://" />
         </Block>

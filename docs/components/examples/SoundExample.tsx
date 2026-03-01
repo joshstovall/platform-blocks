@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import { Button } from '../../../ui/src/components/Button';
 import { SoundButton } from '../../../ui/src/components/Button/SoundButton';
 import { SoundProvider } from '../../../ui/src/core/sound/context';
-import { getAllUISounds } from '../../../ui/src/core/sound/sounds';
+import { getAllSounds } from '../../../ui/src/core/sound/sounds';
 import { useButtonFeedback, useUIFeedback } from '../../../ui/src/core/sound/hooks';
 
 /**

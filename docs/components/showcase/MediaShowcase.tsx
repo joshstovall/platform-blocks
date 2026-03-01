@@ -156,7 +156,7 @@ export function MediaShowcase() {
             <Waveform
               peaks={peaks}
               fullWidth
-              height={80}
+              h={80}
               variant="rounded"
               // barWidth={30}
               barGap={2}
@@ -173,7 +173,7 @@ export function MediaShowcase() {
             <Waveform
               peaks={peaks}
               fullWidth
-              height={80}
+              h={80}
               variant="line"
               strokeWidth={2}
               color="primary"
@@ -191,8 +191,8 @@ export function MediaShowcase() {
             <Text weight="semibold">Inline MP4 Player</Text>
             <Video
               source={{ url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4' }}
-              width="100%"
-              height={isSmall ? 200 : 220}
+              w="100%"
+              h={isSmall ? 200 : 220}
               poster="https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&w=1200&q=80"
               controls
               timeline={videoChapters}
@@ -208,8 +208,8 @@ export function MediaShowcase() {
             <Text weight="semibold">YouTube Embed</Text>
             <Video
               source={{ youtube: 'https://www.youtube.com/watch?v=jNQXAC9IVRw' }}
-              width="100%"
-              height={isSmall ? 200 : 220}
+              w="100%"
+              h={isSmall ? 200 : 220}
               controls={{ playbackRate: true, quality: true }}
               autoPlay={false}
               muted

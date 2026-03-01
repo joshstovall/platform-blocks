@@ -1,4 +1,4 @@
-import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
@@ -14,7 +14,7 @@ export default function Demo() {
         showDots
         style={{ width: '100%' }}
       >
-        <Column
+        <Block
           gap="sm"
           bg="#DC2626"
           radius="lg"
@@ -29,9 +29,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.9)" align="center">
             `orientation="vertical"` stacks stories where horizontal space is tight.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="sm"
           bg="#2563EB"
           radius="lg"
@@ -46,9 +46,9 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.9)" align="center">
             Pair arrows and dots so keyboard and touch users find the controls.
           </Text>
-        </Column>
+        </Block>
 
-        <Column
+        <Block
           gap="sm"
           bg="#0F766E"
           radius="lg"
@@ -63,7 +63,7 @@ export default function Demo() {
           <Text color="rgba(255,255,255,0.9)" align="center">
             Slides rotate every few seconds but still allow manual scrolling.
           </Text>
-        </Column>
+        </Block>
       </Carousel>
     </Block>
   );

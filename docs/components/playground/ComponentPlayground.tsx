@@ -160,9 +160,7 @@ export function ComponentPlayground({ component, propsMeta, config }: ComponentP
         </Card>
         <Card style={styles.snippetCard}>
           <Text variant="small" colorVariant="muted" style={styles.snippetLabel}>JSX preview</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <CodeBlock >{snippet}</CodeBlock>
-          </ScrollView>
+            <CodeBlock fullWidth>{snippet}</CodeBlock>
         </Card>
       </View>
       <Card style={[styles.controlsCard, isStacked && styles.fullWidth]}>

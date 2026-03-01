@@ -72,12 +72,12 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
         return { backgroundColor: 'transparent', borderColor: 'transparent' };
       case 'plain':
         return {
-          backgroundColor: 'white',
+          backgroundColor: theme.colorScheme === 'dark' ? theme.backgrounds.elevated : 'white',
           borderColor: 'transparent',
           paddingHorizontal: 16,
           minWidth: 0,
           height: 'auto',
-          color: 'black'
+          color: theme.colorScheme === 'dark' ? theme.text.primary : 'black'
         };
       default: // primary/filled/secondary/gradient etc treat as filled brand color
         return {
@@ -90,7 +90,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
 
   // Compute textColor override: outline/link use brand color, ghost uses default text color, filled-like use contrasting light text
   const textColor =
-    effectiveVariant === 'plain' ? 'black' :
+    effectiveVariant === 'plain' ? (theme.colorScheme === 'dark' ? theme.text.primary : 'black') :
       effectiveVariant === 'ghost'
         ? theme.text.primary
         : (effectiveVariant === 'outline' || effectiveVariant === 'link')

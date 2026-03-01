@@ -42,7 +42,7 @@ export function MusicPlayerExample() {
 
   // Simulate playback progress
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isPlaying && !isUserSeeking) {
       interval = setInterval(() => {
         setCurrentTime(prev => {

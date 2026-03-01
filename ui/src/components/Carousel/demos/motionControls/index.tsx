@@ -1,4 +1,4 @@
-import { Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 
 const stories = [
   {
@@ -48,7 +48,7 @@ const highlights = [
 
 function Card({ title, body, color }: { title: string; body: string; color: string }) {
   return (
-    <Column
+    <Block
       gap="xs"
       bg={color}
       radius="xl"
@@ -60,14 +60,14 @@ function Card({ title, body, color }: { title: string; body: string; color: stri
         {title}
       </Text>
       <Text color="rgba(255,255,255,0.85)">{body}</Text>
-    </Column>
+    </Block>
   );
 }
 
 export default function Demo() {
   return (
-    <Column gap="xl" w="100%">
-      <Column gap="xs">
+    <Block gap="xl" w="100%">
+      <Block gap="xs">
         <Text variant="h5">Drag-free momentum</Text>
         <Text color="textSecondary">
           Disable paging with `dragFree` to let gestures coast without snapping. Combine with `align="center"`
@@ -87,9 +87,9 @@ export default function Demo() {
             <Card key={story.title} {...story} />
           ))}
         </Carousel>
-      </Column>
+      </Block>
 
-      <Column gap="xs">
+      <Block gap="xs">
         <Text variant="h5">Locked snap cadence</Text>
         <Text color="textSecondary">
           Set `skipSnaps={false}` with a `dragThreshold` to make each swipe land on every card, mirroring Embla's
@@ -110,7 +110,7 @@ export default function Demo() {
             <Card key={highlight.title} {...highlight} />
           ))}
         </Carousel>
-      </Column>
-    </Column>
+      </Block>
+    </Block>
   );
 }
