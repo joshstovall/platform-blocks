@@ -1,7 +1,14 @@
 require('react-native-gesture-handler/jestSetup');
 
 // Mock worklets first before reanimated
-jest.mock('react-native-worklets', () => ({}));
+jest.mock('react-native-worklets', () => ({
+  createSerializable: (obj) => obj,
+  createWorkletRuntime: () => ({}),
+  isWorkletFunction: () => false,
+  RuntimeKind: { UI: 'UI', JS: 'JS' },
+  scheduleOnUI: (fn) => fn,
+  serializableMappingCache: new Map(),
+}));
 
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');

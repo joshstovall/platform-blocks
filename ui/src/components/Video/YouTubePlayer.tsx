@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, ViewStyle, ImageStyle, Platform } from 'react-native';
+import { View, StyleSheet, ViewStyle, ImageStyle, StyleProp, Platform } from 'react-native';
 import { Image } from '../Image';
 import { Text } from '../Text';
 import { resolveOptionalModule } from '../../utils/optionalModule';
@@ -40,7 +40,7 @@ interface YouTubePlayerProps {
   onLoad?: () => void;
   onLoadStart?: () => void;
   onBuffer?: (buffering: boolean) => void;
-  style?: ImageStyle;
+  style?: StyleProp<ImageStyle>;
   accessibilityLabel?: string;
 }
 

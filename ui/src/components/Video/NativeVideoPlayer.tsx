@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState } from 'react';
-import { View, Platform, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
+import { View, Platform, StyleSheet, ViewStyle, ImageStyle, StyleProp } from 'react-native';
 import { Image } from '../Image';
 import { Text } from '../Text';
 import type { VideoSource, VideoPlaybackRate } from './types';
@@ -20,7 +20,7 @@ interface NativeVideoPlayerProps {
   onLoad?: () => void;
   onLoadStart?: () => void;
   onBuffer?: (buffering: boolean) => void;
-  style?: ImageStyle;
+  style?: StyleProp<ImageStyle>;
   accessibilityLabel?: string;
 }
 

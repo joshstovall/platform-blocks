@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { factory, Factory } from '../../core/factory';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils/spacing';
@@ -75,7 +75,7 @@ export const Masonry = factory<Factory<{ props: MasonryProps; ref: View }>>(
 
     const containerStyle: ViewStyle = {
       ...spacingStyle,
-      ...style,
+      ...StyleSheet.flatten(style),
     };
 
     // Show loading state

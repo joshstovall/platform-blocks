@@ -1,6 +1,6 @@
 import React from 'react';
 import type { CSSProperties } from 'react';
-import { View, ViewStyle, TextStyle, Platform, FlatList, ListRenderItemInfo, Linking, ScrollView } from 'react-native';
+import { View, ViewStyle, TextStyle, StyleProp, Platform, FlatList, ListRenderItemInfo, Linking, ScrollView, StyleSheet } from 'react-native';
 
 import { useTheme } from '../../core/theme';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
@@ -317,7 +317,7 @@ type FileHeaderBarProps = {
   fileName: string;
   isDark: boolean;
   titleBaseStyle: TextStyle;
-  titleStyle?: TextStyle;
+  titleStyle?: StyleProp<TextStyle>;
   showCopyButton: boolean;
   code: string;
   onCopy?: (code: string) => void;
@@ -388,7 +388,7 @@ type InlineTitleRowProps = {
   isDark: boolean;
   theme: PlatformBlocksTheme;
   titleBaseStyle: TextStyle;
-  titleStyle?: TextStyle;
+  titleStyle?: StyleProp<TextStyle>;
   showCopyButton: boolean;
   code: string;
   onCopy?: (code: string) => void;
@@ -737,7 +737,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     );
   }
 
-  const userHasWidth = Boolean(style && (style.width !== undefined || style.flex !== undefined));
+  const flatStyle = StyleSheet.flatten(style);
+  const userHasWidth = Boolean(flatStyle && (flatStyle.width !== undefined || flatStyle.flex !== undefined));
   const containerStyle = userHasWidth ? [{ marginBottom: 20 }, style, spacingStyles] : [styles.container, spacingStyles, style];
   const showHeaderBar = fileHeader && fileName && variant !== 'terminal';
   const inlineTitleVisible = variant === 'code' && (title || fileName);

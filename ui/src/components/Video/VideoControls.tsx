@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
 import { Text } from '../Text';
@@ -17,7 +17,7 @@ interface VideoControlsProps {
   onPlaybackRateChange: (rate: VideoPlaybackRate) => void;
   onToggleFullscreen: () => void;
   onScrubbingChange?: (isScrubbing: boolean) => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 const PLAYBACK_RATES: VideoPlaybackRate[] = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];

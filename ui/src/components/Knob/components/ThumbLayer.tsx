@@ -11,7 +11,7 @@ export type ThumbLayerProps = {
   thumbColor: string;
   disabled: boolean;
   thumbAnimatedStyle: StyleProp<ViewStyle>;
-  thumbStyle?: ViewStyle;
+  thumbStyle?: StyleProp<ViewStyle>;
   displayValue: number;
   displayAngle: number;
 };

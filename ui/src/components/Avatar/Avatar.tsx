@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle, Image } from 'react-native';
+import { View, ViewStyle, Image, StyleSheet } from 'react-native';
 import { Text } from '../Text';
 import { useTheme } from '../../core/theme';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
@@ -97,7 +97,7 @@ export function Avatar({
 
   const containerStyle: ViewStyle = {
     position: 'relative',
-    ...style,
+    ...StyleSheet.flatten(style),
   };
 
   const content = (

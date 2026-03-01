@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import type { TextStyle } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { Icon } from '../../Icon';
@@ -47,7 +47,7 @@ export type TickLayersProps = {
   displayValue: number;
   activeMark?: KnobMark | null;
   disabled: boolean;
-  markLabelStyle?: TextStyle;
+  markLabelStyle?: StyleProp<TextStyle>;
   labelColor: string;
 };
 

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
-import type { TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import { Text } from '../../Text';
 import type { KnobMark, KnobProps, KnobValueLabelConfig, KnobValueLabelPosition } from '../types';
@@ -164,7 +164,7 @@ export const useKnobValueLabels = ({
     const renderValueContent = (
       content: React.ReactNode,
       variantType: 'primary' | 'secondary',
-      customStyle?: TextStyle
+      customStyle?: StyleProp<TextStyle>
     ) => {
       if (content == null) return null;
       if (typeof content === 'string' || typeof content === 'number') {
@@ -196,8 +196,8 @@ export const useKnobValueLabels = ({
       config?: {
         prefix?: React.ReactNode;
         suffix?: React.ReactNode;
-        containerStyle?: ViewStyle;
-        textStyle?: TextStyle;
+        containerStyle?: StyleProp<ViewStyle>;
+        textStyle?: StyleProp<TextStyle>;
       }
     ) => {
       if (value == null) return null;

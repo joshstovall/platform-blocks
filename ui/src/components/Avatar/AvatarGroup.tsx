@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { Avatar } from './Avatar';
 import type { AvatarGroupProps } from './types';
@@ -21,7 +21,7 @@ export function AvatarGroup({
   const containerStyle: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    ...style,
+    ...StyleSheet.flatten(style),
   };
 
   const avatarWrapperStyle = (index: number): ViewStyle => ({

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import type { KnobFillStyle } from '../types';
@@ -19,7 +19,7 @@ export type SurfaceLayersProps = {
   ringThickness: number;
   ringCap: 'butt' | 'round';
   ringShadowStyle: ViewStyle | null;
-  trackStyle?: ViewStyle;
+  trackStyle?: StyleProp<ViewStyle>;
   showContiguousProgress: boolean;
   progressPath: string;
   progressStrokeColor: string;

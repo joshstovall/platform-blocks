@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, ViewStyle, ImageStyle, Image as RNImage, DimensionValue } from 'react-native';
+import { View, ViewStyle, ImageStyle, Image as RNImage, DimensionValue, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { getBorderRadius, RADIUS_SCALE } from '../../core/theme/radius';
@@ -77,7 +77,7 @@ export function Image({
   
   const containerStyles: ViewStyle = {
     ...spacingStyles,
-    ...containerStyle,
+    ...StyleSheet.flatten(containerStyle),
   };
   
   const imageStyles: ImageStyle = {
@@ -87,7 +87,7 @@ export function Image({
     borderWidth,
     borderColor: borderColor || theme.colors.gray[3],
     borderRadius,
-    ...imageStyle,
+    ...StyleSheet.flatten(imageStyle),
   };
 
   if (finalWidth !== undefined) {
