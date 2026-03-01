@@ -37,8 +37,8 @@ export const AppHeader: React.FC = () => {
               <Image
                 source={require('../../assets/favicon.png')}
                 src="app-shell-logo"
-                width={26}
-                height={26}
+                w={26}
+                h={26}
                 resizeMode="contain"
               />
               <Text size="xl" weight="bold">

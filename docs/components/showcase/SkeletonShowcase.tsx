@@ -17,12 +17,12 @@ export default function SkeletonShowcase() {
 
         {/* YouTube Card Skeleton */}
         <Card p={16}>
-          <Skeleton shape="rectangle" height={120} mb={12} />
+          <Skeleton shape="rectangle" h={120} mb={12} />
           <Row gap={12} mb={16}>
             <Skeleton shape="avatar" size="lg" />
             <Block direction="column" gap={6} grow={1}>
-              <Skeleton shape="text" width="100%" mb={6} />
-              <Skeleton shape="text" width="80%" mb={12} />
+              <Skeleton shape="text" w="100%" mb={6} />
+              <Skeleton shape="text" w="80%" mb={12} />
             </Block>
           </Row>
 
@@ -38,15 +38,15 @@ export default function SkeletonShowcase() {
           <Row gap={12} mb={16} align="center">
             <Skeleton shape="avatar" size="md" />
             <Block direction="column" gap={6} grow={1}>
-              <Skeleton shape="text" width="30%" />
-              <Skeleton shape="text" width="50%" />
+              <Skeleton shape="text" w="30%" />
+              <Skeleton shape="text" w="50%" />
             </Block>
           </Row>
 
-          <Skeleton shape="rectangle" height={200} mb={12} />
+          <Skeleton shape="rectangle" h={200} mb={12} />
 
-          <Skeleton shape="text" width="100%" mb={6} />
-          <Skeleton shape="text" width="80%" mb={12} />
+          <Skeleton shape="text" w="100%" mb={6} />
+          <Skeleton shape="text" w="80%" mb={12} />
 
           <Block direction="column" gap={12}>
             {/* Small avatars aligned to left */}

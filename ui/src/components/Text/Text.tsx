@@ -292,6 +292,34 @@ const containsPlatformText = (node: React.ReactNode): boolean => {
   });
 };
 
+/**
+ * Check if children contain block-level elements (View, Pressable, etc.)
+ * that would render as <div> on web, causing invalid nesting inside <p>.
+ */
+const containsBlockElement = (node: React.ReactNode): boolean => {
+  return React.Children.toArray(node).some(child => {
+    if (React.isValidElement(child)) {
+      const childType: any = child.type;
+      // Check for native RN components that render as div on web
+      const displayName = childType?.displayName || childType?.name || '';
+      const blockNames = new Set([
+        'View', 'Pressable', 'TouchableOpacity', 'TouchableHighlight',
+        'TouchableWithoutFeedback', 'ScrollView', 'FlatList', 'SectionList',
+        'SafeAreaView', 'KeyboardAvoidingView', 'Modal',
+      ]);
+      if (blockNames.has(displayName)) return true;
+      // Also check if it's a native 'div' element
+      if (childType === 'div') return true;
+      // Recurse into children
+      const childProps: any = child.props;
+      if (childProps?.children) {
+        return containsBlockElement(childProps.children);
+      }
+    }
+    return false;
+  });
+};
+
 export const Text: React.FC<TextProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
   const {
@@ -360,6 +388,10 @@ export const Text: React.FC<TextProps> = (allProps) => {
     }
     if (htmlTag === 'p' && containsPlatformText(children)) {
       // Avoid nested paragraphs when Text components are nested
+      htmlTag = 'div';
+    }
+    if (htmlTag === 'p' && containsBlockElement(children)) {
+      // Avoid <div> inside <p> when children contain View, Pressable, etc.
       htmlTag = 'div';
     }
   }
