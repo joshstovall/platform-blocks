@@ -1,10 +1,10 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2026-03-01T18:30:59.130Z
+Generated: 2026-03-01T19:19:31.418Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
-- Version: 0.6.1
+- Version: 0.7.0
 - Description: A React Native UI library
 - Main: lib/cjs/index.js
 - Module: lib/esm/index.js
@@ -860,7 +860,7 @@ The Avatar component displays user profile images, initials, or icons. Supports 
   Whether to show online status indicator
 `indicatorColor` (string) [optional]
   Color override for the status indicator
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Style override for the avatar container
 `accessibilityLabel` (string) [optional]
   Accessibility label for the avatar image
@@ -1122,7 +1122,7 @@ A polymorphic building block component that serves as a foundational element to 
   Child elements to render inside the block
 `component` (React.ElementType) [optional]
   The component to render as
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Custom style object
 `testID` (string) [optional]
   Test ID for testing purposes
@@ -1451,11 +1451,11 @@ The Breadcrumbs component displays hierarchical navigation links to help users u
   Size of the breadcrumbs
 `showIcons` (boolean) [optional, default: true]
   Whether to show icons
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Custom styles
-`textStyle` (TextStyle) [optional]
+`textStyle` (StyleProp<TextStyle>) [optional]
   Custom text styles
-`separatorStyle` (ViewStyle) [optional]
+`separatorStyle` (StyleProp<ViewStyle>) [optional]
   Custom separator styles
 `accessibilityLabel` (string) [optional, default: 'Breadcrumb navigation']
   Accessibility label
@@ -2069,7 +2069,7 @@ The Carousel component displays a series of content in a horizontal scrollable v
   Enable `autoPlay` and `loop` on `Carousel` to rotate a small set of slides without custom pagination controls.
 
 ```tsx
-import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
 	return (
 		<Block gap="md" fullWidth>
 			<Carousel
@@ -2080,7 +2080,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 				showDots
 				style={{ width: '100%' }}
 			>
-				<Column
+				<Block
 					gap="sm"
 					bg="#4C1D95"
 					radius="xl"
@@ -2094,8 +2094,8 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					<Text color="rgba(255,255,255,0.85)">
 						Rotate through featured stories without building pagination controls.
 					</Text>
-				</Column>
-				<Column
+				</Block>
+				<Block
 					gap="sm"
 					bg="#155E75"
 					radius="xl"
@@ -2109,8 +2109,8 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					<Text color="rgba(255,255,255,0.85)">
 						Enable `autoPlay` and `loop` to keep the carousel moving hands-free.
 					</Text>
-				</Column>
-				<Column
+				</Block>
+				<Block
 					gap="sm"
 					bg="#166534"
 					radius="xl"
@@ -2124,7 +2124,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
 					<Text color="rgba(255,255,255,0.85)">
 						Add a few slides to share wins, announcements, or campaign promos.
 					</Text>
-				</Column>
+				</Block>
 			</Carousel>
 		</Block>
 	);
@@ -2135,7 +2135,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
   Set `orientation="vertical"` to rotate content along the Y-axis while keeping arrow and dot controls aligned for keyboard and touch users.
 
 ```tsx
-import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
+import { Block, Carousel, Text } from '@platform-blocks/ui';
   return (
     <Block gap="md" h={320} w="100%">
       <Carousel
@@ -2149,7 +2149,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
         showDots
         style={{ width: '100%' }}
       >
-        <Column
+        <Block
           gap="sm"
           bg="#DC2626"
           radius="lg"
@@ -2164,8 +2164,8 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           <Text color="rgba(255,255,255,0.9)" align="center">
             `orientation="vertical"` stacks stories where horizontal space is tight.
           </Text>
-        </Column>
-        <Column
+        </Block>
+        <Block
           gap="sm"
           bg="#2563EB"
           radius="lg"
@@ -2180,8 +2180,8 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           <Text color="rgba(255,255,255,0.9)" align="center">
             Pair arrows and dots so keyboard and touch users find the controls.
           </Text>
-        </Column>
-        <Column
+        </Block>
+        <Block
           gap="sm"
           bg="#0F766E"
           radius="lg"
@@ -2196,7 +2196,7 @@ import { Block, Carousel, Column, Text } from '@platform-blocks/ui';
           <Text color="rgba(255,255,255,0.9)" align="center">
             Slides rotate every few seconds but still allow manual scrolling.
           </Text>
-        </Column>
+        </Block>
       </Carousel>
     </Block>
   );
@@ -2313,8 +2313,8 @@ The Chip component displays compact elements that represent an input, attribute,
 `onRemove` (() => void) [optional]
 `removePosition` ('left' | 'right') [optional, default: 'right']
 `disabled` (boolean) [optional, default: false]
-`style` (ViewStyle) [optional]
-`textStyle` (TextStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
+`textStyle` (StyleProp<TextStyle>) [optional]
 - … 2 more props documented
 
 ### Demos
@@ -2376,9 +2376,9 @@ The CodeBlock component renders source code with optional syntax highlighting, c
   Show a copy button to copy the code to clipboard
 `onCopy` ((code: string) => void) [optional]
   Callback when code is copied
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Custom styles for the code block container and text
-`textStyle` (TextStyle) [optional]
+`textStyle` (StyleProp<TextStyle>) [optional]
   Custom styles for the code text
 - … 10 more props documented
 
@@ -2423,7 +2423,7 @@ function add(a, b) {
 const result = add(5, 3);
 console.log(\`5 + 3 = \${result}\`);`;
   const [copiedLength, setCopiedLength] = useState<number | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -2985,7 +2985,7 @@ const LAYERS = [
   Detailed message for the toast
 `size` (ComponentSizeValue) [optional]
   Visual size token
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Style overrides for the button container
 `disableToast` (boolean) [optional]
   Disable the "copied to clipboard" toast
@@ -3259,7 +3259,7 @@ const columns: DataTableColumn<Employee>[] = [
   Selection behavior
 `calendarProps` (Partial<CoreCalendarProps>) [optional]
   Pass-through customization for underlying Calendar
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Optional container style for the inline calendar
 `testID` (string) [optional]
   Test identifier
@@ -3528,7 +3528,7 @@ The Divider component provides a visual separator between content sections. Supp
 `size` (SizeValue | number) [optional, default: 1]
 `label` (React.ReactNode) [optional]
 `labelPosition` ('left' | 'center' | 'right') [optional, default: 'center']
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
 `testID` (string) [optional]
 
 ### Demos
@@ -4635,7 +4635,7 @@ Responsive 12‑column layout primitive with span-based children. Each `GridItem
   Make the grid take full width (100%)
 `children` (React.ReactNode) [optional]
   Children elements
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Custom styles
 `testID` (string) [optional]
   Test ID for testing
@@ -6036,7 +6036,7 @@ The Indicator component
 `borderWidth` (number) [optional]
 `placement` ('top-left' | 'top-right' | 'bottom-left' | 'bottom-right') [optional]
 `offset` (number) [optional]
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
 `children` (React.ReactNode) [optional]
 `invisible` (boolean) [optional]
 
@@ -6787,7 +6787,7 @@ A animated loading component for indicating ongoing processes and loading states
   Variant of the loader
 `speed` (number) [optional, default: 1000]
   Animation speed in milliseconds
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Container style
 `testID` (string) [optional]
   Test ID for testing
@@ -7163,9 +7163,9 @@ Masonry provides an efficient way to create Pinterest-style layouts where items 
   Whether to optimize for staggered grid layout
 `renderItem` ((item: MasonryItem, index: number) => ReactNode) [optional]
   Custom item renderer - receives item and index
-`contentContainerStyle` (ViewStyle) [optional]
+`contentContainerStyle` (StyleProp<ViewStyle>) [optional]
   Content container style
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Custom styles
 `testID` (string) [optional]
   Test ID for testing
@@ -7896,7 +7896,7 @@ The Notice component displays important messages to users with different severit
 `withCloseButton` (boolean) [optional, default: false]
 `closeButtonLabel` (string) [optional]
 `onClose` (() => void) [optional]
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
 `testID` (string) [optional]
 
 ### Demos
@@ -8866,7 +8866,7 @@ The Progress component displays the completion progress of a task or process. Su
 `transitionDuration` (number) [optional, default: 0]
   ms
 `fullWidth` (boolean) [optional]
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
 `testID` (string) [optional]
 
 ### Demos
@@ -10527,7 +10527,7 @@ Skeleton components provide visual placeholders for text, avatars, and blocks to
   Duration of the loading animation in milliseconds
 `colors` ([string, string]) [optional]
   Gradient colors for the shimmer effect
-`style` (ViewStyle) [optional]
+`style` (StyleProp<ViewStyle>) [optional]
   Style overrides for the skeleton container
 `testID` (string) [optional]
   Optional test identifier
