@@ -99,6 +99,7 @@ export {
   useToggleColorScheme,
   useSpotlightToggle,
   globalHotkeys,
+  useDeviceInfo,
 } from './hooks';
 
 // =============================================================================
@@ -316,7 +317,7 @@ export type {
 } from './core/theme/componentSize';
 export type { SizeToken } from './core/theme/types';
 export type { ResponsiveProp } from './core/theme/breakpoints';
-export type { HotkeyItem, KeyboardModifiers } from './hooks';
+export type { HotkeyItem, KeyboardModifiers, DeviceInfo, UseDeviceInfoOptions } from './hooks';
 
 // Component props types (exported alongside components for co-location)
 export type { ButtonProps } from './components/Button';
