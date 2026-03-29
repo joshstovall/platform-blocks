@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://platform-blocks.com/" rel="noopener" target="_blank"><img width="75" height="75" src="./docs/assets/favicon.png" alt="Platform Blocks logo"/></a>
+  <a href="https://platform-blocks.com/" rel="noopener" target="_blank"><img width="75" height="75" src="./apps/platform-blocks.com/assets/favicon.png" alt="Platform Blocks logo"/></a>
 </p>
 
 <h1 align="center">Platform Blocks</h1>
