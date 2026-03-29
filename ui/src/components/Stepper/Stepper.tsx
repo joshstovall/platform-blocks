@@ -231,7 +231,10 @@ const StepperStep = forwardRef<View, StepperStepProps>((
 
 // Completed Component
 const StepperCompleted: React.FC<StepperCompletedProps> = ({ children }) => {
-  return <View>{children}</View>;
+  const content = typeof children === 'string' || typeof children === 'number'
+    ? <Text>{children}</Text>
+    : children;
+  return <View>{content}</View>;
 };
 
 // Main Stepper Component
@@ -331,7 +334,10 @@ const Stepper = forwardRef<View, StepperProps>((
       return completedContent;
     }
     if (currentStepContent) {
-      return <View style={getContentStyles()}>{currentStepContent}</View>;
+      const content = typeof currentStepContent === 'string' || typeof currentStepContent === 'number'
+        ? <Text>{currentStepContent}</Text>
+        : currentStepContent;
+      return <View style={getContentStyles()}>{content}</View>;
     }
     return null;
   };

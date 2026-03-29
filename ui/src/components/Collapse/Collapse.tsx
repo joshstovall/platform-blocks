@@ -93,12 +93,17 @@ const Collapse: React.FC<CollapseProps> = ({
 
     setContentHeight(prev => {
       if (Math.abs(prev - height) > 0.5) {
-        heightAnimation.setValue(isCollapsed ? height : Math.min(height, collapsedHeight));
         return height;
       }
       return prev;
     });
   };
+
+  // Sync animated value when contentHeight changes outside of initial measurement
+  useEffect(() => {
+    if (!hasMeasuredRef.current || contentHeight === 0) return;
+    heightAnimation.setValue(isCollapsed ? contentHeight : Math.min(contentHeight, collapsedHeight));
+  }, [contentHeight, isCollapsed, collapsedHeight, heightAnimation]);
 
   return (
     <Animated.View

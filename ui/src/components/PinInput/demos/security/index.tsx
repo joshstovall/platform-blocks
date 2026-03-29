@@ -77,11 +77,11 @@ export default function Demo() {
           length={6}
           label="One-time password"
         />
-        {otpStatus && (
+        {otpStatus ? (
           <Text size="xs" colorVariant="secondary">
             {otpStatus}
           </Text>
-        )}
+        ) : null}
       </Column>
 
       <Column gap="sm">
@@ -120,11 +120,11 @@ export default function Demo() {
           </Button>
         </Row>
 
-        {validationMessage && (
+        {validationMessage ? (
           <Text size="xs" colorVariant="secondary">
             {validationMessage}
           </Text>
-        )}
+        ) : null}
       </Column>
     </Column>
   );

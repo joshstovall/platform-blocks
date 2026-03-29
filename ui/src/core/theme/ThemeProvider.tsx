@@ -8,8 +8,34 @@ import { mergeTheme } from './utils';
 const DEBUG = typeof __DEV__ !== 'undefined' && __DEV__ && !!process.env.EXPO_PUBLIC_DEBUG;
 const debugLog = (...args: any[]) => { if (DEBUG) console.log(...args); };
 
-// Theme Context
+// Full theme context (backwards compatible)
 const PlatformBlocksThemeContext = createContext<PlatformBlocksTheme | null>(null);
+
+// Granular sub-contexts — components can subscribe to only the slice they need,
+// avoiding re-renders when unrelated theme properties change.
+
+/** Visual slice: colors, text, backgrounds, interactive states, colorScheme */
+export interface ThemeVisuals {
+  colorScheme: PlatformBlocksTheme['colorScheme'];
+  primaryColor: PlatformBlocksTheme['primaryColor'];
+  colors: PlatformBlocksTheme['colors'];
+  text: PlatformBlocksTheme['text'];
+  backgrounds: PlatformBlocksTheme['backgrounds'];
+  states: PlatformBlocksTheme['states'];
+}
+const ThemeVisualsContext = createContext<ThemeVisuals | null>(null);
+
+/** Layout / token slice: font, spacing, radii, shadows, breakpoints */
+export interface ThemeLayout {
+  fontFamily: PlatformBlocksTheme['fontFamily'];
+  fontSizes: PlatformBlocksTheme['fontSizes'];
+  spacing: PlatformBlocksTheme['spacing'];
+  radii: PlatformBlocksTheme['radii'];
+  shadows: PlatformBlocksTheme['shadows'];
+  breakpoints: PlatformBlocksTheme['breakpoints'];
+  designTokens: PlatformBlocksTheme['designTokens'];
+}
+const ThemeLayoutContext = createContext<ThemeLayout | null>(null);
 
 export interface PlatformBlocksThemeProviderProps {
   /** Theme override object */
@@ -47,17 +73,58 @@ export function PlatformBlocksThemeProvider({
     // debugLog('[PlatformBlocksThemeProvider] Creating merged theme with override, colorScheme:', result.colorScheme);
     return result;
   }, [theme, parentTheme, inherit]);
+
+  // Derive stable sub-context values — only create new objects when the
+  // relevant subset of the theme actually changes.
+  const visuals = useMemo<ThemeVisuals>(() => ({
+    colorScheme: mergedTheme.colorScheme,
+    primaryColor: mergedTheme.primaryColor,
+    colors: mergedTheme.colors,
+    text: mergedTheme.text,
+    backgrounds: mergedTheme.backgrounds,
+    states: mergedTheme.states,
+  }), [
+    mergedTheme.colorScheme,
+    mergedTheme.primaryColor,
+    mergedTheme.colors,
+    mergedTheme.text,
+    mergedTheme.backgrounds,
+    mergedTheme.states,
+  ]);
+
+  const layout = useMemo<ThemeLayout>(() => ({
+    fontFamily: mergedTheme.fontFamily,
+    fontSizes: mergedTheme.fontSizes,
+    spacing: mergedTheme.spacing,
+    radii: mergedTheme.radii,
+    shadows: mergedTheme.shadows,
+    breakpoints: mergedTheme.breakpoints,
+    designTokens: mergedTheme.designTokens,
+  }), [
+    mergedTheme.fontFamily,
+    mergedTheme.fontSizes,
+    mergedTheme.spacing,
+    mergedTheme.radii,
+    mergedTheme.shadows,
+    mergedTheme.breakpoints,
+    mergedTheme.designTokens,
+  ]);
+
   // debugLog('[PlatformBlocksThemeProvider] Rendering with theme colorScheme:', mergedTheme.colorScheme);
 
   return (
     <PlatformBlocksThemeContext.Provider value={mergedTheme}>
-      {children}
+      <ThemeVisualsContext.Provider value={visuals}>
+        <ThemeLayoutContext.Provider value={layout}>
+          {children}
+        </ThemeLayoutContext.Provider>
+      </ThemeVisualsContext.Provider>
     </PlatformBlocksThemeContext.Provider>
   );
 }
 
 /**
- * Hook to access the current theme
+ * Hook to access the current theme (full object — backwards compatible)
  */
 export function useTheme(): PlatformBlocksTheme {
   const theme = useContext(PlatformBlocksThemeContext);
@@ -68,6 +135,47 @@ export function useTheme(): PlatformBlocksTheme {
   }
 
   return theme;
+}
+
+/**
+ * Granular hook: subscribe only to visual / color-related properties.
+ * Components using this will NOT re-render when layout tokens change.
+ */
+export function useThemeVisuals(): ThemeVisuals {
+  const visuals = useContext(ThemeVisualsContext);
+  if (!visuals) {
+    const t = DEFAULT_THEME;
+    return {
+      colorScheme: t.colorScheme,
+      primaryColor: t.primaryColor,
+      colors: t.colors,
+      text: t.text,
+      backgrounds: t.backgrounds,
+      states: t.states,
+    };
+  }
+  return visuals;
+}
+
+/**
+ * Granular hook: subscribe only to layout / token properties.
+ * Components using this will NOT re-render when colors change.
+ */
+export function useThemeLayout(): ThemeLayout {
+  const layout = useContext(ThemeLayoutContext);
+  if (!layout) {
+    const t = DEFAULT_THEME;
+    return {
+      fontFamily: t.fontFamily,
+      fontSizes: t.fontSizes,
+      spacing: t.spacing,
+      radii: t.radii,
+      shadows: t.shadows,
+      breakpoints: t.breakpoints,
+      designTokens: t.designTokens,
+    };
+  }
+  return layout;
 }
 
 /**

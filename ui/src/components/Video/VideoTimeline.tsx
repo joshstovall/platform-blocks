@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
@@ -31,15 +31,11 @@ export function VideoTimeline({
   const theme = useTheme();
   const { isRTL } = useDirection();
   
-  if (duration === 0 || timeline.length === 0) {
-    return null;
-  }
-  
   const handleMarkerPress = (event: VideoTimelineEvent) => {
     onSeek(event.time);
   };
   
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
     activeMarker: {
       borderRadius: 2,
       height: 8,
@@ -74,7 +70,11 @@ export function VideoTimeline({
       fontSize: 10,
       textAlign: 'center',
     },
-  });
+  }), []);
+
+  if (duration === 0 || timeline.length === 0) {
+    return null;
+  }
   
   return (
     <View style={[styles.container, style]}>

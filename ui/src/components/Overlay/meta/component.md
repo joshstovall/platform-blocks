@@ -23,7 +23,7 @@ props:
     description: "Opacity applied to the background color. Defaults to 0.6."
   - name: "backgroundOpacity"
     type: "number"
-    description: "Compatibility alias for Mantine overlay APIs. Overrides opacity when provided."
+    description: "Opacity applied to the entire overlay, including gradients and blur effects. Defaults to 1."
   - name: "gradient"
     type: "string"
     description: "CSS gradient string applied on web. Native platforms fall back to the `color` value."
@@ -50,4 +50,4 @@ props:
     description: "Optional content rendered inside the overlay."
 ---
 
-The Overlay component provides a Mantine-inspired utility for dimming background content or drawing focus to foreground elements. It supports theme-aware colors, configurable opacity, gradients, and blur to achieve anything from subtle scrims to dramatic glassmorphism. Because Overlay is non-interactive by default, pair it with focus traps or dismiss controls when building dialogs, sheets, or other blocking surfaces.
+The Overlay component provides a utility for dimming background content or drawing focus to foreground elements. It supports theme-aware colors, configurable opacity, gradients, and blur to achieve anything from subtle scrims to dramatic glassmorphism. Because Overlay is non-interactive by default, pair it with focus traps or dismiss controls when building dialogs, sheets, or other blocking surfaces.

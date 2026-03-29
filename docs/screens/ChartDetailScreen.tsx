@@ -168,12 +168,12 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
   const tabs: TabItem[] = [
     {
       key: 'overview',
-      label: <H3>Overview</H3>,
+      label: 'Overview',
       content: overviewTab,
     },
     {
       key: 'demos',
-      label: <><H3>Examples</H3>{hasDemos ? ` (${newDemos.length})` : ''}</>,
+      label: hasDemos ? `Examples (${newDemos.length})` : 'Examples',
       content: hasDemos ? (
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View style={{ gap: 24 }}>

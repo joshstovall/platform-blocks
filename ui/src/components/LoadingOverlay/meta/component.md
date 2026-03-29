@@ -32,4 +32,4 @@ props:
     description: "Provide custom loader content. When set, the default Loader is not rendered."
 ---
 
-`LoadingOverlay` composits the core `Overlay` and `Loader` primitives to reproduce Mantine's loading affordance. Render it inside a relatively positioned container, toggle `visible` during asynchronous work, and customize appearance by passing `overlayProps` or `loaderProps`.
+`LoadingOverlay` composits the core `Overlay` and `Loader` primitives to create a convenient helper for blocking interactions with a visual indicator during asynchronous operations. Render it inside a relatively positioned container, toggle `visible` during asynchronous work, and customize appearance by passing `overlayProps` or `loaderProps`.

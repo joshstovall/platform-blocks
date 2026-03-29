@@ -22,6 +22,18 @@ export const KeyboardAwareLayout = forwardRef<KeyboardAvoidingView, KeyboardAwar
     keyboardShouldPersistTaps = 'handled',
     scrollRef,
     scrollViewProps,
+    // Native ScrollView passthrough props
+    scrollEnabled,
+    bounces,
+    onScroll,
+    scrollEventThrottle,
+    onMomentumScrollBegin,
+    onMomentumScrollEnd,
+    showsVerticalScrollIndicator,
+    showsHorizontalScrollIndicator,
+    decelerationRate,
+    overScrollMode: overScrollModeProp,
+    refreshControl,
     ...rest
   } = props;
 
@@ -87,8 +99,17 @@ export const KeyboardAwareLayout = forwardRef<KeyboardAvoidingView, KeyboardAwar
           ref={scrollRef}
           contentContainerStyle={contentStyles as ScrollViewProps['contentContainerStyle']}
           keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-          showsVerticalScrollIndicator={false}
-          overScrollMode="never"
+          showsVerticalScrollIndicator={showsVerticalScrollIndicator ?? false}
+          showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+          overScrollMode={overScrollModeProp ?? 'never'}
+          scrollEnabled={scrollEnabled}
+          bounces={bounces}
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          decelerationRate={decelerationRate}
+          refreshControl={refreshControl}
           {...restScrollViewProps}
         >
           {children}

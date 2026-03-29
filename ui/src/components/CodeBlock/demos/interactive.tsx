@@ -24,11 +24,11 @@ console.log(\`5 + 3 = \${result}\`);`;
 
   return (
     <Flex direction="column" gap={16}>
-      {copiedCode && (
+      {copiedCode ? (
         <Text color="success">
           Copied code to clipboard! (Length: {copiedCode.length} characters)
         </Text>
-      )}
+      ) : null}
       
       <CodeBlock 
         language="javascript"

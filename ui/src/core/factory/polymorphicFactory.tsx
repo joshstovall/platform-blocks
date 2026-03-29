@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, memo } from 'react';
 
 import { ComponentWithProps, FactoryPayload } from './factory';
 
@@ -47,21 +47,52 @@ export interface PolymorphicComponent<Payload extends PolymorphicFactoryPayload>
   displayName?: string;
 }
 
+export interface PolymorphicFactoryOptions {
+  /** Optional display name applied to the resulting component */
+  displayName?: string;
+  /** Enable or disable memoization. Defaults to `true`. */
+  memo?: boolean;
+  /** Optional custom comparison used when memoization is enabled */
+  arePropsEqual?: (prevProps: Readonly<any>, nextProps: Readonly<any>) => boolean;
+}
+
 /**
  * Factory function for creating polymorphic PlatformBlocks components
  */
 export function polymorphicFactory<Payload extends PolymorphicFactoryPayload>(
-  ui: React.ForwardRefRenderFunction<Payload['defaultRef'], Payload['props']>
+  ui: React.ForwardRefRenderFunction<Payload['defaultRef'], Payload['props']>,
+  options: PolymorphicFactoryOptions = {}
 ): PolymorphicComponent<Payload> {
-  const Component = forwardRef(ui) as any;
+  const { displayName, memo: shouldMemo = true, arePropsEqual } = options;
+
+  const ForwardComponent = forwardRef(ui) as any;
+
+  if (displayName) {
+    ForwardComponent.displayName = displayName;
+  }
+
+  const MemoizedComponent = shouldMemo
+    ? memo(ForwardComponent, arePropsEqual)
+    : ForwardComponent;
+
+  const Component = MemoizedComponent as any;
 
   Component.withProps = (fixedProps: any) => {
     const Extended = forwardRef((props, ref) => (
-      <Component {...fixedProps} {...props} ref={ref} />
+      <ForwardComponent {...fixedProps} {...props} ref={ref} />
     )) as any;
-    Extended.extend = Component.extend;
-    Extended.displayName = `WithProps(${Component.displayName})`;
-    return Extended;
+
+    const baseName = ForwardComponent.displayName || ui.name || 'PolymorphicComponent';
+    Extended.displayName = `WithProps(${baseName})`;
+
+    const ExtendedComponent = shouldMemo
+      ? memo(Extended, arePropsEqual)
+      : Extended;
+
+    const Result = ExtendedComponent as any;
+    Result.extend = Component.extend;
+    Result.withProps = Component.withProps;
+    return Result;
   };
 
   Component.extend = ((input: any) => input) as any;

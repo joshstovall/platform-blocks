@@ -109,7 +109,7 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
     return null;
   };
 
-  const labelContent = children || label;
+  const labelContent = children || label || undefined;
 
   // Determine layout direction based on label position
   const isVertical = labelPosition === 'top' || labelPosition === 'bottom';

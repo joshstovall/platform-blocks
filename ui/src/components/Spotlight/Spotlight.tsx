@@ -526,7 +526,7 @@ export function Spotlight({
   // Reset selection when query changes
   useEffect(() => {
     currentStore.setSelectedIndex(-1);
-  }, [query, currentStore]);
+  }, [query, currentStore.setSelectedIndex]);
 
   const handleNavigateUp = () => {
     if (!flatActions.length) return;

@@ -48,7 +48,7 @@ export default function Demo() {
               </Stepper.Step>
             ))}
           </Stepper>
-          <Row gap="sm" justify="center">
+          <Row gap="sm" justify="space-between">
             <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
               Back
             </Button>

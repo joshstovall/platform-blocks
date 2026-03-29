@@ -7,6 +7,7 @@ import { PlatformBlocksThemeProvider, PlatformBlocksThemeProviderProps } from '.
 import { useColorScheme, ColorScheme } from './useColorScheme';
 import { OverlayProvider, OverlayRenderer, DirectionProvider } from '../providers';
 import type { DirectionProviderProps } from '../providers';
+import { BreakpointProvider } from '../responsive';
 import { SpotlightController } from '../../components/Spotlight/SpotlightController';
 import { I18nProvider } from '../i18n';
 import { UniversalCSS } from '../utils/UniversalCSS';
@@ -284,7 +285,9 @@ export function PlatformBlocksProvider({
       fallbackLocale={fallbackLocale}
       resources={i18nStore}
     >
-      {enhancedTree}
+      <BreakpointProvider>
+        {enhancedTree}
+      </BreakpointProvider>
     </I18nBoundary>
   );
 }

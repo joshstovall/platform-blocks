@@ -1,7 +1,7 @@
 import React from 'react';
 import { SpacingProps } from '../../core/utils';
 
-// Responsive sizing (mimic Mantine style object or primitive)
+// Responsive sizing
 export type ResponsiveSize = number | string | {
   base?: number | string;
   xs?: number | string;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 export interface TitleItem {
   id: string;
@@ -55,13 +55,15 @@ export const TitleRegistryProvider: React.FC<TitleRegistryProviderProps> = ({ ch
     setTitles([]);
   }, []);
 
+  const value = useMemo(() => ({
+    titles,
+    registerTitle,
+    unregisterTitle,
+    clearTitles
+  }), [titles, registerTitle, unregisterTitle, clearTitles]);
+
   return (
-    <TitleRegistryContext.Provider value={{
-      titles,
-      registerTitle,
-      unregisterTitle,
-      clearTitles
-    }}>
+    <TitleRegistryContext.Provider value={value}>
       {children}
     </TitleRegistryContext.Provider>
   );

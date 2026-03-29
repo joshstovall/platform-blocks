@@ -212,7 +212,7 @@ const AnimatedSankeyLink: React.FC<AnimatedSankeyLinkProps> = React.memo(({
       fill="none"
       // strokeLinecap="round"
       accessibilityLabel={accessibilityLabel}
-      accessible
+      {...(!isWeb && { accessible: true })}
       {...(isWeb
         ? {
             // @ts-ignore web-specific pointer events

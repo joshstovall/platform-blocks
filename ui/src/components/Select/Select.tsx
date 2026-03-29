@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { View, Pressable, FlatList, Text as RNText, Modal } from 'react-native';
+import { View, Pressable, FlatList, Text as RNText, Modal, Platform } from 'react-native';
 
 import { factory } from '../../core/factory/factory';
 import { FieldHeader } from '../_internal/FieldHeader';
@@ -423,7 +423,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       <Pressable
         ref={setTriggerNode}
         onPress={toggle}
-        accessibilityRole="button"
+        {...(Platform.OS === 'web' ? { role: 'listbox' } : { accessibilityRole: 'button' })}
         accessibilityLabel={label || placeholder}
         disabled={disabled}
         style={[

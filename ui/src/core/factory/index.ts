@@ -3,6 +3,7 @@ export { factory } from './factory';
 export type {
   PolymorphicFactory,
   PolymorphicFactoryPayload,
+  PolymorphicFactoryOptions,
   PolymorphicComponent,
   PolymorphicComponentProps,
   PolymorphicRef

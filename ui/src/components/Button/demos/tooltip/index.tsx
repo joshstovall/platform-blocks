@@ -1,4 +1,4 @@
-import { Button, Column, Row } from '@platform-blocks/ui';
+import { Button, Column, Icon, Row } from '@platform-blocks/ui';
 
 export default function Demo() {
   return (
@@ -25,7 +25,7 @@ export default function Demo() {
         <Button tooltip="Download the file to your device." tooltipPosition="left">
           Download
         </Button>
-        <Button icon="⚙️" tooltip="Open the settings panel." accessibilityLabel="Open settings" />
+        <Button icon={<Icon name="settings" />} tooltip="Open the settings panel." accessibilityLabel="Open settings" />
         <Button disabled tooltip="Feature not available in demo mode.">
           Upload
         </Button>

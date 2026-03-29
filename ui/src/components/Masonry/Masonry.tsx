@@ -40,6 +40,18 @@ export const Masonry = factory<Factory<{ props: MasonryProps; ref: View }>>(
       loading = false,
       emptyContent,
       flashListProps = {},
+      // Native FlashList passthrough props
+      onEndReached,
+      onEndReachedThreshold,
+      onViewableItemsChanged,
+      scrollEnabled,
+      ListEmptyComponent,
+      ListFooterComponent,
+      ListHeaderComponent,
+      estimatedItemSize,
+      refreshControl,
+      onScroll,
+      scrollEventThrottle,
       ...restProps
     } = otherProps;
 
@@ -49,10 +61,21 @@ export const Masonry = factory<Factory<{ props: MasonryProps; ref: View }>>(
     // FlashList performance hints (overridable via flashListProps). Use loose typing to avoid version/type mismatches.
     const finalFlashListProps = React.useMemo(() => {
       const p: any = { ...flashListProps };
-      if (p.estimatedItemSize == null) p.estimatedItemSize = 180;
+      if (p.estimatedItemSize == null) p.estimatedItemSize = estimatedItemSize ?? 180;
       if (p.keyExtractor == null) p.keyExtractor = (item: MasonryItem) => item.id;
+      // Merge first-class passthrough props (explicit flashListProps overrides these)
+      if (onEndReached !== undefined && p.onEndReached == null) p.onEndReached = onEndReached;
+      if (onEndReachedThreshold !== undefined && p.onEndReachedThreshold == null) p.onEndReachedThreshold = onEndReachedThreshold;
+      if (onViewableItemsChanged !== undefined && p.onViewableItemsChanged == null) p.onViewableItemsChanged = onViewableItemsChanged;
+      if (scrollEnabled !== undefined && p.scrollEnabled == null) p.scrollEnabled = scrollEnabled;
+      if (ListEmptyComponent !== undefined && p.ListEmptyComponent == null) p.ListEmptyComponent = ListEmptyComponent;
+      if (ListFooterComponent !== undefined && p.ListFooterComponent == null) p.ListFooterComponent = ListFooterComponent;
+      if (ListHeaderComponent !== undefined && p.ListHeaderComponent == null) p.ListHeaderComponent = ListHeaderComponent;
+      if (refreshControl !== undefined && p.refreshControl == null) p.refreshControl = refreshControl;
+      if (onScroll !== undefined && p.onScroll == null) p.onScroll = onScroll;
+      if (scrollEventThrottle !== undefined && p.scrollEventThrottle == null) p.scrollEventThrottle = scrollEventThrottle;
       return p;
-    }, [flashListProps]);
+    }, [flashListProps, estimatedItemSize, onEndReached, onEndReachedThreshold, onViewableItemsChanged, scrollEnabled, ListEmptyComponent, ListFooterComponent, ListHeaderComponent, refreshControl, onScroll, scrollEventThrottle]);
 
     const renderMasonryItem = ({ item, index }: { item: MasonryItem; index: number }): React.ReactElement => {
       if (renderItem) {

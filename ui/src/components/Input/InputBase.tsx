@@ -386,17 +386,17 @@ export const TextInputBase = factory<{
 
       {disclaimerNode}
 
-      {error && (
+      {error ? (
         <Text style={styles.error} role="alert" accessibilityLiveRegion="polite">
           {error}
         </Text>
-      )}
+      ) : null}
 
-      {helperText && !error && (
+      {helperText && !error ? (
         <Text style={styles.helperText}>
           {helperText}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 });

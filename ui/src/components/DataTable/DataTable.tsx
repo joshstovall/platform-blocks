@@ -237,8 +237,6 @@ export const DataTable = <T,>({
   const [editValue, setEditValue] = useState<any>('');
   // Uncontrolled column filters state (used when onFilterChange not provided)
   const [internalFilters, setInternalFilters] = useState<DataTableFilter[]>([]);
-  // Force re-render counter for portal components
-  const [forceUpdateCounter, setForceUpdateCounter] = useState(0);
 
   const [tempHeaderEdits, setTempHeaderEdits] = useState<Record<string, string>>({});
   const [columnWidths, setColumnWidths] = useState<Record<string, number | string>>(() => {
@@ -555,7 +553,6 @@ export const DataTable = <T,>({
                           size="xs"
                           onPress={() => {
                             setInternalFilters([]);
-                            setForceUpdateCounter(c => c + 1);
                           }}
                         >
                           Clear all
@@ -590,7 +587,6 @@ export const DataTable = <T,>({
                               <Pressable
                                 onPress={() => {
                                   setInternalFilters(filters => filters.filter((_, i) => i !== idx));
-                                  setForceUpdateCounter(c => c + 1);
                                 }}
                               >
                                 <Icon name="x" size={12} color={theme.colors.primary[6]} />
@@ -752,7 +748,6 @@ export const DataTable = <T,>({
         return next;
       });
     }
-    setForceUpdateCounter(c => c + 1);
   }, [onFilterChange, filters]);
 
   const clearFilter = useCallback((columnKey: string) => {

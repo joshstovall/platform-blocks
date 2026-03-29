@@ -20,8 +20,11 @@ export const useTitleRegistration = (options: UseTitleRegistrationOptions) => {
   // Generate ID from text if not provided
   const id = providedId || text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+  const registerTitle = registry?.registerTitle;
+  const unregisterTitle = registry?.unregisterTitle;
+
   useEffect(() => {
-    if (!registry || !autoRegister || !text) return;
+    if (!registerTitle || !unregisterTitle || !autoRegister || !text) return;
 
     const titleItem: TitleItem = {
       id,
@@ -30,12 +33,12 @@ export const useTitleRegistration = (options: UseTitleRegistrationOptions) => {
       ref: elementRef,
     };
 
-    registry.registerTitle(titleItem);
+    registerTitle(titleItem);
 
     return () => {
-      registry.unregisterTitle(id);
+      unregisterTitle(id);
     };
-  }, [registry, id, text, order, autoRegister]);
+  }, [registerTitle, unregisterTitle, id, text, order, autoRegister]);
 
   return { elementRef, id };
 };

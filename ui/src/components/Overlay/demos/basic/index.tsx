@@ -2,9 +2,9 @@ import { useState, type ComponentProps } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { Button, Column, Overlay, Text } from '@platform-blocks/ui';
 
-const HERO_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-1.png';
-const GRADIENT_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png';
-const BLUR_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-3.png';
+const HERO_IMAGE = 'https://picsum.photos/800/450?random=8';
+const GRADIENT_IMAGE = 'https://picsum.photos/800/450?random=2';
+const BLUR_IMAGE = 'https://picsum.photos/800/450?random=10';
 
 type OverlayExample = {
   key: string;

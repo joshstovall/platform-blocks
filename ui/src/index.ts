@@ -13,7 +13,8 @@
 // Theme & Provider
 export { PlatformBlocksProvider } from './core/theme/PlatformBlocksProvider';
 export { HapticsProvider, useHapticsSettings } from './core/haptics/HapticsProvider';
-export { useTheme } from './core/theme/ThemeProvider';
+export { useTheme, useThemeVisuals, useThemeLayout } from './core/theme/ThemeProvider';
+export type { ThemeVisuals, ThemeLayout } from './core/theme/ThemeProvider';
 export { ThemeModeProvider, useThemeMode, type ThemeModeConfig, type ColorSchemeMode } from './core/theme/ThemeModeProvider';
 export { createTheme } from './core/theme/utils';
 export { DEFAULT_THEME } from './core/theme/defaultTheme';
@@ -29,6 +30,7 @@ export { AccessibilityProvider, useAccessibility } from './core/accessibility/co
 export { SoundProvider, useSound, useHaptics, getAllSounds, getSoundsByCategory, createSound, DEFAULT_SOUND_IDS } from './core/sound';
 export type { SoundAsset, SoundOptions, HapticFeedbackOptions } from './core/sound';
 export { factory, polymorphicFactory } from './core/factory';
+export { BreakpointProvider } from './core/responsive';
 
 // Contexts
 export {
@@ -100,6 +102,11 @@ export {
   useSpotlightToggle,
   globalHotkeys,
   useDeviceInfo,
+  useClipboard,
+  useScrollSpy,
+  useMaskedInput,
+  useTitleRegistration,
+  useOverlayMode,
 } from './hooks';
 
 // =============================================================================
@@ -318,6 +325,11 @@ export type {
 export type { SizeToken } from './core/theme/types';
 export type { ResponsiveProp } from './core/theme/breakpoints';
 export type { HotkeyItem, KeyboardModifiers, DeviceInfo, UseDeviceInfoOptions } from './hooks';
+export type { UseClipboardOptions, UseClipboardReturnValue } from './hooks';
+export type { ScrollSpyOptions, UseScrollSpyItem } from './hooks';
+export type { UseMaskedInputOptions, UseMaskedInputReturn } from './hooks';
+export type { UseTitleRegistrationOptions } from './hooks';
+export type { UseOverlayModeOptions, UseOverlayModeResult } from './hooks';
 
 // Component props types (exported alongside components for co-location)
 export type { ButtonProps } from './components/Button';

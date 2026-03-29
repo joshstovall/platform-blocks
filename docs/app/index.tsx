@@ -71,7 +71,7 @@ export default function HomeScreen() {
 
       <Tabs
         variant="chip"
-        color="tertiary"
+        color="primary"
         items={[
           {
             key: 'overview',

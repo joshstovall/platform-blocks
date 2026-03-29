@@ -14,11 +14,11 @@ export default function Demo() {
         value={value}
         onChangeText={setValue}
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Current value: {value}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }

@@ -408,8 +408,9 @@ export const AnimatedPieSlice: React.FC<AnimatedPieSliceProps> = React.memo((pro
       strokeWidth={strokeWidth}
       strokeOpacity={strokeOpacity}
       filter={filterId ? `url(#${filterId})` : undefined}
-      accessible
-      accessibilityLabel={accessibilityLabel}
+      {...(isWeb
+        ? { 'aria-label': accessibilityLabel }
+        : { accessible: true, accessibilityLabel })}
       {...attachWebHandlers}
     />
   );

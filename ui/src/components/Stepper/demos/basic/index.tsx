@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+import { Button, Card, Block, Row, Stepper, Text } from '@platform-blocks/ui';
 
 const steps = [
   {
@@ -35,9 +35,9 @@ export default function Demo() {
   const goNext = () => handleStepChange(activeStep + 1);
 
   return (
-    <Column gap="lg">
+    <Block gap="lg" fullWidth>
       <Card p="md">
-        <Column gap="md">
+        <Block gap="md">
           <Text size="sm" colorVariant="secondary">
             Control the current step with the `active` prop and provide completion content with `Stepper.Completed`.
           </Text>
@@ -51,7 +51,7 @@ export default function Demo() {
               All onboarding tasks are complete. You can continue to the dashboard.
             </Stepper.Completed>
           </Stepper>
-          <Row gap="sm" justify="center">
+          <Row gap="sm" justify="space-between">
             <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
               Back
             </Button>
@@ -59,8 +59,8 @@ export default function Demo() {
               {activeStep === totalSteps - 1 ? 'Finish' : 'Next step'}
             </Button>
           </Row>
-        </Column>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }

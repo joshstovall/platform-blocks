@@ -28,10 +28,10 @@ export const MobileNavbar: React.FC = () => {
       closable
       backdrop
       backdropClosable
-      title="Navigation"
+      title="Platform Blocks"
       style={{ backgroundColor: theme.backgrounds.surface }}
     >
-      <Flex direction="column" style={{ flex: 1, backgroundColor: theme.backgrounds.surface }}>
+      <Flex direction="column" style={{ flex: 1, width: '100%', backgroundColor: theme.backgrounds.surface }}>
         {/* <Flex
           direction="row"
           align="center"
@@ -56,7 +56,7 @@ export const MobileNavbar: React.FC = () => {
         </Flex> */}
 
         <ScrollView
-          style={{ flex: 1 }}
+          style={{ flex: 1, width: '100%' }}
           contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 16 }}
           showsVerticalScrollIndicator={Platform.OS !== 'web'}
         >

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Column, Icon, Row, Stepper, Text } from '@platform-blocks/ui';
+import { Button, Card, Block, Icon, Row, Stepper, Text } from '@platform-blocks/ui';
 
 const steps = [
   {
@@ -38,9 +38,9 @@ export default function Demo() {
   const goNext = () => handleStepChange(activeStep + 1);
 
   return (
-    <Column gap="lg">
+    <Block gap="lg" fullWidth>
       <Card p="md">
-        <Column gap="md">
+        <Block gap="md">
           <Text size="sm" colorVariant="secondary">
             Provide `icon` and `completedIcon` overrides to visually align each step with its stage.
           </Text>
@@ -63,7 +63,7 @@ export default function Demo() {
               All setup tasks are complete with custom indicators for each stage.
             </Stepper.Completed>
           </Stepper>
-          <Row gap="sm" justify="center">
+          <Row gap="sm" justify="space-between">
             <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
               Back
             </Button>
@@ -71,8 +71,8 @@ export default function Demo() {
               {activeStep === totalSteps - 1 ? 'Finish' : 'Next step'}
             </Button>
           </Row>
-        </Column>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }

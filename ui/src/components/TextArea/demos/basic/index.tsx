@@ -21,11 +21,11 @@ export default function Demo() {
         rows={4}
         fullWidth
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Character count: {value.length}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }

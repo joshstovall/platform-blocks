@@ -7,7 +7,7 @@ export interface OverlayProps extends Omit<ViewProps, 'style'> {
   color?: string;
   /** Opacity applied to the background color. Defaults to 0.6. */
   opacity?: number;
-  /** Mantine-compatible alias for `opacity`. */
+  /** Opacity applied to the entire overlay, including gradients and blur effects. Defaults to 1. */
   backgroundOpacity?: number;
   /** Web-only CSS gradient string. Falls back to `color` on native platforms. */
   gradient?: string;

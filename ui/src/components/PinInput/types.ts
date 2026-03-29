@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInputProps } from 'react-native';
+import { TextInputProps, TextInputProps as RNTextInputProps } from 'react-native';
 import { BaseInputProps } from '../Input/types';
 
 export interface PinInputProps extends Omit<BaseInputProps, 'value' | 'onChangeText'> {
@@ -50,6 +50,35 @@ export interface PinInputProps extends Omit<BaseInputProps, 'value' | 'onChangeT
   
   /** Additional TextInput props for each input */
   textInputProps?: Omit<TextInputProps, keyof BaseInputProps>;
+
+  // --- Native TextInput passthrough props ---
+
+  /** Text auto-capitalization behavior */
+  autoCapitalize?: RNTextInputProps['autoCapitalize'];
+
+  /** Whether to enable auto-correct */
+  autoCorrect?: boolean;
+
+  /** Whether to auto-focus on first input on mount */
+  autoFocus?: boolean;
+
+  /** Select all text on focus */
+  selectTextOnFocus?: boolean;
+
+  /** iOS text content type for autofill */
+  textContentType?: RNTextInputProps['textContentType'];
+
+  /** Text alignment */
+  textAlign?: RNTextInputProps['textAlign'];
+
+  /** Whether spell check is enabled */
+  spellCheck?: boolean;
+
+  /** Color of the text selection handles and highlight */
+  selectionColor?: string;
+
+  /** Whether to show the soft keyboard on focus */
+  showSoftInputOnFocus?: boolean;
 }
 
 export interface PinInputStyleProps {

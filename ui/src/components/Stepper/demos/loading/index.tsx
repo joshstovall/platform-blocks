@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+import { Button, Card, Block, Row, Stepper, Text } from '@platform-blocks/ui';
 
 const totalSteps = 3;
 
@@ -33,9 +33,9 @@ export default function Demo() {
   }, []);
 
   return (
-    <Column gap="lg">
+    <Block gap="lg" fullWidth>
       <Card p="md">
-        <Column gap="md">
+        <Block gap="md">
           <Text size="sm" colorVariant="secondary">
             Apply the `loading` prop to a step when a background task is running to replace the icon with a spinner.
           </Text>
@@ -55,8 +55,8 @@ export default function Demo() {
               {isLoading ? 'Processing...' : 'Simulate processing'}
             </Button>
           </Row>
-        </Column>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }

@@ -24,4 +24,39 @@ export interface KeyboardAwareLayoutProps extends SpacingProps, Omit<KeyboardAvo
   scrollRef?: React.Ref<ScrollView>;
   /** Additional props that will be spread onto the internal ScrollView */
   scrollViewProps?: ScrollViewProps;
+
+  // --- Native ScrollView passthrough props ---
+
+  /** Whether scrolling is enabled */
+  scrollEnabled?: boolean;
+
+  /** Whether the scroll view bounces past the edge of content (iOS) */
+  bounces?: boolean;
+
+  /** Scroll event callback */
+  onScroll?: ScrollViewProps['onScroll'];
+
+  /** Throttle interval for scroll events in ms */
+  scrollEventThrottle?: number;
+
+  /** Callback when momentum scroll begins */
+  onMomentumScrollBegin?: ScrollViewProps['onMomentumScrollBegin'];
+
+  /** Callback when momentum scroll ends */
+  onMomentumScrollEnd?: ScrollViewProps['onMomentumScrollEnd'];
+
+  /** Whether to show the vertical scroll indicator */
+  showsVerticalScrollIndicator?: boolean;
+
+  /** Whether to show the horizontal scroll indicator */
+  showsHorizontalScrollIndicator?: boolean;
+
+  /** Deceleration rate ('normal' | 'fast' | number) */
+  decelerationRate?: ScrollViewProps['decelerationRate'];
+
+  /** Over-scroll mode for Android */
+  overScrollMode?: ScrollViewProps['overScrollMode'];
+
+  /** Pull-to-refresh control */
+  refreshControl?: ScrollViewProps['refreshControl'];
 }

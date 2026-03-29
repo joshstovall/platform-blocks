@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { View, Pressable, FlatList, ViewStyle } from 'react-native';
+import { View, Pressable, FlatList, ViewStyle, Platform } from 'react-native';
 // NOTE: Using direct relative imports to avoid barrel (index.ts) circular dependency
 import { Text } from '../Text';
 import { Input } from '../Input';
@@ -214,7 +214,7 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
       ref={containerRef as any}
       style={[containerStyles, inputWidth != null ? { width: inputWidth } : null, style]}
     >
-      <Pressable onPress={handleOpen} disabled={disabled} accessibilityRole="button">
+      <Pressable onPress={handleOpen} disabled={disabled} {...(Platform.OS === 'web' ? { role: 'group' as any } : { accessibilityRole: 'button' })}>
         <Input
           value={display}
           onChangeText={(text) => {

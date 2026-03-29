@@ -9,7 +9,7 @@ const withinBusiness = (v: TimePickerValue) => {
 
 export default function ValidationTimePickerDemo() {
   const [value, setValue] = useState<TimePickerValue | null>({ hours: 8, minutes: 45, seconds: 0 });
-  const [error, setError] = useState<string | undefined>('');
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const handleChange = (next: TimePickerValue | null) => {
     setValue(next);

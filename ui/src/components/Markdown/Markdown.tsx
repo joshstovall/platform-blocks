@@ -62,7 +62,7 @@ const createDefaultComponents = (
     </Text>
   ),
   paragraph: ({ children }) => (
-    <Text variant="p" style={{ marginBottom: 12 }}>
+    <Text variant="p" as="div" style={{ marginBottom: 12 }}>
       {children}
     </Text>
   ),

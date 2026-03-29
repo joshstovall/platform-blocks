@@ -17,11 +17,11 @@ export default function Demo() {
         label="PIN code"
         keyboardFocusId="pin-demo-basic"
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Current value: {value}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }

@@ -19,8 +19,21 @@ export interface StyleFactoryConfig {
   radius?: any;
 }
 
+// ---------------------------------------------------------------------------
+// Style cache — avoids recomputing identical style objects across renders.
+// Keyed by a string derived from the config + theme identity.
+// Uses a bounded LRU-style Map (oldest entries evicted first).
+// ---------------------------------------------------------------------------
+const CACHE_MAX = 256;
+const styleCache = new Map<string, { container: ViewStyle; content: ViewStyle; text: TextStyle }>();
+
+function buildCacheKey(theme: PlatformBlocksTheme, config: StyleFactoryConfig): string {
+  return `${theme.colorScheme}|${theme.primaryColor}|${config.component}|${config.variant ?? 'default'}|${config.size ?? 'md'}|${config.disabled ? 1 : 0}|${config.error ? 1 : 0}|${config.focused ? 1 : 0}|${config.radius ?? 'md'}|${theme.fontFamily}`;
+}
+
 /**
- * Base component style factory
+ * Base component style factory — now backed by a bounded cache.
+ * Repeated calls with identical theme + config return the same object reference.
  */
 export function createComponentStyles(
   theme: PlatformBlocksTheme,
@@ -30,6 +43,11 @@ export function createComponentStyles(
   content: ViewStyle;
   text: TextStyle;
 } {
+  // --- cache lookup ---
+  const cacheKey = buildCacheKey(theme, config);
+  const cached = styleCache.get(cacheKey);
+  if (cached) return cached;
+
   const {
     component,
     variant = 'default',
@@ -64,29 +82,45 @@ export function createComponentStyles(
   };
 
   // Component-specific styles
+  let result: { container: ViewStyle; content: ViewStyle; text: TextStyle };
+
   switch (component) {
     case 'input':
-      return createInputComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      result = createInputComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      break;
     
     case 'button':
-      return createButtonComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      result = createButtonComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      break;
     
     case 'card':
-      return createCardComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      result = createCardComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      break;
     
     case 'badge':
-      return createBadgeComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      result = createBadgeComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      break;
     
     case 'select':
-      return createSelectComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      result = createSelectComponentStyles(theme, config, baseContainer, baseContent, baseText);
+      break;
     
     default:
-      return {
+      result = {
         container: baseContainer,
         content: baseContent,
         text: baseText,
       };
   }
+
+  // --- cache store (evict oldest if full) ---
+  if (styleCache.size >= CACHE_MAX) {
+    const firstKey = styleCache.keys().next().value;
+    if (firstKey !== undefined) styleCache.delete(firstKey);
+  }
+  styleCache.set(cacheKey, result);
+
+  return result;
 }
 
 function createInputComponentStyles(

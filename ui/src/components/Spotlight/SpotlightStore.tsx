@@ -336,27 +336,35 @@ export function useSpotlightStoreInstance(): [SpotlightStore, SpotlightStore] {
     selectedIndex: -1
   });
 
-  const store: SpotlightStore = {
-    state,
-    open: () => setState(prev => ({ ...prev, opened: true })),
-    close: () => setState(prev => ({ ...prev, opened: false, query: '', selectedIndex: -1 })),
-    toggle: () => setState(prev => ({ ...prev, opened: !prev.opened })),
-    setQuery: (query: string) => setState(prev => ({ ...prev, query })),
-    setSelectedIndex: (selectedIndex: number) => setState(prev => ({ ...prev, selectedIndex })),
-    navigateUp: () => setState(prev => ({ ...prev, selectedIndex: prev.selectedIndex > 0 ? prev.selectedIndex - 1 : -1 })),
-    navigateDown: (maxIndex: number = 0) => setState(prev => ({ ...prev, selectedIndex: prev.selectedIndex < maxIndex - 1 ? prev.selectedIndex + 1 : maxIndex - 1 })),
-  };
+  const open = useCallback(() => setState(prev => ({ ...prev, opened: true })), []);
+  const close = useCallback(() => setState(prev => ({ ...prev, opened: false, query: '', selectedIndex: -1 })), []);
+  const toggle = useCallback(() => setState(prev => ({ ...prev, opened: !prev.opened })), []);
+  const setQuery = useCallback((query: string) => setState(prev => ({ ...prev, query })), []);
+  const setSelectedIndex = useCallback((selectedIndex: number) => setState(prev => ({ ...prev, selectedIndex })), []);
+  const navigateUp = useCallback(() => setState(prev => ({ ...prev, selectedIndex: prev.selectedIndex > 0 ? prev.selectedIndex - 1 : -1 })), []);
+  const navigateDown = useCallback((maxIndex: number = 0) => setState(prev => ({ ...prev, selectedIndex: prev.selectedIndex < maxIndex - 1 ? prev.selectedIndex + 1 : maxIndex - 1 })), []);
 
-  const actions: SpotlightStore = {
-    state: store.state,
-    open: store.open,
-    close: store.close,
-    toggle: store.toggle,
-    setQuery: store.setQuery,
-    setSelectedIndex: store.setSelectedIndex,
-    navigateUp: store.navigateUp,
-    navigateDown: store.navigateDown,
-  };
+  const store: SpotlightStore = useMemo(() => ({
+    state,
+    open,
+    close,
+    toggle,
+    setQuery,
+    setSelectedIndex,
+    navigateUp,
+    navigateDown,
+  }), [state, open, close, toggle, setQuery, setSelectedIndex, navigateUp, navigateDown]);
+
+  const actions: SpotlightStore = useMemo(() => ({
+    state,
+    open,
+    close,
+    toggle,
+    setQuery,
+    setSelectedIndex,
+    navigateUp,
+    navigateDown,
+  }), [state, open, close, toggle, setQuery, setSelectedIndex, navigateUp, navigateDown]);
 
   return [store, actions];
 }

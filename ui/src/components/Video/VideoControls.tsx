@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, ViewStyle, StyleProp, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
@@ -104,7 +104,7 @@ export function VideoControls({
     ? (scrubbingValue / 100) * state.duration
     : state.currentTime;
   
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
     activeRate: {
       backgroundColor: theme.colors.primary[5],
     },
@@ -185,7 +185,7 @@ export function VideoControls({
       padding: 8,
       width: 120,
     },
-  });
+  }), [theme.colors.primary, isRTL]);
   
   return (
     <View style={[styles.container, style]}>

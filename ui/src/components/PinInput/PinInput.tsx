@@ -33,6 +33,16 @@ export const PinInput = factory<{
     keyboardFocusId,
     name,
     testID,
+    // Native TextInput passthrough props
+    autoCapitalize,
+    autoCorrect,
+    autoFocus,
+    selectTextOnFocus: selectTextOnFocusProp,
+    textContentType: textContentTypeProp,
+    textAlign,
+    spellCheck,
+    selectionColor,
+    showSoftInputOnFocus,
     ...spacingProps
   } = props;
 
@@ -282,18 +292,25 @@ export const PinInput = factory<{
             onBlur={handleBlur}
             maxLength={allowPaste ? undefined : 1}
             keyboardType={type === 'numeric' ? 'number-pad' : 'default'}
-            textContentType={oneTimeCode ? 'oneTimeCode' : undefined}
+            textContentType={oneTimeCode ? 'oneTimeCode' : (textContentTypeProp ?? undefined)}
             autoComplete={oneTimeCode ? 'one-time-code' : 'off'}
-            selectTextOnFocus
+            selectTextOnFocus={selectTextOnFocusProp ?? true}
             editable={!disabled}
             placeholder={placeholder}
             placeholderTextColor={theme.text.muted}
+            autoCapitalize={autoCapitalize}
+            autoCorrect={autoCorrect}
+            autoFocus={autoFocus && index === 0}
+            textAlign={textAlign}
+            spellCheck={spellCheck}
+            selectionColor={selectionColor}
+            showSoftInputOnFocus={showSoftInputOnFocus}
             {...textInputProps}
           />
         ))}
       </View>
       
-      {error && (
+      {error ? (
         <Text 
           style={{ 
             marginTop: 4, 
@@ -303,9 +320,9 @@ export const PinInput = factory<{
         >
           {error}
         </Text>
-      )}
+      ) : null}
       
-      {helperText && !error && (
+      {helperText && !error ? (
         <Text 
           style={{ 
             marginTop: 4, 
@@ -315,7 +332,7 @@ export const PinInput = factory<{
         >
           {helperText}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 });

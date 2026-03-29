@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Modal,
@@ -315,7 +315,7 @@ export function Dialog({
   const headerBg = surfaceColor;
   const contentBg = surfaceColor;
 
-  const dynamicStyles = StyleSheet.create({
+  const dynamicStyles = useMemo(() => StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: variant === 'fullscreen' ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
@@ -425,7 +425,9 @@ export function Dialog({
         msUserSelect: 'none' as any,
       }),
     } as any,
-  });
+  }), [variant, contentBg, resolvedRadius, resolvedMaxHeight, bottomSheetMaxWidth, defaultModalMaxWidth,
+    modalEffectiveWidth, screenWidth, horizontalMargin, insets.top, insets.bottom,
+    headerBg, borderColor, isRTL, isDark, theme.colors.gray, title]);
 
   // Animated styles using reanimated
   const backdropAnimatedStyle = useAnimatedStyle(() => {

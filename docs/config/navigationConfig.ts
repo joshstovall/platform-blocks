@@ -48,9 +48,9 @@ export const NAV_SECTIONS: NavSection[] = [
     section: 'Explore',
     items: [
       { label: 'Components', route: '/components', icon: 'grid', bottom: true, searchable: true },
-      { label: 'Charts', route: '/charts', icon: 'linechart', bottom: true, searchable: true },
-      { label: 'Examples', route: '/examples', icon: 'code', bottom: true, searchable: true },
+      // { label: 'Charts', route: '/charts', icon: 'linechart', bottom: true, searchable: true },
       { label: 'Hooks', route: '/hooks', icon: 'hook', searchable: true, description: 'Reference for reusable React hooks in Platform Blocks' },
+      { label: 'Examples', route: '/examples', icon: 'code', bottom: true, searchable: true },
       { label: 'Icons', route: '/icons', icon: 'star', searchable: true, description: 'Test custom icons package integration' },
     ]
   },

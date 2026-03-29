@@ -79,6 +79,21 @@ export const Input = factory<{
     inputRef,
     value,
     onChangeText,
+    // Native TextInput passthrough props
+    autoCapitalize,
+    autoCorrect,
+    autoFocus,
+    returnKeyType,
+    blurOnSubmit,
+    selectTextOnFocus,
+    textContentType,
+    textAlign,
+    spellCheck,
+    inputMode,
+    enterKeyHint,
+    selectionColor,
+    showSoftInputOnFocus,
+    editable,
     ...baseProps
   } = props;
 
@@ -150,8 +165,26 @@ export const Input = factory<{
 
   // Merge type config with explicit props
   const mergedTextInputProps = useMemo(() => {
+    // Collect native passthrough props (only include if explicitly set)
+    const nativePassthrough: Record<string, any> = {};
+    if (autoCapitalize !== undefined) nativePassthrough.autoCapitalize = autoCapitalize;
+    if (autoCorrect !== undefined) nativePassthrough.autoCorrect = autoCorrect;
+    if (autoFocus !== undefined) nativePassthrough.autoFocus = autoFocus;
+    if (returnKeyType !== undefined) nativePassthrough.returnKeyType = returnKeyType;
+    if (blurOnSubmit !== undefined) nativePassthrough.blurOnSubmit = blurOnSubmit;
+    if (selectTextOnFocus !== undefined) nativePassthrough.selectTextOnFocus = selectTextOnFocus;
+    if (textContentType !== undefined) nativePassthrough.textContentType = textContentType;
+    if (textAlign !== undefined) nativePassthrough.textAlign = textAlign;
+    if (spellCheck !== undefined) nativePassthrough.spellCheck = spellCheck;
+    if (inputMode !== undefined) nativePassthrough.inputMode = inputMode;
+    if (enterKeyHint !== undefined) nativePassthrough.enterKeyHint = enterKeyHint;
+    if (selectionColor !== undefined) nativePassthrough.selectionColor = selectionColor;
+    if (showSoftInputOnFocus !== undefined) nativePassthrough.showSoftInputOnFocus = showSoftInputOnFocus;
+    if (editable !== undefined) nativePassthrough.editable = editable;
+
     const baseProps = {
       ...typeConfig,
+      ...nativePassthrough,
       ...textInputProps,
       // Override secureTextEntry for password visibility toggle
       secureTextEntry: actualSecureTextEntry,
@@ -197,7 +230,21 @@ export const Input = factory<{
     effectiveNumberOfLines,
     maxLength,
     isPasswordType,
-    showPassword
+    showPassword,
+    autoCapitalize,
+    autoCorrect,
+    autoFocus,
+    returnKeyType,
+    blurOnSubmit,
+    selectTextOnFocus,
+    textContentType,
+    textAlign,
+    spellCheck,
+    inputMode,
+    enterKeyHint,
+    selectionColor,
+    showSoftInputOnFocus,
+    editable,
   ]);
 
   return (<>

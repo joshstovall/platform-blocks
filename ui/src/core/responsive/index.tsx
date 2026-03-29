@@ -63,10 +63,10 @@ function BreakpointProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  return React.createElement(
-    BreakpointContext.Provider,
-    { value: breakpoint },
-    children
+  return (
+    <BreakpointContext.Provider value={breakpoint}>
+      {children}
+    </BreakpointContext.Provider>
   );
 }
 
