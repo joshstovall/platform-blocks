@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 
 export default defineConfig({
-  testDir: 'docs/tests',
+  testDir: 'apps/platform-blocks.com/tests',
   fullyParallel: true,
   timeout: 60 * 1000,
   expect: {
@@ -22,7 +22,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npx serve dist --listen 4173 --single',
-    cwd: path.resolve(__dirname, 'docs'),
+    cwd: path.resolve(__dirname, 'apps/platform-blocks.com'),
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 2 * 60 * 1000,

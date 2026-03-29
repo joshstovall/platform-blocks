@@ -3,16 +3,16 @@
   "compilerOptions": {
     "paths": {
       "@platform-blocks/ui": [
-        "./ui/src/index.ts"
+        "./packages/ui/src/index.ts"
       ],
       "@platform-blocks/ui/*": [
-        "./ui/src/*"
+        "./packages/ui/src/*"
       ],
       "@platform-blocks/charts": [
-        "./charts/src/index.ts"
+        "./packages/charts/src/index.ts"
       ],
       "@platform-blocks/charts/*": [
-        "./charts/src/*"
+        "./packages/charts/src/*"
       ]
     }
   }

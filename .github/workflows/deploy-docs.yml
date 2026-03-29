@@ -30,28 +30,28 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            docs/package-lock.json
+            apps/platform-blocks.com/package-lock.json
 
       - name: Install dependencies (docs)
         run: npm ci
-        working-directory: docs
+        working-directory: apps/platform-blocks.com
 
       - name: Build Expo web bundle
         run: npm run build-web
-        working-directory: docs
+        working-directory: apps/platform-blocks.com
         env:
           EXPO_NO_TELEMETRY: "1"
           EXPO_PUBLIC_WEB_APP_ROOT: "/"
 
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
-        working-directory: docs
+        working-directory: apps/platform-blocks.com
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: docs/dist
+          publish_dir: apps/platform-blocks.com/dist
           force_orphan: true
           cname: platform-blocks.com

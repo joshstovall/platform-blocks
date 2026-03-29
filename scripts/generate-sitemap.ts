@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const docsDir = path.join(repoRoot, 'docs');
+const docsDir = path.join(repoRoot, 'apps', 'platform-blocks.com');
 const publicDir = path.join(docsDir, 'public');
 const generatedDir = path.join(docsDir, 'data', 'generated');
 const outputPath = path.join(publicDir, 'sitemap.xml');

@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Button } from '../../../ui/src/components/Button';
-import { SoundButton } from '../../../ui/src/components/Button/SoundButton';
-import { SoundProvider } from '../../../ui/src/core/sound/context';
-import { getAllSounds } from '../../../ui/src/core/sound/sounds';
-import { useButtonFeedback, useUIFeedback } from '../../../ui/src/core/sound/hooks';
+import { Button } from '../../../../packages/ui/src/components/Button';
+import { SoundButton } from '../../../../packages/ui/src/components/Button/SoundButton';
+import { SoundProvider } from '../../../../packages/ui/src/core/sound/context';
+import { getAllSounds } from '../../../../packages/ui/src/core/sound/sounds';
+import { useButtonFeedback, useUIFeedback } from '../../../../packages/ui/src/core/sound/hooks';
 
 /**
  * Basic example showing how to use sound feedback in buttons

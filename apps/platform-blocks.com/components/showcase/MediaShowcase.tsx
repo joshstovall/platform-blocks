@@ -3,8 +3,6 @@ import { Pressable, useWindowDimensions } from 'react-native';
 import { Block, Title } from 'platform-blocks/components';
 import { Waveform, Card, Text, useTheme, Video, Gallery, Slider, Button, Image } from '@platform-blocks/ui';
 
-const androidWave = require('../../assets/AndroidWave.json');
-
 export function MediaShowcase() {
   const theme = useTheme();
   const { width } = useWindowDimensions();

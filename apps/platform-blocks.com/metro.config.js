@@ -2,7 +2,7 @@ const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
 const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, '..');
+const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
@@ -13,9 +13,9 @@ config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 // Add haste/extra resolver settings for charts package path
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
-  'platform-blocks': path.resolve(workspaceRoot, 'ui', 'src'),
-  '@platform-blocks/charts': path.resolve(workspaceRoot, 'charts', 'src'),
-  '@platform-blocks/ui': path.resolve(workspaceRoot, 'ui', 'src'),
+  'platform-blocks': path.resolve(workspaceRoot, 'packages', 'ui', 'src'),
+  '@platform-blocks/charts': path.resolve(workspaceRoot, 'packages', 'charts', 'src'),
+  '@platform-blocks/ui': path.resolve(workspaceRoot, 'packages', 'ui', 'src'),
   // Force singletons for React stack to avoid duplicate copies across workspaces
   react: path.resolve(projectRoot, 'node_modules', 'react'),
   'react-dom': path.resolve(projectRoot, 'node_modules', 'react-dom'),

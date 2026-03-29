@@ -14,12 +14,12 @@ const DEFAULT_ACCESS = 'public';
 const PACKAGES: PackageTarget[] = [
   {
     name: '@platform-blocks/ui',
-    dir: path.join(ROOT, 'ui'),
-    workspace: 'ui',
+    dir: path.join(ROOT, 'packages', 'ui'),
+    workspace: 'packages/ui',
   },
   {
     name: '@platform-blocks/charts',
-    dir: path.join(ROOT, 'charts'),
+    dir: path.join(ROOT, 'packages', 'charts'),
     workspace: '@platform-blocks/charts',
   },
 ];
@@ -201,7 +201,7 @@ const main = () => {
   // Generate SEO files (sitemap.xml and llms.txt) before publishing
   console.log('Generating SEO files...');
   try {
-    runCommand('npm run generate-seo --workspace=docs', ROOT, options.dryRun);
+    runCommand('npm run generate-seo --workspace=apps/platform-blocks.com', ROOT, options.dryRun);
     console.log('SEO files generated successfully.');
   } catch (error) {
     console.warn('Warning: Failed to generate SEO files. Continuing with publish...');

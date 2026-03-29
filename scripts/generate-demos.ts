@@ -12,10 +12,10 @@ import path from 'path';
 import crypto from 'crypto';
 
 const ROOT = path.resolve(__dirname, '..');
-const UI_COMPONENTS_DIR = path.join(ROOT, 'ui', 'src', 'components');
-const UI_HOOKS_DIR = path.join(ROOT, 'ui', 'src', 'hooks');
-const CHARTS_COMPONENTS_DIR = path.join(ROOT, 'charts', 'src', 'components'); // charts components directory
-const OUTPUT_DIR = path.join(ROOT, 'docs', 'data', 'generated');
+const UI_COMPONENTS_DIR = path.join(ROOT, 'packages', 'ui', 'src', 'components');
+const UI_HOOKS_DIR = path.join(ROOT, 'packages', 'ui', 'src', 'hooks');
+const CHARTS_COMPONENTS_DIR = path.join(ROOT, 'packages', 'charts', 'src', 'components'); // charts components directory
+const OUTPUT_DIR = path.join(ROOT, 'apps', 'platform-blocks.com', 'data', 'generated');
 const COMPONENT_MARKDOWN_DIR = path.join(OUTPUT_DIR, 'component-markdown');
 
 interface DemoMeta {
@@ -198,7 +198,7 @@ function collectDemos() {
       }
       const codeHash = sha256(codeSnippet);
       const id = `${comp}.${folder}`;
-      const relImport = `../../../ui/src/components/${comp}/demos/${folder}`;
+      const relImport = `../../../../packages/ui/src/components/${comp}/demos/${folder}`;
       codeByComponent[comp][id] = { code: codeSnippet, hash: codeHash, importPath: relImport };
 
       // Metadata precedence: metadata.ts -> frontmatter in description.md -> defaults
@@ -276,7 +276,7 @@ function collectDemos() {
       const tsxPath = path.join(demoDir, file);
       const raw = fs.readFileSync(tsxPath, 'utf8');
       const codeHash = sha256(raw);
-      const relImport = `../../../ui/src/components/${comp}/demos/${baseName}`;
+      const relImport = `../../../../packages/ui/src/components/${comp}/demos/${baseName}`;
       codeByComponent[comp][id] = { code: raw, hash: codeHash, importPath: relImport };
       const mdPath = path.join(demoDir, `${baseName}.md`);
       let meta: any = {};
@@ -378,7 +378,7 @@ function collectDemos() {
         if (codeMatch) codeSnippet = codeMatch[1];
         const codeHash = sha256(codeSnippet);
         const id = `${comp}.${folder}`;
-        const relImport = `../../../charts/src/components/${comp}/demos/${folder}`;
+        const relImport = `../../../../packages/charts/src/components/${comp}/demos/${folder}`;
         codeByComponent[comp][id] = { code: codeSnippet, hash: codeHash, importPath: relImport };
         let meta: any = {};
         const descPath = path.join(demoDir, folder, 'description.md');
@@ -431,7 +431,7 @@ function collectDemos() {
           console.log(`[generate-demos][charts] Processing legacy demo file: ${comp}/${file}`);
         }
         const codeHash = sha256(raw);
-        const relImport = `../../../charts/src/components/${comp}/demos/${baseName}`;
+        const relImport = `../../../../packages/charts/src/components/${comp}/demos/${baseName}`;
         codeByComponent[comp][id] = { code: raw, hash: codeHash, importPath: relImport };
         const mdPath = path.join(demoDir, `${baseName}.md`);
         let meta: any = {};
@@ -497,7 +497,7 @@ function collectDemos() {
       path.join(compDir, `${comp}.types.ts`),
       path.join(compDir, `${comp}.types.tsx`),
       // For charts, also fallback to shared root types file so interfaces like HeatmapChartProps are discovered.
-      /charts\/src\//.test(compDir.replace(/\\/g, '/')) ? path.join(ROOT, 'charts', 'src', 'types.ts') : ''
+      /charts\/src\//.test(compDir.replace(/\\/g, '/')) ? path.join(ROOT, 'packages', 'charts', 'src', 'types.ts') : ''
     ].filter(f => f && fs.existsSync(f));
     if (!candidateFiles.length) continue;
 
@@ -738,7 +738,7 @@ function collectHooks() {
 
       const codeHash = sha256(codeSnippet);
       const id = `${hook}.${folder}`;
-      const relImport = `../../../ui/src/hooks/${hook}/demos/${folder}`;
+      const relImport = `../../../../packages/ui/src/hooks/${hook}/demos/${folder}`;
       codeByHook[hook][id] = { code: codeSnippet, hash: codeHash, importPath: relImport };
 
       let meta: any = {};

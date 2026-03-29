@@ -79,6 +79,7 @@ ios/
 *.app
 *.tar.gz
 
-
+# testing
+test-results/
 docs/assets/chart-baselines/*.png
 *.snap

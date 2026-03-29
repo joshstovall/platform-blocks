@@ -21,7 +21,7 @@ const ComponentMetaSchema = z?.object?.({
 interface DemoMeta { id: string; component: string; demo: string; title: string; order: number; hidden?: boolean; }
 
 const ROOT = path.resolve(__dirname, '..');
-const OUTPUT_DIR = path.join(ROOT, 'docs', 'data', 'generated');
+const OUTPUT_DIR = path.join(ROOT, 'apps', 'platform-blocks.com', 'data', 'generated');
 const FILE = path.join(OUTPUT_DIR, 'demos.json');
 
 function fail(msg: string): never { console.error(`✖ ${msg}`); process.exit(1); }

@@ -10,25 +10,25 @@
     "baseUrl": ".",
     "paths": {
       "platform-blocks": [
-        "../ui/src/index.ts"
+        "../../packages/ui/src/index.ts"
       ],
       "platform-blocks/*": [
-        "../ui/src/*"
+        "../../packages/ui/src/*"
       ],
       "@platform-blocks/ui": [
-        "../ui/src/index.ts"
+        "../../packages/ui/src/index.ts"
       ],
       "@platform-blocks/ui/*": [
-        "../ui/src/*"
+        "../../packages/ui/src/*"
       ],
       "@platform-blocks/charts": [
-        "../charts/src/index.ts"
+        "../../packages/charts/src/index.ts"
       ],
       "@platform-blocks/charts/*": [
-        "../charts/src/*"
+        "../../packages/charts/src/*"
       ],
       "@platform-blocks/charts-types": [
-        "../charts/src/types.ts"
+        "../../packages/charts/src/types.ts"
       ]
     },
     "resolveJsonModule": true,
@@ -44,9 +44,9 @@
     "index.ts",
     "index.tsx",
     "_layout.tsx",
-    "../ui/src/**/*.ts",
-    "../ui/src/**/*.tsx",
-    "../forms",
+    "../../packages/ui/src/**/*.ts",
+    "../../packages/ui/src/**/*.tsx",
+    "../../forms",
     "config/platforms.ts",
     "config/navigationConfig.ts"
 , "config/docsLayout.tsx"  ],

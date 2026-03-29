@@ -11,10 +11,10 @@ import {
   Flex,
   DataTable,
   DatePickerInput,
-} from '../../../ui/src/components';
-import { AccessibleAnnouncer, AccessibleModal } from '../../../ui/src/components/_internal/Accessibility';
-import { useAccessibility } from '../../../ui/src/core/accessibility/context';
-import { DESIGN_TOKENS } from '../../../ui/src/core';
+} from '../../../../packages/ui/src/components';
+import { AccessibleAnnouncer, AccessibleModal } from '../../../../packages/ui/src/components/_internal/Accessibility';
+import { useAccessibility } from '../../../../packages/ui/src/core/accessibility/context';
+import { DESIGN_TOKENS } from '../../../../packages/ui/src/core';
 
 const AccessibilityDemo: React.FC = () => {
   const {
