@@ -20,7 +20,7 @@ const PACKAGES: PackageTarget[] = [
   {
     name: '@platform-blocks/charts',
     dir: path.join(ROOT, 'packages', 'charts'),
-    workspace: '@platform-blocks/charts',
+    workspace: 'packages/charts',
   },
 ];
 

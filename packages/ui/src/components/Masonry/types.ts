@@ -49,7 +49,7 @@ export interface MasonryProps extends SpacingProps {
   onEndReachedThreshold?: number;
 
   /** Callback when viewable items change */
-  onViewableItemsChanged?: ((info: { viewableItems: ViewToken[]; changed: ViewToken[] }) => void) | null;
+  onViewableItemsChanged?: ((info: { viewableItems: ViewToken<MasonryItem>[]; changed: ViewToken<MasonryItem>[] }) => void) | null;
 
   /** Whether scrolling is enabled */
   scrollEnabled?: boolean;

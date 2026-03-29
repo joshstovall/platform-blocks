@@ -423,7 +423,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
       <Pressable
         ref={setTriggerNode}
         onPress={toggle}
-        {...(Platform.OS === 'web' ? { role: 'listbox' } : { accessibilityRole: 'button' })}
+        {...(Platform.OS === 'web' ? { role: 'combobox' as const } : { accessibilityRole: 'button' as const })}
         accessibilityLabel={label || placeholder}
         disabled={disabled}
         style={[

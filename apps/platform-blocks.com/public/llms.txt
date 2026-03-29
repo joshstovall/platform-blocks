@@ -1,10 +1,10 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2026-03-01T19:19:31.418Z
+Generated: 2026-03-29T03:08:46.064Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
-- Version: 0.7.0
+- Version: 0.7.3
 - Description: A React Native UI library
 - Main: lib/cjs/index.js
 - Module: lib/esm/index.js
@@ -18,7 +18,7 @@ Generated: 2026-03-01T19:19:31.418Z
 - build:types: tsc -p tsconfig.json --emitDeclarationOnly
 - clean: rm -rf lib || true
 - format: eslint src --fix && echo 'Code formatted successfully!'
-- generate:llms: tsx ../scripts/generate-llms.ts
+- generate:llms: tsx ../../scripts/generate-llms.ts
 - lint: eslint src
 - lint:check: eslint src --max-warnings 0
 - lint:fix: eslint src --fix
@@ -710,7 +710,7 @@ The AutoComplete component provides search functionality with suggestions, suppo
   Controls border radius; accepts size tokens or numeric value
 `clearable` (boolean) [optional]
   Show built-in clear button when there is text
-- … 47 more props documented
+- … 61 more props documented
 
 ### Demos
 
@@ -6196,6 +6196,11 @@ A versatile text input component that provides a consistent interface for text e
   Additional TextInput props
 `inputRef` (React.Ref<any>) [optional]
   Ref to underlying TextInput (focus control)
+`autoCapitalize` (RNTextInputProps['autoCapitalize']) [optional]
+  Text auto-capitalization behavior
+`autoCorrect` (boolean) [optional]
+  Whether to enable auto-correct
+- … 12 more props documented
 
 ### Demos
 
@@ -6215,11 +6220,11 @@ import { Column, Input, Text } from '@platform-blocks/ui';
         value={value}
         onChangeText={setValue}
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Current value: {value}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }
@@ -6836,7 +6841,7 @@ const LOADER_SIZES: Required<LoaderProps>['size'][] = ['xs', 'sm', 'md', 'lg', '
 ```
 
 ## Component: <LoadingOverlay>
-`LoadingOverlay` composits the core `Overlay` and `Loader` primitives to reproduce Mantine's loading affordance. Render it inside a relatively positioned container, toggle `visible` during asynchronous work, and customize appearance by pas…
+`LoadingOverlay` composits the core `Overlay` and `Loader` primitives to create a convenient helper for blocking interactions with a visual indicator during asynchronous operations. Render it inside a relatively positioned container, toggl…
 
 ### Props
 `visible` (boolean) [optional, default: false]
@@ -7175,6 +7180,9 @@ Masonry provides an efficient way to create Pinterest-style layouts where items 
   Empty state content
 `flashListProps` (Partial<Omit<FlashListProps<MasonryItem>, 'data' | 'renderItem' | 'numColumns'>>) [optional]
   Flash list props to pass through
+`onEndReached` (((info: { distanceFromEnd: number }) => void) | null) [optional]
+  Callback when the end of the list is reached (for pagination / infinite scroll)
+- … 10 more props documented
 
 ### Demos
 
@@ -8040,7 +8048,7 @@ The `NumberInput` component is a numeric text input field that provides built-in
   Maximum value
 `step` (number) [optional, default: 1]
   Step increment
-- … 26 more props documented
+- … 40 more props documented
 
 ### Demos
 
@@ -8122,7 +8130,7 @@ import { Column, NumberInput, Text } from '@platform-blocks/ui';
 ```
 
 ## Component: <Overlay>
-The Overlay component provides a Mantine-inspired utility for dimming background content or drawing focus to foreground elements. It supports theme-aware colors, configurable opacity, gradients, and blur to achieve anything from subtle scr…
+The Overlay component provides a utility for dimming background content or drawing focus to foreground elements. It supports theme-aware colors, configurable opacity, gradients, and blur to achieve anything from subtle scrims to dramatic g…
 
 ### Props
 `color` (string) [optional]
@@ -8130,7 +8138,7 @@ The Overlay component provides a Mantine-inspired utility for dimming background
 `opacity` (number) [optional]
   Opacity applied to the background color. Defaults to 0.6.
 `backgroundOpacity` (number) [optional]
-  Mantine-compatible alias for `opacity`.
+  Opacity applied to the entire overlay, including gradients and blur effects. Defaults to 1.
 `gradient` (string) [optional]
   Web-only CSS gradient string. Falls back to `color` on native platforms.
 `blur` (number | string) [optional]
@@ -8157,9 +8165,9 @@ The Overlay component provides a Mantine-inspired utility for dimming background
 import { useState, type ComponentProps } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { Button, Column, Overlay, Text } from '@platform-blocks/ui';
-const HERO_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-1.png';
-const GRADIENT_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-7.png';
-const BLUR_IMAGE = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-3.png';
+const HERO_IMAGE = 'https://picsum.photos/800/450?random=8';
+const GRADIENT_IMAGE = 'https://picsum.photos/800/450?random=2';
+const BLUR_IMAGE = 'https://picsum.photos/800/450?random=10';
 type OverlayExample = {
   key: string;
   image: string;
@@ -8679,7 +8687,7 @@ A specialized input component designed for entering PIN codes, one-time password
   Whether to allow paste
 `oneTimeCode` (boolean) [optional, default: false]
   One-time code auto-complete
-- … 4 more props documented
+- … 13 more props documented
 
 ### Demos
 
@@ -8702,11 +8710,11 @@ import { Column, PinInput, Text } from '@platform-blocks/ui';
         label="PIN code"
         keyboardFocusId="pin-demo-basic"
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Current value: {value}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }
@@ -11418,7 +11426,7 @@ The Stepper component provides a step-by-step navigation interface, perfect for 
 
 ```tsx
 import { useState } from 'react';
-import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+import { Button, Card, Block, Row, Stepper, Text } from '@platform-blocks/ui';
 const steps = [
   {
     label: 'Account',
@@ -11447,9 +11455,9 @@ const totalSteps = steps.length;
   const goPrevious = () => handleStepChange(activeStep - 1);
   const goNext = () => handleStepChange(activeStep + 1);
   return (
-    <Column gap="lg">
+    <Block gap="lg" fullWidth>
       <Card p="md">
-        <Column gap="md">
+        <Block gap="md">
           <Text size="sm" colorVariant="secondary">
             Control the current step with the `active` prop and provide completion content with `Stepper.Completed`.
           </Text>
@@ -11463,7 +11471,7 @@ const totalSteps = steps.length;
               All onboarding tasks are complete. You can continue to the dashboard.
             </Stepper.Completed>
           </Stepper>
-          <Row gap="sm" justify="center">
+          <Row gap="sm" justify="space-between">
             <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
               Back
             </Button>
@@ -11471,9 +11479,9 @@ const totalSteps = steps.length;
               {activeStep === totalSteps - 1 ? 'Finish' : 'Next step'}
             </Button>
           </Row>
-        </Column>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }
 ```
@@ -11483,7 +11491,7 @@ const totalSteps = steps.length;
 
 ```tsx
 import { useState } from 'react';
-import { Button, Card, Column, Row, Stepper, Text } from '@platform-blocks/ui';
+import { Button, Card, Block, Row, Stepper, Text } from '@platform-blocks/ui';
 const steps = [
   {
     label: 'Account',
@@ -11515,9 +11523,9 @@ const totalSteps = steps.length;
   const goPrevious = () => handleStepChange(activeStep - 1);
   const goNext = () => handleStepChange(activeStep + 1);
   return (
-    <Column gap="lg">
+    <Block gap="lg" fullWidth>
       <Card p="md">
-        <Column gap="md">
+        <Block gap="md">
           <Text size="sm" colorVariant="secondary">
             Gate step selection with `allowStepSelect` so people can revisit completed steps without skipping ahead.
           </Text>
@@ -11536,7 +11544,7 @@ const totalSteps = steps.length;
               Setup is complete. You can always return to earlier steps from the navigation.
             </Stepper.Completed>
           </Stepper>
-          <Row gap="sm" justify="center">
+          <Row gap="sm" justify="space-between">
             <Button variant="outline" onPress={goPrevious} disabled={activeStep === 0}>
               Back
             </Button>
@@ -11544,9 +11552,9 @@ const totalSteps = steps.length;
               {activeStep === totalSteps - 1 ? 'Finish' : 'Next step'}
             </Button>
           </Row>
-        </Column>
+        </Block>
       </Card>
-    </Column>
+    </Block>
   );
 }
 ```
@@ -12113,6 +12121,11 @@ The TextArea component provides a multi-line text input with support for auto-re
   Resize behavior
 `textInputProps` (Omit<TextInputProps, keyof BaseInputProps>) [optional]
   Additional TextInput props
+`autoCapitalize` (RNTextInputProps['autoCapitalize']) [optional]
+  Text auto-capitalization behavior
+`autoCorrect` (boolean) [optional]
+  Whether to enable auto-correct
+- … 13 more props documented
 
 ### Demos
 
@@ -12139,11 +12152,11 @@ import { Column, Text, TextArea } from '@platform-blocks/ui';
         rows={4}
         fullWidth
       />
-      {value && (
+      {value ? (
         <Text size="xs" colorVariant="secondary">
           Character count: {value.length}
         </Text>
-      )}
+      ) : null}
     </Column>
   );
 }

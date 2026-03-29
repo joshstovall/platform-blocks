@@ -82,10 +82,8 @@ const useBreakpoint = (): Breakpoint => {
   }
 
   // Fallback — no provider, use local state + listener (backwards compatible)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [breakpoint, setBreakpoint] = useState<Breakpoint>(computeBreakpoint);
   
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const updateBreakpoint = () => {
       setBreakpoint(computeBreakpoint());
