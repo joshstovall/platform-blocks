@@ -489,8 +489,12 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
   // Register scatter points as a single series for unified tooltip
   // Pan/Zoom integration
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null);
+  const lastPanRef = React.useRef<{ x: number; y: number } | null>(null);
   const [pinchTracking, setPinchTracking] = useState(false);
+  const pinchTrackingRef = React.useRef(false);
   const [lastTapTime, setLastTapTime] = useState(0);
+  const lastTapTimeRef = React.useRef<number>(0);
+  const dragStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const panZoom = usePanZoom(
     { xDomain: xDomain, yDomain: yDomain },
     (next) => {
@@ -518,18 +522,25 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
     onPanResponderGrant: (e, gestureState) => {
       const native: any = e.nativeEvent || {};
       const touches = native.touches || [];
+      // Record drag start for tap vs drag detection
+      const { locationX: grantX, locationY: grantY } = native;
+      if (typeof grantX === 'number' && typeof grantY === 'number') {
+        dragStartRef.current = { x: grantX, y: grantY };
+      }
       if (props.enablePanZoom && (touches.length === 2 || gestureState.numberActiveTouches === 2)) {
         if (touches.length === 2) {
           const dx = touches[1].pageX - touches[0].pageX;
           const dy = touches[1].pageY - touches[0].pageY;
           const distance = Math.sqrt(dx * dx + dy * dy);
           panZoom.startPinch(distance);
+          pinchTrackingRef.current = true;
           setPinchTracking(true);
           return;
         }
       }
       const { locationX, locationY } = native;
       if (typeof locationX === 'number' && typeof locationY === 'number') {
+        lastPanRef.current = { x: locationX, y: locationY };
         setLastPan({ x: locationX, y: locationY });
         panZoom.startPan(locationX, locationY);
         evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
@@ -539,16 +550,19 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
       const native: any = e.nativeEvent || {};
       const touches = native.touches || [];
       const activeTouches = touches.length || gestureState.numberActiveTouches;
+      const isPinching = pinchTrackingRef.current;
       if (props.enablePanZoom && activeTouches === 2) {
-        if (!pinchTracking && touches.length === 2) {
+        if (!isPinching && touches.length === 2) {
           const dx0 = touches[1].pageX - touches[0].pageX;
           const dy0 = touches[1].pageY - touches[0].pageY;
           const startDistance = Math.sqrt(dx0 * dx0 + dy0 * dy0);
           panZoom.startPinch(startDistance);
+          lastPanRef.current = null;
+          pinchTrackingRef.current = true;
           setPinchTracking(true);
           return;
         }
-        if (pinchTracking && touches.length === 2) {
+        if (isPinching && touches.length === 2) {
           const dx = touches[1].pageX - touches[0].pageX;
           const dy = touches[1].pageY - touches[0].pageY;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -556,10 +570,11 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
           return;
         }
       }
-      if (props.enablePanZoom && !pinchTracking && lastPan && activeTouches === 1) {
+      if (props.enablePanZoom && !isPinching && lastPanRef.current && activeTouches === 1) {
         const { locationX, locationY } = native;
         if (typeof locationX === 'number' && typeof locationY === 'number') {
           panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
+          lastPanRef.current = { x: locationX, y: locationY };
           setLastPan({ x: locationX, y: locationY });
           evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
         }
@@ -572,22 +587,38 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
         }
       }
     },
-    onPanResponderRelease: () => {
+    onPanResponderRelease: (e) => {
+      // Double tap / click reset detection — only count taps, not drags
       if (props.resetOnDoubleTap) {
-        const now = Date.now();
-        if (now - lastTapTime < 300) {
-          setXDomainState(null);
-          setYDomainState(null);
-          setLastTapTime(0);
-          // @ts-ignore
-          props.onDomainChange?.(computedXDomain, computedYDomain);
-        } else {
-          setLastTapTime(now);
+        const native: any = e.nativeEvent || {};
+        const endX = typeof native.locationX === 'number' ? native.locationX : (dragStartRef.current?.x ?? 0);
+        const endY = typeof native.locationY === 'number' ? native.locationY : (dragStartRef.current?.y ?? 0);
+        const startPt = dragStartRef.current;
+        const dragDistance = startPt
+          ? Math.sqrt(Math.pow(endX - startPt.x, 2) + Math.pow(endY - startPt.y, 2))
+          : 0;
+        const wasTap = dragDistance < 10;
+
+        if (wasTap) {
+          const now = Date.now();
+          if (now - lastTapTimeRef.current < 300) {
+            setXDomainState(null);
+            setYDomainState(null);
+            lastTapTimeRef.current = 0;
+            setLastTapTime(0);
+            // @ts-ignore
+            props.onDomainChange?.(computedXDomain, computedYDomain);
+          } else {
+            lastTapTimeRef.current = now;
+            setLastTapTime(now);
+          }
         }
       }
+      dragStartRef.current = null;
       panZoom.endPan();
+      lastPanRef.current = null;
       setLastPan(null);
-      if (pinchTracking) { panZoom.endPinch(); setPinchTracking(false); }
+      if (pinchTrackingRef.current) { panZoom.endPinch(); pinchTrackingRef.current = false; setPinchTracking(false); }
       // fire domain change callback after gesture ends
       // @ts-ignore optional
       props.onDomainChange?.(xDomain, yDomain);

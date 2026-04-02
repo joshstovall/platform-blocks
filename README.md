@@ -7,7 +7,6 @@
 <div align="center">
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/joshstovall/platform-blocks/blob/HEAD/LICENSE)
-[![npm](https://img.shields.io/npm/v/platform-blocks)](https://www.npmjs.com/package/@platform-blocks/ui)
 [![Discord](https://img.shields.io/badge/Chat%20on-Discord-%235865f2)](https://discord.gg/kbHjwzgXbc)
 [![X](https://img.shields.io/badge/Follow-%40platform__blocks-000000?logo=x&logoColor=white)](https://x.com/platform_blocks)
 
@@ -15,27 +14,40 @@
 
 [Platform Blocks](https://platform-blocks.com/) is a React Native UI component library for building intuitive, accessible, and highly customizable mobile and web applications.
 
-## Documentation 
+## Packages
 
-Full documentation and examples are available at [platform-blocks.com](https://platform-blocks.com).
+| Package | Description | Version |
+| --- | --- | --- |
+| [`@platform-blocks/ui`](./packages/ui) | 80+ UI components — inputs, navigation, overlays, media, theming, and more | [![npm](https://img.shields.io/npm/v/@platform-blocks/ui)](https://www.npmjs.com/package/@platform-blocks/ui) |
+| [`@platform-blocks/charts`](./packages/charts) | 25 data visualization chart types with animations and interactions | [![npm](https://img.shields.io/npm/v/@platform-blocks/charts)](https://www.npmjs.com/package/@platform-blocks/charts) |
 
 ## Installation
 
-[`@platform-blocks/ui`](http://npmjs.com/package/@platform-blocks/ui) (core component library)
-
 ```sh
 npm i @platform-blocks/ui
-```
-
-[`@platform-blocks/charts`](http://npmjs.com/package/@platform-blocks/charts) (data visualization library)
-
-```sh
 npm i @platform-blocks/charts
 ```
 
-## Examples
+## Key features
 
-Our documentation site includes [interactive examples](https://platform-blocks.com/examples) for inspiration and [components gallery](https://platform-blocks.com/components) to explore all available components.
+- **Cross-platform** — iOS, Android, and Web from a single codebase
+- **80+ components** — Comprehensive set of UI primitives and complex widgets
+- **25 chart types** — Bar, Line, Area, Pie, Scatter, Radar, Heatmap, and more
+- **Themeable** — Built-in light/dark themes with full customization support
+- **Accessible** — Screen reader, keyboard navigation, and RTL support
+- **Animated** — Smooth transitions powered by `react-native-reanimated`
+- **Tree-shakeable** — Optimized ESM and CJS builds
+
+## Documentation
+
+Full documentation and examples are available at [platform-blocks.com](https://platform-blocks.com).
+
+- [Getting started](https://platform-blocks.com/getting-started)
+- [Component gallery](https://platform-blocks.com/components)
+- [Interactive examples](https://platform-blocks.com/examples)
+- [Theming](https://platform-blocks.com/theming)
+- [Accessibility](https://platform-blocks.com/accessibility)
+- [llms.txt](https://platform-blocks.com/llms.txt) — Full API reference for LLMs and AI assistants
 
 ## Contributing
 

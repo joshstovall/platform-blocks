@@ -18,13 +18,17 @@ export const FEATURED_BRANDS: BrandName[] = [
 
 export const ALL_BRANDS: BrandName[] = [
   'google',
+  'galaxy-store',
   'facebook',
   'discord',
   'android',
   'apple',
+  'applePodcasts',
   'app-store',
+  'appgallery',
   'openai',
   'chrome',
+  'chromeWebStore',
   'spotify',
   'github',
   'x',
@@ -37,8 +41,23 @@ export const ALL_BRANDS: BrandName[] = [
   'visa',
   'reddit',
   'amazon',
+  'amazonAppstore',
+  'amazonMusic',
   'twitch',
-  'tiktok'
+  'tiktok',
+  'npm',
+  'paypal',
+  'appleMusic',
+  'soundcloud',
+  'whatsapp',
+  'telegram',
+  'signal',
+  'meta',
+  'discover',
+  'amex',
+  'messenger',
+  'instagram',
+  'zoom',
 ];
 
 export const SAMPLE_BRANDS: BrandName[] = FEATURED_BRANDS.slice(0, 6);

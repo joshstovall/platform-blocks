@@ -160,7 +160,10 @@ export function getDataDomain(
     return [0, 1];
   }
   
-  const values = data.map(accessor);
+  const values = data.map(accessor).filter(v => Number.isFinite(v));
+  if (values.length === 0) {
+    return [0, 1];
+  }
   return [Math.min(...values), Math.max(...values)];
 }
 
@@ -242,7 +245,10 @@ export function dataToChartCoordinates(
   const chartX = plotArea.x + relativeX * plotArea.width;
   const chartY = plotArea.y + (1 - relativeY) * plotArea.height; // Flip Y axis
   
-  return { x: chartX, y: chartY };
+  return {
+    x: Number.isFinite(chartX) ? chartX : 0,
+    y: Number.isFinite(chartY) ? chartY : 0,
+  };
 }
 
 /**

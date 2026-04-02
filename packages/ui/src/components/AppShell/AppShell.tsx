@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useRef, useEffect, useCallback } from 'react';
 import { View, ViewStyle, Platform, useWindowDimensions, KeyboardAvoidingView } from 'react-native';
 import Animated, { useSharedValue, withTiming, useAnimatedStyle, interpolate, Easing } from 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -465,6 +465,7 @@ export const AppShellMain: React.FC<AppShellMainProps> = ({
       width: '100%',
       alignSelf: centerContent ? 'center' : 'stretch',
       paddingHorizontal: horizontalPadding,
+      ...(Platform.OS === 'web' && { overflow: 'visible' as any }),
     },
     maxWidth ? { maxWidth } : null,
   ].filter(Boolean);
@@ -491,9 +492,64 @@ export const AppShellMain: React.FC<AppShellMainProps> = ({
     ...(role ? { role } : {}),
   };
 
+  // On web, forward wheel events from the outer (full-width) container
+  // to the inner ScrollView so scrolling works even when the cursor is
+  // in the left/right margins outside the maxWidth content area.
+  const outerRef = useRef<View>(null);
+  const scrollableRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const el = (outerRef.current as any) as HTMLElement | null;
+    if (!el || !el.addEventListener) return;
+
+    // Find the first scrollable descendant by checking computed overflow
+    const findScrollable = (root: HTMLElement): HTMLElement | null => {
+      const children = root.querySelectorAll('*');
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i] as HTMLElement;
+        const style = window.getComputedStyle(child);
+        const overflowY = style.overflowY;
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+          return child;
+        }
+      }
+      return null;
+    };
+
+    // Cache after a short delay to allow children to mount
+    const timer = setTimeout(() => {
+      scrollableRef.current = findScrollable(el);
+    }, 100);
+
+    const handleWheel = (e: WheelEvent) => {
+      // Only forward if the event target is the outer container itself
+      // (i.e. the margins), not a child element that can scroll on its own.
+      const target = e.target as HTMLElement;
+      if (target !== el) return;
+
+      // Lazily find if not cached
+      if (!scrollableRef.current) {
+        scrollableRef.current = findScrollable(el);
+      }
+
+      if (scrollableRef.current) {
+        scrollableRef.current.scrollTop += e.deltaY;
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      clearTimeout(timer);
+      el.removeEventListener('wheel', handleWheel);
+      scrollableRef.current = null;
+    };
+  }, []);
+
   return (
     <>
       <View
+        ref={outerRef}
         {...webAttributes}
         style={[
           {

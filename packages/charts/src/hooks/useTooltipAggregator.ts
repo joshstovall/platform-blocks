@@ -109,12 +109,12 @@ const findNearestPoint = (
   });
 
   const expand = (start: number, step: number) => {
+    const threshold = bestDataDx + EPSILON;
     let idx = start + step;
     while (idx >= 0 && idx < points.length) {
       const dx = Math.abs(points[idx].x - targetX);
-      if (dx - bestDataDx <= EPSILON) {
+      if (dx <= threshold) {
         candidateIndices.add(idx);
-        bestDataDx = Math.min(bestDataDx, dx);
         idx += step;
       } else {
         break;

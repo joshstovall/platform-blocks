@@ -21,13 +21,6 @@ export function PageLayout({ children, style, contentContainerStyle }: PageLayou
     container: {
       flex: 1,
       backgroundColor: theme.backgrounds.base,
-      // backgroundColor: theme.colorScheme === 'dark' ? '#000000' : '#FAFAFA',
-      // ...(Platform.OS === 'web' && {
-      //   backgroundColor: 'transparent', // allow gradient to define appearance
-      //   backgroundImage: theme.colorScheme === 'dark'
-      //     ? 'linear-gradient(rgba(0,0,0,0.8), #000000 140px)'
-      //     : 'linear-gradient(rgba(250,250,250,0.8), #eaeaeaff 140px)',
-      // } as any),
     },
     contentContainer: {
       flexGrow: 1,
@@ -73,7 +66,7 @@ export function PageLayout({ children, style, contentContainerStyle }: PageLayou
         scrollEventThrottle: 16,
       }}
     >
-      <View style={style}>
+      <View style={[{ overflow: 'visible' as any, paddingHorizontal: Platform.OS === 'web' ? 8 : 0 }, style]}>
         {children}
       </View>
       <View style={dynamicStyles.footerWrapper}>

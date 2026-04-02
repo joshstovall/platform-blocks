@@ -39,6 +39,16 @@ export { ChartPlot, ChartLayer } from './core/ChartLayers';
 export { ChartThemeProvider, useChartTheme } from './theme/ChartThemeContext';
 export type { ChartTheme, HostThemeBridge } from './theme/ChartThemeContext';
 
+// Hooks
+export { useChartAnimation } from './hooks/useChartAnimation';
+export { useChartData } from './hooks/useChartData';
+export { useDataDecimation } from './hooks/useDataDecimation';
+export { useDomains } from './hooks/useDomains';
+export { useNearestPoint } from './hooks/useNearestPoint';
+export { usePanZoom } from './hooks/usePanZoom';
+export { useStreamingData } from './hooks/useStreamingData';
+export { useTooltipAggregator } from './hooks/useTooltipAggregator';
+
 // Utilities, scales, types
 export * from './utils/scales';
 export * from './types';

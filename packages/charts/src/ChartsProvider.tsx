@@ -42,16 +42,34 @@ const RootOffsetCapture: React.FC<ViewProps> = ({ children, style, ...rest }) =>
   let ctx: any = null; try { ctx = useChartInteractionContext(); } catch {
     console.warn('ChartsProvider: RootOffsetCapture must be used inside a ChartInteractionProvider context');
   }
-  useEffect(()=>{
-    if(!ref.current || !ctx?.setRootOffset) return;
+
+  const measure = React.useCallback(() => {
+    if (!ref.current || !ctx?.setRootOffset) return;
     // Attempt to measure DOM node (web). React Native web: stateNode or ref itself.
     // @ts-ignore internal access best-effort
     const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
-    if(el && el.getBoundingClientRect){
+    if (el && el.getBoundingClientRect) {
       const r = el.getBoundingClientRect();
       ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
     }
-  },[ctx?.setRootOffset]);
+  }, [ctx?.setRootOffset]);
+
+  // Synchronous initial measurement so offset is available before first paint
+  React.useLayoutEffect(() => {
+    measure();
+  }, [measure]);
+
+  // Async listener setup for scroll/resize updates
+  useEffect(() => {
+    if (!ref.current || !ctx?.setRootOffset || typeof window === 'undefined') return;
+    window.addEventListener?.('scroll', measure, { passive: true } as any);
+    window.addEventListener?.('resize', measure as any);
+    return () => {
+      window.removeEventListener?.('scroll', measure as any);
+      window.removeEventListener?.('resize', measure as any);
+    };
+  }, [ctx?.setRootOffset, measure]);
+
   return <View ref={ref} style={[{ position:'relative' }, style]} {...rest}>{children}</View>;
 };
 

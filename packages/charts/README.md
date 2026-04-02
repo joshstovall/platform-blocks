@@ -1,16 +1,28 @@
-# Platform Blocks Charts
+<p align="center">
+  <a href="https://platform-blocks.com/" rel="noopener" target="_blank"><img width="75" height="75" src="https://raw.githubusercontent.com/joshstovall/platform-blocks/refs/heads/main/apps/platform-blocks.com/assets/favicon.png" alt="Platform Blocks logo"/></a>
+</p>
 
-Data visualization components for React Native and React Native Web.
+<h1 align="center">@platform-blocks/charts</h1>
 
-## Compatibility
+<div align="center">
 
-- `react` `>=18.0.0 <20.0.0`
-- `react-dom` `>=18.0.0 <20.0.0` (optional, only required on web)
-- `react-native` `>=0.73.0`
-- `react-native-reanimated` `>=3.4.0`
-- `react-native-svg` `>=13.0.0`
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/joshstovall/platform-blocks/blob/HEAD/LICENSE)
+[![npm](https://img.shields.io/npm/v/@platform-blocks/charts)](https://www.npmjs.com/package/@platform-blocks/charts)
+[![Discord](https://img.shields.io/badge/Chat%20on-Discord-%235865f2)](https://discord.gg/kbHjwzgXbc)
 
-Install matching versions in your host app so the charts package can reuse them without duplicating React Native.
+</div>
+
+Data visualization components for React Native and React Native Web. Part of the [Platform Blocks](https://platform-blocks.com/) ecosystem.
+
+## Features
+
+- **25 chart types** — Bar, Line, Area, Pie, Scatter, Radar, Heatmap, Candlestick, Funnel, Donut, Gauge, Sparkline, and more
+- **Animated** — Smooth transitions powered by `react-native-reanimated`
+- **Interactive** — Built-in tooltips, popovers, pan & zoom, and streaming data support
+- **Accessible** — Screen reader support via the `ChartAccessibility` layer
+- **Themeable** — Full theming via `ChartThemeContext`
+- **Cross-platform** — Works on iOS, Android, and Web
+- **Tree-shakeable** — ESM and CJS builds with no side effects
 
 ## Installation
 
@@ -18,32 +30,109 @@ Install matching versions in your host app so the charts package can reuse them 
 npm install @platform-blocks/charts
 ```
 
-### Optional setup for shared popovers
+### Peer dependencies
 
-When you need multiple charts to share a single tooltip, wrap them in `ChartsProvider` and set `useOwnInteractionProvider={false}` on each chart. The provider handles positioning via web DOM APIs when available.
+Ensure the following are installed in your project:
 
-## Basic example
+| Package | Version |
+| --- | --- |
+| `react` | `>=18.0.0 <20.0.0` |
+| `react-native` | `>=0.73.0` |
+| `react-native-reanimated` | `>=3.4.0` |
+| `react-native-svg` | `>=13.0.0` |
+| `react-dom` *(optional — web only)* | `>=18.0.0 <20.0.0` |
+
+## Quick start
 
 ```tsx
 import { AreaChart } from '@platform-blocks/charts';
 
 export function RevenueChart({ data }) {
-	return (
-		<AreaChart
-			width={320}
-			height={220}
-			data={data}
-			xKey="month"
-			yKey="value"
-		/>
-	);
+  return (
+    <AreaChart
+      width={320}
+      height={220}
+      data={data}
+      xKey="month"
+      yKey="value"
+    />
+  );
 }
 ```
 
-## Testing
+## Available charts
 
-- `npm run test` runs the full Jest suite.
-- `npm run test:watch` watches for file updates during development.
-- `npm run test:coverage` reports thresholds across `src/**/*`.
+| Chart | Component |
+| --- | --- |
+| Area | `AreaChart` |
+| Bar | `BarChart` |
+| Bubble | `BubbleChart` |
+| Candlestick | `CandlestickChart` |
+| Combo | `ComboChart` |
+| Donut | `DonutChart` |
+| Funnel | `FunnelChart` |
+| Gauge | `GaugeChart` |
+| Grouped Bar | `GroupedBarChart` |
+| Heatmap | `HeatmapChart` |
+| Histogram | `HistogramChart` |
+| Line | `LineChart` |
+| Marimekko | `MarimekkoChart` |
+| Network | `NetworkChart` |
+| Pareto | `ParetoChart` |
+| Pie | `PieChart` |
+| Radar | `RadarChart` |
+| Radial Bar | `RadialBarChart` |
+| Ridge | `RidgeChart` |
+| Sankey | `SankeyChart` |
+| Scatter | `ScatterChart` |
+| Sparkline | `SparklineChart` |
+| Stacked Area | `StackedAreaChart` |
+| Stacked Bar | `StackedBarChart` |
+| Violin | `ViolinChart` |
 
-Tests live under `tests/` by layer (`unit`, `integration`, `hooks`). Add fixtures under `tests/fixtures` when chart-specific datasets are needed.
+## Hooks
+
+| Hook | Description |
+| --- | --- |
+| `useChartAnimation` | Animation timing and transitions |
+| `useChartData` | Data management and updates |
+| `useDataDecimation` | Optimize rendering of large datasets |
+| `useDomains` | Calculate value ranges |
+| `useNearestPoint` | Find the closest data point for tooltips |
+| `usePanZoom` | Pan and zoom gesture handling |
+| `useStreamingData` | Handle real-time data feeds |
+| `useTooltipAggregator` | Multi-series tooltip aggregation |
+
+## Shared tooltip provider
+
+When you need multiple charts to share a single tooltip, wrap them in `ChartsProvider` and set `useOwnInteractionProvider={false}` on each chart:
+
+```tsx
+import { ChartsProvider, BarChart, LineChart } from '@platform-blocks/charts';
+
+export function Dashboard() {
+  return (
+    <ChartsProvider>
+      <BarChart useOwnInteractionProvider={false} /* ... */ />
+      <LineChart useOwnInteractionProvider={false} /* ... */ />
+    </ChartsProvider>
+  );
+}
+```
+
+## Documentation
+
+Full documentation, interactive examples, and API reference are available at [platform-blocks.com](https://platform-blocks.com).
+
+- [Getting started](https://platform-blocks.com/getting-started)
+- [Interactive examples](https://platform-blocks.com/examples)
+- [Charts](https://platform-blocks.com/charts)
+- [llms.txt](https://platform-blocks.com/llms.txt) — Full API reference for LLMs and AI assistants
+
+## Contributing
+
+See the [contributing guide](https://github.com/joshstovall/platform-blocks/blob/main/CONTRIBUTING.md) for setup instructions.
+
+## License
+
+[MIT](https://github.com/joshstovall/platform-blocks/blob/main/LICENSE) © [Josh Stovall](https://github.com/joshstovall)

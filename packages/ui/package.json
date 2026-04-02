@@ -1,7 +1,7 @@
 {
   "name": "@platform-blocks/ui",
-  "version": "0.8.0",
-  "description": "A React Native UI library",
+  "version": "0.8.1",
+  "description": "A comprehensive React Native UI component library — 80+ accessible, themeable, cross-platform components for iOS, Android, and Web",
   "type": "module",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -46,18 +46,25 @@
     "ui",
     "components",
     "typescript",
-    "library"
+    "react-native-web",
+    "accessible",
+    "themeable",
+    "cross-platform",
+    "ios",
+    "android",
+    "web"
   ],
   "author": "Josh Stovall",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joshstovall/platform-blocks.git"
+    "url": "https://github.com/joshstovall/platform-blocks.git",
+    "directory": "packages/ui"
   },
   "bugs": {
     "url": "https://github.com/joshstovall/platform-blocks/issues"
   },
-  "homepage": "https://github.com/joshstovall/platform-blocks#readme",
+  "homepage": "https://platform-blocks.com",
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",

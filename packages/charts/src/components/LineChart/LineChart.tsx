@@ -50,8 +50,8 @@ const AnimatedPoint: React.FC<{ point: any; animationProgress: any; selected: bo
   }));
   return (
     <AnimatedCircle
-      cx={point.chartX}
-      cy={point.chartY}
+      cx={Number.isFinite(point.chartX) ? point.chartX : 0}
+      cy={Number.isFinite(point.chartY) ? point.chartY : 0}
       fill={point.color || color}
       stroke="white"
       strokeWidth={1}
@@ -109,14 +109,15 @@ const AnimatedLineSeries: React.FC<{
     for (let i = 1; i < pts.length; i++) {
       const prev = pts[i - 1];
       const curr = pts[i];
-      const dx = curr.chartX - prev.chartX;
-      const dy = curr.chartY - prev.chartY;
+      const dx = (curr.chartX || 0) - (prev.chartX || 0);
+      const dy = (curr.chartY || 0) - (prev.chartY || 0);
       totalLength += Math.sqrt(dx * dx + dy * dy);
     }
     const pathLength = Math.max(totalLength, 1);
+    const offset = pathLength * (1 - progress);
     return {
       strokeDasharray: `${pathLength}`,
-      strokeDashoffset: pathLength * (1 - progress),
+      strokeDashoffset: Number.isFinite(offset) ? offset : 0,
     } as any;
   });
 
@@ -280,7 +281,11 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   // Pan/zoom state now driven via usePanZoom hook (removing local gesture math duplication)
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // still used for web mouse fallback
   const [pinchTracking, setPinchTracking] = useState(false); // flag to delegate to hook
+  const pinchTrackingRef = React.useRef(false);
+  const lastPanRef = React.useRef<{ x: number; y: number } | null>(null);
   const [lastTapTime, setLastTapTime] = useState<number>(0);
+  const lastTapTimeRef = React.useRef<number>(0);
+  const dragStartRef = React.useRef<{ x: number; y: number } | null>(null);
   // Web fallback for mouse drag (PanResponder can be flaky with Pressable)
   const [isMousePanning, setIsMousePanning] = useState(false);
   const [brushStart, setBrushStart] = useState<{ x: number; y: number } | null>(null);
@@ -632,6 +637,11 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
     onPanResponderGrant: (e, gestureState) => {
       const native: any = e.nativeEvent || {};
       const touches = native.touches || [];
+      // Record drag start for tap vs drag detection
+      const { locationX: grantX, locationY: grantY } = native;
+      if (typeof grantX === 'number' && typeof grantY === 'number') {
+        dragStartRef.current = { x: grantX, y: grantY };
+      }
       // Pinch start (either touches length OR gestureState.numberActiveTouches)
       if (props.enablePanZoom && (touches.length === 2 || gestureState.numberActiveTouches === 2)) {
         if (touches.length === 2) {
@@ -639,6 +649,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           const dy = touches[1].pageY - touches[0].pageY;
           const distance = Math.sqrt(dx * dx + dy * dy);
           panZoom.startPinch(distance);
+          pinchTrackingRef.current = true;
           setPinchTracking(true);
           return;
         }
@@ -646,6 +657,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
       // Single pointer start
       const { locationX, locationY } = native;
       if (typeof locationX === 'number' && typeof locationY === 'number') {
+        lastPanRef.current = { x: locationX, y: locationY };
         setLastPan({ x: locationX, y: locationY });
         panZoom.startPan(locationX, locationY);
         if (props.liveTooltip || sharedConfig?.multiTooltip || props.enableCrosshair) {
@@ -658,17 +670,20 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
       const native: any = evt.nativeEvent || {};
       const touches = native.touches || [];
       const activeTouches = touches.length || gestureState.numberActiveTouches;
+      const isPinching = pinchTrackingRef.current;
       // Initiate pinch mid-gesture if second finger added
       if (props.enablePanZoom && activeTouches === 2) {
-        if (!pinchTracking && touches.length === 2) {
+        if (!isPinching && touches.length === 2) {
           const dx0 = touches[1].pageX - touches[0].pageX;
           const dy0 = touches[1].pageY - touches[0].pageY;
           const startDistance = Math.sqrt(dx0 * dx0 + dy0 * dy0);
           panZoom.startPinch(startDistance);
+          lastPanRef.current = null;
+          pinchTrackingRef.current = true;
           setPinchTracking(true);
           return;
         }
-        if (pinchTracking && touches.length === 2) {
+        if (isPinching && touches.length === 2) {
           const dx = touches[1].pageX - touches[0].pageX;
           const dy = touches[1].pageY - touches[0].pageY;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -676,11 +691,12 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           return;
         }
       }
-      // Pan (only when not pinching)
-      if (props.enablePanZoom && !pinchTracking && lastPan && activeTouches === 1) {
+      // Pan (only when not pinching) — use ref for synchronous check
+      if (props.enablePanZoom && !isPinching && lastPanRef.current && activeTouches === 1) {
         const { locationX, locationY } = native;
         if (typeof locationX === 'number' && typeof locationY === 'number') {
           panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
+          lastPanRef.current = { x: locationX, y: locationY };
           setLastPan({ x: locationX, y: locationY });
           if (props.liveTooltip || sharedConfig?.multiTooltip || props.enableCrosshair) {
             evaluateNearestPoint(locationX - padding.left, locationY - padding.top, evt, false);
@@ -699,24 +715,40 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
       }
     },
     onPanResponderRelease: (e) => {
-      // Double tap / click reset detection
+      // Double tap / click reset detection — only count taps, not drags
       if (props.resetOnDoubleTap) {
-        const now = Date.now();
-        if (now - lastTapTime < 300) { // double within 300ms
-          setXDomainState(null);
-          setYDomainState(null);
-          setSharedCrosshair?.(null);
-          setSelectedPoint(null);
-          props.onDomainChange?.(computedXDomain, computedYDomain);
-          setLastTapTime(0);
-        } else {
-          setLastTapTime(now);
+        const native: any = e.nativeEvent || {};
+        const endX = typeof native.locationX === 'number' ? native.locationX : (dragStartRef.current?.x ?? 0);
+        const endY = typeof native.locationY === 'number' ? native.locationY : (dragStartRef.current?.y ?? 0);
+        const startPt = dragStartRef.current;
+        const dragDistance = startPt
+          ? Math.sqrt(Math.pow(endX - startPt.x, 2) + Math.pow(endY - startPt.y, 2))
+          : 0;
+        const wasTap = dragDistance < 10;
+
+        if (wasTap) {
+          const now = Date.now();
+          if (now - lastTapTimeRef.current < 300) { // double within 300ms
+            setXDomainState(null);
+            setYDomainState(null);
+            setSharedCrosshair?.(null);
+            setSelectedPoint(null);
+            props.onDomainChange?.(computedXDomain, computedYDomain);
+            lastTapTimeRef.current = 0;
+            setLastTapTime(0);
+          } else {
+            lastTapTimeRef.current = now;
+            setLastTapTime(now);
+          }
         }
       }
+      dragStartRef.current = null;
       panZoom.endPan();
+      lastPanRef.current = null;
       setLastPan(null);
-      if (pinchTracking) {
+      if (pinchTrackingRef.current) {
         panZoom.endPinch();
+        pinchTrackingRef.current = false;
         setPinchTracking(false);
       }
       props.onDomainChange?.(xDomain, yDomain);
@@ -901,6 +933,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
               return;
             }
             if (!props.enablePanZoom) return;
+            lastPanRef.current = { x, y };
             setLastPan({ x, y });
             setIsMousePanning(true);
             panZoom.startPan(x, y);

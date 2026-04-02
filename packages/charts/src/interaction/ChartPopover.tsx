@@ -123,10 +123,12 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   // Clamp inside container bounds if we know them (rootOffset + window size approximation)
   // We can't easily access container width/height here without context; attempt minimal viewport clamp to avoid huge drift.
   if (typeof window !== 'undefined') {
+    const TOOLTIP_MAX_WIDTH = 240;
+    const TOOLTIP_EST_HEIGHT = 100;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    rawLeft = Math.min(Math.max(0, rawLeft), vw - 10); // keep inside viewport horizontally
-    rawTop = Math.min(Math.max(0, rawTop), vh - 10);
+    rawLeft = Math.min(Math.max(0, rawLeft), vw - TOOLTIP_MAX_WIDTH - 10);
+    rawTop = Math.min(Math.max(0, rawTop), vh - TOOLTIP_EST_HEIGHT - 10);
   }
 
   // Animate target whenever position changes while we intend to show.
@@ -152,22 +154,29 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
   }, [shouldShow]);
 
   // Hide on document click (outside) & pointer leave viewport
+  const interactionPointerRef = React.useRef(interactionPointer);
+  interactionPointerRef.current = interactionPointer;
+  const visibleRef = React.useRef(visible);
+  visibleRef.current = visible;
+
   React.useEffect(() => {
     if (typeof document === 'undefined') return;
+    const activeTimeouts: ReturnType<typeof setTimeout>[] = [];
     const handleDocClick = (e: MouseEvent) => {
       // If pointer currently outside (inside flag false) hide immediately
-      if (!interactionPointer?.inside) {
+      if (!interactionPointerRef.current?.inside) {
         setVisible(false);
       }
     };
     const handleMouseMove = (e: MouseEvent) => {
       // If no interactionPointer or recently inside but now left charts area for >250ms, hide
-      if (!interactionPointer?.inside && visible) {
+      if (!interactionPointerRef.current?.inside && visibleRef.current) {
         // Debounce with small delay to avoid flicker when passing between charts
         if (!lastInsideRef.current) return; // already outside processed
         lastInsideRef.current = false;
-        setTimeout(() => { if (!interactionPointer?.inside) setVisible(false); }, 250);
-      } else if (interactionPointer?.inside) {
+        const timeoutId = setTimeout(() => { if (!interactionPointerRef.current?.inside) setVisible(false); }, 250);
+        activeTimeouts.push(timeoutId);
+      } else if (interactionPointerRef.current?.inside) {
         lastInsideRef.current = true;
       }
     };
@@ -176,8 +185,9 @@ export const ChartPopover: React.FC<ChartPopoverProps> = (props) => {
     return () => {
       document.removeEventListener('click', handleDocClick, true);
       window.removeEventListener('mousemove', handleMouseMove as any);
+      activeTimeouts.forEach(clearTimeout);
     };
-  }, [interactionPointer, visible]);
+  }, []);
 
   const colorLookup = React.useMemo(() => {
     const map = new Map<any, string>();

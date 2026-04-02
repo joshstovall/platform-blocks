@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useState, useCallback, useEffect } from 'react';
 
 /**
  * Pair of numeric domains for x and y axes
@@ -277,6 +277,20 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
     return { ...prev, domains: { ...prev.domains, current: next } };
   }), []);
   const resetZoom = useCallback(() => setState(prev => prev.domains ? { ...prev, domains: { ...prev.domains, current: prev.domains.initial } } : prev), []);
+
+  // Cancel any pending rAFs on unmount to prevent setState on unmounted component
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      if (crosshairRAFRef.current != null) {
+        cancelAnimationFrame(crosshairRAFRef.current);
+        crosshairRAFRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <InteractionContext.Provider value={{

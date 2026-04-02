@@ -15,15 +15,24 @@ export class SpatialIndex {
   /**
    * Creates a new spatial index
    * @param data - Array of data points to index
-   * @param gridSize - Size of grid cells (default 20)
+   * @param gridSize - Size of grid cells. If omitted, automatically computed based on data distribution.
    */
   constructor(
     data: ChartDataPoint[],
-    gridSize: number = 20
+    gridSize?: number
   ) {
     this.grid = new Map();
-    this.gridSize = gridSize;
     this.bounds = this.calculateBounds(data);
+    // Compute adaptive grid size when not explicitly provided
+    if (gridSize != null) {
+      this.gridSize = gridSize;
+    } else {
+      const xRange = this.bounds.maxX - this.bounds.minX || 1;
+      const yRange = this.bounds.maxY - this.bounds.minY || 1;
+      const avgRange = (xRange + yRange) / 2;
+      // Target ~sqrt(n) cells per axis for balanced bucket sizes
+      this.gridSize = Math.max(1, avgRange / Math.max(1, Math.sqrt(data.length)));
+    }
     this.buildIndex(data);
   }
 

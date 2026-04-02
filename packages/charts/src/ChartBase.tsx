@@ -156,32 +156,39 @@ const RootOffsetCapture: React.FC<{ children: React.ReactNode }> = ({ children }
   } catch {
     // Provider not mounted yet; ctx stays null
   }
+
+  const measure = React.useCallback(() => {
+    if (!ref.current || !ctx?.setRootOffset) return;
+    try {
+      const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
+      if (el && el.getBoundingClientRect) {
+        const r = el.getBoundingClientRect();
+        ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
+      }
+    } catch { }
+  }, [ctx?.setRootOffset]);
+
+  // Synchronous initial measurement so offset is available before first paint
+  React.useLayoutEffect(() => {
+    if (!ref.current || !ctx?.setRootOffset) return;
+    if (!isWeb()) {
+      try { ctx.setRootOffset({ left: 0, top: 0 }); } catch { }
+      return;
+    }
+    measure();
+  }, [ctx?.setRootOffset, measure]);
+
+  // Async listener setup for scroll/resize updates
   useEffect(() => {
     if (!ref.current || !ctx?.setRootOffset) return;
-    // Only run DOM measurement logic on web
-    if (!isWeb()) {
-      // On native, we can approximate (0,0) or attempt async measure if needed later.
-      // Set a neutral offset once so interactions still work with local coordinates.
-      try { ctx.setRootOffset({ left: 0, top: 0 }); } catch { }
-      return; // Skip DOM listeners
-    }
-    const update = () => {
-      try {
-        const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
-        if (el && el.getBoundingClientRect) {
-          const r = el.getBoundingClientRect();
-          ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
-        }
-      } catch { }
-    };
-    update();
-    window.addEventListener?.('scroll', update, { passive: true } as any);
-    window.addEventListener?.('resize', update as any);
+    if (!isWeb()) return;
+    window.addEventListener?.('scroll', measure, { passive: true } as any);
+    window.addEventListener?.('resize', measure as any);
     return () => {
-      window.removeEventListener?.('scroll', update as any);
-      window.removeEventListener?.('resize', update as any);
+      window.removeEventListener?.('scroll', measure as any);
+      window.removeEventListener?.('resize', measure as any);
     };
-  }, [ctx?.setRootOffset]);
+  }, [ctx?.setRootOffset, measure]);
   return <View ref={ref} style={{ position: 'relative', display: 'contents' as any }}>{children}</View>;
 };
 

@@ -1,7 +1,7 @@
 {
   "name": "@platform-blocks/charts",
-  "version": "0.8.0",
-  "description": "Chart components for Platform Blocks (React Native + SVG)",
+  "version": "0.8.1",
+  "description": "Data visualization chart components for React Native and Web — bar, line, area, pie, scatter, radar, heatmap, and more",
   "type": "module",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -67,5 +67,28 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "tslib": "^2.8.1",
     "typescript": "~5.9.2"
-  }
+  },
+  "keywords": [
+    "react-native",
+    "charts",
+    "data-visualization",
+    "svg",
+    "typescript",
+    "react-native-svg",
+    "bar-chart",
+    "line-chart",
+    "pie-chart",
+    "area-chart"
+  ],
+  "author": "Josh Stovall",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshstovall/platform-blocks.git",
+    "directory": "packages/charts"
+  },
+  "bugs": {
+    "url": "https://github.com/joshstovall/platform-blocks/issues"
+  },
+  "homepage": "https://platform-blocks.com"
 }
