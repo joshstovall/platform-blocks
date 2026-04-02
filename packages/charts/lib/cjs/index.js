@@ -146,7 +146,10 @@ function getDataDomain(data, accessor) {
     if (data.length === 0) {
         return [0, 1];
     }
-    const values = data.map(accessor);
+    const values = data.map(accessor).filter(v => Number.isFinite(v));
+    if (values.length === 0) {
+        return [0, 1];
+    }
     return [Math.min(...values), Math.max(...values)];
 }
 /**
@@ -201,7 +204,10 @@ function dataToChartCoordinates(dataX, dataY, plotArea, xDomain, yDomain) {
     const relativeY = scaleLinear(dataY, yDomain, [0, 1]);
     const chartX = plotArea.x + relativeX * plotArea.width;
     const chartY = plotArea.y + (1 - relativeY) * plotArea.height; // Flip Y axis
-    return { x: chartX, y: chartY };
+    return {
+        x: Number.isFinite(chartX) ? chartX : 0,
+        y: Number.isFinite(chartY) ? chartY : 0,
+    };
 }
 /**
  * Find the closest data point to a chart coordinate
@@ -575,6 +581,19 @@ const ChartInteractionProvider = ({ config = {}, children }) => {
         return { ...prev, domains: { ...prev.domains, current: next } };
     }), []);
     const resetZoom = React.useCallback(() => setState(prev => prev.domains ? { ...prev, domains: { ...prev.domains, current: prev.domains.initial } } : prev), []);
+    // Cancel any pending rAFs on unmount to prevent setState on unmounted component
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current != null) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+            if (crosshairRAFRef.current != null) {
+                cancelAnimationFrame(crosshairRAFRef.current);
+                crosshairRAFRef.current = null;
+            }
+        };
+    }, []);
     return (jsxRuntime.jsx(InteractionContext.Provider, { value: {
             ...state,
             config,
@@ -680,12 +699,12 @@ const findNearestPoint = (points, targetX, targetPixelX, pointerY) => {
         bestDataDx = Math.min(bestDataDx, Math.abs(points[idx].x - targetX));
     });
     const expand = (start, step) => {
+        const threshold = bestDataDx + EPSILON$1;
         let idx = start + step;
         while (idx >= 0 && idx < points.length) {
             const dx = Math.abs(points[idx].x - targetX);
-            if (dx - bestDataDx <= EPSILON$1) {
+            if (dx <= threshold) {
                 candidateIndices.add(idx);
-                bestDataDx = Math.min(bestDataDx, dx);
                 idx += step;
             }
             else {
@@ -878,10 +897,12 @@ const ChartPopover = (props) => {
     // Clamp inside container bounds if we know them (rootOffset + window size approximation)
     // We can't easily access container width/height here without context; attempt minimal viewport clamp to avoid huge drift.
     if (typeof window !== 'undefined') {
+        const TOOLTIP_MAX_WIDTH = 240;
+        const TOOLTIP_EST_HEIGHT = 100;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        rawLeft = Math.min(Math.max(0, rawLeft), vw - 10); // keep inside viewport horizontally
-        rawTop = Math.min(Math.max(0, rawTop), vh - 10);
+        rawLeft = Math.min(Math.max(0, rawLeft), vw - TOOLTIP_MAX_WIDTH - 10);
+        rawTop = Math.min(Math.max(0, rawTop), vh - TOOLTIP_EST_HEIGHT - 10);
     }
     // Animate target whenever position changes while we intend to show.
     React.useEffect(() => {
@@ -906,26 +927,34 @@ const ChartPopover = (props) => {
         return () => clearTimeout(timeout);
     }, [shouldShow]);
     // Hide on document click (outside) & pointer leave viewport
+    const interactionPointerRef = React.useRef(interactionPointer);
+    interactionPointerRef.current = interactionPointer;
+    const visibleRef = React.useRef(visible);
+    visibleRef.current = visible;
     React.useEffect(() => {
         if (typeof document === 'undefined')
             return;
+        const activeTimeouts = [];
         const handleDocClick = (e) => {
+            var _a;
             // If pointer currently outside (inside flag false) hide immediately
-            if (!(interactionPointer === null || interactionPointer === void 0 ? void 0 : interactionPointer.inside)) {
+            if (!((_a = interactionPointerRef.current) === null || _a === void 0 ? void 0 : _a.inside)) {
                 setVisible(false);
             }
         };
         const handleMouseMove = (e) => {
+            var _a, _b;
             // If no interactionPointer or recently inside but now left charts area for >250ms, hide
-            if (!(interactionPointer === null || interactionPointer === void 0 ? void 0 : interactionPointer.inside) && visible) {
+            if (!((_a = interactionPointerRef.current) === null || _a === void 0 ? void 0 : _a.inside) && visibleRef.current) {
                 // Debounce with small delay to avoid flicker when passing between charts
                 if (!lastInsideRef.current)
                     return; // already outside processed
                 lastInsideRef.current = false;
-                setTimeout(() => { if (!(interactionPointer === null || interactionPointer === void 0 ? void 0 : interactionPointer.inside))
+                const timeoutId = setTimeout(() => { var _a; if (!((_a = interactionPointerRef.current) === null || _a === void 0 ? void 0 : _a.inside))
                     setVisible(false); }, 250);
+                activeTimeouts.push(timeoutId);
             }
-            else if (interactionPointer === null || interactionPointer === void 0 ? void 0 : interactionPointer.inside) {
+            else if ((_b = interactionPointerRef.current) === null || _b === void 0 ? void 0 : _b.inside) {
                 lastInsideRef.current = true;
             }
         };
@@ -934,8 +963,9 @@ const ChartPopover = (props) => {
         return () => {
             document.removeEventListener('click', handleDocClick, true);
             window.removeEventListener('mousemove', handleMouseMove);
+            activeTimeouts.forEach(clearTimeout);
         };
-    }, [interactionPointer, visible]);
+    }, []);
     const colorLookup = React.useMemo(() => {
         const map = new Map();
         (registeredSeries || []).forEach((s) => {
@@ -1199,40 +1229,47 @@ const RootOffsetCapture$1 = ({ children }) => {
     catch (_a) {
         // Provider not mounted yet; ctx stays null
     }
+    const measure = React.useCallback(() => {
+        var _a, _b;
+        if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset))
+            return;
+        try {
+            const el = ((_b = (_a = ref.current) === null || _a === void 0 ? void 0 : _a._internalFiberInstanceHandleDEV) === null || _b === void 0 ? void 0 : _b.stateNode) || ref.current;
+            if (el && el.getBoundingClientRect) {
+                const r = el.getBoundingClientRect();
+                ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
+            }
+        }
+        catch (_c) { }
+    }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset]);
+    // Synchronous initial measurement so offset is available before first paint
+    React.useLayoutEffect(() => {
+        if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset))
+            return;
+        if (!isWeb$1()) {
+            try {
+                ctx.setRootOffset({ left: 0, top: 0 });
+            }
+            catch (_a) { }
+            return;
+        }
+        measure();
+    }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset, measure]);
+    // Async listener setup for scroll/resize updates
     React.useEffect(() => {
         var _a, _b;
         if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset))
             return;
-        // Only run DOM measurement logic on web
-        if (!isWeb$1()) {
-            // On native, we can approximate (0,0) or attempt async measure if needed later.
-            // Set a neutral offset once so interactions still work with local coordinates.
-            try {
-                ctx.setRootOffset({ left: 0, top: 0 });
-            }
-            catch (_c) { }
-            return; // Skip DOM listeners
-        }
-        const update = () => {
-            var _a, _b;
-            try {
-                const el = ((_b = (_a = ref.current) === null || _a === void 0 ? void 0 : _a._internalFiberInstanceHandleDEV) === null || _b === void 0 ? void 0 : _b.stateNode) || ref.current;
-                if (el && el.getBoundingClientRect) {
-                    const r = el.getBoundingClientRect();
-                    ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
-                }
-            }
-            catch (_c) { }
-        };
-        update();
-        (_a = window.addEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', update, { passive: true });
-        (_b = window.addEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', update);
+        if (!isWeb$1())
+            return;
+        (_a = window.addEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', measure, { passive: true });
+        (_b = window.addEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', measure);
         return () => {
             var _a, _b;
-            (_a = window.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', update);
-            (_b = window.removeEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', update);
+            (_a = window.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', measure);
+            (_b = window.removeEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', measure);
         };
-    }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset]);
+    }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset, measure]);
     return jsxRuntime.jsx(reactNative.View, { ref: ref, style: { position: 'relative', display: 'contents' }, children: children });
 };
 // Chart Title Component
@@ -4291,12 +4328,22 @@ class SpatialIndex {
     /**
      * Creates a new spatial index
      * @param data - Array of data points to index
-     * @param gridSize - Size of grid cells (default 20)
+     * @param gridSize - Size of grid cells. If omitted, automatically computed based on data distribution.
      */
-    constructor(data, gridSize = 20) {
+    constructor(data, gridSize) {
         this.grid = new Map();
-        this.gridSize = gridSize;
         this.bounds = this.calculateBounds(data);
+        // Compute adaptive grid size when not explicitly provided
+        if (gridSize != null) {
+            this.gridSize = gridSize;
+        }
+        else {
+            const xRange = this.bounds.maxX - this.bounds.minX || 1;
+            const yRange = this.bounds.maxY - this.bounds.minY || 1;
+            const avgRange = (xRange + yRange) / 2;
+            // Target ~sqrt(n) cells per axis for balanced bucket sizes
+            this.gridSize = Math.max(1, avgRange / Math.max(1, Math.sqrt(data.length)));
+        }
         this.buildIndex(data);
     }
     calculateBounds(data) {
@@ -4547,7 +4594,7 @@ const AnimatedPoint = ({ point, animationProgress, selected, color, pointSize })
         opacity: animationProgress.value,
         r: (selected ? 1.5 : 1) * pointSize,
     }));
-    return (jsxRuntime.jsx(AnimatedCircle$5, { cx: point.chartX, cy: point.chartY, fill: point.color || color, stroke: "white", strokeWidth: 1, animatedProps: animatedCircleProps }));
+    return (jsxRuntime.jsx(AnimatedCircle$5, { cx: Number.isFinite(point.chartX) ? point.chartX : 0, cy: Number.isFinite(point.chartY) ? point.chartY : 0, fill: point.color || color, stroke: "white", strokeWidth: 1, animatedProps: animatedCircleProps }));
 };
 // Animated line series component
 const AnimatedLineSeries = ({ seriesData, seriesIndex, animationProgress, plotHeight, shouldFill, seriesSmooth, theme, gradientId, selectedPoint, lineThickness, lineStyle, showPoints, pointSize, }) => {
@@ -4570,14 +4617,15 @@ const AnimatedLineSeries = ({ seriesData, seriesIndex, animationProgress, plotHe
         for (let i = 1; i < pts.length; i++) {
             const prev = pts[i - 1];
             const curr = pts[i];
-            const dx = curr.chartX - prev.chartX;
-            const dy = curr.chartY - prev.chartY;
+            const dx = (curr.chartX || 0) - (prev.chartX || 0);
+            const dy = (curr.chartY || 0) - (prev.chartY || 0);
             totalLength += Math.sqrt(dx * dx + dy * dy);
         }
         const pathLength = Math.max(totalLength, 1);
+        const offset = pathLength * (1 - progress);
         return {
             strokeDasharray: `${pathLength}`,
-            strokeDashoffset: pathLength * (1 - progress),
+            strokeDashoffset: Number.isFinite(offset) ? offset : 0,
         };
     });
     const animatedFillProps = Animated.useAnimatedProps(() => ({ opacity: animationProgress.value }));
@@ -4648,7 +4696,11 @@ const LineChart = (props) => {
     // Pan/zoom state now driven via usePanZoom hook (removing local gesture math duplication)
     const [lastPan, setLastPan] = React.useState(null); // still used for web mouse fallback
     const [pinchTracking, setPinchTracking] = React.useState(false); // flag to delegate to hook
+    const pinchTrackingRef = React.useRef(false);
+    const lastPanRef = React.useRef(null);
     const [lastTapTime, setLastTapTime] = React.useState(0);
+    const lastTapTimeRef = React.useRef(0);
+    const dragStartRef = React.useRef(null);
     // Web fallback for mouse drag (PanResponder can be flaky with Pressable)
     const [isMousePanning, setIsMousePanning] = React.useState(false);
     const [brushStart, setBrushStart] = React.useState(null);
@@ -4986,6 +5038,11 @@ const LineChart = (props) => {
         onPanResponderGrant: (e, gestureState) => {
             const native = e.nativeEvent || {};
             const touches = native.touches || [];
+            // Record drag start for tap vs drag detection
+            const { locationX: grantX, locationY: grantY } = native;
+            if (typeof grantX === 'number' && typeof grantY === 'number') {
+                dragStartRef.current = { x: grantX, y: grantY };
+            }
             // Pinch start (either touches length OR gestureState.numberActiveTouches)
             if (props.enablePanZoom && (touches.length === 2 || gestureState.numberActiveTouches === 2)) {
                 if (touches.length === 2) {
@@ -4993,6 +5050,7 @@ const LineChart = (props) => {
                     const dy = touches[1].pageY - touches[0].pageY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     panZoom.startPinch(distance);
+                    pinchTrackingRef.current = true;
                     setPinchTracking(true);
                     return;
                 }
@@ -5000,6 +5058,7 @@ const LineChart = (props) => {
             // Single pointer start
             const { locationX, locationY } = native;
             if (typeof locationX === 'number' && typeof locationY === 'number') {
+                lastPanRef.current = { x: locationX, y: locationY };
                 setLastPan({ x: locationX, y: locationY });
                 panZoom.startPan(locationX, locationY);
                 if (props.liveTooltip || (sharedConfig === null || sharedConfig === void 0 ? void 0 : sharedConfig.multiTooltip) || props.enableCrosshair) {
@@ -5012,17 +5071,20 @@ const LineChart = (props) => {
             const native = evt.nativeEvent || {};
             const touches = native.touches || [];
             const activeTouches = touches.length || gestureState.numberActiveTouches;
+            const isPinching = pinchTrackingRef.current;
             // Initiate pinch mid-gesture if second finger added
             if (props.enablePanZoom && activeTouches === 2) {
-                if (!pinchTracking && touches.length === 2) {
+                if (!isPinching && touches.length === 2) {
                     const dx0 = touches[1].pageX - touches[0].pageX;
                     const dy0 = touches[1].pageY - touches[0].pageY;
                     const startDistance = Math.sqrt(dx0 * dx0 + dy0 * dy0);
                     panZoom.startPinch(startDistance);
+                    lastPanRef.current = null;
+                    pinchTrackingRef.current = true;
                     setPinchTracking(true);
                     return;
                 }
-                if (pinchTracking && touches.length === 2) {
+                if (isPinching && touches.length === 2) {
                     const dx = touches[1].pageX - touches[0].pageX;
                     const dy = touches[1].pageY - touches[0].pageY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -5030,11 +5092,12 @@ const LineChart = (props) => {
                     return;
                 }
             }
-            // Pan (only when not pinching)
-            if (props.enablePanZoom && !pinchTracking && lastPan && activeTouches === 1) {
+            // Pan (only when not pinching) — use ref for synchronous check
+            if (props.enablePanZoom && !isPinching && lastPanRef.current && activeTouches === 1) {
                 const { locationX, locationY } = native;
                 if (typeof locationX === 'number' && typeof locationY === 'number') {
                     panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
+                    lastPanRef.current = { x: locationX, y: locationY };
                     setLastPan({ x: locationX, y: locationY });
                     if (props.liveTooltip || (sharedConfig === null || sharedConfig === void 0 ? void 0 : sharedConfig.multiTooltip) || props.enableCrosshair) {
                         evaluateNearestPoint(locationX - padding.left, locationY - padding.top, evt, false);
@@ -5053,29 +5116,44 @@ const LineChart = (props) => {
             }
         },
         onPanResponderRelease: (e) => {
-            var _a, _b;
-            // Double tap / click reset detection
+            var _a, _b, _c, _d, _e, _f;
+            // Double tap / click reset detection — only count taps, not drags
             if (props.resetOnDoubleTap) {
-                const now = Date.now();
-                if (now - lastTapTime < 300) { // double within 300ms
-                    setXDomainState(null);
-                    setYDomainState(null);
-                    setSharedCrosshair === null || setSharedCrosshair === void 0 ? void 0 : setSharedCrosshair(null);
-                    setSelectedPoint(null);
-                    (_a = props.onDomainChange) === null || _a === void 0 ? void 0 : _a.call(props, computedXDomain, computedYDomain);
-                    setLastTapTime(0);
-                }
-                else {
-                    setLastTapTime(now);
+                const native = e.nativeEvent || {};
+                const endX = typeof native.locationX === 'number' ? native.locationX : ((_b = (_a = dragStartRef.current) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0);
+                const endY = typeof native.locationY === 'number' ? native.locationY : ((_d = (_c = dragStartRef.current) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0);
+                const startPt = dragStartRef.current;
+                const dragDistance = startPt
+                    ? Math.sqrt(Math.pow(endX - startPt.x, 2) + Math.pow(endY - startPt.y, 2))
+                    : 0;
+                const wasTap = dragDistance < 10;
+                if (wasTap) {
+                    const now = Date.now();
+                    if (now - lastTapTimeRef.current < 300) { // double within 300ms
+                        setXDomainState(null);
+                        setYDomainState(null);
+                        setSharedCrosshair === null || setSharedCrosshair === void 0 ? void 0 : setSharedCrosshair(null);
+                        setSelectedPoint(null);
+                        (_e = props.onDomainChange) === null || _e === void 0 ? void 0 : _e.call(props, computedXDomain, computedYDomain);
+                        lastTapTimeRef.current = 0;
+                        setLastTapTime(0);
+                    }
+                    else {
+                        lastTapTimeRef.current = now;
+                        setLastTapTime(now);
+                    }
                 }
             }
+            dragStartRef.current = null;
             panZoom.endPan();
+            lastPanRef.current = null;
             setLastPan(null);
-            if (pinchTracking) {
+            if (pinchTrackingRef.current) {
                 panZoom.endPinch();
+                pinchTrackingRef.current = false;
                 setPinchTracking(false);
             }
-            (_b = props.onDomainChange) === null || _b === void 0 ? void 0 : _b.call(props, xDomain, yDomain);
+            (_f = props.onDomainChange) === null || _f === void 0 ? void 0 : _f.call(props, xDomain, yDomain);
             if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer) {
                 setPointer === null || setPointer === void 0 ? void 0 : setPointer({ ...interaction.pointer, inside: false });
             }
@@ -5167,6 +5245,7 @@ const LineChart = (props) => {
                         }
                         if (!props.enablePanZoom)
                             return;
+                        lastPanRef.current = { x, y };
                         setLastPan({ x, y });
                         setIsMousePanning(true);
                         panZoom.startPan(x, y);
@@ -5846,8 +5925,12 @@ const ScatterChartInner = (props) => {
     // Register scatter points as a single series for unified tooltip
     // Pan/Zoom integration
     const [lastPan, setLastPan] = React.useState(null);
+    const lastPanRef = React.useRef(null);
     const [pinchTracking, setPinchTracking] = React.useState(false);
+    const pinchTrackingRef = React.useRef(false);
     const [lastTapTime, setLastTapTime] = React.useState(0);
+    const lastTapTimeRef = React.useRef(0);
+    const dragStartRef = React.useRef(null);
     const panZoom = usePanZoom({ xDomain: xDomain, yDomain: yDomain }, (next) => {
         if (next.xDomain)
             setXDomainState(next.xDomain);
@@ -5872,18 +5955,25 @@ const ScatterChartInner = (props) => {
         onPanResponderGrant: (e, gestureState) => {
             const native = e.nativeEvent || {};
             const touches = native.touches || [];
+            // Record drag start for tap vs drag detection
+            const { locationX: grantX, locationY: grantY } = native;
+            if (typeof grantX === 'number' && typeof grantY === 'number') {
+                dragStartRef.current = { x: grantX, y: grantY };
+            }
             if (props.enablePanZoom && (touches.length === 2 || gestureState.numberActiveTouches === 2)) {
                 if (touches.length === 2) {
                     const dx = touches[1].pageX - touches[0].pageX;
                     const dy = touches[1].pageY - touches[0].pageY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     panZoom.startPinch(distance);
+                    pinchTrackingRef.current = true;
                     setPinchTracking(true);
                     return;
                 }
             }
             const { locationX, locationY } = native;
             if (typeof locationX === 'number' && typeof locationY === 'number') {
+                lastPanRef.current = { x: locationX, y: locationY };
                 setLastPan({ x: locationX, y: locationY });
                 panZoom.startPan(locationX, locationY);
                 evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
@@ -5893,16 +5983,19 @@ const ScatterChartInner = (props) => {
             const native = e.nativeEvent || {};
             const touches = native.touches || [];
             const activeTouches = touches.length || gestureState.numberActiveTouches;
+            const isPinching = pinchTrackingRef.current;
             if (props.enablePanZoom && activeTouches === 2) {
-                if (!pinchTracking && touches.length === 2) {
+                if (!isPinching && touches.length === 2) {
                     const dx0 = touches[1].pageX - touches[0].pageX;
                     const dy0 = touches[1].pageY - touches[0].pageY;
                     const startDistance = Math.sqrt(dx0 * dx0 + dy0 * dy0);
                     panZoom.startPinch(startDistance);
+                    lastPanRef.current = null;
+                    pinchTrackingRef.current = true;
                     setPinchTracking(true);
                     return;
                 }
-                if (pinchTracking && touches.length === 2) {
+                if (isPinching && touches.length === 2) {
                     const dx = touches[1].pageX - touches[0].pageX;
                     const dy = touches[1].pageY - touches[0].pageY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -5910,10 +6003,11 @@ const ScatterChartInner = (props) => {
                     return;
                 }
             }
-            if (props.enablePanZoom && !pinchTracking && lastPan && activeTouches === 1) {
+            if (props.enablePanZoom && !isPinching && lastPanRef.current && activeTouches === 1) {
                 const { locationX, locationY } = native;
                 if (typeof locationX === 'number' && typeof locationY === 'number') {
                     panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
+                    lastPanRef.current = { x: locationX, y: locationY };
                     setLastPan({ x: locationX, y: locationY });
                     evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
                 }
@@ -5926,30 +6020,46 @@ const ScatterChartInner = (props) => {
                 }
             }
         },
-        onPanResponderRelease: () => {
-            var _a, _b;
+        onPanResponderRelease: (e) => {
+            var _a, _b, _c, _d, _e, _f;
+            // Double tap / click reset detection — only count taps, not drags
             if (props.resetOnDoubleTap) {
-                const now = Date.now();
-                if (now - lastTapTime < 300) {
-                    setXDomainState(null);
-                    setYDomainState(null);
-                    setLastTapTime(0);
-                    // @ts-ignore
-                    (_a = props.onDomainChange) === null || _a === void 0 ? void 0 : _a.call(props, computedXDomain, computedYDomain);
-                }
-                else {
-                    setLastTapTime(now);
+                const native = e.nativeEvent || {};
+                const endX = typeof native.locationX === 'number' ? native.locationX : ((_b = (_a = dragStartRef.current) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0);
+                const endY = typeof native.locationY === 'number' ? native.locationY : ((_d = (_c = dragStartRef.current) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0);
+                const startPt = dragStartRef.current;
+                const dragDistance = startPt
+                    ? Math.sqrt(Math.pow(endX - startPt.x, 2) + Math.pow(endY - startPt.y, 2))
+                    : 0;
+                const wasTap = dragDistance < 10;
+                if (wasTap) {
+                    const now = Date.now();
+                    if (now - lastTapTimeRef.current < 300) {
+                        setXDomainState(null);
+                        setYDomainState(null);
+                        lastTapTimeRef.current = 0;
+                        setLastTapTime(0);
+                        // @ts-ignore
+                        (_e = props.onDomainChange) === null || _e === void 0 ? void 0 : _e.call(props, computedXDomain, computedYDomain);
+                    }
+                    else {
+                        lastTapTimeRef.current = now;
+                        setLastTapTime(now);
+                    }
                 }
             }
+            dragStartRef.current = null;
             panZoom.endPan();
+            lastPanRef.current = null;
             setLastPan(null);
-            if (pinchTracking) {
+            if (pinchTrackingRef.current) {
                 panZoom.endPinch();
+                pinchTrackingRef.current = false;
                 setPinchTracking(false);
             }
             // fire domain change callback after gesture ends
             // @ts-ignore optional
-            (_b = props.onDomainChange) === null || _b === void 0 ? void 0 : _b.call(props, xDomain, yDomain);
+            (_f = props.onDomainChange) === null || _f === void 0 ? void 0 : _f.call(props, xDomain, yDomain);
         },
         onPanResponderTerminationRequest: () => true,
     });
@@ -16712,7 +16822,7 @@ const RootOffsetCapture = ({ children, style, ...rest }) => {
     catch (_a) {
         console.warn('ChartsProvider: RootOffsetCapture must be used inside a ChartInteractionProvider context');
     }
-    React.useEffect(() => {
+    const measure = React.useCallback(() => {
         var _a, _b;
         if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset))
             return;
@@ -16724,6 +16834,23 @@ const RootOffsetCapture = ({ children, style, ...rest }) => {
             ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
         }
     }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset]);
+    // Synchronous initial measurement so offset is available before first paint
+    React.useLayoutEffect(() => {
+        measure();
+    }, [measure]);
+    // Async listener setup for scroll/resize updates
+    React.useEffect(() => {
+        var _a, _b;
+        if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset) || typeof window === 'undefined')
+            return;
+        (_a = window.addEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', measure, { passive: true });
+        (_b = window.addEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', measure);
+        return () => {
+            var _a, _b;
+            (_a = window.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(window, 'scroll', measure);
+            (_b = window.removeEventListener) === null || _b === void 0 ? void 0 : _b.call(window, 'resize', measure);
+        };
+    }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset, measure]);
     return jsxRuntime.jsx(reactNative.View, { ref: ref, style: [{ position: 'relative' }, style], ...rest, children: children });
 };
 ChartsProvider.displayName = 'ChartsProvider';
@@ -16747,6 +16874,192 @@ const ChartLayer = ({ zIndex, pointerEvents = 'none', children, style }) => {
 };
 ChartPlot.displayName = 'ChartPlot';
 ChartLayer.displayName = 'ChartLayer';
+
+/**
+ * Optimized animation hook that prevents unnecessary re-renders
+ * and provides better control over animation sequences
+ */
+function useChartAnimation(data, options = {}) {
+    const { duration = 800, delay = 0, stagger = 50, disabled = false, easing = Animated.Easing.out(Animated.Easing.cubic) } = options;
+    // Create stable animated values (avoid recreating on re-renders)
+    const animatedValues = React.useMemo(() => data.map(() => Animated.useSharedValue(0)), [data.length] // Only recreate when data length changes
+    );
+    const masterProgress = Animated.useSharedValue(0);
+    React.useEffect(() => {
+        if (disabled) {
+            // Set all values immediately
+            animatedValues.forEach(value => value.value = 1);
+            masterProgress.value = 1;
+            return;
+        }
+        // Reset and animate
+        animatedValues.forEach(value => value.value = 0);
+        masterProgress.value = 0;
+        // Stagger animations for better visual effect
+        animatedValues.forEach((value, index) => {
+            value.value = Animated.withDelay(delay + (index * stagger), Animated.withTiming(1, { duration, easing }));
+        });
+        // Master progress for overall animation state
+        masterProgress.value = Animated.withDelay(delay, Animated.withTiming(1, { duration: duration + (data.length * stagger), easing }));
+    }, [data, disabled]);
+    return {
+        animatedValues,
+        masterProgress,
+        isAnimating: masterProgress.value < 1,
+    };
+}
+
+/**
+ * Custom hook for optimizing chart data calculations
+ * Reduces re-calculations by memoizing expensive operations
+ */
+function useChartData(data, series) {
+    // Memoize normalized series data
+    const normalizedSeries = React.useMemo(() => normalizeLineChartData(data, series), [data, series]);
+    // Memoize domain calculations
+    const domains = React.useMemo(() => {
+        if (normalizedSeries.length === 0) {
+            return { xDomain: [0, 1], yDomain: [0, 1] };
+        }
+        return {
+            xDomain: getMultiSeriesDomain(normalizedSeries, d => d.x),
+            yDomain: getMultiSeriesDomain(normalizedSeries, d => d.y),
+        };
+    }, [normalizedSeries]);
+    // Memoize flattened data for performance
+    const flattenedData = React.useMemo(() => normalizedSeries.flatMap(s => s.data), [normalizedSeries]);
+    return {
+        normalizedSeries,
+        ...domains,
+        flattenedData,
+        isEmpty: normalizedSeries.length === 0,
+    };
+}
+
+/**
+ * Largest-Triangle-One-Bucket (LTOB) decimation for large time/ordinal series.
+ * Preserves visual trend with O(n) pass.
+ * @param data - Array of data points to decimate
+ * @param threshold - Maximum number of points to return (default 1000)
+ * @returns Decimated array of data points
+ */
+function useDataDecimation(data, threshold = 1000) {
+    return React.useMemo(() => {
+        if (!data || data.length <= threshold)
+            return data;
+        // LTOB implementation
+        const sampled = [];
+        const bucketSize = (data.length - 2) / (threshold - 2);
+        let a = 0; // first point index
+        sampled.push(data[a]);
+        for (let i = 0; i < threshold - 2; i++) {
+            const rangeStart = Math.floor((i + 1) * bucketSize) + 1;
+            const rangeEnd = Math.floor((i + 2) * bucketSize) + 1;
+            const range = data.slice(rangeStart, Math.min(rangeEnd, data.length - 1));
+            const pointA = data[a];
+            let maxArea = -1;
+            let nextA = a;
+            for (let j = 0; j < range.length; j++) {
+                const point = range[j];
+                const area = Math.abs((pointA.x - point.x) * (pointA.y - point.y));
+                if (area > maxArea) {
+                    maxArea = area;
+                    nextA = rangeStart + j;
+                }
+            }
+            sampled.push(data[nextA]);
+            a = nextA;
+        }
+        sampled.push(data[data.length - 1]);
+        return sampled;
+    }, [data, threshold]);
+}
+
+/**
+ * Hook that initializes and returns the current chart domains
+ * @param opts - Domain configuration options
+ * @returns Current domain state (either from context or initial values)
+ */
+const useDomains = (opts) => {
+    const { domains, initializeDomains } = useChartInteractionContext();
+    React.useEffect(() => {
+        if (!domains) {
+            initializeDomains({ x: opts.xDomain, y: opts.yDomain });
+        }
+    }, [domains, opts.xDomain[0], opts.xDomain[1], opts.yDomain[0], opts.yDomain[1]]);
+    return (domains === null || domains === void 0 ? void 0 : domains.current) || { x: opts.xDomain, y: opts.yDomain };
+};
+
+/**
+ * Hook for handling streaming/real-time chart data
+ * Optimizes performance for high-frequency updates
+ * @param initialData - Initial data points
+ * @param options - Streaming configuration options
+ * @returns Object with data and control functions
+ */
+function useStreamingData(initialData = [], options = {}) {
+    const { maxDataPoints = 100, updateInterval = 100, smoothTransitions = true, onDataOverflow, } = options;
+    const [data, setData] = React.useState(initialData);
+    const [isStreaming, setIsStreaming] = React.useState(false);
+    const updateQueue = React.useRef([]);
+    const lastUpdateTime = React.useRef(Date.now());
+    // Batch updates for performance
+    const flushUpdates = React.useCallback(() => {
+        if (updateQueue.current.length === 0)
+            return;
+        const newPoints = [...updateQueue.current];
+        updateQueue.current = [];
+        setData(prevData => {
+            const combined = [...prevData, ...newPoints];
+            // Remove excess data points if needed
+            if (combined.length > maxDataPoints) {
+                const removed = combined.slice(0, combined.length - maxDataPoints);
+                onDataOverflow === null || onDataOverflow === void 0 ? void 0 : onDataOverflow(removed);
+                return combined.slice(-maxDataPoints);
+            }
+            return combined;
+        });
+    }, [maxDataPoints, onDataOverflow]);
+    // Add new data point(s)
+    const addDataPoint = React.useCallback((point) => {
+        const points = Array.isArray(point) ? point : [point];
+        updateQueue.current.push(...points);
+        const now = Date.now();
+        if (now - lastUpdateTime.current >= updateInterval) {
+            flushUpdates();
+            lastUpdateTime.current = now;
+        }
+    }, [updateInterval, flushUpdates]);
+    // Start/stop streaming
+    const startStreaming = React.useCallback(() => {
+        setIsStreaming(true);
+    }, []);
+    const stopStreaming = React.useCallback(() => {
+        setIsStreaming(false);
+        flushUpdates(); // Flush any remaining updates
+    }, [flushUpdates]);
+    // Clear all data
+    const clearData = React.useCallback(() => {
+        setData([]);
+        updateQueue.current = [];
+    }, []);
+    // Auto-flush updates on interval
+    React.useEffect(() => {
+        if (!isStreaming)
+            return;
+        const interval = setInterval(flushUpdates, updateInterval);
+        return () => clearInterval(interval);
+    }, [isStreaming, updateInterval, flushUpdates]);
+    return {
+        data,
+        addDataPoint,
+        startStreaming,
+        stopStreaming,
+        clearData,
+        isStreaming,
+        queueSize: updateQueue.current.length,
+    };
+}
 
 exports.AreaChart = AreaChart;
 exports.Axis = Axis;
@@ -16812,5 +17125,13 @@ exports.scaleLinear = scaleLinear;
 exports.scaleLog = scaleLog;
 exports.scaleTime = scaleTime;
 exports.setDefaultColorScheme = setDefaultColorScheme;
+exports.useChartAnimation = useChartAnimation;
+exports.useChartData = useChartData;
 exports.useChartTheme = useChartTheme;
+exports.useDataDecimation = useDataDecimation;
+exports.useDomains = useDomains;
+exports.useNearestPoint = useNearestPoint;
+exports.usePanZoom = usePanZoom;
+exports.useStreamingData = useStreamingData;
+exports.useTooltipAggregator = useTooltipAggregator;
 //# sourceMappingURL=index.js.map
