@@ -14,6 +14,7 @@ import type {
   KnobPointerPartProps,
   KnobThumbPartProps,
   KnobValueLabelPartProps,
+  KnobTickLayer,
 } from '../types';
 import type { KnobPartEntry } from '../Knob';
 
@@ -195,9 +196,10 @@ describe('Knob compound parts', () => {
     );
 
     expect(Array.isArray(appearance?.ticks)).toBe(true);
-    expect(appearance?.ticks).toHaveLength(3);
-    expect(appearance?.ticks?.[1]).toMatchObject({ values: [25] });
-    expect(appearance?.ticks?.[2]).toMatchObject({ values: [75] });
+    const ticks = appearance?.ticks as KnobTickLayer[];
+    expect(ticks).toHaveLength(3);
+    expect(ticks[1]).toMatchObject({ values: [25] });
+    expect(ticks[2]).toMatchObject({ values: [75] });
     expect(valueLabel).toBe(false);
   });
 });

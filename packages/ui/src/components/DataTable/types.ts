@@ -1,5 +1,6 @@
 import React from 'react';
 import { SpacingProps } from '../../core/utils';
+import type { TextProps } from '../Text';
 
 // Core type aliases
 export type SortDirection = 'asc' | 'desc' | null;
@@ -232,4 +233,9 @@ export interface DataTableProps<T = any> extends SpacingProps {
   /** Custom expand/collapse icons */
   expandIcon?: React.ReactNode;
   collapseIcon?: React.ReactNode;
+
+  /** Override props applied to every column header `<Text>` (style, weight, ff, size, colorVariant). */
+  headerTextProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to default-rendered cell text (cells without a custom `cell` renderer). */
+  cellTextProps?: Omit<TextProps, 'children'>;
 }

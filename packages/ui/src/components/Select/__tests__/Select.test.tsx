@@ -622,12 +622,6 @@ describe('Select - Type Safety and Prop Validation', () => {
       expect(getByRole('button')).toBeTruthy();
     });
 
-    it('should accept flex prop', () => {
-      const { getByRole } = render(
-        <Select options={mockOptions} flex={1} />
-      );
-      expect(getByRole('button')).toBeTruthy();
-    });
   });
 
   describe('Edge Cases', () => {

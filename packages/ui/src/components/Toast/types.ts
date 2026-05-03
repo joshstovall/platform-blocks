@@ -2,6 +2,7 @@ import React from 'react';
 import { ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
+import type { TextProps } from '../Text';
 
 export type ToastVariant = 'light' | 'filled' | 'outline';
 export type ToastColor = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray';
@@ -82,4 +83,8 @@ export interface ToastProps extends SpacingProps, BorderRadiusProps {
   swipeConfig?: ToastSwipeConfig;
   /** Callback when toast is dismissed via swipe */
   onSwipeDismiss?: () => void;
+  /** Override props applied to the title `<Text>` (style, weight, ff, size, colorVariant). */
+  titleProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the body `<Text>` (the `children` content). */
+  bodyProps?: Omit<TextProps, 'children'>;
 }

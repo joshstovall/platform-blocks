@@ -119,8 +119,12 @@ export const KeyCap = factory<{
     pressed: controlledPressed,
     onKeyPress,
     testID,
+    fontFamily,
+    ff,
     ...rest
   } = props;
+
+  const customFontFamily = ff ?? fontFamily;
 
   const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(rest);
   const { layoutProps, otherProps: propsAfterLayout } = extractLayoutProps(propsAfterSpacing);
@@ -221,7 +225,7 @@ export const KeyCap = factory<{
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+          fontFamily: customFontFamily ?? 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
           fontSize: styles.text.fontSize,
           fontWeight: '500',
           color: styles.text.color,
@@ -255,7 +259,7 @@ export const KeyCap = factory<{
       style={[containerStyle, animatedStyle]}
       testID={testID}
     >
-      <Text style={styles.text}>
+      <Text style={[styles.text, customFontFamily ? { fontFamily: customFontFamily } : null]}>
         {children}
       </Text>
     </Animated.View>

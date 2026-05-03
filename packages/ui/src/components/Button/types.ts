@@ -4,6 +4,7 @@ import { BorderRadiusProps } from '../../core/theme/radius';
 import { ShadowProps } from '../../core/theme/shadow';
 import { SizeValue } from '../../core/theme/sizes';
 import { TooltipProps } from '../Tooltip';
+import type { TextProps } from '../Text';
 
 export interface ButtonProps extends SpacingProps, LayoutProps, BorderRadiusProps, ShadowProps {
   key?: React.Key; // allow React key without complaint in TS where JSX key is forwarded in type checking
@@ -65,4 +66,6 @@ export interface ButtonProps extends SpacingProps, LayoutProps, BorderRadiusProp
   accessibilityLabel?: string;
   /** Accessibility hint for screen readers */
   accessibilityHint?: string;
+  /** Override props applied to the inner label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { SpacingProps } from '../../core/utils';
 import { SizeValue } from '../../core/theme/sizes';
+import type { TextProps } from '../Text';
 
 export interface SpoilerProps extends SpacingProps {
   /** Content to hide/show */
@@ -33,4 +34,6 @@ export interface SpoilerProps extends SpacingProps {
   fadeColor?: string;
   /** Disable gradient fade animation (debug / perf). Default false (animation enabled). */
   disableFadeAnimation?: boolean;
+  /** Override props applied to the show/hide control `<Text>` (style, weight, ff, size, colorVariant). */
+  controlProps?: Omit<TextProps, 'children'>;
 }

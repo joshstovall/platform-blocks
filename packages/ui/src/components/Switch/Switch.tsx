@@ -49,6 +49,8 @@ export const Switch = factory<{
     accessibilityHint,
     testID,
     style,
+    labelProps,
+    descriptionProps,
   } = props;
 
   const theme = useTheme();
@@ -198,6 +200,8 @@ export const Switch = factory<{
         error={!!error}
         size={size as any}
         marginBottom={error ? 2 : undefined}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
       />
       {error && (
         <Text style={styles.error} size="sm" selectable={false}>{error}</Text>

@@ -44,7 +44,7 @@ export default function Demo() {
   return (
     <Column gap="lg">
       {COLOR_CONFIG.map(({ key, label, getColors }) => {
-        const palette = theme.colors[key as keyof typeof theme.colors];
+        const palette = theme.colors[key as keyof typeof theme.colors] ?? theme.colors.gray;
         const { color, emptyColor, hoverColor } = getColors(palette);
 
         return (

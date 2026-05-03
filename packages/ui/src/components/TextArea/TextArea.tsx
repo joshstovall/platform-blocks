@@ -6,6 +6,7 @@ import { createRadiusStyles } from '../../core/theme/radius';
 import { factory } from '../../core/factory/factory';
 import { useTextAreaStyles } from './styles';
 import { FieldHeader } from '../_internal/FieldHeader';
+import { useDisclaimer, extractDisclaimerProps } from '../_internal/Disclaimer';
 import { TextAreaProps, TextAreaStyleProps } from './types';
 import { Icon } from '../Icon';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
@@ -37,8 +38,9 @@ export const TextArea = factory<{
   ref: TextInput;
 }>((props, ref) => {
   const { spacingProps, otherProps: propsAfterSpacing } = extractSpacingProps(props);
-  const { layoutProps, otherProps } = extractLayoutProps(propsAfterSpacing);
-  
+  const { layoutProps, otherProps: propsAfterLayout } = extractLayoutProps(propsAfterSpacing);
+  const { disclaimerProps: disclaimerData, otherProps } = extractDisclaimerProps(propsAfterLayout as TextAreaProps);
+
   const {
     value,
     defaultValue = '',
@@ -65,12 +67,15 @@ export const TextArea = factory<{
     clearable,
     clearButtonLabel,
     onClear,
+    labelProps,
+    descriptionProps,
     ...rest
   } = otherProps;
 
   const { h } = layoutProps;
 
   const theme = useTheme();
+  const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
   const { getTextAreaStyles } = useTextAreaStyles({ theme } as any);
   const [focused, setFocused] = useState(false);
   const [currentRows, setCurrentRows] = useState(rows);
@@ -193,6 +198,9 @@ export const TextArea = factory<{
           required={required}
           disabled={disabled}
           error={!!error}
+          size={size}
+          labelProps={labelProps}
+          descriptionProps={descriptionProps}
         />
       )}
       
@@ -255,15 +263,17 @@ export const TextArea = factory<{
 
       {/* Character Counter */}
       {showCharCounter && maxLength && (
-        <Text 
+        <Text
           style={[
-            styles.charCounter, 
+            styles.charCounter,
             isCharCountError && styles.charCounterError
           ]}
         >
           {charCount}/{maxLength}
         </Text>
       )}
+
+      {renderDisclaimer()}
 
       {/* Helper Text */}
       {helperText && !error && (

@@ -26,6 +26,8 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
     icon,
     indeterminateIcon,
     labelPosition = 'right',
+    labelProps,
+    descriptionProps,
     children,
     testID,
     style,
@@ -153,6 +155,8 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
         error={!!error}
         size={size as any}
         marginBottom={isVertical ? 0 : (error ? 2 : undefined)}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
       />
       {error && (
         <Text style={styles.error} size="sm" selectable={false}>{error}</Text>

@@ -21,6 +21,10 @@ export interface MarkdownProps extends SpacingProps {
   components?: Partial<MarkdownComponentMap>;
   /** Optional handler invoked when a markdown link is pressed */
   onLinkPress?: (href: string) => void;
+  /** Custom font family applied to all rendered text (overrides the theme font) */
+  fontFamily?: string;
+  /** Shorthand alias for `fontFamily` */
+  ff?: string;
 }
 
 export interface MarkdownComponentMap {
@@ -51,26 +55,28 @@ export interface MarkdownComponentMap {
 const createDefaultComponents = (
   theme: PlatformBlocksTheme,
   handleLinkPress: (href: string) => void,
+  fontFamily?: string,
 ): MarkdownComponentMap => ({
   heading: ({ level, children }) => (
     <Text
       variant={`h${Math.min(level, 6)}` as any}
       style={{ marginTop: level === 1 ? 24 : 16, marginBottom: 8 }}
       weight={level <= 2 ? '700' : '600'}
+      ff={fontFamily}
     >
       {children}
     </Text>
   ),
   paragraph: ({ children }) => (
-    <Text variant="p" as="div" style={{ marginBottom: 12 }}>
+    <Text variant="p" as="div" style={{ marginBottom: 12 }} ff={fontFamily}>
       {children}
     </Text>
   ),
   strong: ({ children }) => (
-    <Text variant="strong">{children}</Text>
+    <Text variant="strong" ff={fontFamily}>{children}</Text>
   ),
   em: ({ children }) => (
-    <Text variant="em">{children}</Text>
+    <Text variant="em" ff={fontFamily}>{children}</Text>
   ),
   codeInline: ({ children }) => (
     <Text
@@ -97,7 +103,7 @@ const createDefaultComponents = (
         marginVertical: 12,
       }}
     >
-      <Text variant="blockquote">{children}</Text>
+      <Text variant="blockquote" ff={fontFamily}>{children}</Text>
     </View>
   ),
   list: ({ ordered, items }) => (
@@ -112,11 +118,11 @@ const createDefaultComponents = (
           }}
         >
           {ordered ? (
-            <Text variant="p" style={{ width: 24 }}>
+            <Text variant="p" style={{ width: 24 }} ff={fontFamily}>
               {i + 1}.{' '}
             </Text>
           ) : (
-            <Text variant="p" style={{ width: 24 }}>
+            <Text variant="p" style={{ width: 24 }} ff={fontFamily}>
               •{' '}
             </Text>
           )}
@@ -126,13 +132,13 @@ const createDefaultComponents = (
     </View>
   ),
   listItem: ({ children }) => (
-    <Text variant="p" style={{ marginBottom: 0 }}>
+    <Text variant="p" style={{ marginBottom: 0 }} ff={fontFamily}>
       {children}
     </Text>
   ),
   link: ({ href, children }) => (
     <Pressable onPress={() => handleLinkPress(href)}>
-      <Text variant="u" style={{ color: theme.text.link }}>
+      <Text variant="u" style={{ color: theme.text.link }} ff={fontFamily}>
         {children}
       </Text>
     </Pressable>
@@ -234,6 +240,7 @@ const createDefaultComponents = (
         marginBottom: 0,
         textAlign: align ?? 'left',
       }}
+      ff={fontFamily}
     >
       {children}
     </Text>
@@ -642,7 +649,8 @@ const getOverrideFingerprint = (overrides?: Partial<MarkdownComponentMap>): stri
 
 export const Markdown: React.FC<MarkdownProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, defaultCodeLanguage='tsx', maxHeadingLevel=6, allowHtml=false, components, onLinkPress } = otherProps;
+  const { children, defaultCodeLanguage='tsx', maxHeadingLevel=6, allowHtml=false, components, onLinkPress, fontFamily, ff } = otherProps;
+  const customFontFamily = ff ?? fontFamily;
   const spacingStyles = getSpacingStyles(spacingProps);
   const theme = useTheme();
 
@@ -661,7 +669,7 @@ export const Markdown: React.FC<MarkdownProps> = (allProps) => {
   const overrideFingerprint = useMemo(() => getOverrideFingerprint(components), [components]);
 
   const merged = useMemo(() => {
-    const defaults = createDefaultComponents(theme, handleLinkPress);
+    const defaults = createDefaultComponents(theme, handleLinkPress, customFontFamily);
     if (!components) {
       return defaults;
     }
@@ -672,7 +680,7 @@ export const Markdown: React.FC<MarkdownProps> = (allProps) => {
       }
     });
     return next;
-  }, [themeSignature, overrideFingerprint, theme, components, handleLinkPress]);
+  }, [themeSignature, overrideFingerprint, theme, components, handleLinkPress, customFontFamily]);
 
   const inlineCache = useMemo(() => new Map<string, InlineNode[]>(), []);
   const getInlineNodes = useCallback((value: string) => {

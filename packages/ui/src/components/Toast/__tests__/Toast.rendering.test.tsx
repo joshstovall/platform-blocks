@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { Text, View } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 
 // Mock Reanimated BEFORE any imports that use it
 jest.mock('react-native-reanimated', () => {
@@ -113,6 +113,28 @@ describe('Toast Component - Rendering & Behavior', () => {
       // Component renders but is animated out of view
       // The title text is still in the DOM but with opacity/position animations
       expect(queryByText('Test Toast')).toBeTruthy();
+    });
+
+    it('forwards titleProps weight + style to the title Text', () => {
+      const { getByText } = render(
+        <Toast
+          title="Slot title"
+          visible
+          titleProps={{ weight: '700', style: { letterSpacing: 1.5 } }}
+        />
+      );
+      const flat = StyleSheet.flatten((getByText('Slot title') as any).props.style) || {};
+      expect(flat).toMatchObject({ fontWeight: '700', letterSpacing: 1.5 });
+    });
+
+    it('forwards bodyProps to the body Text', () => {
+      const { getByText } = render(
+        <Toast title="t" visible bodyProps={{ style: { fontStyle: 'italic' } }}>
+          Plain body text
+        </Toast>
+      );
+      const flat = StyleSheet.flatten((getByText('Plain body text') as any).props.style) || {};
+      expect(flat).toMatchObject({ fontStyle: 'italic' });
     });
 
     it('should render with custom icon', () => {

@@ -27,7 +27,7 @@ export default function Demo() {
           suffix="%"
           withSideButtons
           withControls
-          onChange={(next) => {
+          onChange={(next: number | undefined) => {
             if (typeof next === 'number') {
               setValue(next);
             }
@@ -57,7 +57,7 @@ export default function Demo() {
           max={25}
           step={1}
           withSideButtons
-          onChange={(next) => {
+          onChange={(next: number | undefined) => {
             if (typeof next === 'number') {
               setStep(next);
             }

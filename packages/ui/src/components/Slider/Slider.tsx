@@ -7,6 +7,7 @@ import type { SliderProps, RangeSliderProps, SliderTick } from './types';
 import {
   SLIDER_CONSTANTS,
   getOrientationProps,
+  getVariantThumbSizeMultiplier,
   sliderUtils,
   useSliderTicks,
   useSliderValue,
@@ -90,6 +91,11 @@ export const Slider = factory<{
     label,
     valueLabel,
     valueLabelAlwaysOn = false,
+    valueLabelPosition,
+    valueLabelOffset,
+    valueLabelStyle,
+    valueLabelProps,
+    valueLabelAsCard = true,
     ticks,
     showTicks = false,
     restrictToTicks = false,
@@ -99,11 +105,15 @@ export const Slider = factory<{
     trackSize,
     thumbSize: thumbSizeProp,
     colorScheme = 'primary',
+    variant = 'default',
     trackStyle,
     activeTrackStyle,
     thumbStyle,
     tickColor,
     activeTickColor,
+    tickStyle,
+    activeTickStyle,
+    tickLabelProps,
     style,
     ...spacingProps
   } = props;
@@ -138,7 +148,9 @@ export const Slider = factory<{
         : 'md'
     : (resolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
-  const thumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  // Apply variant size multiplier to keep thumb visual aligned with the track ends.
+  const baseThumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  const thumbSize = Math.max(8, Math.round(baseThumbSize * getVariantThumbSizeMultiplier(variant)));
   const trackHeight = trackSize ?? SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
 
   // Memoized processed value
@@ -373,6 +385,7 @@ export const Slider = factory<{
           activeTrackStyle={activeTrackStyle}
           trackHeight={trackHeight}
           thumbSize={thumbSize}
+          variant={variant}
         />
 
         {/* Ticks */}
@@ -386,6 +399,9 @@ export const Slider = factory<{
           thumbSize={thumbSize}
           tickColor={sliderColors.tickColor}
           activeTickColor={sliderColors.activeTickColor}
+          tickStyle={tickStyle}
+          activeTickStyle={activeTickStyle}
+          tickLabelProps={tickLabelProps}
         />
 
         {/* Thumb */}
@@ -399,6 +415,7 @@ export const Slider = factory<{
           thumbColor={sliderColors.thumbColor}
           thumbStyle={thumbStyle}
           thumbSize={thumbSize}
+          variant={variant}
         />
 
         {/* Value label */}
@@ -408,8 +425,12 @@ export const Slider = factory<{
             position={positions.thumbPosition}
             size={sliderSize}
             orientation={orientation}
-            isCard={true}
+            isCard={valueLabelAsCard}
             thumbSize={thumbSize}
+            placement={valueLabelPosition}
+            offset={valueLabelOffset}
+            containerStyle={valueLabelStyle}
+            textProps={valueLabelProps}
           />
         )}
       </View>
@@ -436,6 +457,11 @@ export const RangeSlider = factory<{
     label,
     valueLabel,
     valueLabelAlwaysOn = false,
+    valueLabelPosition,
+    valueLabelOffset,
+    valueLabelStyle,
+    valueLabelProps,
+    valueLabelAsCard = true,
     ticks,
     showTicks = false,
     restrictToTicks = false,
@@ -446,11 +472,15 @@ export const RangeSlider = factory<{
     trackSize,
     thumbSize: thumbSizeProp,
     colorScheme = 'primary',
+    variant = 'default',
     trackStyle,
     activeTrackStyle,
     thumbStyle,
     tickColor,
     activeTickColor,
+    tickStyle,
+    activeTickStyle,
+    tickLabelProps,
     style,
     ...spacingProps
   } = props;
@@ -476,7 +506,8 @@ export const RangeSlider = factory<{
         : 'md'
     : (rangeResolvedSliderSize ?? 'md');
   const orientationProps = getOrientationProps(orientation, containerSize);
-  const thumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  const baseThumbSize = thumbSizeProp ?? SLIDER_CONSTANTS.THUMB_SIZE[sliderSize];
+  const thumbSize = Math.max(8, Math.round(baseThumbSize * getVariantThumbSizeMultiplier(variant)));
   const trackHeight = trackSize ?? SLIDER_CONSTANTS.TRACK_HEIGHT[sliderSize];
   const containerRef = useRef<View>(null);
 
@@ -811,6 +842,7 @@ export const RangeSlider = factory<{
           activeTrackStyle={activeTrackStyle}
           trackHeight={trackHeight}
           thumbSize={thumbSize}
+          variant={variant}
         />
 
         {/* Ticks */}
@@ -825,6 +857,9 @@ export const RangeSlider = factory<{
           thumbSize={thumbSize}
           tickColor={sliderColors.tickColor}
           activeTickColor={sliderColors.activeTickColor}
+          tickStyle={tickStyle}
+          activeTickStyle={activeTickStyle}
+          tickLabelProps={tickLabelProps}
         />
 
         {/* Min Thumb */}
@@ -840,6 +875,7 @@ export const RangeSlider = factory<{
           thumbColor={sliderColors.thumbColor}
           thumbStyle={thumbStyle}
           thumbSize={thumbSize}
+          variant={variant}
         />
 
         {/* Max Thumb */}
@@ -855,6 +891,7 @@ export const RangeSlider = factory<{
           thumbColor={sliderColors.thumbColor}
           thumbStyle={thumbStyle}
           thumbSize={thumbSize}
+          variant={variant}
         />
 
         {/* Value labels */}
@@ -865,16 +902,24 @@ export const RangeSlider = factory<{
               position={positions.minThumbPosition}
               size={sliderSize}
               orientation={orientation}
-              isCard={true}
+              isCard={valueLabelAsCard}
               thumbSize={thumbSize}
+              placement={valueLabelPosition}
+              offset={valueLabelOffset}
+              containerStyle={valueLabelStyle}
+              textProps={valueLabelProps}
             />
             <SliderValueLabel
               value={labelConfig.formatter(maxValue, 1)}
               position={positions.maxThumbPosition}
               size={sliderSize}
               orientation={orientation}
-              isCard={true}
+              isCard={valueLabelAsCard}
               thumbSize={thumbSize}
+              placement={valueLabelPosition}
+              offset={valueLabelOffset}
+              containerStyle={valueLabelStyle}
+              textProps={valueLabelProps}
             />
           </>
         )}

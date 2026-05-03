@@ -1,9 +1,10 @@
 import React from 'react';
-import { TextInputProps, TextInputProps as RNTextInputProps, ViewStyle, StyleProp } from 'react-native';
+import { TextInputProps, TextInputProps as RNTextInputProps, ViewProps, ViewStyle, StyleProp } from 'react-native';
 import { SpacingProps, LayoutProps } from '../../core/utils';
 import type { SizeValue } from '../../core/theme/types';
 import type { RadiusValue } from '../../core/theme/radius';
 import type { ChipProps } from '../Chip/types';
+import type { TextProps } from '../Text';
 
 export interface AutoCompleteOption {
   label: string;
@@ -221,4 +222,19 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
   
   /** Enable automatic repositioning on scroll/resize (default: true) */
   autoReposition?: boolean;
+
+  /** Override props applied to the field label `<Text>`. */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the field description `<Text>`. */
+  descriptionProps?: Omit<TextProps, 'children'>;
+
+  /** Color of the placeholder text (defaults to `theme.text.muted`). */
+  placeholderTextColor?: string;
+
+  /** View props applied to the wrapper around startSection (chip area, etc.). */
+  startSectionProps?: Omit<ViewProps, 'children'>;
+
+  /** View props applied to the wrapper around endSection (clear button area). */
+  endSectionProps?: Omit<ViewProps, 'children'>;
 }

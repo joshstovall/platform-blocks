@@ -1,6 +1,8 @@
 import React from 'react';
 import { SizeValue } from '../../core/theme/sizes';
 import { LayoutProps, SpacingProps } from '../../core/utils';
+import type { TextProps } from '../Text';
+import type { InputVariant } from '../Input/types';
 
 /**
  * Represents a single option exposed by the Select component.
@@ -63,4 +65,10 @@ export interface SelectProps<T = any> extends SpacingProps, LayoutProps {
   refocusAfterSelect?: boolean;
   /** Whether dropdown positioning should avoid the on-screen keyboard. */
   keyboardAvoidance?: boolean;
+  /** Override props applied to the label `<Text>` */
+  labelProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the description `<Text>` */
+  descriptionProps?: Omit<TextProps, 'children'>;
+  /** Visual variant of the trigger shell — `'default' | 'filled' | 'outline' | 'unstyled'`. Mirrors `<Input variant>`. */
+  variant?: InputVariant;
 }

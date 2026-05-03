@@ -12,6 +12,7 @@ import type { DocumentPickerAssetLike } from './types';
 import { Icon } from '../Icon';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 import { useTheme } from '../../core/theme';
+import { FieldHeader } from '../_internal/FieldHeader';
 import { resolveDocumentPicker } from '../../utils/optionalDependencies';
 
 const { DocumentPicker: DocumentPickerModule, hasDocumentPicker } = resolveDocumentPicker();
@@ -75,6 +76,13 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
   error,
   helperText,
   style,
+  label,
+  description,
+  required,
+  withAsterisk,
+  size = 'md',
+  labelProps,
+  descriptionProps,
   ...props
 }) => {
   const theme = useTheme();
@@ -637,6 +645,18 @@ export const FileInput: React.FC<FileInputProps> = React.memo(({
           style={{ display: 'none' }}
         />
       )}
+
+      <FieldHeader
+        label={label}
+        description={description}
+        required={required}
+        withAsterisk={withAsterisk ?? required}
+        disabled={disabled}
+        error={!!error}
+        size={size as any}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
+      />
 
       {/* File input UI */}
       {variant === 'dropzone' && renderDropZone()}

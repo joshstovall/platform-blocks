@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
+import type { TextProps } from '../Text';
 
 export interface StepperMetrics {
   iconSize: number;
@@ -33,6 +34,10 @@ export interface StepperStepProps {
   ref?: React.Ref<HTMLButtonElement>;
   /** Internal step index (added automatically) */
   stepIndex?: number;
+  /** Override props applied to the step's label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the step's description `<Text>`. */
+  descriptionProps?: Omit<TextProps, 'children'>;
 }
 
 export interface StepperProps {

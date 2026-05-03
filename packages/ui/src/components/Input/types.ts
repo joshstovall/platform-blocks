@@ -1,10 +1,11 @@
 import React from 'react';
-import { KeyboardTypeOptions, TextInputProps as RNTextInputProps } from 'react-native';
+import { KeyboardTypeOptions, TextInputProps as RNTextInputProps, ViewProps } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import { LayoutProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 import { SizeValue, ColorValue } from '../../core/theme/types';
 import type { DisclaimerSupport } from '../_internal/Disclaimer';
+import type { TextProps } from '../Text';
 
 export interface ValidationRule {
   type: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'custom' | 'passwordStrength';
@@ -24,7 +25,12 @@ export interface PasswordStrengthRule extends Omit<ValidationRule, 'type'> {
   };
 }
 
+export type InputVariant = 'default' | 'filled' | 'outline' | 'unstyled';
+
 export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusProps, DisclaimerSupport {
+  /** Visual variant of the input. `default` (light surface + border), `filled` (gray fill, no border), `outline` (transparent fill, border only), `unstyled` (no border, no fill). */
+  variant?: InputVariant;
+
   /** Input value */
   value?: string;
   
@@ -101,6 +107,21 @@ export interface BaseInputProps extends SpacingProps, LayoutProps, BorderRadiusP
 
   /** Identifier used with KeyboardManagerProvider to request refocus */
   keyboardFocusId?: string;
+
+  /** Override props applied to the field label `<Text>` (style, weight, ff, etc.) */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the field description `<Text>` */
+  descriptionProps?: Omit<TextProps, 'children'>;
+
+  /** Color of the placeholder text. Falls back to `theme.text.muted`. */
+  placeholderTextColor?: string;
+
+  /** Props applied to the wrapping `<View>` around `startSection` (style, accessibility, etc.). */
+  startSectionProps?: Omit<ViewProps, 'children'>;
+
+  /** Props applied to the wrapping `<View>` around `endSection`. */
+  endSectionProps?: Omit<ViewProps, 'children'>;
 }
 
 export type ExtendedTextInputProps = Omit<RNTextInputProps, keyof BaseInputProps> & {
@@ -244,4 +265,5 @@ export interface InputStyleProps {
   size: SizeValue;
   hasLeftSection?: boolean;
   hasRightSection?: boolean;
+  variant?: InputVariant;
 }

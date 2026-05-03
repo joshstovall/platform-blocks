@@ -4,6 +4,9 @@ export interface TimePickerValue {
   seconds?: number; // 0-59
 }
 
+import type { ViewProps } from 'react-native';
+import type { TextProps } from '../Text';
+
 export interface TimePickerProps {
   value?: TimePickerValue | null;
   defaultValue?: TimePickerValue | null;
@@ -20,6 +23,7 @@ export interface TimePickerProps {
   disabled?: boolean;
   size?: any;
   label?: string;
+  description?: string;
   error?: string;
   helperText?: string;
   style?: any;
@@ -30,4 +34,14 @@ export interface TimePickerProps {
   fullWidth?: boolean;
   clearable?: boolean;
   clearButtonLabel?: string;
+  /** Override props applied to the field label `<Text>`. */
+  labelProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the field description `<Text>`. */
+  descriptionProps?: Omit<TextProps, 'children'>;
+  /** Color of the placeholder text. */
+  placeholderTextColor?: string;
+  /** View props applied to the wrapper around startSection. */
+  startSectionProps?: Omit<ViewProps, 'children'>;
+  /** View props applied to the wrapper around endSection (the clock icon by default). */
+  endSectionProps?: Omit<ViewProps, 'children'>;
 }

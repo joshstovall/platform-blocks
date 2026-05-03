@@ -77,4 +77,8 @@ export interface CodeBlockProps extends SpacingProps {
   colors?: CodeBlockColorOverrides;
   /** Control whether long lines wrap (defaults to true). Set to false to enable horizontal scrolling instead. */
   wrap?: boolean;
+  /** Custom font family for the code text (overrides the default monospace stack) */
+  fontFamily?: string;
+  /** Shorthand alias for `fontFamily` */
+  ff?: string;
 }

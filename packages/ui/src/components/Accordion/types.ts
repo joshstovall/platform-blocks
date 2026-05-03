@@ -8,6 +8,7 @@ import type { SizeValue } from '../../core/theme/sizes';
 import type { BorderRadiusProps } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
 import type { SpacingProps } from '../../core/utils';
+import type { TextProps } from '../Text';
 
 /**
  * Single logical panel within an `Accordion`.
@@ -120,6 +121,11 @@ export interface AccordionProps extends SpacingProps, BorderRadiusProps {
    * Text style applied to the header label.
    */
   headerTextStyle?: StyleProp<TextStyle>;
+  /**
+   * Override props applied to each item's header `<Text>` (style, weight, ff, size, colorVariant).
+   * Applies to every item in the accordion.
+   */
+  titleProps?: Omit<TextProps, 'children'>;
   /**
    * Explicit persistence key. If omitted, an automatic hash key will be generated when uncontrolled.
    */

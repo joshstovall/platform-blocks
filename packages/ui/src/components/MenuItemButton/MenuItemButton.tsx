@@ -3,8 +3,9 @@ import { Platform, Pressable, View } from 'react-native';
 import type { PressableProps } from 'react-native';
 import type { GestureResponderEvent } from 'react-native';
 import { Text } from '../Text';
+import type { TextProps } from '../Text';
 import { useTheme } from '../../core/theme';
-import { getSpacingStyles, extractSpacingProps, SpacingProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, SpacingProps, mergeSlotProps } from '../../core/utils';
 import { useDirection } from '../../core/providers/DirectionProvider';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import { getComponentSize } from '../../core/theme/unified-sizing';
@@ -71,6 +72,8 @@ export interface MenuItemButtonProps extends SpacingProps {
   activeTextColor?: string;
   /** Test identifier forwarded to Pressable */
   testID?: string;
+  /** Override props applied to the inner label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
 }
 
 interface MenuItemButtonMetrics {
@@ -225,6 +228,7 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
     hoverTextColor: hoverTextColorOverride,
     activeTextColor: activeTextColorOverride,
     testID,
+    labelProps,
     ...restProps
   } = otherProps as MenuItemButtonProps & { [key: string]: any };
 
@@ -386,10 +390,15 @@ export const MenuItemButton = forwardRef<View, MenuItemButtonProps>((allProps, r
         {content && (
           typeof content === 'string' ? (
             <Text
-              size={metrics.fontSize}
-              weight={active ? '600' : '500'}
-              color={textColor}
-              style={{ flex: 1, overflow: 'hidden' }}
+              {...mergeSlotProps(
+                {
+                  size: metrics.fontSize,
+                  weight: active ? ('600' as const) : ('500' as const),
+                  color: textColor,
+                  style: { flex: 1, overflow: 'hidden' as const },
+                },
+                labelProps,
+              )}
             >
               {content}
             </Text>

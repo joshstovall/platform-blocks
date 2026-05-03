@@ -1,5 +1,6 @@
 import React from 'react';
 import { SizeValue, SpacingProps } from '../../core/theme/types';
+import type { TextProps } from '../Text';
 
 export interface BaseComponentProps extends SpacingProps {
   /** Component test ID for testing */
@@ -53,7 +54,13 @@ export interface CheckboxProps extends BaseComponentProps {
   
   /** Label position relative to checkbox */
   labelPosition?: 'left' | 'right' | 'top' | 'bottom';
-  
+
+  /** Override styles/props applied to the label `<Text>` */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override styles/props applied to the description `<Text>` */
+  descriptionProps?: Omit<TextProps, 'children'>;
+
   /** Checkbox content/children (alternative to label) */
   children?: React.ReactNode;
 }

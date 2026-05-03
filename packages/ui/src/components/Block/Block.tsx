@@ -5,6 +5,8 @@ import { extractSpacingProps, getSpacingStyles } from '../../core/utils/spacing'
 import { getBlockStyles } from './utils';
 import type { BlockFactory, BlockProps, BlockStyleProps } from './types';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { useTheme } from '../../core/theme';
+import { resolveBg } from '../../core/theme/resolveColors';
 
 const BLOCK_STYLE_PROP_KEYS: Array<keyof BlockStyleProps> = [
   'bg',
@@ -96,9 +98,10 @@ const partitionBlockProps = (source: Record<string, any>) => {
 // Temporary simple implementation to avoid polymorphicFactory issues
 export const Block = forwardRef<any, BlockProps>((props, ref) => {
   const { isRTL } = useDirection();
+  const theme = useTheme();
   // Extract spacing props from the rest
   const { spacingProps, otherProps } = extractSpacingProps(props);
-  
+
   const {
     children,
     style,
@@ -113,8 +116,15 @@ export const Block = forwardRef<any, BlockProps>((props, ref) => {
     ...restProps
   } = otherProps;
 
-  const { style: layoutProps, passthrough } = partitionBlockProps(restProps as Record<string, any>);
+  const { style: layoutPropsRaw, passthrough } = partitionBlockProps(restProps as Record<string, any>);
   const forwardedProps = passthrough as typeof restProps;
+
+  // Resolve `bg` through the shared theme resolver so palette names + theme
+  // background keys (`'primary'`, `'success'`, `'surface'`, `'subtle'`, …)
+  // work the same way as on `<Card bg=...>` — Mantine-style.
+  const layoutProps = layoutPropsRaw.bg
+    ? { ...layoutPropsRaw, bg: resolveBg(theme, layoutPropsRaw.bg) ?? layoutPropsRaw.bg }
+    : layoutPropsRaw;
 
   const hasLayoutValues = fullWidth || Object.keys(layoutProps).length > 0;
   const blockStyles = hasLayoutValues

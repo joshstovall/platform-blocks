@@ -1,6 +1,12 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import type { ReactTestInstance } from 'react-test-renderer';
+
+// `react-test-renderer` types aren't installed in this workspace; use a structural
+// stand-in that matches what we read off the rendered tree (children + props.style).
+type ReactTestInstance = {
+	children: Array<ReactTestInstance | string | null>;
+	props: Record<string, any>;
+};
 
 import { Divider } from '../Divider';
 
@@ -21,6 +27,12 @@ jest.mock('../../../core/theme/ThemeProvider', () => ({
 		text: {
 			primary: '#000000',
 			muted: '#666666'
+		},
+		backgrounds: {
+			base: '#FFFFFF',
+			subtle: '#F7F8FA',
+			surface: '#FFFFFF',
+			border: '#d0d0d0'
 		},
 		spacing: (value: number) => value * 8,
 		radius: (value: number) => value * 4
@@ -229,7 +241,7 @@ describe('Divider - Rendering & Behavior', () => {
 		expect(lineStyle.borderTopColor).toBe(explicitColor);
 	});
 
-	it('falls back to semantic palette when using colorVariant', () => {
+	it('uses a soft palette shade (3) for colorVariant — tuned for separators', () => {
 		const { getByTestId } = render(
 			<Divider testID="divider" colorVariant="primary" />
 		);
@@ -237,7 +249,25 @@ describe('Divider - Rendering & Behavior', () => {
 		const [line] = getChildInstances(divider);
 		const lineStyle = flattenStyle(line.props.style);
 
-		expect(lineStyle.borderTopColor).toBe(palette[5]);
+		expect(lineStyle.borderTopColor).toBe(palette[3]);
+	});
+
+	it('forwards opacity prop to the wrapping View style', () => {
+		const { getByTestId } = render(
+			<Divider testID="divider" opacity={0.4} />
+		);
+		const divider = getByTestId('divider');
+		const containerStyle = flattenStyle(divider.props.style);
+		expect(containerStyle.opacity).toBe(0.4);
+	});
+
+	it('defaults to theme.backgrounds.border when no color is supplied', () => {
+		const { getByTestId } = render(<Divider testID="divider" />);
+		const divider = getByTestId('divider');
+		const [line] = getChildInstances(divider);
+		const lineStyle = flattenStyle(line.props.style);
+		// mockTheme.backgrounds.border below
+		expect(lineStyle.borderTopColor).toBe('#d0d0d0');
 	});
 });
 

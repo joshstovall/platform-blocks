@@ -11,11 +11,6 @@ export default function MobileFriendlyTableOfContentsDemo() {
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16 }}>
           {/* TableOfContents - will automatically detect Title components below */}
           <TableOfContents
-            mobileMode="auto"
-            touchOptimized={true}
-            showProgressBar={true}
-            floatingButtonLabel="Contents"
-            floatingPosition="bottom-right"
             variant="filled"
             color="#2563eb"
             radius="md"

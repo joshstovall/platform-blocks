@@ -14,6 +14,13 @@ export interface PlaygroundControlOverride {
   label?: string;
 }
 
+export interface PlaygroundExtraControl extends PlaygroundControlOverride {
+  name: string;
+  controlType: PlaygroundControlType;
+  initialValue?: any;
+  description?: string;
+}
+
 export interface ComponentPlaygroundConfig {
   id: string;
   component: string;
@@ -21,6 +28,10 @@ export interface ComponentPlaygroundConfig {
   hiddenProps?: string[];
   pinnedProps?: string[];
   controlOverrides?: Record<string, PlaygroundControlOverride | false>;
+  /** Synthetic controls not derived from propsMeta. Useful for editing nested object props via flat sub-controls. */
+  extraControls?: PlaygroundExtraControl[];
+  /** Transforms the merged playground values into the final props passed to the component (and the JSX snippet). */
+  transformProps?: (values: Record<string, any>) => Record<string, any>;
   previewWrapper?: (node: ReactNode, currentProps: Record<string, any>) => ReactNode;
 }
 
@@ -203,7 +214,68 @@ const COMMON_EVENT_PROPS = [
   'endIcon'
 ];
 
+const ACCORDION_VARIANTS: Array<'default' | 'separated' | 'bordered'> = ['default', 'separated', 'bordered'];
+const ACCORDION_TYPES: Array<'single' | 'multiple'> = ['single', 'multiple'];
+const ACCORDION_COLORS: Array<'primary' | 'secondary' | 'gray'> = ['primary', 'secondary', 'gray'];
+const ACCORDION_DENSITY: Array<'comfortable' | 'compact' | 'spacious'> = ['comfortable', 'compact', 'spacious'];
+const ACCORDION_CHEVRON_POSITIONS: Array<'start' | 'end'> = ['start', 'end'];
+
+const ACCORDION_PLAYGROUND_ITEMS = [
+  {
+    key: 'foundation',
+    title: 'What is Platform Blocks?',
+    body: 'A cross-platform design system that helps teams ship polished React Native apps faster.',
+  },
+  {
+    key: 'benefits',
+    title: 'Why use an accordion?',
+    body: 'Accordions keep dense guidance scannable while letting readers expand only the sections they care about.',
+  },
+  {
+    key: 'next-steps',
+    title: 'How do I get started?',
+    body: 'Install the package, drop the provider at the root, and follow the onboarding checklist.',
+  },
+];
+
+const buildAccordionPlaygroundItems = () =>
+  ACCORDION_PLAYGROUND_ITEMS.map((item) => ({
+    key: item.key,
+    title: item.title,
+    content: React.createElement(
+      Text,
+      { style: { fontSize: 14, color: '#475569' } },
+      item.body
+    ),
+  }));
+
 const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
+  Accordion: {
+    id: 'Accordion',
+    component: 'Accordion',
+    initialProps: {
+      type: 'single',
+      variant: 'default',
+      size: 'md',
+      color: 'primary',
+      density: 'comfortable',
+      chevronPosition: 'end',
+      showChevron: true,
+      animated: true,
+    },
+    pinnedProps: ['type', 'variant', 'size', 'color', 'density', 'chevronPosition', 'showChevron', 'animated'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'items', 'expanded', 'defaultExpanded', 'persistKey', 'autoPersist', 'titleProps', 'headerStyle', 'contentStyle', 'headerTextStyle'],
+    controlOverrides: {
+      type: { controlType: 'segmented', options: ACCORDION_TYPES },
+      variant: { controlType: 'segmented', options: ACCORDION_VARIANTS },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      color: { controlType: 'segmented', options: ACCORDION_COLORS },
+      density: { controlType: 'segmented', options: ACCORDION_DENSITY },
+      chevronPosition: { controlType: 'segmented', options: ACCORDION_CHEVRON_POSITIONS },
+    },
+    transformProps: (values) => ({ ...values, items: buildAccordionPlaygroundItems() }),
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 520 } }, node),
+  },
   Button: {
     id: 'Button',
     component: 'Button',
@@ -242,13 +314,15 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       value: SPORTS_OPTIONS[0].value,
       options: SPORTS_OPTIONS,
       helperText: 'Local data source',
+      variant: 'default',
       clearable: true,
       searchable: false
     },
-    pinnedProps: ['value', 'placeholder', 'size', 'fullWidth', 'disabled', 'searchable', 'clearable'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'options', 'renderOption', 'renderEmptyState', 'renderLoadingState', 'data', 'renderGroupHeader'],
+    pinnedProps: ['value', 'placeholder', 'variant', 'size', 'fullWidth', 'disabled', 'searchable', 'clearable'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'options', 'renderOption', 'renderEmptyState', 'renderLoadingState', 'data', 'renderGroupHeader', 'labelProps', 'descriptionProps'],
     controlOverrides: {
       value: { controlType: 'select', options: SPORTS_OPTIONS.map(option => option.value) },
+      variant: { controlType: 'segmented', options: ['default', 'filled', 'outline', 'unstyled'] },
       size: { controlType: 'segmented', options: SIZE_TOKENS }
     }
   },
@@ -302,15 +376,33 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       min: 0,
       max: 100,
       step: 1,
+      variant: 'default',
       showTicks: true,
       restrictToTicks: false,
-      fullWidth: true
+      fullWidth: true,
+      valueLabelAlwaysOn: true,
+      valueLabelPosition: 'top',
+      valueLabelAsCard: true
     },
-    pinnedProps: ['value', 'min', 'max', 'step', 'disabled', 'showTicks', 'restrictToTicks', 'orientation'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'ticks', 'valueLabel', 'trackColor', 'activeTrackColor', 'thumbColor', 'containerSize', 'trackSize', 'thumbSize', 'precision'],
+    pinnedProps: [
+      'value', 'min', 'max', 'step', 'variant', 'disabled', 'showTicks', 'restrictToTicks', 'orientation',
+      'valueLabelAlwaysOn', 'valueLabelPosition', 'valueLabelOffset', 'valueLabelAsCard',
+    ],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS,
+      'ticks', 'valueLabel', 'trackColor', 'activeTrackColor', 'thumbColor', 'containerSize', 'trackSize', 'thumbSize', 'precision',
+      'trackStyle', 'activeTrackStyle', 'thumbStyle', 'tickStyle', 'activeTickStyle',
+      'tickColor', 'activeTickColor', 'tickLabelProps', 'valueLabelStyle', 'valueLabelProps',
+    ],
     controlOverrides: {
       value: { controlType: 'number', min: 0, max: 100, step: 1 },
-      orientation: { controlType: 'segmented', options: SLIDER_VARIANTS }
+      // SliderVariant — Slider has its own visual variants distinct from InputVariant
+      variant: { controlType: 'segmented', options: ['default', 'filled', 'outline', 'minimal', 'segmented', 'unstyled'] },
+      orientation: { controlType: 'segmented', options: SLIDER_VARIANTS },
+      valueLabelPosition: { controlType: 'segmented', options: ['top', 'bottom', 'left', 'right'] },
+      valueLabelOffset: { controlType: 'number', min: 0, max: 32, step: 1 },
+      valueLabelAlwaysOn: { controlType: 'boolean' },
+      valueLabelAsCard: { controlType: 'boolean' }
     }
   },
   Progress: {
@@ -337,16 +429,31 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
     component: 'Card',
     initialProps: {
       variant: 'elevated',
-      padding: 24,
+      padding: 'md',
       radius: 'lg',
       shadow: 'md',
-      children: 'Mission briefing with highlights from the last sprint.'
+      withBorder: false,
+      children: React.createElement(
+        Text,
+        { style: { fontSize: 16, color: '#111827' } },
+        'Mission briefing with highlights from the last sprint.'
+      )
     },
-    pinnedProps: ['variant', 'padding', 'radius', 'shadow', 'disabled'],
+    pinnedProps: ['variant', 'withBorder', 'bg', 'borderColor', 'borderWidth', 'padding', 'radius', 'shadow', 'disabled'],
     hiddenProps: [...COMMON_EVENT_PROPS, 'onContextMenu'],
     controlOverrides: {
       variant: { controlType: 'segmented', options: CARD_VARIANTS },
-      padding: { controlType: 'number', min: 0, max: 48, step: 4 },
+      withBorder: { controlType: 'boolean' },
+      // bg accepts palette names ('primary', 'success', …), theme.backgrounds keys
+      // ('surface', 'subtle', 'elevated', 'base'), or any CSS color string.
+      bg: {
+        controlType: 'select',
+        options: ['', 'primary', 'secondary', 'success', 'warning', 'error', 'gray', 'surface', 'subtle', 'elevated', 'base']
+      },
+      borderColor: { controlType: 'color' },
+      borderWidth: { controlType: 'number', min: 0, max: 6, step: 1 },
+      // padding accepts size tokens AND numbers — segmented covers the common case
+      padding: { controlType: 'select', options: SIZE_TOKENS },
       radius: { controlType: 'select', options: RADIUS_TOKENS },
       shadow: { controlType: 'select', options: CARD_SHADOW_OPTIONS }
     }
@@ -362,15 +469,18 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       description: 'Used for weekly mission summaries.',
       size: 'md',
       type: 'email',
+      variant: 'default',
       clearable: true,
       required: true
     },
-    pinnedProps: ['value', 'placeholder', 'type', 'size', 'disabled', 'required', 'clearable', 'multiline', 'radius'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'validation', 'textInputProps', 'inputRef', 'keyboardFocusId', 'name', 'startSection', 'endSection'],
+    pinnedProps: ['value', 'placeholder', 'type', 'variant', 'size', 'disabled', 'required', 'clearable', 'multiline', 'radius', 'placeholderTextColor'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'validation', 'textInputProps', 'inputRef', 'keyboardFocusId', 'name', 'startSection', 'endSection', 'startSectionProps', 'endSectionProps', 'labelProps', 'descriptionProps', 'disclaimerProps'],
     controlOverrides: {
       type: { controlType: 'segmented', options: INPUT_TYPES },
+      variant: { controlType: 'segmented', options: ['default', 'filled', 'outline', 'unstyled'] },
       size: { controlType: 'segmented', options: SIZE_TOKENS },
-      radius: { controlType: 'select', options: RADIUS_TOKENS }
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+      placeholderTextColor: { controlType: 'color' }
     }
   },
   Switch: {
@@ -525,7 +635,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       uppercase: false,
       numberOfLines: 2
     },
-    pinnedProps: ['variant', 'size', 'color', 'colorVariant', 'weight', 'align', 'uppercase', 'numberOfLines', 'ellipsizeMode'],
+    pinnedProps: ['variant', 'size', 'c', 'color', 'colorVariant', 'weight', 'align', 'uppercase', 'ff', 'numberOfLines', 'ellipsizeMode'],
     hiddenProps: [...COMMON_EVENT_PROPS, 'tx', 'txParams', 'value', 'fontFamily', 'as'],
     controlOverrides: {
       variant: { controlType: 'select', options: TEXT_VARIANT_OPTIONS },
@@ -536,6 +646,14 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
         placeholder: '#0f172a',
         colorPresets: ['#0f172a', '#475569', '#f8fafc', '#14b8a6']
       },
+      // Mantine-style `c` shorthand — accepts 'dimmed', palette names, palette.shade
+      // (e.g. 'primary.6'), or any CSS color string.
+      c: {
+        controlType: 'select',
+        options: ['', 'dimmed', 'primary', 'secondary', 'success', 'warning', 'error', 'gray', 'primary.5', 'primary.7', 'error.6']
+      },
+      // ff is the shorthand alias for fontFamily
+      ff: { controlType: 'text', placeholder: 'monospace, Georgia, …' },
       weight: { controlType: 'segmented', options: FONT_WEIGHT_OPTIONS },
       align: { controlType: 'segmented', options: ['left', 'center', 'right', 'justify'] },
       tracking: { controlType: 'number', min: -1, max: 2, step: 0.1 }
@@ -904,7 +1022,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
   },
   Toggle: {
     id: 'Toggle',
-    component: 'Toggle',
+    component: 'ToggleButton',
     initialProps: {
       value: 'option-a',
       selected: false,
@@ -924,20 +1042,28 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
   },
   Radio: {
     id: 'Radio',
-    component: 'Radio',
+    component: 'RadioGroup',
     initialProps: {
-      value: 'option-a',
-      label: 'Option A',
-      checked: false,
+      options: [
+        { value: 'card', label: 'Credit card', description: 'Pay with a credit or debit card' },
+        { value: 'paypal', label: 'PayPal', description: 'Redirect to PayPal checkout' },
+        { value: 'apple', label: 'Apple Pay', description: 'Use Touch ID or Face ID' },
+      ],
+      value: 'card',
+      variant: 'default',
+      orientation: 'vertical',
+      labelPosition: 'right',
       size: 'md',
+      color: 'primary',
+      label: 'Payment method',
       disabled: false,
     },
-    pinnedProps: ['label', 'checked', 'size', 'disabled', 'labelPosition', 'description', 'error', 'color'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'name', 'style', 'testID', 'children', 'required', 'onKeyDown', 'value', 'icon'],
+    pinnedProps: ['variant', 'orientation', 'labelPosition', 'size', 'color', 'label', 'description', 'error', 'disabled', 'required'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'name', 'style', 'testID', 'children', 'onKeyDown', 'value', 'checked', 'icon'],
     controlOverrides: {
       size: { controlType: 'segmented', options: SIZE_TOKENS },
       labelPosition: { controlType: 'segmented', options: ['left', 'right'] },
-      label: { controlType: 'text', placeholder: 'Radio label' },
+      label: { controlType: 'text', placeholder: 'Group label' },
       description: { controlType: 'text', placeholder: 'Description text' },
       error: { controlType: 'text', placeholder: 'Error message' },
       color: {
@@ -946,6 +1072,23 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
         colorPresets: ['#228be6', '#845ef7', '#40c057', '#f59f00', '#e03131'],
       },
     },
+    extraControls: [
+      {
+        name: 'variant',
+        controlType: 'segmented',
+        options: ['default', 'card', 'segmented', 'chip'],
+        initialValue: 'default',
+        description: 'Visual variant of the group',
+      },
+      {
+        name: 'orientation',
+        controlType: 'segmented',
+        options: ['vertical', 'horizontal'],
+        initialValue: 'vertical',
+        description: 'Layout direction (ignored by segmented and chip)',
+      },
+    ],
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 420 } }, node),
   },
   Skeleton: {
     id: 'Skeleton',
@@ -1002,21 +1145,64 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       orientation: 'horizontal',
       variant: 'solid',
       size: 'xs',
+      colorVariant: 'border',
+      opacity: 1,
     },
-    pinnedProps: ['orientation', 'variant', 'size', 'label', 'labelPosition', 'color', 'colorVariant'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'style', 'testID'],
+    pinnedProps: ['orientation', 'variant', 'size', 'opacity', 'label', 'labelPosition', 'labelColorVariant', 'labelWeight', 'labelItalic', 'color', 'colorVariant'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'style', 'testID', 'labelProps'],
     controlOverrides: {
       orientation: { controlType: 'segmented', options: ['horizontal', 'vertical'] },
-      variant: { controlType: 'segmented', options: ['solid', 'dashed', 'dotted'] },
+      // 'gradient' added — fades transparent → color → transparent (uses
+      // expo-linear-gradient when available; falls back gracefully otherwise)
+      variant: { controlType: 'segmented', options: ['solid', 'dashed', 'dotted', 'gradient'] },
       size: { controlType: 'segmented', options: SIZE_TOKENS },
       labelPosition: { controlType: 'segmented', options: ['left', 'center', 'right'] },
       label: { controlType: 'text', placeholder: 'Divider label' },
-      colorVariant: { controlType: 'segmented', options: ['primary', 'secondary', 'surface', 'success', 'warning', 'error', 'gray', 'muted'] },
+      // colorVariant aligned with the rest of the lib — drops 'tertiary' and
+      // 'subtle'/'surface' fragments, adds 'border' (the new default).
+      colorVariant: {
+        controlType: 'select',
+        options: ['border', 'subtle', 'muted', 'gray', 'primary', 'secondary', 'success', 'warning', 'error']
+      },
       color: {
         controlType: 'color',
         placeholder: '#dee2e6',
         colorPresets: ['#dee2e6', '#228be6', '#e03131', '#40c057'],
       },
+      opacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+    },
+    extraControls: [
+      {
+        name: 'labelColorVariant',
+        label: 'Label color',
+        controlType: 'select',
+        options: ['primary', 'secondary', 'muted', 'disabled', 'link', 'success', 'warning', 'error', 'info'],
+        initialValue: 'muted',
+      },
+      {
+        name: 'labelWeight',
+        label: 'Label weight',
+        controlType: 'select',
+        options: ['light', 'normal', 'medium', 'semibold', 'bold', 'black'],
+        initialValue: 'normal',
+      },
+      {
+        name: 'labelItalic',
+        label: 'Label italic',
+        controlType: 'boolean',
+        initialValue: false,
+      },
+    ],
+    transformProps: (values) => {
+      const { labelColorVariant, labelWeight, labelItalic, ...rest } = values;
+      const labelProps: Record<string, any> = {};
+      if (labelColorVariant) labelProps.colorVariant = labelColorVariant;
+      if (labelWeight && labelWeight !== 'normal') labelProps.weight = labelWeight;
+      if (labelItalic) labelProps.style = { fontStyle: 'italic' };
+      if (Object.keys(labelProps).length && rest.label) {
+        rest.labelProps = labelProps;
+      }
+      return rest;
     },
     previewWrapper: (node, currentProps) => {
       const isVertical = currentProps.orientation === 'vertical';
@@ -1185,6 +1371,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       ],
       size: 'md',
       orientation: 'horizontal',
+      variant: 'filled',
       fullWidth: false,
       disabled: false,
       readOnly: false,

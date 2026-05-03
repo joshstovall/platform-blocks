@@ -65,16 +65,19 @@ export default function Demo() {
             Pass a render function as children to display contextual metrics or status badges inside the ring.
           </Text>
           <Row gap="lg" justify="center" wrap="wrap">
-            {projectRings.map((project) => (
+            {projectRings.map((project) => {
+              const renderContent = project.renderContent;
+              return (
               <Column key={project.key} gap="xs" align="center">
                 <Ring {...project.ringProps}>
-                  {project.renderContent ? (context) => project.renderContent(context) : undefined}
+                  {renderContent ? (context: any) => renderContent(context) : undefined}
                 </Ring>
                 <Text size="xs" colorVariant="secondary">
                   {project.label}
                 </Text>
               </Column>
-            ))}
+              );
+            })}
           </Row>
         </Column>
       </Card>

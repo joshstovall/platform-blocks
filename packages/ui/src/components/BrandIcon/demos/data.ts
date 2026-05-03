@@ -18,6 +18,7 @@ export const FEATURED_BRANDS: BrandName[] = [
 
 export const ALL_BRANDS: BrandName[] = [
   'google',
+  'googlePlay',
   'galaxy-store',
   'facebook',
   'discord',

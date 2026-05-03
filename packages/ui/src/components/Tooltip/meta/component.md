@@ -49,6 +49,9 @@ props:
   - name: "children"
     type: "React.ReactElement"
     description: "Trigger element that shows the tooltip"
+  - name: "labelProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Override props applied to the label `<Text>` (style, weight, ff, size, colorVariant)"
 ---
 
 Tooltip provides contextual information without disrupting the user's workflow. It supports multiple trigger events, smart positioning, and accessibility features for an inclusive experience.

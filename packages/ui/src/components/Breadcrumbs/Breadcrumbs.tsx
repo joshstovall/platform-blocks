@@ -4,7 +4,7 @@ import { Text } from '../Text';
 import { BreadcrumbsProps, BreadcrumbItem } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
-import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { Icon } from '../Icon';
 import { useDirection } from '../../core/providers/DirectionProvider';
 import { clampComponentSize, resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
@@ -67,6 +67,8 @@ export const Breadcrumbs = factory<{
     textStyle,
     separatorStyle,
     accessibilityLabel = 'Breadcrumb navigation',
+    labelProps,
+    separatorProps,
     ...rest
   } = props;
 
@@ -128,9 +130,15 @@ export const Breadcrumbs = factory<{
           </View>
         )}
         <Text
-          size={sizeMetrics.fontSize}
-          colorVariant={isLast ? 'primary' : 'muted'}
-          weight={isLast ? '600' : '200'}
+          {...mergeSlotProps(
+            {
+              size: sizeMetrics.fontSize,
+              colorVariant: isLast ? 'primary' as const : 'muted' as const,
+              weight: isLast ? ('600' as const) : ('200' as const),
+              style: textStyle,
+            },
+            labelProps
+          )}
         >
           {item.label}
         </Text>
@@ -176,10 +184,15 @@ export const Breadcrumbs = factory<{
       >
         {typeof separator === 'string' ? (
           <Text
-            style={{
-              fontSize: Math.max(10, sizeMetrics.fontSize - 2),
-              color: theme.text.muted,
-            }}
+            {...mergeSlotProps(
+              {
+                style: {
+                  fontSize: Math.max(10, sizeMetrics.fontSize - 2),
+                  color: theme.text.muted,
+                },
+              },
+              separatorProps
+            )}
           >
             {separator}
           </Text>

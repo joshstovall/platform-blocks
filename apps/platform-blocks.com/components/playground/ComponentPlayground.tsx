@@ -16,7 +16,7 @@ import {
   CodeBlock
 } from '@platform-blocks/ui';
 import * as Blocks from '@platform-blocks/ui';
-import type { ComponentPlaygroundConfig, PlaygroundControlOverride, PlaygroundControlType } from './registry';
+import type { ComponentPlaygroundConfig, PlaygroundControlOverride, PlaygroundControlType, PlaygroundExtraControl } from './registry';
 
 interface PropDoc {
   name: string;
@@ -86,7 +86,10 @@ export function ComponentPlayground({ component, propsMeta, config }: ComponentP
     setValues(defaults);
   }, [defaultsKey]);
 
-  const previewProps = useMemo(() => ({ ...(config.initialProps || {}), ...values }), [config.initialProps, values]);
+  const previewProps = useMemo(() => {
+    const merged = { ...(config.initialProps || {}), ...values };
+    return config.transformProps ? config.transformProps(merged) : merged;
+  }, [config.initialProps, config.transformProps, values]);
 
   const renderedComponent = useMemo(() => {
     if (!targetComponent) return null;
@@ -336,13 +339,21 @@ function deriveControls(propsMeta: PropDoc[], config: ComponentPlaygroundConfig)
   const controls: ControlDefinition[] = [];
 
   for (const prop of propsMeta) {
-    if (shouldSkipProp(prop, hiddenProps)) continue;
     const override = overrides[prop.name];
     if (override === false) continue;
+    if (!override && shouldSkipProp(prop, hiddenProps)) continue;
+    if (override && hiddenProps.has(prop.name)) continue;
     const control = buildControlDefinition(prop, override);
     if (control) {
       controls.push(control);
     }
+  }
+
+  const extras = config.extraControls || [];
+  for (const extra of extras) {
+    if (controls.some(c => c.name === extra.name)) continue;
+    const control = buildExtraControl(extra);
+    if (control) controls.push(control);
   }
 
   const pinned = config.pinnedProps || [];
@@ -375,6 +386,32 @@ function shouldSkipProp(prop: PropDoc, hidden: Set<string>): boolean {
   if (/React\.ReactNode|ReactNode|ReactElement|JSX\./i.test(type)) return true;
   if (/StyleProp|ViewStyle|TextStyle/i.test(type)) return true;
   return false;
+}
+
+function buildExtraControl(extra: PlaygroundExtraControl): ControlDefinition | null {
+  if (!extra?.name || !extra.controlType) return null;
+  const controlType = extra.controlType;
+  const options = extra.options;
+  let initialValue = extra.initialValue;
+  if (initialValue === undefined) {
+    if (controlType === 'boolean') initialValue = false;
+    else if ((controlType === 'segmented' || controlType === 'select' || controlType === 'size-slider') && options?.length) initialValue = options[0];
+    else if (controlType === 'number') initialValue = extra.min ?? 0;
+    else initialValue = '';
+  }
+  return {
+    name: extra.name,
+    label: extra.label ?? formatOptionLabel(extra.name),
+    description: extra.description,
+    controlType,
+    options,
+    min: extra.min,
+    max: extra.max,
+    step: extra.step,
+    placeholder: extra.placeholder,
+    colorPresets: extra.colorPresets,
+    initialValue,
+  };
 }
 
 function buildControlDefinition(prop: PropDoc, override?: PlaygroundControlOverride): ControlDefinition | null {
@@ -574,7 +611,30 @@ function formatAttribute(key: string, value: any): string | null {
     const escaped = value.replace(/"/g, '\\"');
     return `${key}="${escaped}"`;
   }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const inner = Object.entries(value)
+      .filter(([, v]) => v !== undefined && typeof v !== 'function')
+      .map(([k, v]) => `${k}: ${formatObjectValue(v)}`)
+      .join(', ');
+    if (!inner) return null;
+    return `${key}={{ ${inner} }}`;
+  }
   return null;
+}
+
+function formatObjectValue(value: any): string {
+  if (typeof value === 'string') return `'${value.replace(/'/g, "\\'")}'`;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return `[${value.map(formatObjectValue).join(', ')}]`;
+  if (typeof value === 'object') {
+    const inner = Object.entries(value)
+      .filter(([, v]) => v !== undefined && typeof v !== 'function')
+      .map(([k, v]) => `${k}: ${formatObjectValue(v)}`)
+      .join(', ');
+    return `{ ${inner} }`;
+  }
+  return 'undefined';
 }
 
 const styles = StyleSheet.create({

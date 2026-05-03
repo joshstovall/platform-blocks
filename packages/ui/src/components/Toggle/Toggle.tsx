@@ -114,6 +114,10 @@ const getToggleButtonStyles = (
 };
 
 // ToggleButton component
+/**
+ * A toggle button component for use within toggle groups or as standalone controls.
+ * Supports selection states, various sizes, and visual variants.
+ */
 export const ToggleButton = factory<{
   props: ToggleButtonProps;
   ref: View;
@@ -253,6 +257,10 @@ export const ToggleButton = factory<{
 });
 
 // ToggleGroup component
+/**
+ * A group of toggle buttons that manages selection state and provides keyboard navigation.
+ * Supports single or multi-selection modes with customizable orientation and styling.
+ */
 export const ToggleGroup = factory<{
   props: ToggleGroupProps;
   ref: View;

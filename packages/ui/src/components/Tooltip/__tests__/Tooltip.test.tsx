@@ -9,6 +9,13 @@ const mockTheme = {
     gray: ['#fafafa', '#f0f0f0', '#e0e0e0', '#d0d0d0', '#c0c0c0', '#b0b0b0', '#a0a0a0', '#909090', '#808080', '#101010'],
     surface: ['#ffffff', '#f9f9f9'],
   },
+  text: {
+    primary: '#111111',
+    secondary: '#555555',
+    muted: '#888888',
+    disabled: '#cccccc',
+  },
+  fontFamily: 'System',
 };
 
 const mockMeasureElement = jest.fn().mockResolvedValue({
@@ -91,9 +98,20 @@ describe('Tooltip - behavior', () => {
       </Tooltip>
     );
 
-    const tooltipNode = getByText('Long copy');
-    const overlayContainer = tooltipNode.parent?.parent;
-    const containerStyle = StyleSheet.flatten(overlayContainer?.props?.style);
+    // Walk up the rendered tree until we hit the overlay container that
+    // carries the explicit `width: 160`. Switching the inner Text from RN's
+    // primitive to the platform-blocks <Text> introduces an extra wrapper,
+    // so a fixed `parent.parent` traversal is brittle — instead, search.
+    let node: any = getByText('Long copy');
+    let containerStyle: any;
+    for (let i = 0; i < 6 && node; i += 1) {
+      const flat = StyleSheet.flatten(node?.props?.style) || {};
+      if (flat.width === 160) {
+        containerStyle = flat;
+        break;
+      }
+      node = node.parent;
+    }
 
     expect(containerStyle?.width).toBe(160);
   });

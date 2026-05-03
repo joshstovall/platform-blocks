@@ -53,6 +53,7 @@ export function Dialog({
   style,
   showHeader = true,
   bottomSheetSwipeZone = 'container',
+  titleProps,
 }: DialogProps) {
   const theme = useTheme();
   const { isRTL } = useDirection();
@@ -495,7 +496,7 @@ export function Dialog({
           title && closable
         ) && (
           <View style={dynamicStyles.header}>
-            <Text variant="h3" color="text">
+            <Text variant="h3" color="text" {...titleProps}>
               {title || ''}
             </Text>
             {closable && variant !== 'bottomsheet' && (

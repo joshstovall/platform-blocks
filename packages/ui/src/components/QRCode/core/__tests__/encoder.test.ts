@@ -112,8 +112,8 @@ describe('mask scoring heuristics', () => {
     rawBits: [],
   });
 
-  const sum = (values: Array<number | undefined>) =>
-    values.reduce((acc, value) => acc + (typeof value === 'number' ? value : 0), 0);
+  const sum = (values: Array<number | undefined>): number =>
+    values.reduce<number>((acc, value) => acc + (typeof value === 'number' ? value : 0), 0);
 
   it('penalizes dense patterns more than alternating streams', () => {
     const dense = createSyntheticEnc(new Array(64).fill(0xFF));

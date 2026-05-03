@@ -6,6 +6,7 @@ import { InputProps } from './types';
 import { Icon } from '../Icon';
 import { useTheme } from '../../core/theme';
 import { Text } from '../Text';
+import { getControlIconSize } from '../../core/theme/sizes';
 
 const getInputTypeConfig = (type?: InputProps['type']) => {
   const configs = {
@@ -63,6 +64,7 @@ export const Input = factory<{
 }>((props, ref) => {
   const {
     type = 'text',
+    size = 'md',
     validation,
     autoComplete,
     keyboardType,
@@ -128,7 +130,8 @@ export const Input = factory<{
   const isPasswordType = type === 'password';
   const actualSecureTextEntry = isPasswordType ? !showPassword : (secureTextEntry ?? typeConfig.secureTextEntry);
 
-  // Create password toggle button
+  // Create password toggle button — icon scales with the Input's size prop
+  const passwordToggleIconSize = getControlIconSize(size);
   const passwordToggleButton = isPasswordType ? (
     <Pressable
       onPress={() => setShowPassword(!showPassword)}
@@ -144,7 +147,7 @@ export const Input = factory<{
     >
       <Icon
         name={showPassword ? 'eye' : 'eyeOff'}
-        size={20}
+        size={passwordToggleIconSize}
         color={theme.text.muted}
       />
     </Pressable>
@@ -250,13 +253,14 @@ export const Input = factory<{
   return (<>
     <TextInputBase
       {...baseProps}
+      size={size}
       value={value}
       onChangeText={handleChangeText}
       inputRef={inputRef || ref}
       required={required}
       withAsterisk={finalWithAsterisk}
       endSection={finalRightSection}
-    
+
       textInputProps={mergedTextInputProps}
       secureTextEntry={
         // Ensure secureTextEntry is only passed when not controlled by password toggle

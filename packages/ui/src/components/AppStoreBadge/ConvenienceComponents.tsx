@@ -34,7 +34,7 @@ export const GalaxyStoreDownloadBadge = (props: ConvenienceProps) => (
  */
 export const GooglePlayDownloadBadge = (props: ConvenienceProps) => (
   <AppStoreBadge
-    brand="google"
+    brand="googlePlay"
     primaryText="Get it on"
     secondaryText="Google Play"
     {...props}

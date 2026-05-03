@@ -45,9 +45,16 @@ props:
     type: string
     description: Vertical spacing between rows
     default: md
+  - name: headerTextProps
+    type: "Omit<TextProps, 'children'>"
+    description: Override props applied to every column header `<Text>` (style, weight, ff, size, colorVariant)
+  - name: cellTextProps
+    type: "Omit<TextProps, 'children'>"
+    description: Override props applied to default-rendered cell text (cells without a custom `cell` renderer)
 examples:
   - basic
   - comprehensive
+  - text-customization
 ---
 
 The DataTable component provides a feature-rich interface for displaying tabular data with sorting, pagination, row selection, and customizable columns.

@@ -19,6 +19,8 @@ variants:
     description: "Vertical and horizontal tab orientations"
   - name: "animated"
     description: "Smooth transitions and animations between tab content"
+  - name: "label-customization"
+    description: "Override label Text props (ff, weight, tracking, uppercase) via labelProps"
 dependencies:
   - "@platform-blocks/core"
 related:
@@ -50,6 +52,12 @@ props:
   - name: "size"
     type: "'sm' | 'md' | 'lg'"
     description: "Size of the tab buttons"
+  - name: "textStyle"
+    type: "StyleProp<TextStyle>"
+    description: "Raw text style applied to all tab labels (escape hatch)."
+  - name: "labelProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Rich Text-prop overrides applied to all tab labels (ff, weight, tracking, uppercase, size, colorVariant, style)."
 ---
 
 Tabs organize content into multiple sections that users can navigate between. The component supports various visual styles, orientations, and interactive behaviors while maintaining accessibility standards.

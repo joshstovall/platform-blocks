@@ -17,6 +17,14 @@ const mockTheme = {
     error: ['#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5', '#F87171', '#EF4444', '#DC2626', '#B91C1C'],
     gray: ['#F9FAFB', '#F3F4F6', '#E5E7EB', '#D1D5DB', '#9CA3AF', '#6B7280', '#4B5563', '#374151'],
   },
+  text: {
+    primary: '#111',
+    secondary: '#666',
+    muted: '#999',
+    disabled: '#aaa',
+    onPrimary: '#fff',
+  },
+  fontFamily: 'System',
 };
 
 jest.mock('../../../core/theme/ThemeProvider', () => ({
@@ -115,6 +123,33 @@ describe('Notice - rendering', () => {
     expect(getStyle(getByTestId('custom-color-alert'))).toMatchObject({
       backgroundColor: '#33669920',
       borderColor: '#33669940',
+    });
+  });
+
+  it('forwards titleProps.style and weight to the title Text', () => {
+    const { getByText } = render(
+      <Notice
+        title="Slot test"
+        titleProps={{ weight: '700', style: { letterSpacing: 2 } }}
+      >
+        body
+      </Notice>
+    );
+
+    const titleStyle = getStyle(getByText('Slot test'));
+    expect(titleStyle).toMatchObject({ fontWeight: '700', letterSpacing: 2 });
+  });
+
+  it('forwards bodyProps to the body Text', () => {
+    const { getByText } = render(
+      <Notice title="t" bodyProps={{ size: 'xs', style: { fontStyle: 'italic' } }}>
+        body content
+      </Notice>
+    );
+
+    expect(getStyle(getByText('body content'))).toMatchObject({
+      fontSize: 10, // size 'xs' resolves to 10
+      fontStyle: 'italic',
     });
   });
 });

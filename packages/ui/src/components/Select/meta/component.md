@@ -17,6 +17,10 @@ variants:
     description: "Multi-select that stays open when selecting options"
   - name: "custom"
     description: "Customized styling and advanced features"
+  - name: "label-customization"
+    description: "Override label and description Text props with labelProps / descriptionProps"
+  - name: "variants"
+    description: "Visual variants for the trigger shell — default, filled, outline, unstyled"
 dependencies:
   - "@platform-blocks/core"
 related:
@@ -51,6 +55,15 @@ props:
   - name: "closeOnSelect"
     type: "boolean"
     description: "Whether dropdown closes on selection (for multi-select)"
+  - name: "labelProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Props applied to the label `<Text>` (style, weight, ff, size, colorVariant)"
+  - name: "descriptionProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Props applied to the description `<Text>`"
+  - name: "variant"
+    type: "'default' | 'filled' | 'outline' | 'unstyled'"
+    description: "Visual variant of the trigger shell — mirrors `<Input variant>`."
 ---
 
 Select provides a dropdown interface for choosing from predefined options. It supports single and multi-selection modes, disabled states, validation, and customizable styling.

@@ -57,6 +57,9 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     onClear,
     refocusAfterSelect,
     keyboardAvoidance = true,
+    labelProps,
+    descriptionProps,
+    variant = 'default',
   } = otherProps as SelectProps;
 
   const theme = useTheme();
@@ -144,6 +147,7 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
     disabled: !!disabled,
     hasLeftSection: false,
     hasRightSection: true,
+    variant,
   }, radiusStyles);
 
   const spacingStyles = getSpacingStyles(spacingProps);
@@ -419,6 +423,8 @@ export const Select = factory<{ props: SelectProps; ref: any }>((allProps, ref) 
         disabled={disabled}
         error={!!error}
         size={size as SizeValue}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
       />
       <Pressable
         ref={setTriggerNode}

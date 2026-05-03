@@ -25,6 +25,7 @@ export function DialogRenderer() {
       radius={topDialog.radius}
       style={topDialog.style}
       showHeader={topDialog.showHeader}
+      titleProps={topDialog.titleProps}
     >
       {topDialog.content}
     </Dialog>

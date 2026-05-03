@@ -36,11 +36,6 @@ export default function MobileFriendlyDemo() {
             color="#2563eb"
             radius="md"
             initialData={sampleContent}
-            mobileMode="auto"
-            showProgressBar={true}
-            touchOptimized={true}
-            floatingPosition="bottom-right"
-            floatingButtonLabel="Contents"
           />
         </View>
 
@@ -53,11 +48,6 @@ export default function MobileFriendlyDemo() {
             color="#059669"
             radius="lg"
             initialData={sampleContent}
-            mobileMode="collapsible"
-            collapsible={true}
-            defaultCollapsed={false}
-            showProgressBar={true}
-            touchOptimized={true}
             p={16}
           />
         </View>
@@ -71,12 +61,6 @@ export default function MobileFriendlyDemo() {
             color="#dc2626"
             radius="xl"
             initialData={sampleContent}
-            mobileMode="modal"
-            showFloatingButton={true}
-            floatingPosition="top-right"
-            floatingButtonLabel="Table of Contents"
-            touchOptimized={true}
-            swipeToClose={true}
           />
         </View>
 

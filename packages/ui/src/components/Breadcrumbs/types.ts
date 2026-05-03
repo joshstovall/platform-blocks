@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import { type ComponentSizeValue } from '../../core/theme/componentSize';
+import type { TextProps } from '../Text';
 
 export interface BreadcrumbItem {
   /** The label text for the breadcrumb */
@@ -44,7 +45,13 @@ export interface BreadcrumbsProps extends SpacingProps {
   
   /** Custom separator styles */
   separatorStyle?: StyleProp<ViewStyle>;
-  
+
   /** Accessibility label */
   accessibilityLabel?: string;
+
+  /** Override props applied to each item's label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the separator `<Text>` when it's a string. */
+  separatorProps?: Omit<TextProps, 'children'>;
 }

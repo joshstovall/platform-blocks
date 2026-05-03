@@ -5,6 +5,7 @@ import { useTheme } from '../../core/theme';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import type { AvatarProps } from './types';
 import { Indicator } from '../Indicator';
+import { mergeSlotProps } from '../../core/utils';
 
 type AvatarMetrics = {
   avatar: number;
@@ -79,6 +80,9 @@ export function Avatar({
   description,
   gap = 8,
   showText = true,
+  fallbackProps,
+  labelProps,
+  descriptionProps,
 }: AvatarProps) {
   const theme = useTheme();
 
@@ -115,10 +119,15 @@ export function Avatar({
           />
         ) : (
           <Text
-            size={textSize}
-            color={textColor}
-            weight="semibold"
-            style={{ textAlign: 'center' }}
+            {...mergeSlotProps(
+              {
+                size: textSize,
+                color: textColor,
+                weight: 'semibold' as const,
+                style: { textAlign: 'center' as const },
+              },
+              fallbackProps,
+            )}
           >
             {fallback || '?'}
           </Text>
@@ -143,12 +152,26 @@ export function Avatar({
           <View style={{ marginLeft: gap, justifyContent: 'center' }}>
             {label && (
               typeof label === 'string' ? (
-                <Text size={textSize} weight="semibold">{label}</Text>
+                <Text
+                  {...mergeSlotProps(
+                    { size: textSize, weight: 'semibold' as const },
+                    labelProps,
+                  )}
+                >
+                  {label}
+                </Text>
               ) : label
             )}
             {description && (
               typeof description === 'string' ? (
-                <Text size={textSize} color={theme.colors.gray[6]}>{description}</Text>
+                <Text
+                  {...mergeSlotProps(
+                    { size: textSize, color: theme.colors.gray[6] },
+                    descriptionProps,
+                  )}
+                >
+                  {description}
+                </Text>
               ) : description
             )}
           </View>

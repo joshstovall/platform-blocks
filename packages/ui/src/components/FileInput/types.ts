@@ -35,7 +35,7 @@ export interface FileInputFile {
   error?: string;
 }
 
-export interface FileInputProps extends BaseInputProps {
+export interface FileInputProps extends Omit<BaseInputProps, 'variant'> {
   /** File input variant */
   variant?: 'standard' | 'dropzone' | 'compact';
   

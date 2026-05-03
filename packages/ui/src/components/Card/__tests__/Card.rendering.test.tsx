@@ -81,4 +81,64 @@ describe('Card - rendering', () => {
 
     expect(toJSON()).toMatchSnapshot();
   });
+
+  it('Card.Section escapes the parent padding via negative margins', () => {
+    const flatten = (node: any) => {
+      const styles = Array.isArray(node.props.style) ? node.props.style : [node.props.style];
+      return styles.reduce((acc: any, s: any) => ({ ...acc, ...(s || {}) }), {});
+    };
+    const { getByTestId, getByText } = render(
+      <Card padding={20} testID="card-with-sections" withBorder>
+        <Card.Section testID="section-first">
+          <Text>banner</Text>
+        </Card.Section>
+        <Text>middle content</Text>
+        <Card.Section withBorder testID="section-last">
+          <Text>footer</Text>
+        </Card.Section>
+      </Card>
+    );
+
+    // First section escapes top + horizontal padding
+    const first = getByTestId('section-first');
+    const firstStyle = flatten(first);
+    expect(firstStyle.marginLeft).toBe(-20);
+    expect(firstStyle.marginRight).toBe(-20);
+    expect(firstStyle.marginTop).toBe(-20);
+    expect(firstStyle.marginBottom).toBe(0);
+
+    // Last section escapes bottom + horizontal, and has a top divider (withBorder + not first)
+    const last = getByTestId('section-last');
+    const lastStyle = flatten(last);
+    expect(lastStyle.marginLeft).toBe(-20);
+    expect(lastStyle.marginRight).toBe(-20);
+    expect(lastStyle.marginTop).toBe(0);
+    expect(lastStyle.marginBottom).toBe(-20);
+    expect(lastStyle.borderTopWidth).toBe(1);
+
+    // Sanity — content rendered
+    expect(getByText('banner')).toBeTruthy();
+    expect(getByText('middle content')).toBeTruthy();
+    expect(getByText('footer')).toBeTruthy();
+  });
+
+  it('Card.Section in the middle escapes only horizontal padding', () => {
+    const flatten = (node: any) => {
+      const styles = Array.isArray(node.props.style) ? node.props.style : [node.props.style];
+      return styles.reduce((acc: any, s: any) => ({ ...acc, ...(s || {}) }), {});
+    };
+    // Three sections so the middle one is neither first nor last
+    const { getByTestId } = render(
+      <Card padding={16} testID="card">
+        <Card.Section testID="s1"><Text>a</Text></Card.Section>
+        <Card.Section testID="s2"><Text>b</Text></Card.Section>
+        <Card.Section testID="s3"><Text>c</Text></Card.Section>
+      </Card>
+    );
+    const mid = flatten(getByTestId('s2'));
+    expect(mid.marginLeft).toBe(-16);
+    expect(mid.marginRight).toBe(-16);
+    expect(mid.marginTop).toBe(0);
+    expect(mid.marginBottom).toBe(0);
+  });
 });

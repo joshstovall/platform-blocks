@@ -1,6 +1,7 @@
 import React from 'react';
 import { SizeValue, ColorValue, SpacingProps } from '../../core/theme/types';
 import type { DisclaimerSupport } from '../_internal/Disclaimer';
+import type { TextProps } from '../Text';
 
 export interface BaseComponentProps extends SpacingProps {
   /** Component test ID for testing */
@@ -64,6 +65,12 @@ export interface SwitchProps extends BaseComponentProps, DisclaimerSupport {
   
   /** Accessibility hint to describe what happens */
   accessibilityHint?: string;
+
+  /** Override props applied to the label `<Text>` */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the description `<Text>` */
+  descriptionProps?: Omit<TextProps, 'children'>;
 }
 
 export interface SwitchStyleProps {

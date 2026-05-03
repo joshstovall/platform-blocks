@@ -1,6 +1,7 @@
 import React from 'react';
 import { ViewStyle, View, StyleProp } from 'react-native';
 import { SizeValue } from '../../core/theme/sizes';
+import type { TextProps } from '../Text';
 
 export type TooltipPositionType =
   | 'top'
@@ -43,6 +44,8 @@ export interface TooltipProps {
   style?: StyleProp<ViewStyle>;
   /** Test ID for testing */
   testID?: string;
+  /** Override props applied to the label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
 }
 
 export interface TooltipFactoryPayload {

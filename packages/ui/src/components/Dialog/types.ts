@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import type { TextProps } from '../Text';
 
 // Public props for the imperative <Dialog /> component instance
 export interface DialogProps {
@@ -32,6 +33,8 @@ export interface DialogProps {
   showHeader?: boolean;
   /** Controls which part of the bottom sheet responds to swipe-to-dismiss gestures */
   bottomSheetSwipeZone?: 'container' | 'handle' | 'none';
+  /** Override props applied to the title `<Text>` (style, weight, ff, size, colorVariant). */
+  titleProps?: Omit<TextProps, 'children'>;
 }
 
 // Internal configuration object stored in context for stacked dialogs
@@ -51,6 +54,7 @@ export interface DialogConfig {
   radius?: number;
   style?: object;
   showHeader?: boolean;
+  titleProps?: Omit<TextProps, 'children'>;
 }
 
 // Value shape provided by DialogContext

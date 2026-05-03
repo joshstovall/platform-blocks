@@ -5,5 +5,25 @@ category: inputs
 tags: [action, pressable, interactive]
 playground: true
 resources: [{"label":"Apple HIG – Buttons","href":"https://developer.apple.com/design/human-interface-guidelines/buttons"},{"label":"Material 3 Buttons","href":"https://m3.material.io/components/buttons/overview"}]
+props:
+  title: Button label (alternative to children)
+  variant: 'filled' (default) | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'link' | 'none'
+  size: Size token (xs–3xl)
+  colorVariant: Color override — palette name, 'palette.shade' syntax, or raw CSS color
+  textColor: Explicit text color override
+  startIcon / endIcon / icon: Slot icons
+  loading: Show loader state
+  fullWidth: Stretch to fill the parent container
+  labelProps: Override props applied to the inner label `<Text>` (style, weight, ff, size, colorVariant)
+  tooltip: Wraps the button in a Tooltip
+examples:
+  - basic
+  - variants
+  - colors
+  - sizes
+  - loading
+  - tooltip
+  - width
+  - label-customization
 ---
-The Button component provides a flexible interactive element supporting variants, sizes, icons, loading state, and full-width layout.
+The Button component provides a flexible interactive element supporting variants, sizes, icons, loading state, and full-width layout. The inner label `<Text>` accepts the full Text-prop API via `labelProps` (`ff`, `weight`, `tracking`, `uppercase`, `colorVariant`, `style`).

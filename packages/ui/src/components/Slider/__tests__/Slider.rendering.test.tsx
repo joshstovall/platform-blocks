@@ -95,4 +95,34 @@ describe('Slider - rendering', () => {
 
     expect(tree).toMatchSnapshot();
   });
+
+  it('forwards valueLabelProps to the value-label Text', () => {
+    const { StyleSheet } = require('react-native');
+    const { getByText } = render(
+      <Slider
+        value={42}
+        valueLabelAlwaysOn
+        valueLabel={() => 'value-X'}
+        valueLabelProps={{ weight: '700', style: { letterSpacing: 1.5 } }}
+      />
+    );
+    const flat = StyleSheet.flatten((getByText('value-X') as any).props.style) || {};
+    expect(flat).toMatchObject({ fontWeight: '700', letterSpacing: 1.5 });
+  });
+
+  it('forwards tickLabelProps to each tick label Text', () => {
+    const { StyleSheet } = require('react-native');
+    const { getByText } = render(
+      <Slider
+        value={50}
+        min={0}
+        max={100}
+        ticks={[0, 50, 100].map((value) => ({ value, label: `tick-${value}` }))}
+        showTicks
+        tickLabelProps={{ weight: '600', style: { fontStyle: 'italic' } }}
+      />
+    );
+    const flat = StyleSheet.flatten((getByText('tick-50') as any).props.style) || {};
+    expect(flat).toMatchObject({ fontWeight: '600', fontStyle: 'italic' });
+  });
 });

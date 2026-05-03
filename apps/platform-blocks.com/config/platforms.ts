@@ -2,7 +2,7 @@ import type { BrandName } from '@platform-blocks/ui';
 
 // Available brand icons (must match BrandName keys from the registry)
 export const AVAILABLE_BRANDS: BrandName[] = [
-  'google', 'facebook', 'discord', 'android', 'apple', 'app-store', 'chrome',
+  'google', 'googlePlay', 'facebook', 'discord', 'android', 'apple', 'app-store', 'chrome',
   'spotify', 'github', 'x', 'microsoft', 'linkedin', 'slack', 'youtube',
   'youtubeMusic', 'openai', 'reddit', 'amazon', 'twitch', 'mastercard', 'visa', 'tiktok',
   'paypal', 'appleMusic', 'whatsapp', 'telegram', 'signal', 'meta',

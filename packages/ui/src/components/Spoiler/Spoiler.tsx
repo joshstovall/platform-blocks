@@ -3,7 +3,7 @@ import { View, Pressable, LayoutChangeEvent, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { Text } from '../Text';
 import { useTheme } from '../../core/theme';
-import { extractSpacingProps, getSpacingStyles, SpacingProps } from '../../core/utils';
+import { extractSpacingProps, getSpacingStyles, SpacingProps, mergeSlotProps } from '../../core/utils';
 import { getFontSize, getSpacing } from '../../core/theme/sizes';
 import { SpoilerProps } from './types';
 import { Collapse } from '../Collapse';
@@ -26,7 +26,8 @@ export const Spoiler: React.FC<SpoilerProps> = (allProps) => {
   renderControl,
   transparentFade = true,
   fadeColor,
-  disableFadeAnimation = false
+  disableFadeAnimation = false,
+  controlProps,
   } = otherProps;
 
   const theme = useTheme();
@@ -142,7 +143,16 @@ export const Spoiler: React.FC<SpoilerProps> = (allProps) => {
           {renderControl ? (
             renderControl({ opened, toggle, showLabel, hideLabel })
           ) : (
-            <Text variant="small" style={{ color: theme.colors.primary[6], fontSize, fontWeight:'500' }}>
+            <Text
+              {...mergeSlotProps(
+                {
+                  variant: 'small' as const,
+                  weight: '500' as const,
+                  style: { color: theme.colors.primary[6], fontSize },
+                },
+                controlProps,
+              )}
+            >
               {opened ? hideLabel : showLabel}
             </Text>
           )}

@@ -5,6 +5,7 @@ import { PinInputProps } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
+import { FieldHeader } from '../_internal/FieldHeader';
 
 export const PinInput = factory<{
   props: PinInputProps;
@@ -28,7 +29,12 @@ export const PinInput = factory<{
     onComplete,
     textInputProps,
     label,
+    description,
     helperText,
+    required,
+    withAsterisk,
+    labelProps,
+    descriptionProps,
     style,
     keyboardFocusId,
     name,
@@ -257,17 +263,18 @@ export const PinInput = factory<{
       style={[style, spacingProps]}
       testID={testID}
     >
-      {label && (
-        <Text 
-          style={{ 
-            marginBottom: 8, 
-            fontSize: size === 'xs' ? 12 : size === 'sm' ? 14 : 16,
-            color: theme.text.primary 
-          }}
-        >
-          {label}
-        </Text>
-      )}
+      <FieldHeader
+        label={label}
+        description={description}
+        required={required}
+        withAsterisk={withAsterisk ?? required}
+        disabled={disabled}
+        error={!!error}
+        size={size as any}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
+        marginBottom={8}
+      />
       
       <View 
         style={{ 

@@ -4,6 +4,7 @@ import { type ComponentSizeValue } from '../../core/theme/componentSize';
 import { SpacingProps } from '../../core/utils';
 import { BorderRadiusProps } from '../../core/theme/radius';
 import { ShadowProps } from '../../core/theme/shadow';
+import type { TextProps } from '../Text';
 
 export interface BadgeProps extends SpacingProps, BorderRadiusProps, ShadowProps {
   children: React.ReactNode;
@@ -22,6 +23,8 @@ export interface BadgeProps extends SpacingProps, BorderRadiusProps, ShadowProps
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  /** Override props applied to the inner label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
   radius?: any;
   shadow?: any;
 }

@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text as RNText, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 
+import { Text } from '../Text';
 import { useTheme } from '../../core/theme';
 import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
-import { getSpacingStyles, extractSpacingProps, extractShadowProps, getShadowStyles } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, extractShadowProps, getShadowStyles, mergeSlotProps } from '../../core/utils';
 import type { ChipProps } from './types';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
@@ -177,7 +178,6 @@ const getChipTextStyles = (
 
   const baseStyles = {
     fontSize,
-    fontWeight: '500' as const,
     textAlign: 'center' as const
   };
 
@@ -252,6 +252,7 @@ export const Chip: React.FC<ChipProps> = (props) => {
     disabled = false,
     style,
     textStyle,
+    labelProps,
     radius,
     shadow,
     ...rest
@@ -325,9 +326,14 @@ export const Chip: React.FC<ChipProps> = (props) => {
         </View>
       )}
 
-      <RNText style={[chipTextStyles, textStyle]}>
+      <Text
+        {...mergeSlotProps(
+          { weight: '500' as const, style: [chipTextStyles, textStyle] },
+          labelProps,
+        )}
+      >
         {children}
-      </RNText>
+      </Text>
 
       {(endIcon || (onRemove && removePosition === 'right')) && (
         <View style={{ marginLeft: iconSpacing }}>

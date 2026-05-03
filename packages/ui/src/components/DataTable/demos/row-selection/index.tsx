@@ -62,7 +62,7 @@ export default function Demo() {
   return (
     <Column gap="sm" fullWidth>
       <Row justify="space-between" align="center" wrap="wrap" gap="sm">
-        <Column gap="xxs">
+        <Column gap="xs">
           <Text size="sm" weight="semibold">
             Row selection
           </Text>

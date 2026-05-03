@@ -32,6 +32,12 @@ props:
     type: string
     description: Color theme for active step
     default: primary
+  - name: "Stepper.Step labelProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Override props applied to each step's label `<Text>` (style, weight, ff, size, colorVariant)."
+  - name: "Stepper.Step descriptionProps"
+    type: "Omit<TextProps, 'children'>"
+    description: "Override props applied to each step's description `<Text>`."
 examples:
   - basic
   - vertical
@@ -39,6 +45,7 @@ examples:
   - loading
   - customIcons
   - allowSelect
+  - label-customization
 ---
 
 The Stepper component provides a step-by-step navigation interface, perfect for multi-step forms, wizards, and progress tracking.

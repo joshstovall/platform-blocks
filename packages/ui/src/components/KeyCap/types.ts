@@ -63,6 +63,12 @@ export interface KeyCapProps extends SpacingProps, LayoutProps, BorderRadiusProp
    * Custom test ID for testing
    */
   testID?: string;
+
+  /** Custom font family (overrides the default monospace stack) */
+  fontFamily?: string;
+
+  /** Shorthand alias for `fontFamily` */
+  ff?: string;
 }
 
 export interface KeyCapStyleProps {

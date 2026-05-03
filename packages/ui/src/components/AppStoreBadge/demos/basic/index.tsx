@@ -11,7 +11,7 @@ export default function BasicUsage() {
       />
       
       <AppStoreBadge
-        brand="google"
+        brand="googlePlay"
         primaryText="Get it on"
         secondaryText="Google Play"
         onPress={() => console.log('Google Play pressed')}

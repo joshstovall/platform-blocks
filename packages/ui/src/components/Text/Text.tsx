@@ -6,6 +6,7 @@ import { SizeValue, getFontSize, getLineHeight } from '../../core/theme/sizes';
 import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { useI18n } from '../../core/i18n';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { resolveTextColor } from '../../core/theme/resolveColors';
 
 export type HTMLTextVariant =
   | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
@@ -27,6 +28,8 @@ export interface TextProps extends SpacingProps {
   size?: SizeValue;
   /** Text color (overrides theme text color) */
   color?: string;
+  /** Mantine-style shorthand alias for `color`. Accepts `'dimmed'`, theme palette names, `'primary.6'` syntax, or any CSS color string. */
+  c?: string;
   /** Semantic color variant (overrides color prop). Supports text palette plus status colors */
   colorVariant?: 'primary' | 'secondary' | 'muted' | 'disabled' | 'link' | 'success' | 'warning' | 'error' | 'info';
   /** Font weight (supports all CSS font-weight values) */
@@ -43,6 +46,8 @@ export interface TextProps extends SpacingProps {
   style?: any;
   /** Custom font family (overrides theme font) */
   fontFamily?: string;
+  /** Shorthand alias for `fontFamily` */
+  ff?: string;
   /** For platform-specific rendering on web */
   as?: HTMLTextVariant;
   /** Whether text is selectable (default: true) */
@@ -331,12 +336,14 @@ export const Text: React.FC<TextProps> = (allProps) => {
     weight,
     align = 'left',
     color,
+    c,
     colorVariant,
     lineHeight,
     tracking,
     uppercase,
     style,
     fontFamily,
+    ff,
     as,
     selectable = true,
     onPress,
@@ -349,7 +356,7 @@ export const Text: React.FC<TextProps> = (allProps) => {
   const theme = useTheme();
   const { t } = useI18n();
   const { isRTL } = useDirection();
-  
+
   // // Only use i18n if tx prop is provided
   // let t: ((key: string, params?: Record<string, any>) => string) | undefined;
   // try {
@@ -361,8 +368,14 @@ export const Text: React.FC<TextProps> = (allProps) => {
   //   // I18n not available, will use children instead
   //   console.warn('I18n not available for Text component, using children prop');
   // }
-  
-  const textStyles = getTextStyles(theme, variant, size, weight, align, color, colorVariant, fontFamily, lineHeight, tracking, uppercase, isRTL);
+
+  // Mantine-style `c` shorthand: resolve through shared theme helper so
+  // values like 'dimmed', 'primary', 'primary.6' work identically across
+  // Text, Block, Card, etc. `c` wins over `color` if both are passed.
+  const resolvedColor = c
+    ? resolveTextColor(theme, c) ?? c
+    : color;
+  const textStyles = getTextStyles(theme, variant, size, weight, align, resolvedColor, colorVariant, ff ?? fontFamily, lineHeight, tracking, uppercase, isRTL);
   const spacingStyles = getSpacingStyles(spacingProps);
   const content = 
   (tx && t )

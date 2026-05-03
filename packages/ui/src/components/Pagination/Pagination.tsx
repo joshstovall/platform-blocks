@@ -6,7 +6,7 @@ import { PaginationProps, type PaginationMetrics } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { useDirection } from '../../core/providers/DirectionProvider';
-import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import { getComponentSize } from '../../core/theme/unified-sizing';
 
@@ -104,6 +104,8 @@ export const Pagination = factory<{
     onPageSizeChange,
     showTotal = false,
     totalItems,
+    labelProps,
+    activeLabelProps,
     ...rest
   } = props;
 
@@ -266,15 +268,20 @@ export const Pagination = factory<{
       >
         {typeof content === 'string' || typeof content === 'number' ? (
           <Text
-            style={[
-              {
-                fontSize: sizeMetrics.fontSize,
-                color: textColor,
-                fontWeight: isActive ? '600' : '400',
-              },
-              textStyle,
-              isActive && activeTextStyle,
-            ]}
+            {...mergeSlotProps(
+              mergeSlotProps(
+                {
+                  weight: isActive ? ('600' as const) : ('400' as const),
+                  style: [
+                    { fontSize: sizeMetrics.fontSize, color: textColor },
+                    textStyle,
+                    isActive && activeTextStyle,
+                  ],
+                },
+                labelProps
+              ),
+              isActive ? activeLabelProps : undefined
+            )}
           >
             {content}
           </Text>

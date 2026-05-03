@@ -4,7 +4,7 @@ import { useTheme } from '../../core/theme';
 import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
-import { getSpacingStyles, extractSpacingProps, extractShadowProps, getShadowStyles, getLayoutStyles, extractLayoutProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, extractShadowProps, getShadowStyles, getLayoutStyles, extractLayoutProps, mergeSlotProps } from '../../core/utils';
 import { Loader } from '../Loader';
 import { Text } from '../Text';
 import { Tooltip } from '../Tooltip';
@@ -180,6 +180,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
     testID,
     accessibilityLabel: accessibilityLabelProp,
     accessibilityHint: accessibilityHintProp,
+    labelProps,
   } = otherProps;
   // Theme
   const theme = useTheme();
@@ -327,18 +328,27 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
     }
   }, [textColorProp, resolvedCustomColor, effectiveVariant, theme.colors.gray, theme.colors.primary]);
 
-  // Memoize text props
-  const textProps = useMemo(() => ({
-    size,
-    weight: '600' as const,
-    align: 'center' as const,
-    color: textColor,
-    selectable: false,
-    style: {
-      lineHeight: getFontSize(size) * 1.3, // Better line height for Android
-      textAlignVertical: 'center' as const // Ensure vertical centering on Android
-    }
-  }), [size, textColor]);
+  // Memoize text props. The base styling is the Button's defaults; if the
+  // consumer passes `labelProps`, those win (weight/ff/colorVariant/style)
+  // via mergeSlotProps so they aren't silently overridden by the inline style.
+  const textProps = useMemo(
+    () =>
+      mergeSlotProps(
+        {
+          size,
+          weight: '600' as const,
+          align: 'center' as const,
+          color: textColor,
+          selectable: false,
+          style: {
+            lineHeight: getFontSize(size) * 1.3,
+            textAlignVertical: 'center' as const,
+          },
+        },
+        labelProps,
+      ),
+    [size, textColor, labelProps],
+  );
 
   // Memoize loader color calculation
   const loaderColor = useMemo(() => {

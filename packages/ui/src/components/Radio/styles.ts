@@ -45,11 +45,6 @@ export const useRadioStyles = (props: RadioStyleProps & { theme: PlatformBlocksT
       minHeight: radioSize + 4,
     },
 
-    containerReverse: {
-      flexDirection: 'row-reverse',
-      justifyContent: 'flex-end',
-    },
-
     description: {
       color: theme.text.secondary,
       marginTop: 2,

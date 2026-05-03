@@ -1,13 +1,23 @@
 import React from 'react';
 import { SizeValue, ColorValue, SpacingProps } from '../../core/theme/types';
+import type { TextProps } from '../Text';
 
 export interface BaseComponentProps extends SpacingProps {
   /** Component test ID for testing */
   testID?: string;
-  
+
   /** Additional CSS styles */
   style?: any;
 }
+
+/**
+ * Visual variant of a `RadioGroup`.
+ * - `default` — stacked/inline radio dots with labels (current look)
+ * - `card` — each option is a bordered/padded surface; selected card gets the colored border + tint
+ * - `segmented` — joined buttons sharing borders, like an iOS/macOS segmented control (forced horizontal)
+ * - `chip` — compact rounded pills that wrap; great for filters and tag pickers
+ */
+export type RadioGroupVariant = 'default' | 'card' | 'segmented' | 'chip';
 
 export interface RadioProps extends BaseComponentProps {
   /** Radio value */
@@ -54,6 +64,12 @@ export interface RadioProps extends BaseComponentProps {
 
   /** Key handler for accessibility/keyboard support */
   onKeyDown?: (event: any) => void;
+
+  /** Override props applied to the label `<Text>` */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the description `<Text>` */
+  descriptionProps?: Omit<TextProps, 'children'>;
 }
 
 export interface RadioGroupProps extends BaseComponentProps {
@@ -75,8 +91,11 @@ export interface RadioGroupProps extends BaseComponentProps {
   /** Group name for form submission */
   name?: string;
   
-  /** Group orientation */
+  /** Group orientation. Ignored by `segmented` (always horizontal) and `chip` (wraps). */
   orientation?: 'vertical' | 'horizontal';
+
+  /** Visual variant of the group. Defaults to `'default'`. */
+  variant?: RadioGroupVariant;
   
   /** Radio size */
   size?: SizeValue;
@@ -101,6 +120,9 @@ export interface RadioGroupProps extends BaseComponentProps {
   
   /** Gap between radio options */
   gap?: SizeValue | number;
+
+  /** Label position relative to each radio */
+  labelPosition?: 'left' | 'right';
 }
 
 export interface RadioStyleProps {

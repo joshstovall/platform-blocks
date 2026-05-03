@@ -1,11 +1,12 @@
 export { Input } from './Input';
 export { PasswordInput } from './PasswordInput';
 export { TextInputBase } from './InputBase';
-export type { 
-  BaseInputProps, 
-  InputProps, 
-  PasswordInputProps, 
+export type {
+  BaseInputProps,
+  InputProps,
+  InputVariant,
+  PasswordInputProps,
   ValidationRule,
-  PasswordStrengthRule 
+  PasswordStrengthRule
 } from './types';
 export { validationRules, validateValue, calculatePasswordStrength } from './validation';

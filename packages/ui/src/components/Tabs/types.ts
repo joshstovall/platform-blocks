@@ -4,6 +4,7 @@ import type { SpacingProps } from '../../core/utils';
 interface RadiusProp { radius?: number | string; }
 import type { SizeValue } from '../../core/theme/sizes';
 import type { ViewStyle, TextStyle, StyleProp } from 'react-native';
+import type { TextProps } from '../Text';
 
 /**
  * Describes a single tab rendered by the {@link Tabs} component.
@@ -129,6 +130,11 @@ export interface TabsProps extends SpacingProps, RadiusProp {
    * Additional text style applied to tab labels.
    */
   textStyle?: StyleProp<TextStyle>;
+  /**
+   * Override props applied to each tab's label `<Text>` (style, weight, ff, size, colorVariant).
+   * Applies to all tabs in the strip; per-tab styling can still be done via `TabItem.label` (custom node).
+   */
+  labelProps?: Omit<TextProps, 'children'>;
   /**
    * Array of tab keys that should be rendered disabled.
    */

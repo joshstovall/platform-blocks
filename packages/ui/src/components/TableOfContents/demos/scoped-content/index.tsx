@@ -18,10 +18,9 @@ export default function ScopedContentExample() {
       <View style={{ flexDirection: 'row', flex: 1 }}>
         {/* Sidebar with TableOfContents scoped to main content */}
         <View style={{ width: 250, padding: 16, borderRightWidth: 1, borderRightColor: '#eee' }}>
-          <TableOfContents 
+          <TableOfContents
             container="#main-content" // Scope to only main content area
             variant="ghost"
-            touchOptimized
           />
         </View>
 

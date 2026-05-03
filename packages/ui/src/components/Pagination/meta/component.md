@@ -17,6 +17,10 @@ props:
   maxVisiblePages: Maximum number of page buttons to show
   disabled: Whether pagination is disabled
   loading: Whether pagination is in loading state
+  textStyle: Raw TextStyle escape hatch applied to every page label
+  activeTextStyle: Raw TextStyle for the active page label
+  labelProps: Override props applied to every page-button label `<Text>` (style, weight, ff, size, colorVariant)
+  activeLabelProps: Extra props merged on top of `labelProps` for the active page only
 related:
   - Table
   - List
@@ -26,6 +30,7 @@ examples:
   - Pagination with first/last buttons
   - Different size variants
   - Advanced pagination with custom controls
+  - Label customization (labelProps / activeLabelProps)
 ---
 
 A comprehensive pagination component that provides intuitive navigation through large datasets. The component offers flexible configuration options and consistent styling across different use cases.

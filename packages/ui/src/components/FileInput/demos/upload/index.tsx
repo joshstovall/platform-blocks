@@ -58,7 +58,7 @@ export default function Demo() {
                 p={8}
                 style={{ borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 4 }}
               >
-                <Column gap="xxs">
+                <Column gap="xs">
                   <Text size="sm" weight="medium">
                     {file.name}
                   </Text>

@@ -15,11 +15,22 @@ props:
   disabled: Whether the input is disabled
   required: Whether the input is required
   type: Input type (text, password, email, number, etc.)
+  variant: Visual variant of the input shell — 'default' | 'filled' | 'outline' | 'unstyled'
+  size: Size token controlling height, font, label, and toggle icon scaling
   autoFocus: Whether to auto-focus the input on mount
   maxLength: Maximum number of characters allowed
   multiline: Whether the input supports multiple lines
   numberOfLines: Number of lines for multiline inputs
   autoComplete: Auto-complete behavior
+  labelProps: Override props applied to the label `<Text>` (style, weight, ff, etc.)
+  descriptionProps: Override props applied to the description `<Text>`
+  disclaimer: Helper text rendered below the field
+  disclaimerProps: Override props for the disclaimer `<Text>`
+  placeholderTextColor: Color of the placeholder text (overrides theme.text.muted)
+  startSection: Content rendered before the input
+  startSectionProps: View props applied to the startSection wrapper (style, accessibility, etc.)
+  endSection: Content rendered after the input
+  endSectionProps: View props applied to the endSection wrapper
 related:
   - PasswordInput
   - AutoComplete
@@ -28,6 +39,9 @@ examples:
   - Basic text input with label and placeholder
   - Input with validation and error states
   - Different input types (email, password, number)
+  - Visual variants (default, filled, outline, unstyled)
+  - Label customization (labelProps / descriptionProps)
+  - Slot styling (placeholderTextColor, startSectionProps, endSectionProps)
   - Multiline text input
   - Input with helper text and character count
 ---

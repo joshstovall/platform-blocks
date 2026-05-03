@@ -1,15 +1,173 @@
 import React, { useMemo, useCallback } from 'react';
-import { View } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import { Text } from '../Text';
 import { Card } from '../Card';
+import { mergeSlotProps } from '../../core/utils';
 import type {
   SliderTick,
   SliderTrackProps,
   SliderThumbProps,
   SliderTicksProps,
   SliderLabelProps,
-  SliderValueLabelProps
+  SliderValueLabelProps,
+  SliderVariant,
 } from './types';
+
+type VariantTrackStyle = {
+  inactive: ViewStyle;
+  active: ViewStyle;
+  trackHeightMultiplier: number;
+};
+
+type VariantThumbStyle = {
+  style: ViewStyle;
+  sizeMultiplier: number;
+};
+
+// Per-variant track styling. `trackHeightMultiplier` lets variants scale the
+// rendered track thickness without changing the layout/hit-target geometry.
+const getVariantTrackStyle = (
+  variant: SliderVariant,
+  theme: any,
+  disabled: boolean,
+  resolvedTrackColor: string,
+  resolvedActiveTrackColor: string,
+): VariantTrackStyle => {
+  switch (variant) {
+    case 'filled':
+      return {
+        inactive: {
+          backgroundColor: disabled
+            ? theme.colors.gray[2]
+            : (theme.colorScheme === 'dark' ? theme.colors.gray[5] : theme.colors.gray[2]),
+        },
+        active: { backgroundColor: resolvedActiveTrackColor },
+        trackHeightMultiplier: 1.6,
+      };
+    case 'outline':
+      return {
+        inactive: {
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: disabled ? theme.colors.gray[3] : resolvedTrackColor,
+        },
+        active: { backgroundColor: resolvedActiveTrackColor },
+        trackHeightMultiplier: 1.4,
+      };
+    case 'minimal':
+      return {
+        inactive: { backgroundColor: resolvedTrackColor },
+        active: { backgroundColor: resolvedActiveTrackColor },
+        trackHeightMultiplier: 0.4,
+      };
+    case 'segmented':
+      // Segmented hides the inactive track surface — the per-segment fills
+      // (rendered by the consumer-facing layer via ticks) carry the visual.
+      return {
+        inactive: { backgroundColor: 'transparent' },
+        active: { backgroundColor: 'transparent' },
+        trackHeightMultiplier: 1,
+      };
+    case 'unstyled':
+      return {
+        inactive: { backgroundColor: 'transparent' },
+        active: { backgroundColor: 'transparent' },
+        trackHeightMultiplier: 1,
+      };
+    case 'default':
+    default:
+      return {
+        inactive: { backgroundColor: resolvedTrackColor },
+        active: { backgroundColor: resolvedActiveTrackColor },
+        trackHeightMultiplier: 1,
+      };
+  }
+};
+
+/**
+ * Per-variant thumb size multiplier (e.g. `minimal` shrinks the thumb).
+ * Exposed separately so callers can pre-adjust `thumbSize` before computing
+ * track/thumb positions, keeping the visual aligned with the track ends.
+ */
+export const getVariantThumbSizeMultiplier = (variant: SliderVariant = 'default'): number => {
+  switch (variant) {
+    case 'minimal': return 0.7;
+    case 'segmented': return 0.9;
+    case 'filled': return 1.1;
+    default: return 1;
+  }
+};
+
+const getVariantThumbStyle = (
+  variant: SliderVariant,
+  theme: any,
+  disabled: boolean,
+  resolvedThumbColor: string,
+): VariantThumbStyle => {
+  switch (variant) {
+    case 'filled':
+      return {
+        style: {
+          backgroundColor: resolvedThumbColor,
+          borderWidth: 0,
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+          elevation: 4,
+        },
+        sizeMultiplier: 1.1,
+      };
+    case 'outline':
+      return {
+        style: {
+          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : '#fff',
+          borderWidth: 2,
+          borderColor: disabled ? theme.colors.gray[4] : resolvedThumbColor,
+          boxShadow: 'none',
+          elevation: 0,
+        },
+        sizeMultiplier: 1,
+      };
+    case 'minimal':
+      return {
+        style: {
+          backgroundColor: resolvedThumbColor,
+          borderWidth: 0,
+          boxShadow: 'none',
+          elevation: 0,
+        },
+        sizeMultiplier: 0.7,
+      };
+    case 'segmented':
+      return {
+        style: {
+          backgroundColor: resolvedThumbColor,
+          borderWidth: 2,
+          borderColor: '#fff',
+          borderRadius: 4,
+        },
+        sizeMultiplier: 0.9,
+      };
+    case 'unstyled':
+      return {
+        style: {
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+          boxShadow: 'none',
+          elevation: 0,
+        },
+        sizeMultiplier: 1,
+      };
+    case 'default':
+    default:
+      return {
+        style: {
+          backgroundColor: resolvedThumbColor,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+        sizeMultiplier: 1,
+      };
+  }
+};
 
 // Constants
 export const SLIDER_CONSTANTS = {
@@ -253,22 +411,29 @@ export const SliderTrack: React.FC<SliderTrackProps> = ({
   activeTrackStyle,
   trackHeight,
   thumbSize,
+  variant = 'default',
 }) => {
   const orientationProps = getOrientationProps(orientation);
   const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
-  const resolvedTrackHeight = trackHeight ?? SLIDER_CONSTANTS.TRACK_HEIGHT[size];
+  const baseTrackHeight = trackHeight ?? SLIDER_CONSTANTS.TRACK_HEIGHT[size];
   const resolvedActiveLeft = activeLeft ?? (resolvedThumbSize / 2);
+
+  const fallbackTrack = disabled && !trackColor ? theme.colors.gray[2] : (trackColor ?? theme.colors.gray[3]);
+  const fallbackActive = disabled && !activeTrackColor ? theme.colors.gray[4] : (activeTrackColor ?? theme.colors.primary[5]);
+  const variantStyle = getVariantTrackStyle(variant, theme, disabled, fallbackTrack, fallbackActive);
+  const resolvedTrackHeight = Math.max(1, Math.round(baseTrackHeight * variantStyle.trackHeightMultiplier));
+  const trackBorderRadius = variant === 'segmented' ? 0 : resolvedTrackHeight / 2;
 
   const inactiveTrackBaseStyle = {
     position: 'absolute' as const,
-    backgroundColor: disabled && !trackColor ? theme.colors.gray[2] : (trackColor ?? theme.colors.gray[3]),
-    borderRadius: resolvedTrackHeight / 2,
+    borderRadius: trackBorderRadius,
+    ...variantStyle.inactive,
   };
 
   const activeTrackBaseStyle = {
     position: 'absolute' as const,
-    backgroundColor: disabled && !activeTrackColor ? theme.colors.gray[4] : (activeTrackColor ?? theme.colors.primary[5]),
-    borderRadius: resolvedTrackHeight / 2,
+    borderRadius: trackBorderRadius,
+    ...variantStyle.active,
   };
 
   if (orientationProps.isVertical) {
@@ -359,12 +524,21 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
   thumbSize,
   activeTickColor,
   tickColor,
+  tickStyle,
+  activeTickStyle,
+  tickLabelProps,
 }) => {
   const orientationProps = getOrientationProps(orientation);
   const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
   const resolvedTrackHeight = trackHeight ?? SLIDER_CONSTANTS.TRACK_HEIGHT[size];
   const inactiveColor = disabled && !tickColor ? theme.colors.gray[2] : (tickColor ?? theme.colors.gray[4]);
   const activeColor = disabled && !activeTickColor ? theme.colors.gray[4] : (activeTickColor ?? theme.colors.primary[5]);
+
+  // tick.style (per-tick override) wins over the global tickStyle / activeTickStyle.
+  const tickOverride = (tick: { isActive: boolean; style?: any }) => [
+    tick.isActive ? activeTickStyle : tickStyle,
+    tick.style,
+  ];
 
   if (orientationProps.isVertical) {
     return (
@@ -373,15 +547,18 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
         {ticks.map((tick, index) => (
           <View
             key={`${keyPrefix}-${tick.value}-${index}`}
-            style={{
-              position: 'absolute',
-              top: resolvedThumbSize / 2 + tick.position,
-              left: (resolvedThumbSize - resolvedTrackHeight) / 2 - 3,
-              height: 2,
-              width: resolvedTrackHeight + 6,
-              backgroundColor: tick.isActive ? activeColor : inactiveColor,
-              borderRadius: 1,
-            }}
+            style={[
+              {
+                position: 'absolute',
+                top: resolvedThumbSize / 2 + tick.position,
+                left: (resolvedThumbSize - resolvedTrackHeight) / 2 - 3,
+                height: 2,
+                width: resolvedTrackHeight + 6,
+                backgroundColor: tick.isActive ? activeColor : inactiveColor,
+                borderRadius: 1,
+              },
+              ...tickOverride(tick),
+            ]}
           />
         ))}
 
@@ -398,7 +575,7 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
                 justifyContent: 'center',
               }}
             >
-              <Text size="xs">
+              <Text {...mergeSlotProps({ size: 'xs' as const }, tickLabelProps)}>
                 {tick.label}
               </Text>
             </View>
@@ -414,15 +591,18 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
       {ticks.map((tick, index) => (
         <View
           key={`${keyPrefix}-${tick.value}-${index}`}
-          style={{
-            position: 'absolute',
-            left: resolvedThumbSize / 2 + tick.position,
-            top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedTrackHeight) / 2 - 3,
-            width: 2,
-            height: resolvedTrackHeight + 6,
-            backgroundColor: tick.isActive ? activeColor : inactiveColor,
-            borderRadius: 1,
-          }}
+          style={[
+            {
+              position: 'absolute',
+              left: resolvedThumbSize / 2 + tick.position,
+              top: (SLIDER_CONSTANTS.CONTAINER_HEIGHT - resolvedTrackHeight) / 2 - 3,
+              width: 2,
+              height: resolvedTrackHeight + 6,
+              backgroundColor: tick.isActive ? activeColor : inactiveColor,
+              borderRadius: 1,
+            },
+            ...tickOverride(tick),
+          ]}
         />
       ))}
 
@@ -439,7 +619,12 @@ export const SliderTicks: React.FC<SliderTicksProps> = ({
               alignItems: 'center',
             }}
           >
-            <Text size="xs" style={{ textAlign: 'center' }}>
+            <Text
+              {...mergeSlotProps(
+                { size: 'xs' as const, style: { textAlign: 'center' as const } },
+                tickLabelProps
+              )}
+            >
               {tick.label}
             </Text>
           </View>
@@ -461,16 +646,20 @@ export const SliderThumb: React.FC<SliderThumbProps> = ({
   thumbColor,
   thumbStyle,
   thumbSize,
+  variant = 'default',
 }) => {
   const orientationProps = getOrientationProps(orientation);
+  // Caller is expected to have already applied the variant size multiplier
+  // (see getVariantThumbSizeMultiplier) so position math stays consistent.
   const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
   const resolvedThumbColor = disabled && !thumbColor ? theme.colors.gray[4] : (thumbColor ?? theme.colors.primary[5]);
+  const variantStyle = getVariantThumbStyle(variant, theme, disabled, resolvedThumbColor);
 
-  const baseStyle = {
+  // Variant overrides like `borderRadius` (segmented) win over the default circle.
+  const baseStyle: ViewStyle = {
     position: 'absolute' as const,
     width: resolvedThumbSize,
     height: resolvedThumbSize,
-    backgroundColor: resolvedThumbColor,
     borderRadius: resolvedThumbSize / 2,
     borderWidth: 2,
     borderColor: 'white',
@@ -478,6 +667,7 @@ export const SliderThumb: React.FC<SliderThumbProps> = ({
     elevation: 3,
     transform: isDragging ? [{ scale: 1.1 }] : [{ scale: 1 }],
     zIndex,
+    ...variantStyle.style,
   };
 
   if (orientationProps.isVertical) {
@@ -529,6 +719,10 @@ export const SliderValueLabel: React.FC<SliderValueLabelProps> = ({
   orientation,
   isCard = false,
   thumbSize,
+  placement,
+  offset,
+  containerStyle,
+  textProps,
 }) => {
   const orientationProps = getOrientationProps(orientation);
   const resolvedThumbSize = thumbSize ?? SLIDER_CONSTANTS.THUMB_SIZE[size];
@@ -536,54 +730,77 @@ export const SliderValueLabel: React.FC<SliderValueLabelProps> = ({
   // round number to 2 decimal places for display
   const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
 
+  // For horizontal sliders the value label is centered inside a 100px-wide
+  // wrapper, so the Card needs `margin: auto` and the Text needs `textAlign: center`.
+  // Vertical layouts anchor by edge, so they skip those defaults.
+  const renderContent = (centered: boolean) => {
+    const cardStyle = centered
+      ? [{ margin: 'auto' as const }, containerStyle]
+      : containerStyle;
+    const textBase = {
+      size: 'sm' as const,
+      style: centered ? { textAlign: 'center' as const } : undefined,
+    };
+
+    if (isCard) {
+      return (
+        <Card style={cardStyle} p="xs" variant="filled" shadow={centered ? 'md' : undefined}>
+          <Text {...mergeSlotProps(textBase, textProps)}>{displayValue}</Text>
+        </Card>
+      );
+    }
+    return <Text {...mergeSlotProps(textBase, textProps)}>{displayValue}</Text>;
+  };
+
   if (orientationProps.isVertical) {
-    const verticalLabelOffset = resolvedThumbSize + 16; // keep label clear of the thumb
+    // Vertical placements: 'left' (default) or 'right' of the thumb
+    const verticalPlacement = placement === 'right' ? 'right' : 'left';
+    const verticalOffset = offset ?? 16;
+    const lateralDistance = resolvedThumbSize + verticalOffset;
+
+    const positionStyle: ViewStyle = verticalPlacement === 'right'
+      ? { left: lateralDistance }
+      : { right: lateralDistance };
+
     return (
       <View
-        style={{
-          position: 'absolute',
-          top: position + (resolvedThumbSize / 2) - 10,
-          right: verticalLabelOffset,
-          height: 20,
-          justifyContent: 'center',
-        }}
+        style={[
+          {
+            position: 'absolute',
+            top: position + (resolvedThumbSize / 2) - 10,
+            height: 20,
+            justifyContent: 'center',
+            alignItems: verticalPlacement === 'right' ? 'flex-start' : 'flex-end',
+          },
+          positionStyle,
+        ]}
       >
-        {isCard ? (
-          <Card p="xs" variant="filled">
-            <Text size="sm">
-              {displayValue}
-            </Text>
-          </Card>
-        ) : (
-          <Text size="sm">
-            {displayValue}
-          </Text>
-        )}
+        {renderContent(false)}
       </View>
     );
   }
 
+  // Horizontal placements: 'top' (default, above the thumb) or 'bottom' (below)
+  const horizontalPlacement = placement === 'bottom' ? 'bottom' : 'top';
+  const horizontalOffset = offset ?? 6;
+
+  const verticalAnchor: ViewStyle = horizontalPlacement === 'bottom'
+    ? { top: SLIDER_CONSTANTS.CONTAINER_HEIGHT - horizontalOffset }
+    : { bottom: SLIDER_CONSTANTS.CONTAINER_HEIGHT - horizontalOffset };
+
   return (
     <View
-      style={{
-        position: 'absolute',
-        left: position + (resolvedThumbSize / 2) - 50,
-        bottom: SLIDER_CONSTANTS.CONTAINER_HEIGHT - 6, // Moved closer to thumb
-        width: 100,
-        alignItems: 'center',
-      }}
+      style={[
+        {
+          position: 'absolute',
+          left: position + (resolvedThumbSize / 2) - 50,
+          width: 100,
+          alignItems: 'center',
+        },
+        verticalAnchor,
+      ]}
     >
-      {isCard ? (
-        <Card style={{ margin: 'auto' }} p="xs" variant="filled" shadow="md">
-          <Text size="sm" style={{ textAlign: 'center' }}>
-            {displayValue}
-          </Text>
-        </Card>
-      ) : (
-        <Text size="sm" style={{ textAlign: 'center' }}>
-          {displayValue}
-        </Text>
-      )}
+      {renderContent(true)}
     </View>
   );
 };

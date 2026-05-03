@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ViewStyle, Platform, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ViewStyle, Platform, Dimensions } from 'react-native';
+import { Text } from '../Text';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -24,7 +25,7 @@ import { factory } from '../../core/factory';
 import { getSpacing } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import { useTheme } from '../../core/theme/ThemeProvider';
-import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { ToastProps, ToastColor, ToastSeverity, ToastAction, ToastAnimationConfig, ToastSwipeConfig } from './types';
 import { useHaptics } from '../../hooks/useHaptics';
 import { Icon } from '../Icon';
@@ -77,6 +78,8 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
     swipeConfig,
     onSwipeDismiss,
     keepMounted = true,
+    titleProps,
+    bodyProps,
     ...rest
   } = props;
 
@@ -582,18 +585,21 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
       }}>
         {title && (
           <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: textColor,
-              marginBottom: children ? getSpacing('xs') : 0,
-              ...Platform.select({
-                android: {
-                  lineHeight: 20, // Explicit line height for Android
-                }
-              })
-            }}
-            numberOfLines={2} // Limit title lines to prevent height issues
+            {...mergeSlotProps(
+              {
+                size: 16,
+                weight: '600',
+                numberOfLines: 2,
+                style: {
+                  color: textColor,
+                  marginBottom: children ? getSpacing('xs') : 0,
+                  ...Platform.select({
+                    android: { lineHeight: 20 },
+                  }),
+                },
+              },
+              titleProps
+            )}
           >
             {title}
           </Text>
@@ -601,17 +607,20 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
 
         {children && (
           <Text
-            style={{
-              fontSize: 14,
-              lineHeight: 20,
-              color: textColor,
-              ...Platform.select({
-                android: {
-                  includeFontPadding: false, // Remove extra padding on Android
-                }
-              })
-            }}
-            numberOfLines={3} // Limit content lines to prevent height issues
+            {...mergeSlotProps(
+              {
+                size: 14,
+                lineHeight: 20,
+                numberOfLines: 3,
+                style: {
+                  color: textColor,
+                  ...Platform.select({
+                    android: { includeFontPadding: false },
+                  }),
+                },
+              },
+              bodyProps
+            )}
           >
             {children}
           </Text>

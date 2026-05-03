@@ -1,2 +1,3 @@
 export { Card } from './Card';
-export type { CardProps } from './types';
+export { CardSection } from './CardSection';
+export type { CardProps, CardSectionProps } from './types';

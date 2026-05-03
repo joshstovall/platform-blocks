@@ -75,6 +75,32 @@ export const SIZE_SCALES = {
     xl: 1.6,
     '2xl': 1.7,
     '3xl': 1.8
+  },
+
+  // Font size for labels rendered alongside form controls (Input, Checkbox, Switch,
+  // Radio, Select…). Tuned to read as one step smaller than the field's own font
+  // so the field stays the visual anchor.
+  controlLabel: {
+    xs: 10,
+    sm: 11,
+    md: 13,
+    lg: 14,
+    xl: 16,
+    '2xl': 18,
+    '3xl': 20
+  },
+
+  // Icon size for icons rendered inside or directly next to form controls
+  // (password eye toggle, inline radio icon, clear button, etc.). Gentler than
+  // `iconSize` so a `<Slider size="3xl">` doesn't sprout 40px chrome.
+  controlIcon: {
+    xs: 14,
+    sm: 16,
+    md: 20,
+    lg: 22,
+    xl: 24,
+    '2xl': 28,
+    '3xl': 32
   }
 } as const;
 
@@ -121,6 +147,26 @@ export function getSpacing(size: SizeValue | undefined): number {
  */
 export function getIconSize(size: SizeValue | undefined): number {
   return resolveSize(size, 'iconSize') as number;
+}
+
+/**
+ * Resolves the fontSize for a label rendered alongside a form control
+ * (Input/Checkbox/Switch/Radio/Select…). Numeric `size` values scale at ~0.85x
+ * so the label stays one step smaller than the control's own font.
+ */
+export function getControlLabelFontSize(size: SizeValue | undefined): number {
+  if (typeof size === 'number') return Math.max(10, Math.round(size * 0.85));
+  return resolveSize(size, 'controlLabel') as number;
+}
+
+/**
+ * Resolves the icon size for icons rendered *inside* a form control
+ * (password toggle, inline radio icon, clear button, etc.). Numeric `size`
+ * values scale at ~1.1x so the icon reads as slightly larger than the text.
+ */
+export function getControlIconSize(size: SizeValue | undefined): number {
+  if (typeof size === 'number') return Math.max(12, Math.round(size * 1.1));
+  return resolveSize(size, 'controlIcon') as number;
 }
 
 /**

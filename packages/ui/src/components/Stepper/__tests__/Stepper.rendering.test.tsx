@@ -12,7 +12,10 @@ const mockTheme = {
   text: {
     primary: '#111111',
     secondary: '#555555',
+    muted: '#888888',
+    disabled: '#cccccc',
   },
+  fontFamily: 'System',
 };
 
 jest.mock('../../../core/theme/ThemeProvider', () => ({

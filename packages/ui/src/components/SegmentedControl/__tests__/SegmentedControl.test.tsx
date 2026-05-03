@@ -141,8 +141,12 @@ describe('SegmentedControl - behavior', () => {
   });
 
   it('applies divider styles when withItemsBorders is enabled', () => {
+    // Explicit variant="default" — the divider color is variant-dependent and
+    // the default variant changed; this test asserts the 'default' variant's
+    // dotted divider color specifically.
     const { getByTestId } = render(
       <SegmentedControl
+        variant="default"
         withItemsBorders
         defaultValue="reports"
         data={[

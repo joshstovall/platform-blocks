@@ -38,6 +38,7 @@ const AccordionBase = (props: AccordionProps, ref: React.Ref<AccordionRef>) => {
     headerStyle,
     contentStyle,
     headerTextStyle,
+    titleProps,
     radius,
     persistKey,
     autoPersist = true,
@@ -193,6 +194,7 @@ const AccordionBase = (props: AccordionProps, ref: React.Ref<AccordionRef>) => {
             headerStyle={headerStyle}
             contentStyle={contentStyle}
             headerTextStyle={headerTextStyle}
+            titleProps={titleProps}
             idPrefix={`accordion-${instanceId.current}`}
             animated={animated}
             chevronPosition={chevronPosition}

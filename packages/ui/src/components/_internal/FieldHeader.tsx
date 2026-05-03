@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View } from 'react-native';
+import { Text, type TextProps } from '../Text';
 import { useTheme } from '../../core/theme';
 import { createInputStyles } from '../Input/styles';
 import { InputStyleProps } from '../Input/types';
+import { mergeSlotProps } from '../../core/utils';
 
 export interface FieldHeaderProps {
   label?: React.ReactNode;
@@ -16,6 +18,10 @@ export interface FieldHeaderProps {
   marginBottom?: number;
   /** Optional test id */
   testID?: string;
+  /** Override props applied to the label Text element */
+  labelProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the description Text element */
+  descriptionProps?: Omit<TextProps, 'children'>;
 }
 
 /**
@@ -31,7 +37,9 @@ export const FieldHeader: React.FC<FieldHeaderProps> = ({
   error,
   size = 'md',
   marginBottom,
-  testID
+  testID,
+  labelProps,
+  descriptionProps,
 }) => {
   const theme = useTheme();
   const { getInputStyles } = createInputStyles(theme);
@@ -48,19 +56,24 @@ export const FieldHeader: React.FC<FieldHeaderProps> = ({
 
   return (
     <View style={{ marginBottom: resolvedMarginBottom }} testID={testID}>
-      {label && (
-        <Text style={styles.label}>
+      {label ? (
+        <Text {...mergeSlotProps({ style: styles.label }, labelProps)}>
           {label}
-          {required && withAsterisk && (
-            <Text style={styles.required} accessibilityLabel="required">{' *'}</Text>
-          )}
+          {required && withAsterisk ? (
+            <Text style={styles.required}>{' *'}</Text>
+          ) : null}
         </Text>
-      )}
-      {description && (
-        <Text style={{ fontSize: 12, color: theme.text.muted }}>
+      ) : null}
+      {description ? (
+        <Text
+          {...mergeSlotProps(
+            { style: { fontSize: 12, color: theme.text.muted } },
+            descriptionProps
+          )}
+        >
           {description}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 };

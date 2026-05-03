@@ -5,7 +5,7 @@ import type { ListRenderItemInfo } from '@shopify/flash-list';
 
 import { useTheme } from '../../core';
 import { useDirection } from '../../core/providers/DirectionProvider';
-import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { SpacingProps, getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 import { Text } from '../Text';
 import { Input } from '../Input';
@@ -224,6 +224,8 @@ export const DataTable = <T,>({
   allowMultipleExpanded = true,
   expandIcon,
   collapseIcon,
+  headerTextProps,
+  cellTextProps,
   ...props
 }: DataTableProps<T>) => {
   const { spacingProps, otherProps } = extractSpacingProps(props);
@@ -716,13 +718,18 @@ export const DataTable = <T,>({
 
     return (
       <Text
-        variant="p"
-        style={{ textAlign: column.align || 'left', color: theme.text.primary }}
+        {...mergeSlotProps(
+          {
+            variant: 'p' as const,
+            style: { textAlign: column.align || 'left', color: theme.text.primary },
+          },
+          cellTextProps,
+        )}
       >
         {formatValue(value, column.dataType)}
       </Text>
     );
-  }, [editValue, editingCell, handleCellEditSave, theme]);
+  }, [editValue, editingCell, handleCellEditSave, theme, cellTextProps]);
 
   const getSortIcon = (columnKey: string) => {
     const sort = sortBy.find(s => s.column === columnKey);
@@ -846,15 +853,20 @@ export const DataTable = <T,>({
                 style={{ flexDirection: 'row', alignItems: 'center' }}
               >
                 <Text
-                  variant="p"
-                  weight="semibold"
-                  style={{
-                    color: theme.text.primary,
-                    fontSize: DESIGN_TOKENS.typography.fontSize.sm,
-                    letterSpacing: 0.5,
-                    flexDirection: 'row',
-                    display: 'flex'
-                  }}
+                  {...mergeSlotProps(
+                    {
+                      variant: 'p' as const,
+                      weight: 'semibold' as const,
+                      style: {
+                        color: theme.text.primary,
+                        fontSize: DESIGN_TOKENS.typography.fontSize.sm,
+                        letterSpacing: 0.5,
+                        flexDirection: 'row' as const,
+                        display: 'flex' as const,
+                      },
+                    },
+                    headerTextProps,
+                  )}
                 >
                   {column.header}
                 </Text>

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { SpacingProps } from '../../core/theme/types';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
+import type { TextProps } from '../Text';
 
 export interface PaginationMetrics {
   height: number;
@@ -86,7 +87,13 @@ export interface PaginationProps extends SpacingProps {
   
   /** Show total count */
   showTotal?: boolean | ((total: number, range: [number, number]) => ReactNode);
-  
+
   /** Total number of items */
   totalItems?: number;
+
+  /** Override props applied to every page-button label `<Text>` (style, weight, ff, size, colorVariant). */
+  labelProps?: Omit<TextProps, 'children'>;
+
+  /** Override props applied to the active page-button label `<Text>` (merged on top of `labelProps`). */
+  activeLabelProps?: Omit<TextProps, 'children'>;
 }

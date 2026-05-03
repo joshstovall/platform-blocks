@@ -1,24 +1,59 @@
 import React from 'react';
 import { View, ViewStyle } from 'react-native';
 
-import type { DividerProps, DividerFactoryPayload } from './types';
+import type { DividerProps, DividerFactoryPayload, DividerColorVariant } from './types';
 import { factory } from '../../core/factory';
-import { SizeValue, getSpacing } from '../../core/theme/sizes';
+import { getSpacing } from '../../core/theme/sizes';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { Text } from '../Text';
+import { resolveLinearGradient } from '../../utils/optionalDependencies';
 
-// Types extracted to types.ts
+const { LinearGradient: OptionalLinearGradient } = resolveLinearGradient();
+
+const PALETTE_DIVIDER_SHADE = 3 as const;
+
+function resolveDividerColor(
+  theme: any,
+  colorVariant?: DividerColorVariant,
+  color?: string,
+): string {
+  if (color) return color;
+
+  switch (colorVariant) {
+    case 'subtle':
+      return theme.backgrounds?.subtle ?? theme.backgrounds?.border ?? '#E5E5EA';
+    case 'muted':
+      return theme.text?.muted ?? theme.backgrounds?.border ?? '#999999';
+    case 'primary':
+    case 'secondary':
+    case 'success':
+    case 'warning':
+    case 'error':
+    case 'gray': {
+      const palette = (theme.colors as any)?.[colorVariant];
+      if (!palette) return theme.backgrounds?.border ?? '#E5E5EA';
+      return Array.isArray(palette)
+        ? (palette[PALETTE_DIVIDER_SHADE] ?? palette[5] ?? palette[0])
+        : palette;
+    }
+    case 'border':
+    default:
+      return theme.backgrounds?.border ?? '#E5E5EA';
+  }
+}
 
 function DividerBase(props: DividerProps, ref: React.Ref<View>) {
   const {
     orientation = 'horizontal',
     variant = 'solid',
     color,
-    colorVariant,
+    colorVariant = 'border',
     size = 1,
+    opacity,
     label,
     labelPosition = 'center',
+    labelProps,
     style,
     testID,
     ...rest
@@ -28,110 +63,94 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
   const spacingStyles = getSpacingStyles(spacingProps);
 
   const theme = useTheme();
-  
-  // Resolve divider color with semantic variants
-  const getDividerColor = (): string => {
-    // Direct color override takes priority
-    if (color) {
-      return color;
-    }
-    
-    // Handle colorVariant
-    if (colorVariant) {
-      switch (colorVariant) {
-        case 'muted':
-          return theme.colors.surface[8] || theme.colors.surface[7];
-        case 'subtle':
-          return theme.colors.surface[6] || theme.colors.surface[5];
-        case 'primary':
-        case 'secondary':
-        case 'tertiary':
-        case 'success':
-        case 'warning':
-        case 'error':
-        case 'gray': {
-          const palette = (theme.colors as any)[colorVariant];
-          return Array.isArray(palette) ? (palette[5] || palette[0]) : palette;
-        }
-        case 'surface':
-        default:
-          return theme.colors.surface[9] || theme.colors.surface[7];
-      }
-    }
-    
-    // Default fallback
-    return theme.colors.surface[9] || theme.colors.surface[7];
-  };
-
-  const dividerColor = getDividerColor();
+  const dividerColor = resolveDividerColor(theme, colorVariant, color);
   const dividerSize = typeof size === 'number' ? size : getSpacing(size);
   const labelSpacing = getSpacing('sm');
 
-  // Helper function to wrap plain text labels in Text component
   const renderLabel = () => {
     if (!label) return null;
-    
-    // If label is a string, wrap it in Text component
     if (typeof label === 'string') {
       return (
         <Text
           size="sm"
-          color="muted"
+          colorVariant="muted"
           weight="medium"
           align={orientation === 'vertical' ? 'center' : undefined}
+          {...labelProps}
         >
           {label}
         </Text>
       );
     }
-    
-    // If it's already a React element, return as is
     return label;
   };
 
-  const getBorderStyle = () => {
-    switch (variant) {
-      case 'dashed':
-        return 'dashed';
-      case 'dotted':
-        return 'dotted';
-      case 'solid':
-      default:
-        return 'solid';
+  const isGradient = variant === 'gradient';
+  const borderStyle: 'solid' | 'dashed' | 'dotted' =
+    variant === 'dashed' ? 'dashed' : variant === 'dotted' ? 'dotted' : 'solid';
+
+  const renderLine = (flex?: number, edge?: 'leading' | 'trailing') => {
+    if (isGradient && OptionalLinearGradient) {
+      // Fade transparent → color → transparent for a true gradient line. When a
+      // segment is on the leading edge of a labelled divider we keep the bright
+      // side near the label, and vice versa.
+      const transparent = `${dividerColor}00`;
+      const colors = (() => {
+        if (edge === 'leading') return [transparent, dividerColor];
+        if (edge === 'trailing') return [dividerColor, transparent];
+        return [transparent, dividerColor, transparent];
+      })();
+      const gradientStyle: ViewStyle =
+        orientation === 'vertical'
+          ? { width: dividerSize, alignSelf: 'center', flex }
+          : { height: dividerSize, width: '100%', flex };
+      return (
+        <OptionalLinearGradient
+          colors={colors}
+          start={orientation === 'vertical' ? { x: 0, y: 0 } : { x: 0, y: 0 }}
+          end={orientation === 'vertical' ? { x: 0, y: 1 } : { x: 1, y: 0 }}
+          style={gradientStyle}
+        />
+      );
     }
-  };
 
-  const borderStyle = getBorderStyle();
-
-  const getDividerStyles = (): ViewStyle => {
     if (orientation === 'vertical') {
-      return {
-        borderLeftWidth: dividerSize,
-        borderLeftColor: dividerColor,
-        borderStyle,
-        alignSelf: 'center'
-      };
+      return (
+        <View
+          style={{
+            borderLeftWidth: dividerSize,
+            borderLeftColor: dividerColor,
+            borderStyle,
+            alignSelf: 'center',
+            flex,
+          }}
+        />
+      );
     }
 
-    return {
-      height: dividerSize,
-      borderTopWidth: dividerSize,
-      borderTopColor: dividerColor,
-      borderStyle,
-      width: '100%'
-    };
+    return (
+      <View
+        style={{
+          height: dividerSize,
+          borderTopWidth: dividerSize,
+          borderTopColor: dividerColor,
+          borderStyle,
+          width: '100%',
+          flex,
+        }}
+      />
+    );
   };
 
   const renderWithLabel = () => {
-    const dividerStyles = getDividerStyles();
-
-    const labelContainerStyle: ViewStyle = orientation === 'vertical'
-      ? {
-          paddingVertical: labelSpacing,
-          alignItems: 'center',
-          alignSelf: 'center',
-        }
-      : { paddingHorizontal: labelSpacing };
+    const labelContainerStyle: ViewStyle =
+      orientation === 'vertical'
+        ? {
+            paddingVertical: labelSpacing,
+            alignItems: 'center',
+            alignSelf: 'center',
+          }
+        : { paddingHorizontal: labelSpacing };
 
     if (orientation === 'vertical') {
       return (
@@ -139,16 +158,12 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
           style={{
             flexDirection: 'column',
             alignItems: 'center',
-            height: '100%'
+            height: '100%',
           }}
         >
-          <View style={[dividerStyles, { flex: labelPosition === 'left' ? 0.2 : 1 }]} />
-          {label && (
-            <View style={labelContainerStyle}>
-              {renderLabel()}
-            </View>
-          )}
-          <View style={[dividerStyles, { flex: labelPosition === 'right' ? 0.2 : 1 }]} />
+          {renderLine(labelPosition === 'left' ? 0.2 : 1, 'leading')}
+          {label && <View style={labelContainerStyle}>{renderLabel()}</View>}
+          {renderLine(labelPosition === 'right' ? 0.2 : 1, 'trailing')}
         </View>
       );
     }
@@ -158,39 +173,29 @@ function DividerBase(props: DividerProps, ref: React.Ref<View>) {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          width: '100%'
+          width: '100%',
         }}
       >
-        <View style={[dividerStyles, { flex: labelPosition === 'left' ? 0.2 : 1 }]} />
-        {label && (
-          <View style={labelContainerStyle}>
-            {renderLabel()}
-          </View>
-        )}
-        <View style={[dividerStyles, { flex: labelPosition === 'right' ? 0.2 : 1 }]} />
+        {renderLine(labelPosition === 'left' ? 0.2 : 1, 'leading')}
+        {label && <View style={labelContainerStyle}>{renderLabel()}</View>}
+        {renderLine(labelPosition === 'right' ? 0.2 : 1, 'trailing')}
       </View>
     );
-  };
-
-  const renderSimple = () => {
-    const dividerStyles = getDividerStyles();
-    return <View style={dividerStyles} />;
   };
 
   return (
     <View
       ref={ref}
       style={[
-        {
-          ...(orientation === 'horizontal' ? { width: '100%' } : { height: '100%' })
-        },
+        orientation === 'horizontal' ? { width: '100%' } : { height: '100%' },
+        opacity !== undefined ? { opacity } : null,
         spacingStyles,
-        style
+        style,
       ]}
       testID={testID}
       {...otherProps}
     >
-      {label ? renderWithLabel() : renderSimple()}
+      {label ? renderWithLabel() : renderLine()}
     </View>
   );
 }

@@ -1,10 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, Text, ViewStyle, Platform, LayoutChangeEvent } from 'react-native';
+import { View, ViewStyle, Platform, LayoutChangeEvent } from 'react-native';
+import { Text } from '../Text';
 
 import { factory } from '../../core/factory';
 import { getRadius, getSpacing } from '../../core/theme/sizes';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { mergeSlotProps } from '../../core/utils';
 import { measureElement, calculateOverlayPositionEnhanced, getViewport } from '../../core/utils/positioning-enhanced';
 import type { PositionResult } from '../../core/utils/positioning-enhanced';
 import { TooltipProps, TooltipFactoryPayload, TooltipPositionType } from './types';
@@ -44,6 +46,7 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
     children,
     style,
     testID,
+    labelProps,
   } = props;
 
   const [isVisible, setIsVisible] = useState(false);
@@ -351,14 +354,19 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
           }}
         >
           <Text
-            style={{
-              color: tooltipTextColor,
-              fontSize: 13,
-              fontWeight: '500',
-              textAlign: 'center',
-              lineHeight: 16,
-            }}
-            numberOfLines={multiline ? undefined : 1}
+            {...mergeSlotProps(
+              {
+                weight: '500' as const,
+                numberOfLines: multiline ? undefined : 1,
+                style: {
+                  color: tooltipTextColor,
+                  fontSize: 13,
+                  textAlign: 'center' as const,
+                  lineHeight: 16,
+                },
+              },
+              labelProps,
+            )}
           >
             {label}
           </Text>

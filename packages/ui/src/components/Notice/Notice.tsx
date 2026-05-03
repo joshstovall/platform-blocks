@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, TouchableOpacity, ViewStyle } from 'react-native';
+import { Text } from '../Text';
 
 import { factory } from '../../core/factory';
 import { SizeValue, getSpacing } from '../../core/theme/sizes';
 import { BorderRadiusProps, createRadiusStyles } from '../../core/theme/radius';
 import { useTheme } from '../../core/theme/ThemeProvider';
-import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { SpacingProps, getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { Icon } from '../Icon';
 
 import type { NoticeProps, NoticeVariant, NoticeColor, NoticeSeverity, NoticeFactoryPayload } from './types';
@@ -57,6 +58,8 @@ function NoticeBase(props: NoticeProps, ref: React.Ref<View>) {
     radius = 'md',
     style,
     testID,
+    titleProps,
+    bodyProps,
     ...rest
   } = props;
 
@@ -265,12 +268,14 @@ function NoticeBase(props: NoticeProps, ref: React.Ref<View>) {
       <View style={{ flex: 1 }}>
         {title && (
           <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: textColor,
-              marginBottom: children ? getSpacing('xs') : 0
-            }}
+            {...mergeSlotProps(
+              {
+                size: 16,
+                weight: '600',
+                style: { color: textColor, marginBottom: children ? getSpacing('xs') : 0 },
+              },
+              titleProps
+            )}
           >
             {title}
           </Text>
@@ -278,11 +283,10 @@ function NoticeBase(props: NoticeProps, ref: React.Ref<View>) {
 
         {children && (
           <Text
-            style={{
-              fontSize: 14,
-              lineHeight: 20,
-              color: textColor
-            }}
+            {...mergeSlotProps(
+              { size: 14, lineHeight: 20, style: { color: textColor } },
+              bodyProps
+            )}
           >
             {children}
           </Text>

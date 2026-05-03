@@ -10,6 +10,16 @@ export const brandIcons = {
     viewBox: '0 0 24 24',
     variant: 'filled' as const,
   },
+  googlePlay: {
+    content: [
+      { d: 'M13.54 15.28.12 29.34a3.66 3.66 0 0 0 5.33 2.16l15.1-8.6Z', fill: '#EA4335' },
+      { d: 'm27.11 12.89-6.53-3.74-7.35 6.45 7.38 7.28 6.48-3.7a3.54 3.54 0 0 0 1.5-4.79 3.62 3.62 0 0 0-1.5-1.5z', fill: '#FBBC04' },
+      { d: 'M.12 2.66a3.57 3.57 0 0 0-.12.92v24.84a3.57 3.57 0 0 0 .12.92L14 15.64Z', fill: '#4285F4' },
+      { d: 'm13.64 16 6.94-6.85L5.5.51A3.73 3.73 0 0 0 3.63 0 3.64 3.64 0 0 0 .12 2.65Z', fill: '#34A853' },
+    ],
+    viewBox: '0 0 28.99 31.99',
+    variant: 'filled' as const,
+  },
   'galaxy-store': {
     defs: {
       linearGradients: [

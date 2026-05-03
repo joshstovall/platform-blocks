@@ -58,6 +58,12 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
   fullWidth,
   clearable = false,
   clearButtonLabel = 'Clear time',
+  description,
+  labelProps,
+  descriptionProps,
+  placeholderTextColor,
+  startSectionProps,
+  endSectionProps,
 }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -244,6 +250,7 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
             }
           }}
           label={label}
+          description={description}
           placeholder={is12h ? 'hh:mm AM' : 'hh:mm'}
           endSection={
             <Icon name="clock" size={16} color={disabled ? theme.text.disabled : theme.text.muted} />
@@ -256,6 +263,11 @@ export const TimePickerInput: React.FC<TimePickerInputProps> = ({
           clearable={clearable && hasValue}
           clearButtonLabel={clearButtonLabel}
           onClear={clearValue}
+          labelProps={labelProps}
+          descriptionProps={descriptionProps}
+          placeholderTextColor={placeholderTextColor}
+          startSectionProps={startSectionProps}
+          endSectionProps={endSectionProps}
         />
       </Pressable>
 

@@ -2,8 +2,26 @@ import React from 'react';
 import { ViewStyle, StyleProp } from 'react-native';
 import { BaseInputProps } from '../Input/types';
 import { ColorValue, SizeValue, PlatformBlocksTheme } from '../../core/theme/types';
+import type { TextProps } from '../Text';
 
 export type SliderColorScheme = keyof PlatformBlocksTheme['colors'] | (string & {});
+
+/**
+ * Visual variant of the slider.
+ * - `default` — standard track with subtle inactive surface and filled active range
+ * - `filled` — thicker, fully opaque inactive track (iOS-style volume look)
+ * - `outline` — transparent inactive track with a border; active range is colored fill
+ * - `minimal` — hairline track and a smaller, flatter thumb for dense UIs/toolbars
+ * - `segmented` — track is divided by ticks; active region fills whole segments
+ * - `unstyled` — no track or thumb chrome; consumer styles via `trackStyle` / `thumbStyle`
+ */
+export type SliderVariant =
+  | 'default'
+  | 'filled'
+  | 'outline'
+  | 'minimal'
+  | 'segmented'
+  | 'unstyled';
 
 export interface SliderTick {
   /** Tick value */
@@ -14,7 +32,7 @@ export interface SliderTick {
   style?: any;
 }
 
-export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeText' | 'label'> {
+export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeText' | 'label' | 'variant'> {
   /** Slider value */
   value?: number;
   /** Uncontrolled initial value */
@@ -53,6 +71,9 @@ export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeTex
   /** Theme color palette or custom color to drive active elements */
   colorScheme?: SliderColorScheme;
 
+  /** Visual variant of the slider track + thumb. Defaults to `'default'`. */
+  variant?: SliderVariant;
+
   /** Additional styling for the inactive track */
   trackStyle?: StyleProp<ViewStyle>;
 
@@ -68,6 +89,15 @@ export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeTex
   /** Override active tick color */
   activeTickColor?: ColorValue;
 
+  /** Style applied to inactive tick marks (merged on top of color/size defaults). */
+  tickStyle?: StyleProp<ViewStyle>;
+
+  /** Style applied to active tick marks. */
+  activeTickStyle?: StyleProp<ViewStyle>;
+
+  /** Props applied to the `<Text>` rendered for each tick label (style, ff, weight, size, colorVariant). */
+  tickLabelProps?: Omit<TextProps, 'children'>;
+
   /** Input label (above the slider) */
   label?: React.ReactNode;
 
@@ -77,8 +107,20 @@ export interface SliderProps extends Omit<BaseInputProps, 'value' | 'onChangeTex
   /** If true, value label will always be displayed */
   valueLabelAlwaysOn?: boolean;
 
-  /** Value label position */
+  /** Where the value label sits relative to the thumb. For horizontal sliders: 'top' (above) or 'bottom' (below). For vertical: 'left' or 'right'. Defaults to 'top' / 'left'. */
   valueLabelPosition?: 'top' | 'bottom' | 'left' | 'right';
+
+  /** Pixel gap between the thumb and the value label (default: 6 for top/bottom, 16 for left/right). */
+  valueLabelOffset?: number;
+
+  /** Style applied to the value label wrapper (Card/View). */
+  valueLabelStyle?: StyleProp<ViewStyle>;
+
+  /** Props applied to the value label `<Text>` (style, weight, ff, size, colorVariant). */
+  valueLabelProps?: Omit<TextProps, 'children'>;
+
+  /** When true (default) the value label is wrapped in a `<Card>`. Set to false to render only the bare `<Text>` for a flat tooltip. */
+  valueLabelAsCard?: boolean;
 
   /** Show min/max labels */
   showMarks?: boolean;
@@ -160,6 +202,7 @@ export interface SliderTrackProps {
   activeTrackStyle?: StyleProp<ViewStyle>;
   trackHeight?: number;
   thumbSize?: number;
+  variant?: SliderVariant;
 }
 
 export interface SliderTicksProps {
@@ -173,6 +216,9 @@ export interface SliderTicksProps {
   thumbSize?: number;
   activeTickColor?: ColorValue;
   tickColor?: ColorValue;
+  tickStyle?: StyleProp<ViewStyle>;
+  activeTickStyle?: StyleProp<ViewStyle>;
+  tickLabelProps?: Omit<TextProps, 'children'>;
 }
 
 export interface SliderThumbProps {
@@ -187,6 +233,7 @@ export interface SliderThumbProps {
   thumbColor?: ColorValue;
   thumbStyle?: StyleProp<ViewStyle>;
   thumbSize?: number;
+  variant?: SliderVariant;
 }
 
 export interface SliderLabelProps {
@@ -200,4 +247,9 @@ export interface SliderValueLabelProps {
   orientation: 'horizontal' | 'vertical';
   isCard?: boolean;
   thumbSize?: number;
+  /** 'top' / 'bottom' for horizontal, 'left' / 'right' for vertical */
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+  offset?: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  textProps?: Omit<TextProps, 'children'>;
 }

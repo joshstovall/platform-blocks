@@ -1,58 +1,72 @@
 import { useState } from 'react';
-import { Column, Radio, RadioGroup, Text } from '@platform-blocks/ui';
+import { Column, RadioGroup, Text } from '@platform-blocks/ui';
 
-const COLOR_OPTIONS = ['primary', 'secondary', 'success', 'error'] as const;
+const PLAN_OPTIONS = [
+  { label: 'Starter', value: 'starter', description: 'Up to 3 projects, community support' },
+  { label: 'Growth', value: 'growth', description: 'Unlimited projects, priority email support' },
+  { label: 'Scale', value: 'scale', description: 'Dedicated success manager + SSO' },
+];
+
+const FREQUENCY_OPTIONS = [
+  { label: 'Daily', value: 'daily' },
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Monthly', value: 'monthly' },
+];
+
+const FILTER_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'Archived', value: 'archived' },
+  { label: 'Trashed', value: 'trashed' },
+];
 
 export default function Demo() {
-  const [sizeValue, setSizeValue] = useState<string>('club');
-  const [colorValue, setColorValue] = useState<typeof COLOR_OPTIONS[number]>('primary');
+  const [defaultValue, setDefaultValue] = useState('weekly');
+  const [planValue, setPlanValue] = useState('growth');
+  const [frequencyValue, setFrequencyValue] = useState('weekly');
+  const [filterValue, setFilterValue] = useState('active');
 
   return (
     <Column gap="lg">
       <Column gap="sm">
-        <Text variant="small" colorVariant="muted">
-          Size tokens
-        </Text>
+        <Text variant="small" colorVariant="muted">default</Text>
         <RadioGroup
-          size="sm"
-          value={sizeValue}
-          onChange={setSizeValue}
-          options={[
-            { label: 'Club', value: 'club' },
-            { label: 'Suite', value: 'suite' },
-            { label: 'Field level', value: 'field' }
-          ]}
+          variant="default"
+          value={defaultValue}
+          onChange={setDefaultValue}
+          options={FREQUENCY_OPTIONS}
         />
       </Column>
 
       <Column gap="sm">
-        <Text variant="small" colorVariant="muted">
-          Semantic colors
-        </Text>
-        <Column gap="xs">
-          {COLOR_OPTIONS.map((tone) => (
-            <Radio
-              key={tone}
-              value={tone}
-              checked={colorValue === tone}
-              onChange={(value) => setColorValue(value as typeof COLOR_OPTIONS[number])}
-              label={`${tone.charAt(0).toUpperCase()}${tone.slice(1)} tickets`}
-              color={tone}
-            />
-          ))}
-        </Column>
+        <Text variant="small" colorVariant="muted">card</Text>
+        <RadioGroup
+          variant="card"
+          value={planValue}
+          onChange={setPlanValue}
+          options={PLAN_OPTIONS}
+        />
       </Column>
 
-      <Column gap="xs">
-        <Text variant="small" colorVariant="muted">
-          Common states
-        </Text>
-        <Radio value="available" checked label="Available" />
-        <Radio value="disabled" disabled label="Disabled" />
-        <Radio value="error" error="Select a seat" label="Needs attention" />
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">segmented</Text>
+        <RadioGroup
+          variant="segmented"
+          value={frequencyValue}
+          onChange={setFrequencyValue}
+          options={FREQUENCY_OPTIONS}
+        />
+      </Column>
+
+      <Column gap="sm">
+        <Text variant="small" colorVariant="muted">chip</Text>
+        <RadioGroup
+          variant="chip"
+          value={filterValue}
+          onChange={setFilterValue}
+          options={FILTER_OPTIONS}
+        />
       </Column>
     </Column>
   );
 }
-
-

@@ -7,6 +7,7 @@ import { getFontSize } from '../../core/theme/sizes';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import type { ListGroupProps, ListGroupItemProps, ListGroupContextValue, ListGroupMetrics } from './types';
 import { factory } from '../../core/factory';
+import { useHover } from '../../hooks';
 
 // Types moved to ./types
 
@@ -154,9 +155,10 @@ export const ListGroupItem = factory<{ props: ListGroupItemProps; ref: View }>((
     ? (isDark ? theme.colors.error[2] : theme.colors.error[0])
     : (isDark ? theme.colors.gray[2] : theme.colors.gray[1]);
 
-  const [hovered, setHovered] = useState(false);
-  const onMouseEnter = useCallback(() => setHovered(true), []);
-  const onMouseLeave = useCallback(() => setHovered(false), []);
+  const [hovered, hoverHandlers] = useHover();
+  // Keep the local names so the spread + JSX below stays unchanged.
+  const onMouseEnter = hoverHandlers.onMouseEnter;
+  const onMouseLeave = hoverHandlers.onMouseLeave;
 
   if (isPressable) {
     return (

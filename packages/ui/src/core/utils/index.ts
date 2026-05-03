@@ -11,6 +11,10 @@ export function rem(value: number | string): string {
 // Export spacing utilities
 export { SpacingProps, BaseSystemProps, getSpacingStyles, extractSpacingProps } from './spacing';
 
+// Slot-prop helper used by every component that exposes `labelProps` /
+// `titleProps` / `bodyProps` / etc.
+export { mergeSlotProps } from './mergeSlotProps';
+
 // Export universal props system
 export { 
   UniversalProps, 

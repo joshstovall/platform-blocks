@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { Checkbox } from '../Checkbox';
@@ -34,18 +34,45 @@ jest.mock('../styles', () => ({
 jest.mock('../../_internal/FieldHeader', () => {
   const React = require('react');
   const { Text } = require('react-native');
+  const resolveWeight = (w?: any) => {
+    if (!w) return undefined;
+    if (typeof w === 'number') return String(w);
+    const map: Record<string, string> = {
+      light: '300', normal: '400', medium: '500', semibold: '600', bold: '700', black: '900',
+    };
+    return map[w] ?? w;
+  };
+  const propsToStyle = (props: any) => {
+    if (!props) return undefined;
+    const { style, weight, size, ff, fontFamily, tracking, uppercase, color, colorVariant } = props;
+    const synth: any = {};
+    if (weight) synth.fontWeight = resolveWeight(weight);
+    if (typeof size === 'number') synth.fontSize = size;
+    if (ff || fontFamily) synth.fontFamily = ff ?? fontFamily;
+    if (typeof tracking === 'number') synth.letterSpacing = tracking;
+    if (uppercase) synth.textTransform = 'uppercase';
+    if (color) synth.color = color;
+    if (colorVariant) synth.color = colorVariant;
+    return [synth, style].filter(Boolean);
+  };
   const MockFieldHeader = ({
     label,
     description,
+    labelProps,
+    descriptionProps,
   }: {
     label: React.ReactNode;
     description?: React.ReactNode;
+    labelProps?: any;
+    descriptionProps?: any;
   }) => (
     React.createElement(
       React.Fragment,
       null,
-      React.createElement(Text, { accessibilityRole: 'text' }, label),
-      description ? React.createElement(Text, { accessibilityRole: 'text' }, description) : null
+      React.createElement(Text, { accessibilityRole: 'text', style: propsToStyle(labelProps) }, label),
+      description
+        ? React.createElement(Text, { accessibilityRole: 'text', style: propsToStyle(descriptionProps) }, description)
+        : null
     )
   );
   return { FieldHeader: MockFieldHeader };
@@ -110,5 +137,28 @@ describe('Checkbox rendering', () => {
     );
 
     expect(getByTestId('dash')).toBeTruthy();
+  });
+
+  it('forwards labelProps to the label Text via FieldHeader', () => {
+    const { getByText } = render(
+      <Checkbox
+        label="Custom"
+        labelProps={{ weight: '700', style: { letterSpacing: 2 } }}
+      />
+    );
+    const flat = StyleSheet.flatten((getByText('Custom') as any).props.style) || {};
+    expect(flat).toMatchObject({ fontWeight: '700', letterSpacing: 2 });
+  });
+
+  it('forwards descriptionProps to the description Text via FieldHeader', () => {
+    const { getByText } = render(
+      <Checkbox
+        label="Custom"
+        description="Helpful copy"
+        descriptionProps={{ style: { fontStyle: 'italic' } }}
+      />
+    );
+    const flat = StyleSheet.flatten((getByText('Helpful copy') as any).props.style) || {};
+    expect(flat).toMatchObject({ fontStyle: 'italic' });
   });
 });

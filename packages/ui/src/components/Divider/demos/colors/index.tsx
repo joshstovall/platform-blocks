@@ -2,14 +2,15 @@ import type { DividerProps } from '@platform-blocks/ui';
 import { Column, Divider, Text } from '@platform-blocks/ui';
 
 const COLOR_VARIANTS: Array<{ label: string; tone?: DividerProps['colorVariant'] }> = [
-  { label: 'Surface (default)' },
+  { label: 'Border (default)' },
+  { label: 'Subtle', tone: 'subtle' },
+  { label: 'Muted', tone: 'muted' },
+  { label: 'Gray', tone: 'gray' },
   { label: 'Primary', tone: 'primary' },
+  { label: 'Secondary', tone: 'secondary' },
   { label: 'Success', tone: 'success' },
   { label: 'Warning', tone: 'warning' },
   { label: 'Error', tone: 'error' },
-  { label: 'Muted', tone: 'muted' },
-  { label: 'Subtle', tone: 'subtle' },
-  { label: 'Gray', tone: 'gray' }
 ];
 
 export default function Demo() {
@@ -45,6 +46,7 @@ export default function Demo() {
         <Divider colorVariant="primary" variant="solid" label="Solid" />
         <Divider colorVariant="primary" variant="dashed" label="Dashed" />
         <Divider colorVariant="primary" variant="dotted" label="Dotted" />
+        <Divider colorVariant="primary" variant="gradient" label="Gradient" />
       </Column>
     </Column>
   );

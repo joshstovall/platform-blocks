@@ -1,10 +1,12 @@
 import React, { createContext, useContext, forwardRef, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { View, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { Text } from '../Text';
 import { StepperProps, StepperStepProps, StepperCompletedProps, StepperContextValue, type StepperMetrics } from './types';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { Loader } from '../Loader';
 import { resolveComponentSize, type ComponentSize, type ComponentSizeValue } from '../../core/theme/componentSize';
 import { getComponentSize } from '../../core/theme/unified-sizing';
+import { mergeSlotProps } from '../../core/utils';
 
 // Create Stepper Context
 const StepperContext = createContext<StepperContextValue | null>(null);
@@ -100,6 +102,8 @@ const StepperStep = forwardRef<View, StepperStepProps>((
     'aria-label': ariaLabel,
     title,
     stepIndex = 0,
+    labelProps,
+    descriptionProps,
     ...props
   },
   ref
@@ -142,7 +146,6 @@ const StepperStep = forwardRef<View, StepperStepProps>((
 
   const getStepLabelStyles = (): TextStyle => ({
     fontSize: metrics.fontSize,
-    fontWeight: isActive ? '600' : '500',
     color: isActive ? stepColor : theme.text.primary,
     marginBottom: description ? 4 : 0,
   });
@@ -182,8 +185,21 @@ const StepperStep = forwardRef<View, StepperStepProps>((
           marginRight: iconPosition === 'right' ? metrics.spacing : 0,
         }}
       >
-        {label && <Text style={getStepLabelStyles()}>{label}</Text>}
-        {description && <Text style={getStepDescriptionStyles()}>{description}</Text>}
+        {label && (
+          <Text
+            {...mergeSlotProps(
+              { weight: isActive ? '600' : '500', style: getStepLabelStyles() },
+              labelProps
+            )}
+          >
+            {label}
+          </Text>
+        )}
+        {description && (
+          <Text {...mergeSlotProps({ style: getStepDescriptionStyles() }, descriptionProps)}>
+            {description}
+          </Text>
+        )}
       </View>
     );
   };

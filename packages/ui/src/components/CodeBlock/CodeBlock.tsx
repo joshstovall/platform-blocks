@@ -5,6 +5,7 @@ import { View, ViewStyle, TextStyle, StyleProp, Platform, FlatList, ListRenderIt
 import { useTheme } from '../../core/theme';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils';
+import { useHover } from '../../hooks';
 import { Text } from '../Text';
 import { CopyButton } from '../CopyButton/CopyButton';
 import { Spoiler } from '../Spoiler';
@@ -490,21 +491,32 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     fileHeader = false,
     colors,
     wrap = true,
+    fontFamily,
+    ff,
     ...rest
   } = props;
+
+  const customCodeFontFamily = ff ?? fontFamily;
 
   const { spacingProps, otherProps } = extractSpacingProps(rest);
   const spacingStyles = getSpacingStyles(spacingProps);
   const theme = useTheme();
   const isDark = theme.colorScheme === 'dark';
   const resolvedColors = React.useMemo(() => resolveCodeBlockColors(theme, colors), [theme, colors]);
-  const styles = React.useMemo(() => getCodeBlockStyles(theme, isDark, fullWidth, variant, resolvedColors), [theme, isDark, fullWidth, variant, resolvedColors]);
+  const styles = React.useMemo(() => {
+    const base = getCodeBlockStyles(theme, isDark, fullWidth, variant, resolvedColors);
+    if (!customCodeFontFamily) return base;
+    return {
+      ...base,
+      codeText: { ...base.codeText, fontFamily: customCodeFontFamily },
+    };
+  }, [theme, isDark, fullWidth, variant, resolvedColors, customCodeFontFamily]);
   const highlightBackgroundColor = React.useMemo(() => resolvedColors.highlightBackground ?? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'), [resolvedColors.highlightBackground, isDark]);
   const highlightAccentColor = resolvedColors.highlightAccent ?? theme.colors.primary[5];
   const highlightColors = React.useMemo(() => ({ background: highlightBackgroundColor, accent: highlightAccentColor }), [highlightAccentColor, highlightBackgroundColor]);
   const nativeHighlighter = React.useMemo(() => createNativeHighlighter(theme, isDark, variant, resolvedColors.tokenOverrides), [theme, isDark, variant, resolvedColors.tokenOverrides]);
 
-  const [hovered, setHovered] = React.useState(false);
+  const [hovered, hoverHandlers] = useHover();
   const [codeHeight, setCodeHeight] = React.useState<number | null>(null);
   const isWeb = Platform.OS === 'web';
   const webWhitespaceStyle = React.useMemo(() => (
@@ -766,8 +778,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
         }}
         {...(isWeb
           ? {
-              onMouseEnter: () => setHovered(true),
-              onMouseLeave: () => setHovered(false),
+              onMouseEnter: hoverHandlers.onMouseEnter,
+              onMouseLeave: hoverHandlers.onMouseLeave,
             }
           : {})}
       >

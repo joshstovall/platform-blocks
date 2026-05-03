@@ -32,11 +32,15 @@ props:
     type: string
     description: Position of the show/hide control
     default: center
+  - name: controlProps
+    type: "Omit<TextProps, 'children'>"
+    description: Override props applied to the show/hide control `<Text>` (style, weight, ff, size, colorVariant)
 examples:
   - basic
   - sizes
   - customControl
   - initiallyOpen
+  - control-customization
 ---
 
 The Spoiler component automatically collapses content that exceeds a specified height, providing a show/hide toggle to reveal the full content.

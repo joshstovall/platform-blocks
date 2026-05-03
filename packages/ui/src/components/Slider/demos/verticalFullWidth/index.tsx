@@ -11,7 +11,7 @@ export default function Demo() {
         
         <Row gap={32} style={{ height: 300 }}>
           {/* Regular height vertical slider */}
-          <Block gap={12} style={{ alignItems: 'center' }}>
+          <Block gap={12} style={{ alignItems: 'center', height: 300}}>
             <Text size="md" weight="medium">Regular Height</Text>
             <Slider
               value={value}

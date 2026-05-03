@@ -1,12 +1,13 @@
 // TODO: Refactor to be more modular, just a proof-of-concept for now
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Platform, View, Pressable, Linking, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { Icon } from '../Icon';
 // import { useColorScheme } from '../../core/theme/useColorScheme';
 import { directSpotlight } from '../Spotlight';
 import { useThemeMode } from 'platform-blocks/core/theme/ThemeModeProvider';
+import { useDisclosure } from '../../hooks';
 
 export interface FloatingActionItem {
   key: string;
@@ -54,28 +55,30 @@ export const FloatingActions: React.FC<FloatingActionsProps> = React.memo(
 
     const containerRef = useRef<View>(null);
     const mainButtonRef = useRef<any>(null);
-    const [isOpen, setIsOpen] = useState(false);
 
     // Focusable refs for web keyboard nav
     const actionRefs = useRef<any[]>([]);
 
-    const closeMenu = useCallback(() => {
-      setIsOpen(false);
-      onClose?.();
-    }, [onClose]);
+    // useDisclosure handles the boolean state plus onOpen/onClose firing on
+    // real transitions only — replaces the manual useState + transition logic.
+    const [isOpen, { open, close, toggle: toggleOpen }] = useDisclosure(false, {
+      onOpen,
+      onClose,
+    });
+
+    const closeMenu = close;
 
     const toggle = useCallback(() => {
-      if (isOpen) {
-        closeMenu();
-      } else {
-        setIsOpen(true);
-        // Focus first action on web for accessibility
+      if (!isOpen) {
+        // Focus first action on web for accessibility before flipping state
         if (Platform.OS === 'web') {
           actionRefs.current?.[0]?.focus?.();
         }
-        onOpen?.();
+        open();
+      } else {
+        toggleOpen();
       }
-    }, [isOpen, closeMenu, onOpen]);
+    }, [isOpen, open, toggleOpen]);
 
     const handleActionPress = useCallback(
       (callback: () => void) => {

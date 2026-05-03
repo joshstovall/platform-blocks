@@ -1,12 +1,12 @@
 ---
 title: Variants
-category: theming
-order: 20
-tags: [size, color, state]
+category: usage
+order: 15
+tags: [variants, radio, radiogroup, segmented, chip, card]
 highlightLines: []
 status: stable
 since: 1.0.0
 hidden: false
 ---
 
-Combine the `size`, `color`, and validation props to align radios with your UI tokens and state requirements.
+The `variant` prop on `RadioGroup` selects how the group is laid out and how the selected option is communicated. `default` keeps the classic dot indicators; `card` renders each option as a bordered surface (useful when options have descriptions); `segmented` joins the options into a single iOS-style control; `chip` lays them out as wrap-friendly pills (good for filter UIs).

@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, View, Image, Platform } from 'react-native';
 import { Text } from '../Text';
 import { Icon } from '../Icon';
+import { BrandIcon } from '../BrandIcon';
 import { useTheme } from '../../core/theme';
 import { factory } from '../../core/factory';
 import type { AppStoreButtonProps } from './types';
@@ -57,7 +58,8 @@ export const AppStoreButton = factory<{
     'google-play': {
       backgroundColor: '#000000',
       textColor: '#FFFFFF',
-      iconName: 'google' as const,
+      iconName: 'googlePlay' as const,
+      useBrandIcon: true,
       primaryText: {
         en: 'Get it on',
         es: 'Disponible en',
@@ -292,11 +294,18 @@ export const AppStoreButton = factory<{
       accessibilityLabel={`${primaryText} ${secondaryText}`}
       {...rest}
     >
-      <Icon
-        name={config.iconName}
-        size={sizeConfig.iconSize}
-        color={config.textColor}
-      />
+      {(config as any).useBrandIcon ? (
+        <BrandIcon
+          brand={(config as any).iconName}
+          size={sizeConfig.iconSize}
+        />
+      ) : (
+        <Icon
+          name={config.iconName}
+          size={sizeConfig.iconSize}
+          color={config.textColor}
+        />
+      )}
       
       <View style={{ marginLeft: 8, flex: 1 }}>
         <Text

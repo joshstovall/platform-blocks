@@ -15,6 +15,14 @@ jest.mock('../../../core/theme/ThemeProvider', () => ({
       error: ['#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5', '#F87171', '#EF4444', '#DC2626', '#B91C1C'],
       gray: ['#F9FAFB', '#F3F4F6', '#E5E7EB', '#D1D5DB', '#9CA3AF', '#6B7280', '#4B5563', '#374151'],
     },
+    text: {
+      primary: '#111',
+      secondary: '#666',
+      muted: '#999',
+      disabled: '#aaa',
+      onPrimary: '#fff',
+    },
+    fontFamily: 'System',
   }),
 }));
 

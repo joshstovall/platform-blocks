@@ -103,6 +103,11 @@ export {
   globalHotkeys,
   useDeviceInfo,
   useClipboard,
+  useDisclosure,
+  useDebouncedValue,
+  useDebouncedCallback,
+  useMediaQuery,
+  useHover,
   useScrollSpy,
   useMaskedInput,
   useTitleRegistration,
@@ -326,6 +331,8 @@ export type { SizeToken } from './core/theme/types';
 export type { ResponsiveProp } from './core/theme/breakpoints';
 export type { HotkeyItem, KeyboardModifiers, DeviceInfo, UseDeviceInfoOptions } from './hooks';
 export type { UseClipboardOptions, UseClipboardReturnValue } from './hooks';
+export type { UseDisclosureCallbacks, UseDisclosureHandlers, UseDisclosureReturn } from './hooks';
+export type { UseDebouncedValueOptions, UseDebouncedCallbackReturn, UseHoverHandlers, UseHoverReturn } from './hooks';
 export type { ScrollSpyOptions, UseScrollSpyItem } from './hooks';
 export type { UseMaskedInputOptions, UseMaskedInputReturn } from './hooks';
 export type { UseTitleRegistrationOptions } from './hooks';
@@ -384,7 +391,11 @@ export type { BadgeProps } from './components/Badge';
 export type { IndicatorProps } from './components/Indicator';
 export type { CardProps } from './components/Card';
 export type { ChipProps } from './components/Chip';
-export type { DataTableProps, DataTableColumn, DataTableSort, DataTablePagination } from './components/DataTable';
+export type { DataTableProps, DataTableColumn, DataTableFilter, DataTableSort, DataTablePagination } from './components/DataTable';
+export type { InputVariant } from './components/Input';
+export type { SliderVariant } from './components/Slider';
+export type { RadioGroupVariant } from './components/Radio';
+export type { DividerVariant, DividerColorVariant } from './components/Divider';
 export type { DisclaimerProps, WithDisclaimerProps, ComponentWithDisclaimerProps, DisclaimerSupport } from './components/_internal/Disclaimer';
 export type { TableProps } from './components/Table';
 export type { TimelineProps } from './components/Timeline';

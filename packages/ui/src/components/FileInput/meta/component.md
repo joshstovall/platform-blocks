@@ -27,7 +27,25 @@ props:
     default: false
   - name: label
     type: string
-    description: Label for the file input
+    description: Label rendered above the input via the shared FieldHeader
+  - name: description
+    type: string
+    description: Helper text rendered between the label and the input
+  - name: required
+    type: boolean
+    description: Whether the field is required
+  - name: withAsterisk
+    type: boolean
+    description: Show the required asterisk (defaults to `required`)
+  - name: size
+    type: SizeValue
+    description: Controls the label fontSize (also forwarded to inner controls)
+  - name: labelProps
+    type: "Omit<TextProps, 'children'>"
+    description: Override props applied to the label `<Text>`
+  - name: descriptionProps
+    type: "Omit<TextProps, 'children'>"
+    description: Override props applied to the description `<Text>`
   - name: helperText
     type: string
     description: Additional help text

@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { TextInput, View, Text, TextInputProps as RNTextInputProps, StyleSheet, Pressable, Platform } from 'react-native';
+import { TextInput, View, Text, TextInputProps as RNTextInputProps, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { createRadiusStyles } from '../../core/theme/radius';
-import { getSpacingStyles, extractSpacingProps, getLayoutStyles, extractLayoutProps } from '../../core/utils';
+import { getSpacingStyles, extractSpacingProps, getLayoutStyles, extractLayoutProps, mergeSlotProps } from '../../core/utils';
 import { factory } from '../../core/factory/factory';
 import { createInputStyles } from './styles';
 import { FieldHeader } from '../_internal/FieldHeader';
@@ -68,6 +68,7 @@ export const TextInputBase = factory<{
     disabled,
     required,
     size = 'md',
+    variant = 'default',
     withAsterisk,
     placeholder,
     startSection,
@@ -86,13 +87,17 @@ export const TextInputBase = factory<{
     inputRef,
     name,
     keyboardFocusId,
+    labelProps,
+    descriptionProps,
+    placeholderTextColor,
+    startSectionProps,
+    endSectionProps,
     ...rest
   } = otherProps;
 
   const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
 
   const [focused, setFocused] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(true);
   const theme = useTheme();
   const { isRTL } = useDirection();
   const internalInputRef = useRef<TextInput | null>(null);
@@ -149,9 +154,10 @@ export const TextInputBase = factory<{
     disabled: !!disabled,
     focused: isFocused,
     size,
+    variant,
     hasLeftSection: !!startSection,
     hasRightSection: !!endSection || showClearButton
-  }), [error, disabled, isFocused, size, startSection, endSection, showClearButton]);
+  }), [error, disabled, isFocused, size, variant, startSection, endSection, showClearButton]);
 
   const { getInputStyles } = createInputStyles(theme, isRTL);
   const styles = getInputStyles(styleProps, radiusStyles);
@@ -170,24 +176,6 @@ export const TextInputBase = factory<{
     return secureTextEntryProp ?? false;
   }, [secureTextEntry, secureTextEntryProp]);
 
-  const maskedValue = useMemo(() => {
-    if (!isSecureEntry) return '';
-    const length = Array.from(normalizedValue).length;
-    if (length === 0) return '';
-    return '•'.repeat(length);
-  }, [isSecureEntry, normalizedValue]);
-
-  // Blinking cursor for secure entry (simple interval toggle)
-  useEffect(() => {
-    if (focused && isSecureEntry) {
-      setCursorVisible(true);
-      const interval = setInterval(() => {
-        setCursorVisible(v => !v);
-      }, 530);
-      return () => clearInterval(interval);
-    }
-  }, [focused, isSecureEntry]);
-
   const textColor = (flattenedInputStyle?.color as string) ?? (styleProps.disabled ? theme.text.disabled : theme.text.primary);
 
   const resolvedInputStyle = useMemo(() => {
@@ -195,23 +183,7 @@ export const TextInputBase = factory<{
     if (textInputStyleProp) {
       base.push(textInputStyleProp);
     }
-    base.push({ color: isSecureEntry ? 'transparent' : textColor });
-    return base;
-  }, [styles.input, textInputStyleProp, isSecureEntry, textColor]);
-
-  const overlayStyle = useMemo(() => {
-    const base = [styles.input] as any[];
-    if (textInputStyleProp) {
-      base.push(textInputStyleProp);
-    }
-    base.push({
-      position: 'absolute' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      color: textColor,
-      flex: undefined,
-    });
+    base.push({ color: textColor });
     return base;
   }, [styles.input, textInputStyleProp, textColor]);
 
@@ -316,11 +288,13 @@ export const TextInputBase = factory<{
         disabled={disabled}
         error={!!error}
         size={size}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
       />
 
       <View style={styles.inputContainer}>
         {startSection && (
-          <View style={styles.startSection}>
+          <View {...mergeSlotProps({ style: styles.startSection }, startSectionProps)}>
             {startSection}
           </View>
         )}
@@ -335,7 +309,7 @@ export const TextInputBase = factory<{
             onSubmitEditing={handleSubmitEditing}
             editable={!disabled}
             placeholder={placeholder}
-            placeholderTextColor={theme.text.muted}
+            placeholderTextColor={placeholderTextColor ?? theme.text.muted}
             style={resolvedInputStyle}
             selectionColor={selectionColorProp ?? textColor}
             testID={testID}
@@ -343,34 +317,10 @@ export const TextInputBase = factory<{
             {...inputAccessibilityProps}
             {...restTextInputProps}
           />
-          {isSecureEntry && (
-            <View
-              pointerEvents="none"
-              style={[overlayStyle, { flexDirection: 'row', alignItems: 'center' }]}
-            >
-              <Text
-                accessible={false}
-                style={{ color: textColor, fontSize: styles.input.fontSize, fontFamily: theme.fontFamily }}
-                numberOfLines={1}
-              >
-                {maskedValue}
-              </Text>
-              {focused && cursorVisible && (
-                <View
-                  style={{
-                    width: 1,
-                    height: styles.input.fontSize || 16,
-                    backgroundColor: textColor,
-                    marginLeft: 1,
-                  }}
-                />
-              )}
-            </View>
-          )}
         </View>
 
         {(showClearButton || endSection) && (
-          <View style={styles.endSection}>
+          <View {...mergeSlotProps({ style: styles.endSection }, endSectionProps)}>
             {showClearButton && (
               <ClearButton
                 onPress={handleClear}

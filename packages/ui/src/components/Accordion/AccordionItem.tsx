@@ -6,6 +6,7 @@ import type { AccordionItem, AccordionProps } from './types';
 import { useAccordionItemAnimation } from './hooks/useAccordionItemAnimation';
 import type { AccordionAnimationProp } from './types';
 import { Collapse } from '../Collapse';
+import { mergeSlotProps } from '../../core/utils';
 export interface AccordionItemComponentProps {
   item: AccordionItem;
   isExpanded: boolean;
@@ -20,6 +21,7 @@ export interface AccordionItemComponentProps {
   headerStyle?: any;
   contentStyle?: any;
   headerTextStyle?: any;
+  titleProps?: any;
   idPrefix: string;
   animated: AccordionAnimationProp;
   chevronPosition?: 'start' | 'end';
@@ -39,6 +41,7 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
   headerStyle,
   contentStyle,
   headerTextStyle,
+  titleProps,
   idPrefix,
   animated,
   chevronPosition = 'end',
@@ -74,9 +77,19 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
           )}
           {item.icon && <View style={{ marginRight: 12 }}>{item.icon}</View>}
           <Text
-            weight={isExpanded ? '600' : '400'}
-            style={[styles.headerText, isExpanded && styles.activeHeaderText, isDisabled && styles.disabledHeaderText, headerTextStyle]}
-            selectable={false}
+            {...mergeSlotProps(
+              {
+                weight: isExpanded ? '600' : '400',
+                selectable: false,
+                style: [
+                  styles.headerText,
+                  isExpanded && styles.activeHeaderText,
+                  isDisabled && styles.disabledHeaderText,
+                  headerTextStyle,
+                ],
+              },
+              titleProps
+            )}
           >
             {item.title}
           </Text>

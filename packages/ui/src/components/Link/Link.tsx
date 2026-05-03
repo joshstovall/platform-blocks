@@ -31,6 +31,10 @@ export interface LinkProps extends SpacingProps {
   accessibilityLabel?: string;
   /** Whether this link opens in a new tab/window (web only) */
   target?: '_blank' | '_self';
+  /** Custom font family (overrides theme font) */
+  fontFamily?: string;
+  /** Shorthand alias for `fontFamily` */
+  ff?: string;
 }
 
 const getLinkStyles = (
@@ -38,7 +42,8 @@ const getLinkStyles = (
   color: LinkProps['color'] = 'primary',
   variant: LinkProps['variant'] = 'default',
   size: SizeValue = 'lg', // Changed from 'md' to 'lg' to match Text component's 16px default
-  disabled: boolean = false
+  disabled: boolean = false,
+  fontFamily?: string
 ) => {
   const fontSize = getFontSize(size);
 
@@ -55,7 +60,7 @@ const getLinkStyles = (
   const baseStyles: TextStyle = {
     fontSize,
     color: textColor,
-    fontFamily: theme.fontFamily, // Use the same font family as Text component
+    fontFamily: fontFamily ?? theme.fontFamily,
     textDecorationLine: variant === 'default' ? 'underline' : 'none',
     // Ensure proper text baseline alignment
     textAlignVertical: 'center',
@@ -88,13 +93,15 @@ export const Link: React.FC<LinkProps> = (props) => {
     textStyle,
     accessibilityLabel,
     target = '_self',
+    fontFamily,
+    ff,
     ...spacingProps
   } = props;
 
   const theme = useTheme();
   const spacingStyles = getSpacingStyles(spacingProps);
-  
-  const linkStyles = getLinkStyles(theme, color, variant, size, disabled);
+
+  const linkStyles = getLinkStyles(theme, color, variant, size, disabled, ff ?? fontFamily);
 
   const handlePress = () => {
     if (disabled) return;

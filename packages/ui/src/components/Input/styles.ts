@@ -1,7 +1,19 @@
 import { StyleSheet } from 'react-native';
 import { PlatformBlocksTheme, SizeToken, SizeValue } from '../../core/theme/types';
-import { InputStyleProps } from './types';
+import { InputStyleProps, InputVariant } from './types';
 import { px } from '../../core/utils';
+import { getControlLabelFontSize, getControlIconSize } from '../../core/theme/sizes';
+
+/**
+ * @deprecated Use `getControlLabelFontSize` from `core/theme/sizes` instead.
+ * Kept as a thin re-export so existing callers continue to compile.
+ */
+export const resolveInputLabelFontSize = (size: SizeValue): number => getControlLabelFontSize(size);
+
+/**
+ * @deprecated Use `getControlIconSize` from `core/theme/sizes` instead.
+ */
+export const resolveInputIconSize = (size: SizeValue): number => getControlIconSize(size);
 
 export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = false) => {
   const getSizeStyles = (size: SizeValue) => {
@@ -97,39 +109,84 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
         } as any),
       },
       
-      inputContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        ...inputRadius,
-        backgroundColor: props.disabled
-          ? (theme.colorScheme === 'dark' ? '#2C2C2E' : theme.colors.gray[0])
-          : theme.backgrounds.surface,
-        paddingHorizontal: horizontalPadding,
-        paddingVertical: verticalPadding,
-        minHeight: baseStyles.minHeight,
-        // Reserve max border width to avoid layout shift
-        borderWidth: 2,
-        borderColor: props.error
+      inputContainer: (() => {
+        const variant: InputVariant = props.variant ?? 'default';
+        const isDark = theme.colorScheme === 'dark';
+        const focusBorder = props.error
           ? theme.colors.error[5]
           : props.focused
             ? theme.colors.primary[5]
-            : theme.backgrounds.border,
-        // Optional focus shadow (web only) without affecting layout
-        ...(props.focused && !props.disabled && typeof window !== 'undefined' && theme.states?.focusRing && {
-          boxShadow: `0 0 0 2px ${theme.states.focusRing}`,
-        }),
-        // Add iOS-style shadow only when enabled (avoid implying elevation for disabled)
-        ...(!props.disabled && theme.colorScheme === 'light' && {
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-        }),
-  elevation: props.disabled ? 0 : 1,
-  // Web-only affordances for disabled state
-  ...(typeof window !== 'undefined' && props.disabled && ({ cursor: 'not-allowed', opacity: 0.75 } as any)),
-      },
+            : theme.backgrounds.border;
+
+        // Per-variant fill + border. We always reserve `borderWidth: 2` to avoid layout shift
+        // when the variant transitions between focus states; `unstyled` uses transparent borders.
+        const fill: { backgroundColor: string; borderColor: string; borderWidth: number } = (() => {
+          if (variant === 'unstyled') {
+            return {
+              backgroundColor: 'transparent',
+              borderColor: props.error ? theme.colors.error[5] : 'transparent',
+              borderWidth: props.error ? 2 : 0,
+            };
+          }
+          if (variant === 'outline') {
+            return {
+              backgroundColor: 'transparent',
+              borderColor: focusBorder,
+              borderWidth: 2,
+            };
+          }
+          if (variant === 'filled') {
+            return {
+              backgroundColor: props.disabled
+                ? (isDark ? '#2C2C2E' : theme.colors.gray[1])
+                : (isDark ? theme.colors.gray[8] : theme.colors.gray[1]),
+              // Filled hides the border unless focused or in error
+              borderColor: props.error
+                ? theme.colors.error[5]
+                : props.focused
+                  ? theme.colors.primary[5]
+                  : 'transparent',
+              borderWidth: 2,
+            };
+          }
+          // default
+          return {
+            backgroundColor: props.disabled
+              ? (isDark ? '#2C2C2E' : theme.colors.gray[0])
+              : theme.backgrounds.surface,
+            borderColor: focusBorder,
+            borderWidth: 2,
+          };
+        })();
+
+        const showElevationShadow = variant === 'default' && !props.disabled && theme.colorScheme === 'light';
+
+        return {
+          alignItems: 'center',
+          flexDirection: 'row',
+          ...inputRadius,
+          backgroundColor: fill.backgroundColor,
+          paddingHorizontal: variant === 'unstyled' ? 0 : horizontalPadding,
+          paddingVertical: variant === 'unstyled' ? 0 : verticalPadding,
+          minHeight: baseStyles.minHeight,
+          borderWidth: fill.borderWidth,
+          borderColor: fill.borderColor,
+          // Optional focus shadow (web only) without affecting layout
+          ...(props.focused && !props.disabled && variant !== 'unstyled' && typeof window !== 'undefined' && theme.states?.focusRing && {
+            boxShadow: `0 0 0 2px ${theme.states.focusRing}`,
+          }),
+          // Add iOS-style shadow only when enabled (avoid implying elevation for disabled or non-default variants)
+          ...(showElevationShadow && {
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+          }),
+          elevation: variant === 'default' && !props.disabled ? 1 : 0,
+          ...(typeof window !== 'undefined' && props.disabled && ({ cursor: 'not-allowed', opacity: 0.75 } as any)),
+        };
+      })(),
       
       label: {
         color: props.disabled ? theme.text.disabled : theme.text.primary,
-        fontSize: px(theme.fontSizes.sm),
+        fontSize: getControlLabelFontSize(props.size),
         fontWeight: '600',
         marginBottom: 0
       },

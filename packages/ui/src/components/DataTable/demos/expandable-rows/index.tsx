@@ -45,7 +45,7 @@ const columns: DataTableColumn<Project>[] = [
     accessor: 'name',
     sortable: true,
     cell: (_value, row) => (
-      <Column gap="xxs">
+      <Column gap="xs">
         <Text weight="semibold">{row.name}</Text>
         <Text variant="small" colorVariant="muted">
           Owner · {row.owner}
@@ -102,7 +102,7 @@ export default function Demo() {
         onPaginationChange={setPagination}
         expandedRows={expandedRows}
         onExpandedRowsChange={setExpandedRows}
-        renderExpandedRow={(project) => (
+        expandableRowRender={(project) => (
           <Column gap="xs" p="md">
             <Text weight="semibold">Summary</Text>
             <Text colorVariant="muted">{project.summary}</Text>

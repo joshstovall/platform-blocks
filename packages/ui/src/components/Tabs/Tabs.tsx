@@ -7,7 +7,7 @@ import { useReducedMotion } from '../../core/motion/ReducedMotionProvider';
 import { SizeValue, getFontSize, getSpacing } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
-import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
+import { SpacingProps, getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { Sup, Text } from '../Text';
 import { fastHash } from '../../core/utils/hash';
 import { useDirection } from '../../core/providers/DirectionProvider';
@@ -328,14 +328,12 @@ const getTabStyles = (
     indicator: (variant === 'line' || variant === 'chip') ? variantStyles[variant].indicator : undefined,
     tabText: {
       fontSize,
-      fontWeight: '500' as const,
       color: theme.text.primary,
       // Counter-skew the text for folder tabs
       ...(variant === 'folder' && { transform: [{ skewX: '10deg' }] }),
     },
     activeTabText: {
       color: variant === 'chip' ? (theme.text.onPrimary || '#FFFFFF') : colorPalette[6],
-      fontWeight: '600' as const,
       // Counter-skew the text for folder tabs
       ...(variant === 'folder' && { transform: [{ skewX: '8deg' }] }),
     },
@@ -391,6 +389,7 @@ export const Tabs: React.FC<TabsProps> = (props) => {
     tabStyle,
     contentStyle,
     textStyle,
+    labelProps,
     radius,
     tabCornerRadius,
     contentCornerRadius,
@@ -803,13 +802,19 @@ export const Tabs: React.FC<TabsProps> = (props) => {
                   </View>
                 )}
                 <Text
-                  style={[
-                    styles.tabText,
-                    isActive && styles.activeTabText,
-                    textStyle,
-                    activeTextClr && isActive && { color: activeTextClr },
-                  ]}
-                  color={isActive ? activeTextClr : undefined}
+                  {...mergeSlotProps(
+                    {
+                      weight: isActive ? '600' : '500',
+                      color: isActive ? activeTextClr : undefined,
+                      style: [
+                        styles.tabText,
+                        isActive && styles.activeTabText,
+                        textStyle,
+                        activeTextClr && isActive && { color: activeTextClr },
+                      ],
+                    },
+                    labelProps
+                  )}
                 >
                   {item.label}
                 </Text>
@@ -871,13 +876,19 @@ export const Tabs: React.FC<TabsProps> = (props) => {
 
                   <Flex gap={6} align="center" direction={isVertical ? 'column' : 'row'}>
                     <Text
-                      style={[
-                        styles.tabText,
-                        isActive && styles.activeTabText,
-                        textStyle,
-                        activeTextClr && isActive && { color: activeTextClr },
-                      ]}
-                      color={isActive ? activeTextClr : undefined}
+                      {...mergeSlotProps(
+                        {
+                          weight: isActive ? '600' : '500',
+                          color: isActive ? activeTextClr : undefined,
+                          style: [
+                            styles.tabText,
+                            isActive && styles.activeTabText,
+                            textStyle,
+                            activeTextClr && isActive && { color: activeTextClr },
+                          ],
+                        },
+                        labelProps
+                      )}
                     >
                       {item.label}
                     </Text>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ViewStyle, StyleProp } from 'react-native';
 import type { ComponentSizeValue } from '../../core/theme/componentSize';
+import type { TextProps } from '../Text';
 
 export interface AvatarProps {
   /** Size of the avatar */
@@ -29,6 +30,12 @@ export interface AvatarProps {
   gap?: number;
   /** Force horizontal layout off (set false to hide label/description wrapper) */
   showText?: boolean;
+  /** Override props applied to the fallback initials `<Text>` (style, weight, ff, size, colorVariant). */
+  fallbackProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the adjacent label `<Text>` (only when `label` is a string). */
+  labelProps?: Omit<TextProps, 'children'>;
+  /** Override props applied to the secondary description `<Text>` (only when `description` is a string). */
+  descriptionProps?: Omit<TextProps, 'children'>;
 }
 
 export interface AvatarGroupProps {

@@ -1,0 +1,58 @@
+import { Block, Column, Row, Text } from '@platform-blocks/ui';
+
+export default function Demo() {
+  return (
+    <Column gap="lg">
+      <Column gap="sm">
+        <Text size="sm" colorVariant="muted">Palette names → subtle tint (shade-1)</Text>
+        <Row gap="sm" wrap="wrap">
+          <Block bg="primary" p="sm" radius="md">
+            <Text>primary</Text>
+          </Block>
+          <Block bg="success" p="sm" radius="md">
+            <Text>success</Text>
+          </Block>
+          <Block bg="warning" p="sm" radius="md">
+            <Text>warning</Text>
+          </Block>
+          <Block bg="error" p="sm" radius="md">
+            <Text>error</Text>
+          </Block>
+        </Row>
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" colorVariant="muted">
+          Specific shade with `palette.shade` syntax
+        </Text>
+        <Row gap="sm" wrap="wrap">
+          <Block bg="primary.6" p="sm" radius="md">
+            <Text c="dimmed" style={{ color: '#fff' }}>primary.6</Text>
+          </Block>
+          <Block bg="gray.2" p="sm" radius="md">
+            <Text>gray.2</Text>
+          </Block>
+        </Row>
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" colorVariant="muted">Theme background keys</Text>
+        <Row gap="sm" wrap="wrap">
+          <Block bg="surface" p="sm" radius="md" borderWidth={1} borderColor="#ddd">
+            <Text>surface</Text>
+          </Block>
+          <Block bg="subtle" p="sm" radius="md">
+            <Text>subtle</Text>
+          </Block>
+        </Row>
+      </Column>
+
+      <Column gap="sm">
+        <Text size="sm" colorVariant="muted">Plain CSS color string still works</Text>
+        <Block bg="#a855f7" p="sm" radius="md">
+          <Text style={{ color: '#fff' }}>Custom hex</Text>
+        </Block>
+      </Column>
+    </Column>
+  );
+}

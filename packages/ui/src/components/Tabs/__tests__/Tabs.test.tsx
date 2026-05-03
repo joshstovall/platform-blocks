@@ -89,4 +89,15 @@ describe('Tabs', () => {
     const indicatorAfter = StyleSheet.flatten(getByTestId('tabs-indicator').props.style);
     expect(indicatorAfter.left).toBe(150);
   });
+
+  it('forwards labelProps to every tab label Text', () => {
+    const { getByText } = render(
+      <Tabs
+        items={createItems(6)}
+        labelProps={{ weight: '700', style: { letterSpacing: 1.5 } }}
+      />
+    );
+    const flat = StyleSheet.flatten((getByText('Examples (6)') as any).props.style) || {};
+    expect(flat).toMatchObject({ fontWeight: '700', letterSpacing: 1.5 });
+  });
 });

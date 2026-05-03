@@ -42,6 +42,19 @@ export default function Demo() {
         </Text>
       </Column>
 
+      <Column gap="sm">
+        <Text variant="p" weight="medium">
+          Section break
+        </Text>
+        <Text variant="p" colorVariant="muted">
+          Gradient variant fades the line in and out — softer than a hard rule.
+        </Text>
+        <Divider variant="gradient" colorVariant="primary" />
+        <Text variant="p">
+          The fade keeps long-form content breathable without dropping a horizontal stripe.
+        </Text>
+      </Column>
+
       <Block direction="row" align="center" gap="md" wrap="wrap">
         <Text variant="small" weight="medium">
           Published

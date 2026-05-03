@@ -168,7 +168,7 @@ export const SegmentedControl = factory<{
     transitionDuration = 200,
     transitionTimingFunction = 'ease',
     name,
-    variant = 'default',
+    variant = 'filled',
     indicatorStyle,
     itemStyle,
     style,
@@ -426,7 +426,12 @@ export const SegmentedControl = factory<{
           opacity: disabled ? 0.6 : 1,
         },
         radiusStyles,
-        ...(hasLabelContent ? [{ alignSelf: 'stretch' }, ...(isVerticalLabel ? [] : [{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }])] : [layoutStyles, spacingStyles]),
+        ...(hasLabelContent
+          ? [
+              { alignSelf: 'stretch' },
+              ...(!isVerticalLabel && isFullWidth ? [{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }] : []),
+            ]
+          : [layoutStyles, spacingStyles]),
         style,
       ]}
       testID={testID}
@@ -560,13 +565,23 @@ export const SegmentedControl = factory<{
   const LayoutComponent = isVerticalLabel ? Column : Row;
   const layoutGap = isVerticalLabel ? 'xs' : 'sm';
   const layoutAlign = isVerticalLabel ? 'stretch' : 'center';
+  // When the label sits beside the control, force the wrapper to fill its parent
+  // so the label can actually anchor to the edge. Without this, the wrapper
+  // shrinks to content and labelPosition has no visible effect.
+  const layoutPropsForWrapper = isVerticalLabel
+    ? layoutProps
+    : { ...layoutProps, fullWidth: true };
+  // If the user did not opt into fullWidth, the control sizes to its items
+  // and we push label and control to opposite edges (iOS Settings style).
+  const layoutJustify = !isVerticalLabel && !isFullWidth ? 'space-between' : undefined;
 
   return (
     <LayoutComponent
       gap={layoutGap}
       align={layoutAlign}
+      justify={layoutJustify as any}
       {...spacingProps}
-      {...layoutProps}
+      {...layoutPropsForWrapper}
     >
       {effectiveLabelPosition === 'top' && labelNode}
       {effectiveLabelPosition === 'left' && labelNode}

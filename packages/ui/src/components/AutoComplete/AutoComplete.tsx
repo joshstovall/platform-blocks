@@ -11,6 +11,7 @@ import { createRadiusStyles } from '../../core/theme/radius';
 import type { SizeValue } from '../../core/theme/types';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils/spacing';
 import { extractLayoutProps, getLayoutStyles } from '../../core/utils/layout';
+import { mergeSlotProps } from '../../core/utils';
 import { useOverlay } from '../../core/providers/OverlayProvider';
 import { usePopoverPositioning } from '../../core/hooks/usePopoverPositioning';
 import type { PlacementType } from '../../core/utils/positioning-enhanced';
@@ -25,7 +26,7 @@ import { Highlight } from '../Highlight';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import { handleSelectionComplete } from '../../core/keyboard/selection';
 import { resolveOptionalModule } from '../../utils/optionalModule';
-import { useOverlayMode } from '../../hooks';
+import { useOverlayMode, useDebouncedCallback } from '../../hooks';
 
 type SimpleDebounced<F extends (...args: any[]) => void> = ((...args: Parameters<F>) => void) & {
   cancel: () => void;
@@ -151,6 +152,11 @@ export const AutoComplete = factory<{
     clearable,
     clearButtonLabel,
     onClear,
+    labelProps,
+    descriptionProps,
+    placeholderTextColor,
+    startSectionProps,
+    endSectionProps,
     ...inputProps
   } = otherProps as any; // cast to allow new props (inputWidth, minWidth, usePortal, positioning props)
 
@@ -362,45 +368,42 @@ export const AutoComplete = factory<{
   const spacingStyles = getSpacingStyles(spacingProps);
   const layoutStyles = getLayoutStyles(layoutProps);
 
-  // Debounced search function
-  const debouncedSearch = useMemo(
-    () => debounce(async (searchQuery: string) => {
-      if (searchQuery.length < minSearchLength) {
-        setSuggestions([]);
-        setLoading(false);
-        return;
+  // Debounced search via the shared `useDebouncedCallback` hook. The wrapper's
+  // identity is stable across renders, so it's safe to reference from useEffect
+  // and from the input handlers below — we no longer need a `useMemo`.
+  const debouncedSearch = useDebouncedCallback(async (searchQuery: string) => {
+    if (searchQuery.length < minSearchLength) {
+      setSuggestions([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let results: AutoCompleteOption[] = [];
+
+      if (onSearch) {
+        // Use async search
+        results = await onSearch(searchQuery);
+      } else {
+        // Use local data filtering
+        results = data.filter((item: AutoCompleteOption) => filter(item, searchQuery));
       }
 
-      setLoading(true);
-
-      try {
-        let results: AutoCompleteOption[] = [];
-
-        if (onSearch) {
-          // Use async search
-          results = await onSearch(searchQuery);
-        } else {
-          // Use local data filtering
-          results = data.filter((item: AutoCompleteOption) => filter(item, searchQuery));
-        }
-
-        // Apply max suggestions limit
-        if (maxSuggestions > 0) {
-          results = results.slice(0, maxSuggestions);
-        }
-
-        console.log('Search results:', results);
-
-        setSuggestions(results);
-      } catch (error) {
-        console.error('AutoComplete search error:', error);
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
+      // Apply max suggestions limit
+      if (maxSuggestions > 0) {
+        results = results.slice(0, maxSuggestions);
       }
-    }, searchDelay),
-    [onSearch, data, filter, minSearchLength, searchDelay, maxSuggestions]
-  );
+
+      setSuggestions(results);
+    } catch (error) {
+      console.error('AutoComplete search error:', error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, searchDelay);
 
   const handleClearInput = useCallback(() => {
     if (disabled) return;
@@ -1148,6 +1151,8 @@ export const AutoComplete = factory<{
         error={!!error}
         size={size as SizeValue}
         withAsterisk={required}
+        labelProps={labelProps}
+        descriptionProps={descriptionProps}
       />
 
       {/* Input Container */}
@@ -1162,7 +1167,12 @@ export const AutoComplete = factory<{
         }}
         style={[inputStyles.inputContainer, styles.inputContainer]}
       >
-        <View style={[styles.selectionArea, selectedValuesContainerStyle]}>
+        <View
+          {...mergeSlotProps(
+            { style: [styles.selectionArea, selectedValuesContainerStyle] },
+            startSectionProps
+          )}
+        >
           {multiSelect && selectedValues.map((selected: AutoCompleteOption, index: number) =>
             renderSelectedValueItem(selected, index, 'input')
           )}
@@ -1174,18 +1184,20 @@ export const AutoComplete = factory<{
             onBlur={handleBlur}
             onKeyPress={handleKeyPress}
             placeholder={hasSelectedValues ? '' : placeholder}
-            placeholderTextColor={theme.text.muted}
+            placeholderTextColor={placeholderTextColor ?? theme.text.muted}
             style={[inputStyles.input, styles.input]}
             editable={!disabled}
             {...baseTextInputProps}
           />
         </View>
         {showClearButton && (
-          <ClearButton
-            onPress={handleClearInput}
-            size={size}
-            accessibilityLabel={clearLabel}
-          />
+          <View {...mergeSlotProps({}, endSectionProps)}>
+            <ClearButton
+              onPress={handleClearInput}
+              size={size}
+              accessibilityLabel={clearLabel}
+            />
+          </View>
         )}
       </View>
 
@@ -1268,7 +1280,7 @@ export const AutoComplete = factory<{
                     onChangeText={handleChangeText}
                     onKeyPress={handleKeyPress}
                     placeholder={hasSelectedValues ? '' : placeholder}
-                    placeholderTextColor={theme.text.muted}
+                    placeholderTextColor={placeholderTextColor ?? theme.text.muted}
                     style={[inputStyles.input, styles.input]}
                     editable={!disabled}
                     {...modalTextInputProps}
