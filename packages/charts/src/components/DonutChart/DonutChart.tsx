@@ -217,7 +217,7 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try {
     interaction = useChartInteractionContext();
-  } catch {}
+  } catch { /* noop */ }
 
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;

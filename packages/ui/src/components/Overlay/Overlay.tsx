@@ -203,7 +203,7 @@ export const Overlay = React.forwardRef<View, OverlayProps>((props, ref) => {
     <View
       ref={ref}
       style={[
-        StyleSheet.absoluteFillObject,
+        StyleSheet.absoluteFill,
         webFixedStyle,
         center ? styles.center : null,
         zIndex != null ? { zIndex } : null,

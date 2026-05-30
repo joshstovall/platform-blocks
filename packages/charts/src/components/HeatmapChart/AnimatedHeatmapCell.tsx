@@ -155,7 +155,7 @@ export const AnimatedHeatmapCell: React.FC<AnimatedHeatmapCellProps> = React.mem
           fill={textColor}
           textAnchor="middle"
           pointerEvents="none"
-          fontWeight={fontSize <= 10 ? "600" : "500"} // Bolder text for small sizes
+          fontWeight={fontSize <= 10 ? '600' : '500'} // Bolder text for small sizes
         >
           {cell.displayValue ?? (typeof cell.value === 'number'
             ? cell.value % 1 === 0

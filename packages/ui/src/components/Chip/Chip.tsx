@@ -311,7 +311,7 @@ export const Chip: React.FC<ChipProps> = (props) => {
           colors={gradientStops}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[StyleSheet.absoluteFillObject, radiusStyles]}
+          style={[StyleSheet.absoluteFill, radiusStyles]}
         />
       )}
       {removePosition === 'left' && removeButton && (

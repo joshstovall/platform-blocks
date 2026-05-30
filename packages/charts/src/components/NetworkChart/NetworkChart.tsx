@@ -443,7 +443,7 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
           top: padding.top,
           width: plotWidth,
           height: plotHeight,
-          // @ts-ignore web-specific CSS properties
+          // @ts-expect-error web-specific CSS properties
           userSelect: 'none',
           WebkitUserSelect: 'none',
           MozUserSelect: 'none',
@@ -454,9 +454,8 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
         <Svg
           width={plotWidth}
           height={plotHeight}
-          // @ts-ignore web specific events
+          // @ts-expect-error web specific events
           onMouseMove={handlePointerMove}
-          // @ts-ignore web specific events
           onMouseLeave={handlePointerLeave}
         >
           {renderLinks.map((link) => {

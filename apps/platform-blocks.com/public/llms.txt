@@ -1,10 +1,10 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2026-05-03T18:24:30.098Z
+Generated: 2026-05-30T17:59:29.690Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
-- Version: 0.8.2
+- Version: 0.10.0
 - Description: A comprehensive React Native UI component library — 80+ accessible, themeable, cross-platform components for iOS, Android, and Web
 - Main: lib/cjs/index.js
 - Module: lib/esm/index.js
@@ -48,13 +48,13 @@ Generated: 2026-05-03T18:24:30.098Z
 - @babel/preset-react: ^7.28.0
 - @babel/preset-typescript: ^7.28.0
 - @react-native-masked-view/masked-view: ^0.3.2
-- @react-native/babel-preset: ^0.83.0
+- @react-native/babel-preset: ^0.85.3
+- @react-native/jest-preset: ^0.85.3
 - @rollup/plugin-commonjs: ^29.0.0
 - @rollup/plugin-json: ^6.1.0
 - @rollup/plugin-node-resolve: ^16.0.0
 - @rollup/plugin-typescript: ^12.3.0
-- @shopify/flash-list: ^2.2.0
-- … 32 more
+- … 33 more
 
 ## UI README
 
@@ -1317,7 +1317,7 @@ import { Block, Column, Row, Text } from '@platform-blocks/ui';
     <Column gap="lg">
       <Column gap="sm">
         <Text size="sm" colorVariant="muted">Palette names → subtle tint (shade-1)</Text>
-        <Row gap="sm" wrap>
+        <Row gap="sm" wrap="wrap">
           <Block bg="primary" p="sm" radius="md">
             <Text>primary</Text>
           </Block>
@@ -1336,7 +1336,7 @@ import { Block, Column, Row, Text } from '@platform-blocks/ui';
         <Text size="sm" colorVariant="muted">
           Specific shade with `palette.shade` syntax
         </Text>
-        <Row gap="sm" wrap>
+        <Row gap="sm" wrap="wrap">
           <Block bg="primary.6" p="sm" radius="md">
             <Text c="dimmed" style={{ color: '#fff' }}>primary.6</Text>
           </Block>
@@ -1347,7 +1347,7 @@ import { Block, Column, Row, Text } from '@platform-blocks/ui';
       </Column>
       <Column gap="sm">
         <Text size="sm" colorVariant="muted">Theme background keys</Text>
-        <Row gap="sm" wrap>
+        <Row gap="sm" wrap="wrap">
           <Block bg="surface" p="sm" radius="md" borderWidth={1} borderColor="#ddd">
             <Text>surface</Text>
           </Block>
@@ -2163,6 +2163,7 @@ The Card component provides a flexible container for displaying content. Six var
 `disabled` (boolean) [optional]
 `onContextMenu` ((e: any) => void) [optional]
   Web-only events passthrough
+`testID` (string) [optional]
 
 ### Demos
 

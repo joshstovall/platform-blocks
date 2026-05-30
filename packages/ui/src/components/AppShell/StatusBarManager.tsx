@@ -39,13 +39,29 @@ export const StatusBarManager: React.FC<StatusBarManagerProps> = ({
       return;
     }
 
-    NavigationBar.setBackgroundColorAsync(resolvedBackgroundColor).catch(() => {
-      /* noop */
-    });
+    // expo-navigation-bar (SDK 56+, Android edge-to-edge) replaced the async
+    // setButtonStyleAsync/setBackgroundColorAsync APIs with a synchronous setStyle.
+    // Feature-detect so this works across expo-navigation-bar versions.
+    const buttonStyle = resolvedStyle === 'light' ? 'light' : 'dark';
+    const setStyle = NavigationBar.NavigationBar?.setStyle ?? NavigationBar.setStyle;
+    try {
+      if (typeof setStyle === 'function') {
+        setStyle(buttonStyle);
+      } else if (typeof NavigationBar.setButtonStyleAsync === 'function') {
+        NavigationBar.setButtonStyleAsync(buttonStyle).catch(() => {
+          /* noop */
+        });
+      }
 
-    NavigationBar.setButtonStyleAsync(resolvedStyle === 'light' ? 'light' : 'dark').catch(() => {
+      // Background color is only settable on legacy (pre-edge-to-edge) versions.
+      if (typeof NavigationBar.setBackgroundColorAsync === 'function') {
+        NavigationBar.setBackgroundColorAsync(resolvedBackgroundColor).catch(() => {
+          /* noop */
+        });
+      }
+    } catch {
       /* noop */
-    });
+    }
   }, [resolvedBackgroundColor, resolvedStyle]);
 
   return (

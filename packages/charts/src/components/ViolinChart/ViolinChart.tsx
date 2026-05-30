@@ -435,7 +435,7 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-ignore web
+        // @ts-expect-error web
         onMouseMove={(e) => {
           if (!setPointer) return; 
           const rect = (e.currentTarget as any).getBoundingClientRect();

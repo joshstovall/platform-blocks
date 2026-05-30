@@ -568,7 +568,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-ignore web events
+        // @ts-expect-error web events
         onMouseMove={(e) => {
           if (!setPointer) return;
           if (plotWidth <= 0) return;

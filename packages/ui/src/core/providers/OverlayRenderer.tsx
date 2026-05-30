@@ -163,7 +163,7 @@ function OverlayContent({ overlay, isTopmost, onBackdropPress }: OverlayContentP
     height: '100%',
     pointerEvents: 'box-none',
   } : {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     pointerEvents: 'box-none',
   };
 

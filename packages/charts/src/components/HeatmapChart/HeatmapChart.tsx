@@ -588,13 +588,12 @@ export const HeatmapChart: React.FC<HeatmapChartProps> = (props) => {
         />
       )}
       <Svg width={width} height={height} style={{ position: 'absolute' }}
-        // @ts-ignore
+        // @ts-expect-error web-only mouse event prop not in RN types
         onMouseMove={(e) => {
           if (!setPointer) return; const rect = (e.currentTarget as any).getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
           // update crosshair to current column index for multiTooltip aggregator
           const localX = x - padding.left; if (localX >= 0 && localX <= plotWidth) { const col = Math.floor(localX / (cellW + gap)); if (col >= 0 && col < uniqueX) setCrosshair?.({ dataX: col, pixelX: x }); }
         }}
-        // @ts-ignore
         onMouseLeave={() => { if (interaction?.pointer) setPointer?.({ ...interaction.pointer, inside: false }); }}
       >
         <G x={padding.left} y={padding.top}>

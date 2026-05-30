@@ -378,9 +378,7 @@ const AnimatedFunnelSegment: React.FC<{
   return (
     <G
       {...(isWeb ? {
-        // @ts-ignore web events
         onMouseEnter: onHover,
-        // @ts-ignore web events
         onMouseLeave: onHoverOut,
       } : {})}
     >
@@ -739,7 +737,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-ignore web events
+        // @ts-expect-error web events
         onMouseMove={(e) => {
           const rect = (e.currentTarget as any).getBoundingClientRect();
           const x = e.clientX - rect.left;
@@ -751,7 +749,6 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
             handleSegmentHover(null);
           }
         }}
-        // @ts-ignore web events
         onMouseLeave={() => {
           handleSegmentHover(null);
         }}

@@ -108,9 +108,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
     return (value: number) => formatNumber(value);
   }, [xAxis?.labelFormatter, xScaleType]);
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
-  try { interaction = useChartInteractionContext(); } catch {
-    console.warn('CandlestickChart: useChartInteractionContext must be used inside a ChartInteractionProvider context');
-  }
+  try { interaction = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
@@ -636,7 +634,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
             width={plotWidth}
             height={plotHeight}
             // Basic pointer tracking for web (RN web exposes onMouseMove); native handled via gesture layer above ChartContainer if present
-            // @ts-ignore web only events
+            // @ts-expect-error web only events
             onMouseMove={(e) => {
               const rect = (e.currentTarget as any).getBoundingClientRect?.();
               if (!rect) return;
@@ -644,7 +642,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
               const y = e.clientY - rect.top;
               handlePointerUpdate(x, y, { pageX: e.pageX, pageY: e.pageY });
             }}
-            // @ts-ignore web only events
             onMouseLeave={handlePointerLeave}
           >
             <G>

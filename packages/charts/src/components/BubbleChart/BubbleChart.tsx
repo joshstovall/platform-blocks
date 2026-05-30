@@ -973,27 +973,22 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
         pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
         {...(isWeb
           ? {
-            // @ts-ignore react-native-web pointer events
             onPointerMove: (event: any) => {
               handlePointer(mapWebPointerEvent(event));
             },
-            // @ts-ignore react-native-web pointer events
             onPointerDown: (event: any) => {
               event.preventDefault?.();
               event.currentTarget?.setPointerCapture?.(event.pointerId);
               handlePointer(mapWebPointerEvent(event));
             },
-            // @ts-ignore react-native-web pointer events
             onPointerUp: (event: any) => {
               event.currentTarget?.releasePointerCapture?.(event.pointerId);
               handlePointer(mapWebPointerEvent(event), true);
               handlePointerEnd();
             },
-            // @ts-ignore react-native-web pointer events
             onPointerLeave: () => {
               handlePointerEnd();
             },
-            // @ts-ignore react-native-web pointer events
             onPointerCancel: () => {
               handlePointerEnd();
             },

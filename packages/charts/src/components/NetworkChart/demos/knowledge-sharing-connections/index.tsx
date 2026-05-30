@@ -76,7 +76,7 @@ export default function Demo() {
         linkWidthRange={[1.1, 3.8]}
         linkShape="curved"
         linkCurveStrength={0.38}
-        linkPalette={["#7048E8", "#4263EB", "#0CA678", "#F08C00"]}
+        linkPalette={['#7048E8', '#4263EB', '#0CA678', '#F08C00']}
         linkColorAccessor={(link) => linkColorByType(link.meta?.type)}
         linkOpacityAccessor={(link) => linkOpacityByType(link.meta?.type)}
         onNodeFocus={(event) =>

@@ -480,7 +480,7 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position: 'absolute', left: 0, top: 0 }}
-        // @ts-ignore web pointer
+        // @ts-expect-error web pointer
         onMouseMove={(e) => {
           if (!setPointer) return;
           const rect = (e.currentTarget as any).getBoundingClientRect?.();
@@ -488,7 +488,6 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
           const y = e.clientY - rect.top;
           setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
         }}
-        // @ts-ignore
         onMouseLeave={() => {
           if (interaction?.pointer) setPointer?.({ ...interaction.pointer, inside: false });
         }}

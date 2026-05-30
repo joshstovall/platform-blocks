@@ -165,14 +165,14 @@ const RootOffsetCapture: React.FC<{ children: React.ReactNode }> = ({ children }
         const r = el.getBoundingClientRect();
         ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
       }
-    } catch { }
+    } catch { /* noop */ }
   }, [ctx?.setRootOffset]);
 
   // Synchronous initial measurement so offset is available before first paint
   React.useLayoutEffect(() => {
     if (!ref.current || !ctx?.setRootOffset) return;
     if (!isWeb()) {
-      try { ctx.setRootOffset({ left: 0, top: 0 }); } catch { }
+      try { ctx.setRootOffset({ left: 0, top: 0 }); } catch { /* noop */ }
       return;
     }
     measure();

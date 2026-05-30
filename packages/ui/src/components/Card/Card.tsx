@@ -231,7 +231,7 @@ export const Card: CardComponent = ((allProps: CardProps) => {
           colors={variantConfig.gradient.colors}
           start={variantConfig.gradient.start}
           end={variantConfig.gradient.end}
-          style={[StyleSheet.absoluteFillObject, radiusStyles, {zIndex:-1}]}
+          style={[StyleSheet.absoluteFill, radiusStyles, {zIndex:-1}]}
         />
       )
     : null;

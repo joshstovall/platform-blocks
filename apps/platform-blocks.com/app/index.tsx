@@ -721,7 +721,7 @@ export default function HomeScreen() {
             <Pressable onPress={() => openUrl(NPM_PACKAGE)}>
               <Card variant="elevated" p="lg" style={{ height: '100%' }}>
                 <Block direction="column" gap="sm">
-                  <Icon name="package" size="lg" color={theme.colors.primary[6]} />
+                  <Icon name="download" size="lg" color={theme.colors.primary[6]} />
                   <Text size="md" weight="semibold">Install from npm</Text>
                   <Text size="sm" colorVariant="secondary">Available as @platform-blocks/ui and @platform-blocks/charts on npm.</Text>
                 </Block>

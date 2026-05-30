@@ -168,7 +168,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try {
     interaction = useChartInteractionContext();
-  } catch {}
+  } catch { /* noop */ }
 
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;

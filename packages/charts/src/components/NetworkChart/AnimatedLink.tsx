@@ -111,13 +111,10 @@ export const AnimatedLink: React.FC<AnimatedLinkProps> = React.memo(
         onPress={onPress ? handlePress : undefined}
         onPressIn={onFocus ? handleFocus : undefined}
         onPressOut={onBlur ? handleBlur : undefined}
-        // @ts-ignore web-only events for hover interactions
+        // @ts-expect-error web-only events for hover interactions
         onMouseEnter={onFocus ? handleFocus : undefined}
-        // @ts-ignore web-only events for hover interactions
         onMouseLeave={onBlur ? handleBlur : undefined}
-        // @ts-ignore react-native-web hover events
         onHoverIn={onFocus ? handleFocus : undefined}
-        // @ts-ignore react-native-web hover events
         onHoverOut={onBlur ? handleBlur : undefined}
       />
     );

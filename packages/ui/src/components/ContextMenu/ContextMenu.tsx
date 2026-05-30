@@ -42,6 +42,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   // Close on click outside (web)
   useEffect(() => {
+    if (Platform.OS !== 'web') return;
     if (!actualOpen) return;
     const handle = (e: MouseEvent) => {
       const target = e.target as HTMLElement;

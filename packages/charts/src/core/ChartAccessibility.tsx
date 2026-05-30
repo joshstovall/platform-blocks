@@ -28,24 +28,27 @@ export const ChartAccessibility: React.FC<ChartAccessibilityProps> = ({
 
     switch (chartType) {
       case 'line':
-      case 'scatter':
+      case 'scatter': {
         const chartData = data as ChartDataPoint[];
         const xValues = chartData.map(d => d.x);
         const yValues = chartData.map(d => d.y);
         return `Chart with ${chartData.length} data points. X values range from ${Math.min(...xValues)} to ${Math.max(...xValues)}. Y values range from ${Math.min(...yValues)} to ${Math.max(...yValues)}.`;
-      
-      case 'bar':
+      }
+
+      case 'bar': {
         const barData = data as BarChartDataPoint[];
         const categories = barData.map(d => d.category).join(', ');
         const maxValue = Math.max(...barData.map(d => d.value));
         return `Bar chart with ${barData.length} categories: ${categories}. Maximum value is ${maxValue}.`;
-      
-      case 'pie':
+      }
+
+      case 'pie': {
         const pieData = data as PieChartDataPoint[];
         const total = pieData.reduce((sum, d) => sum + d.value, 0);
         const percentages = pieData.map(d => `${d.label}: ${((d.value / total) * 100).toFixed(1)}%`).join(', ');
         return `Pie chart with ${pieData.length} slices. ${percentages}`;
-      
+      }
+
       default:
         return `Chart with ${data.length} data points.`;
     }
@@ -68,7 +71,7 @@ export const ChartAccessibility: React.FC<ChartAccessibilityProps> = ({
           </Text>
         ));
       
-      case 'pie':
+      case 'pie': {
         const total = (data as PieChartDataPoint[]).reduce((sum, d) => sum + d.value, 0);
         return (data as PieChartDataPoint[]).map((point, index) => {
           const percentage = ((point.value / total) * 100).toFixed(1);
@@ -78,7 +81,8 @@ export const ChartAccessibility: React.FC<ChartAccessibilityProps> = ({
             </Text>
           );
         });
-      
+      }
+
       default:
         return null;
     }
@@ -143,12 +147,13 @@ export function useChartKeyboardNavigation(
         onDataPointSelect?.(data[0], 0);
         break;
       
-      case 'End':
+      case 'End': {
         event.preventDefault();
         const lastIndex = data.length - 1;
         setSelectedIndex(lastIndex);
         onDataPointSelect?.(data[lastIndex], lastIndex);
         break;
+      }
     }
   }, [data, onDataPointSelect]);
 
