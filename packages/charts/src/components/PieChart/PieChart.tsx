@@ -1200,9 +1200,8 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
         <Svg
           width={width}
           height={height}
-          // @ts-ignore web-only events
+          // @ts-expect-error web-only events
           onMouseMove={handlePointerMove}
-          // @ts-ignore web-only events
           onMouseLeave={handlePointerLeave}
         >
           <Defs>
@@ -1403,7 +1402,7 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
         <View
           style={{ position: 'absolute', inset: 0 }}
           focusable
-          // @ts-ignore RN web exposes key handlers for View but types omit them
+          // @ts-expect-error RN web exposes key handlers for View but types omit them
           onKeyDown={handleKeyDown}
           pointerEvents="box-none"
           accessible

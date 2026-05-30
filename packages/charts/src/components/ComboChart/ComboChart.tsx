@@ -367,7 +367,7 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try {
     interaction = useChartInteractionContext();
-  } catch {}
+  } catch { /* noop */ }
 
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
@@ -547,13 +547,9 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   const svgPointerHandlers = useMemo(() => {
     if (!hasContinuousPointerTracking) return {};
     return {
-      // @ts-ignore react-native-web pointer events
       onPointerMove: handleWebPointerMove,
-      // @ts-ignore react-native-web pointer events
       onPointerDown: handleWebPointerMove,
-      // @ts-ignore react-native-web pointer events
       onPointerLeave: handlePointerLeave,
-      // @ts-ignore react-native-web pointer events
       onPointerCancel: handlePointerLeave,
     } as const;
   }, [hasContinuousPointerTracking, handleWebPointerMove, handlePointerLeave]) as Record<string, any>;

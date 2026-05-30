@@ -3,7 +3,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import dts from 'rollup-plugin-dts';
 import { readFileSync } from 'fs';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
@@ -24,13 +23,11 @@ const commonConfig = {
     resolve({
       preferBuiltins: false,
       browser: true,
+      // Prefer .web.ts extensions for web build (React Native convention)
+      extensions: ['.web.tsx', '.web.ts', '.web.js', '.tsx', '.ts', '.js', '.json'],
     }),
     commonjs({
-      include: [
-        'node_modules/react-native-svg/**',
-        'node_modules/@babel/**',
-        'node_modules/@react-native/**',
-      ],
+      include: ['node_modules/**'],
     }),
     json(),
   ],
@@ -66,11 +63,5 @@ export default [
         rootDir: './src',
       }),
     ],
-  },
-  {
-    input: 'src/index.ts',
-    output: { file: pkg.types, format: 'esm' },
-    plugins: [dts({ tsconfig: './tsconfig.json' })],
-    external,
   },
 ];

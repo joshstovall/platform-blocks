@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "types": [
+      "node"
+    ],
     "target": "es2018",
     "lib": [
       "es2018",

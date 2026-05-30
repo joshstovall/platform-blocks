@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     width: 44
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'black',
     zIndex: 1
   },

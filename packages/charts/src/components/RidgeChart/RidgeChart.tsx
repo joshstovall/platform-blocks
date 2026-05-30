@@ -69,7 +69,7 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
   const defaultScheme = colorSchemes.default;
   
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
-  try { interaction = useChartInteractionContext(); } catch { }
+  try { interaction = useChartInteractionContext(); } catch { /* noop */ }
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
@@ -317,7 +317,7 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-ignore web
+        // @ts-expect-error web
         onMouseMove={(e) => {
           if (!setPointer) return; 
           const rect = (e.currentTarget as any).getBoundingClientRect();

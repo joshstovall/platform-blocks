@@ -264,9 +264,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   const [highlightPoint, setHighlightPoint] = useState<{ chartX: number; chartY: number; color: string; id?: any; seriesId?: any } | null>(null);
   // use shared interaction context (optional if not wrapped by provider externally)
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
-  try { interaction = useChartInteractionContext(); } catch {
-    console.warn('LineChart: useChartInteractionContext must be used inside a ChartInteractionProvider context');
-  }
+  try { interaction = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
   const setSharedCrosshair = interaction?.setCrosshair;
   const sharedConfig = interaction?.config;
   const wantsSharedCrosshair = React.useMemo(() => !!(props.enableCrosshair || sharedConfig?.multiTooltip), [props.enableCrosshair, sharedConfig?.multiTooltip]);
@@ -921,7 +919,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         }}
         {...(!isWeb ? panResponder.panHandlers : {})}
         // Web mouse fallback handlers
-        // @ts-ignore - web only events
+        // @ts-expect-error - web only events
         onMouseDown={(e) => {
           try {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -942,9 +940,9 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
             console.warn('LineChart: onMouseDown event handling failed')
           }
         }}
-        // @ts-ignore
+        // @ts-expect-error web-only mouse event prop not in RN types
         onMouseLeave={(e) => { if (isMousePanning) { setIsMousePanning(false); setLastPan(null); } if (interaction?.pointer) { setPointer?.({ ...interaction.pointer, inside: false }); } setSharedCrosshair?.(null); setBrushStart(null); setBrushCurrent(null); }}
-        // @ts-ignore
+        // @ts-expect-error web-only mouse event prop not in RN types
         onMouseUp={(e) => {
           if (props.enableBrushZoom && brushStart && brushCurrent) {
             const x0 = Math.min(brushStart.x, brushCurrent.x);
@@ -963,7 +961,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           if (isMousePanning) { setIsMousePanning(false); setLastPan(null); panZoom.endPan(); props.onDomainChange?.(xDomain, yDomain); }
           if (interaction?.pointer) { setPointer?.({ ...interaction.pointer, inside: true }); }
         }}
-        // @ts-ignore
+        // @ts-expect-error web-only mouse event prop not in RN types
         onMouseMove={(e) => {
           try {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -990,7 +988,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
             console.warn('LineChart: onMouseMove event handling failed');
           }
         }}
-        {...(props.enableWheelZoom ? { // @ts-ignore web-only
+        {...(props.enableWheelZoom ? {
           onWheel: (e: any) => {
             if (!props.enablePanZoom) return;
             // Explicitly mark non-passive & prevent page scroll
@@ -1008,7 +1006,6 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           onPress={handlePress}
           style={[
             { position: 'absolute', left: 0, top: 0, width: plotWidth, height: plotHeight },
-            // @ts-ignore web only cursor
             props.enablePanZoom ? { cursor: 'grab' } : null
           ] as any}
         >

@@ -150,28 +150,23 @@ const AnimatedBarRect: React.FC<AnimatedBarRectProps> = React.memo(
         opacity={opacity}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        // @ts-ignore web-only events
+        // @ts-expect-error web-only events
         onMouseEnter={onHoverIn}
-        // @ts-ignore web-only events
         onMouseLeave={onHoverOut}
         {...(isWeb
           ? {
-              // @ts-ignore pointer events exposed on web
               onPointerDown: (event: any) => {
                 onPressIn?.();
                 event.currentTarget?.setPointerCapture?.(event.pointerId);
               },
-              // @ts-ignore pointer events exposed on web
               onPointerUp: (event: any) => {
                 event.currentTarget?.releasePointerCapture?.(event.pointerId);
                 onPressOut?.();
                 onPress?.(toNativePointerEvent(event));
               },
-              // @ts-ignore pointer events exposed on web
               onPointerLeave: () => {
                 onPressOut?.();
               },
-              // @ts-ignore pointer events exposed on web
               onPointerCancel: () => {
                 onPressOut?.();
               },
@@ -239,7 +234,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try {
     interaction = useChartInteractionContext();
-  } catch {}
+  } catch { /* noop */ }
 
   const registerSeries = interaction?.registerSeries;
   const setPointer = interaction?.setPointer;
@@ -1278,27 +1273,22 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
         pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
         {...(isWeb
           ? {
-              // @ts-ignore react-native-web pointer events
               onPointerMove: (event: any) => {
                 handlePointer(mapWebPointerEvent(event));
               },
-              // @ts-ignore react-native-web pointer events
               onPointerDown: (event: any) => {
                 event.preventDefault?.();
                 event.currentTarget?.setPointerCapture?.(event.pointerId);
                 handlePointer(mapWebPointerEvent(event));
               },
-              // @ts-ignore react-native-web pointer events
               onPointerUp: (event: any) => {
                 event.currentTarget?.releasePointerCapture?.(event.pointerId);
                 handlePointer(mapWebPointerEvent(event), true);
                 handlePointerEnd();
               },
-              // @ts-ignore react-native-web pointer events
               onPointerLeave: () => {
                 handlePointerEnd();
               },
-              // @ts-ignore react-native-web pointer events
               onPointerCancel: () => {
                 handlePointerEnd();
               },

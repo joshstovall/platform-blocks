@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 
 import type { KnobAppearance } from '../types';
 import { knobStyles as styles } from '../styles';
@@ -10,7 +10,7 @@ export type ThumbLayerProps = {
   thumbSize: number;
   thumbColor: string;
   disabled: boolean;
-  thumbAnimatedStyle: StyleProp<ViewStyle>;
+  thumbAnimatedStyle: AnimatedStyle<ViewStyle>;
   thumbStyle?: StyleProp<ViewStyle>;
   displayValue: number;
   displayAngle: number;

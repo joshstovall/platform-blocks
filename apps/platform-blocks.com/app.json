@@ -4,7 +4,6 @@
     "slug": "platform-blocks-docs",
     "version": "1.0.0",
     "scheme": "platform-blocks-docs",
-    "jsEngine": "hermes",
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"

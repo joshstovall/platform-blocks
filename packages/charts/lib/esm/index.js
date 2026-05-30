@@ -1238,7 +1238,7 @@ const RootOffsetCapture$1 = ({ children }) => {
                 ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
             }
         }
-        catch (_c) { }
+        catch ( /* noop */_c) { /* noop */ }
     }, [ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset]);
     // Synchronous initial measurement so offset is available before first paint
     React.useLayoutEffect(() => {
@@ -1248,7 +1248,7 @@ const RootOffsetCapture$1 = ({ children }) => {
             try {
                 ctx.setRootOffset({ left: 0, top: 0 });
             }
-            catch (_a) { }
+            catch ( /* noop */_a) { /* noop */ }
             return;
         }
         measure();
@@ -1688,29 +1688,23 @@ const AnimatedBarRect = React.memo(({ bar, orientation, animationProgress, targe
         };
     };
     return (jsx(AnimatedRect$7, { animatedProps: animatedProps, rx: borderRadius, ry: borderRadius, fill: fill, opacity: opacity, stroke: stroke, strokeWidth: strokeWidth, 
-        // @ts-ignore web-only events
-        onMouseEnter: onHoverIn, 
-        // @ts-ignore web-only events
-        onMouseLeave: onHoverOut, ...(isWeb
+        // @ts-expect-error web-only events
+        onMouseEnter: onHoverIn, onMouseLeave: onHoverOut, ...(isWeb
             ? {
-                // @ts-ignore pointer events exposed on web
                 onPointerDown: (event) => {
                     var _a, _b;
                     onPressIn === null || onPressIn === void 0 ? void 0 : onPressIn();
                     (_b = (_a = event.currentTarget) === null || _a === void 0 ? void 0 : _a.setPointerCapture) === null || _b === void 0 ? void 0 : _b.call(_a, event.pointerId);
                 },
-                // @ts-ignore pointer events exposed on web
                 onPointerUp: (event) => {
                     var _a, _b;
                     (_b = (_a = event.currentTarget) === null || _a === void 0 ? void 0 : _a.releasePointerCapture) === null || _b === void 0 ? void 0 : _b.call(_a, event.pointerId);
                     onPressOut === null || onPressOut === void 0 ? void 0 : onPressOut();
                     onPress === null || onPress === void 0 ? void 0 : onPress(toNativePointerEvent(event));
                 },
-                // @ts-ignore pointer events exposed on web
                 onPointerLeave: () => {
                     onPressOut === null || onPressOut === void 0 ? void 0 : onPressOut();
                 },
-                // @ts-ignore pointer events exposed on web
                 onPointerCancel: () => {
                     onPressOut === null || onPressOut === void 0 ? void 0 : onPressOut();
                 },
@@ -1741,7 +1735,7 @@ const BarChart = React.memo((props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_q) { }
+    catch ( /* noop */_q) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
     const setCrosshair = interaction === null || interaction === void 0 ? void 0 : interaction.setCrosshair;
@@ -2497,29 +2491,24 @@ const BarChart = React.memo((props) => {
                     height: plotHeight,
                 }, pointerEvents: disabled ? 'none' : isWeb ? 'auto' : 'box-only', ...(isWeb
                     ? {
-                        // @ts-ignore react-native-web pointer events
                         onPointerMove: (event) => {
                             handlePointer(mapWebPointerEvent(event));
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerDown: (event) => {
                             var _a, _b, _c;
                             (_a = event.preventDefault) === null || _a === void 0 ? void 0 : _a.call(event);
                             (_c = (_b = event.currentTarget) === null || _b === void 0 ? void 0 : _b.setPointerCapture) === null || _c === void 0 ? void 0 : _c.call(_b, event.pointerId);
                             handlePointer(mapWebPointerEvent(event));
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerUp: (event) => {
                             var _a, _b;
                             (_b = (_a = event.currentTarget) === null || _a === void 0 ? void 0 : _a.releasePointerCapture) === null || _b === void 0 ? void 0 : _b.call(_a, event.pointerId);
                             handlePointer(mapWebPointerEvent(event), true);
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerLeave: () => {
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerCancel: () => {
                             handlePointerEnd();
                         },
@@ -3349,29 +3338,24 @@ const BubbleChart = (props) => {
                     height: plotHeight,
                 }, pointerEvents: disabled ? 'none' : isWeb ? 'auto' : 'box-only', ...(isWeb
                     ? {
-                        // @ts-ignore react-native-web pointer events
                         onPointerMove: (event) => {
                             handlePointer(mapWebPointerEvent(event));
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerDown: (event) => {
                             var _a, _b, _c;
                             (_a = event.preventDefault) === null || _a === void 0 ? void 0 : _a.call(event);
                             (_c = (_b = event.currentTarget) === null || _b === void 0 ? void 0 : _b.setPointerCapture) === null || _c === void 0 ? void 0 : _c.call(_b, event.pointerId);
                             handlePointer(mapWebPointerEvent(event));
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerUp: (event) => {
                             var _a, _b;
                             (_b = (_a = event.currentTarget) === null || _a === void 0 ? void 0 : _a.releasePointerCapture) === null || _b === void 0 ? void 0 : _b.call(_a, event.pointerId);
                             handlePointer(mapWebPointerEvent(event), true);
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerLeave: () => {
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerCancel: () => {
                             handlePointerEnd();
                         },
@@ -4262,10 +4246,8 @@ const PieChart = (props) => {
         handleHover(null);
     }, [setPointer, handleHover]);
     return (jsxs(ChartContainer, { width: width, height: height, disabled: disabled, animationDuration: animationDuration, style: style, ...rest, children: [(props.title || props.subtitle) && (jsx(ChartTitle, { title: props.title, subtitle: props.subtitle })), jsx(Animated$1.View, { style: [{ position: 'absolute', left: 0, top: 0 }, containerAnimatedStyle], children: jsxs(Svg, { width: width, height: height, 
-                    // @ts-ignore web-only events
-                    onMouseMove: handlePointerMove, 
-                    // @ts-ignore web-only events
-                    onMouseLeave: handlePointerLeave, children: [jsxs(Defs, { children: [gradients.map(({ id, gradient }) => {
+                    // @ts-expect-error web-only events
+                    onMouseMove: handlePointerMove, onMouseLeave: handlePointerLeave, children: [jsxs(Defs, { children: [gradients.map(({ id, gradient }) => {
                                     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
                                     if (gradient.type === 'radial') {
                                         return (jsx(RadialGradient, { id: id, cx: ((_b = (_a = gradient.from) === null || _a === void 0 ? void 0 : _a.x) !== null && _b !== void 0 ? _b : 0.5).toString(), cy: ((_d = (_c = gradient.from) === null || _c === void 0 ? void 0 : _c.y) !== null && _d !== void 0 ? _d : 0.5).toString(), rx: ((_f = (_e = gradient.to) === null || _e === void 0 ? void 0 : _e.x) !== null && _f !== void 0 ? _f : 0.5).toString(), ry: ((_h = (_g = gradient.to) === null || _g === void 0 ? void 0 : _g.y) !== null && _h !== void 0 ? _h : 0.5).toString(), children: gradient.stops.map((stop, index) => {
@@ -4313,7 +4295,7 @@ const PieChart = (props) => {
                         fontSize: tooltipFontSize,
                         fontFamily: theme.fontFamily,
                     }, children: tooltipInfo.content })) : (tooltipInfo.content) })), (legend === null || legend === void 0 ? void 0 : legend.show) && legendItems.length > 0 && (jsx(ChartLegend, { items: legendItems, position: legend.position, align: legend.align, textColor: legend.textColor, fontSize: legend.fontSize, onItemPress: legendToggleEnabled ? handleLegendPress : undefined })), keyboardNavigation && (jsx(View, { style: { position: 'absolute', inset: 0 }, focusable: true, 
-                // @ts-ignore RN web exposes key handlers for View but types omit them
+                // @ts-expect-error RN web exposes key handlers for View but types omit them
                 onKeyDown: handleKeyDown, pointerEvents: "box-none", accessible: true, accessibilityLabel: (_s = props.title) !== null && _s !== void 0 ? _s : 'Pie chart' }))] }));
 };
 PieChart.displayName = 'PieChart';
@@ -4677,9 +4659,7 @@ const LineChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_j) {
-        console.warn('LineChart: useChartInteractionContext must be used inside a ChartInteractionProvider context');
-    }
+    catch ( /* optional: no ChartInteractionProvider */_j) { /* optional: no ChartInteractionProvider */ }
     const setSharedCrosshair = interaction === null || interaction === void 0 ? void 0 : interaction.setCrosshair;
     const sharedConfig = interaction === null || interaction === void 0 ? void 0 : interaction.config;
     const wantsSharedCrosshair = React.useMemo(() => !!(props.enableCrosshair || (sharedConfig === null || sharedConfig === void 0 ? void 0 : sharedConfig.multiTooltip)), [props.enableCrosshair, sharedConfig === null || sharedConfig === void 0 ? void 0 : sharedConfig.multiTooltip]);
@@ -5230,7 +5210,7 @@ const LineChart = (props) => {
                     height: plotHeight,
                 }, ...(!isWeb ? panResponder.panHandlers : {}), 
                 // Web mouse fallback handlers
-                // @ts-ignore - web only events
+                // @ts-expect-error - web only events
                 onMouseDown: (e) => {
                     try {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -5253,14 +5233,14 @@ const LineChart = (props) => {
                         console.warn('LineChart: onMouseDown event handling failed');
                     }
                 }, 
-                // @ts-ignore
+                // @ts-expect-error web-only mouse event prop not in RN types
                 onMouseLeave: (e) => { if (isMousePanning) {
                     setIsMousePanning(false);
                     setLastPan(null);
                 } if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer) {
                     setPointer === null || setPointer === void 0 ? void 0 : setPointer({ ...interaction.pointer, inside: false });
                 } setSharedCrosshair === null || setSharedCrosshair === void 0 ? void 0 : setSharedCrosshair(null); setBrushStart(null); setBrushCurrent(null); }, 
-                // @ts-ignore
+                // @ts-expect-error web-only mouse event prop not in RN types
                 onMouseUp: (e) => {
                     var _a, _b;
                     if (props.enableBrushZoom && brushStart && brushCurrent) {
@@ -5288,7 +5268,7 @@ const LineChart = (props) => {
                         setPointer === null || setPointer === void 0 ? void 0 : setPointer({ ...interaction.pointer, inside: true });
                     }
                 }, 
-                // @ts-ignore
+                // @ts-expect-error web-only mouse event prop not in RN types
                 onMouseMove: (e) => {
                     try {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -5335,7 +5315,6 @@ const LineChart = (props) => {
                     }
                 } : {}), children: jsxs(Pressable, { ...(!isWeb ? panResponder.panHandlers : {}), onPress: handlePress, style: [
                         { position: 'absolute', left: 0, top: 0, width: plotWidth, height: plotHeight },
-                        // @ts-ignore web only cursor
                         props.enablePanZoom ? { cursor: 'grab' } : null
                     ], children: [props.enableBrushZoom && brushStart && brushCurrent && (jsx(View, { style: {
                                 position: 'absolute', pointerEvents: 'none',
@@ -5607,7 +5586,7 @@ const ScatterChartInner = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_p) { }
+    catch ( /* noop */_p) { /* noop */ }
     const crosshairEnabled = enableCrosshair !== false && ((_a = interaction === null || interaction === void 0 ? void 0 : interaction.config) === null || _a === void 0 ? void 0 : _a.enableCrosshair) !== false;
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
@@ -6037,7 +6016,7 @@ const ScatterChartInner = (props) => {
                         setYDomainState(null);
                         lastTapTimeRef.current = 0;
                         setLastTapTime(0);
-                        // @ts-ignore
+                        // @ts-expect-error optional web-only onDomainChange prop not in base type
                         (_e = props.onDomainChange) === null || _e === void 0 ? void 0 : _e.call(props, computedXDomain, computedYDomain);
                     }
                     else {
@@ -6056,7 +6035,7 @@ const ScatterChartInner = (props) => {
                 setPinchTracking(false);
             }
             // fire domain change callback after gesture ends
-            // @ts-ignore optional
+            // @ts-expect-error optional
             (_f = props.onDomainChange) === null || _f === void 0 ? void 0 : _f.call(props, xDomain, yDomain);
         },
         onPanResponderTerminationRequest: () => true,
@@ -6143,7 +6122,7 @@ const ScatterChartInner = (props) => {
                         onMoveShouldSetResponder: () => true,
                     }
                     : {}), 
-                // @ts-ignore web-only hover support
+                // @ts-expect-error web-only hover support
                 onMouseMove: (e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const x = e.clientX - rect.left;
@@ -6159,10 +6138,8 @@ const ScatterChartInner = (props) => {
                         const dataX = xDomain[0] + (x / plotWidth) * (xDomain[1] - xDomain[0]);
                         setCrosshair === null || setCrosshair === void 0 ? void 0 : setCrosshair({ dataX, pixelX: x });
                     }
-                }, 
-                // @ts-ignore
-                onMouseLeave: () => { setPointer === null || setPointer === void 0 ? void 0 : setPointer((interaction === null || interaction === void 0 ? void 0 : interaction.pointer) ? { ...interaction.pointer, inside: false } : null); setCrosshair === null || setCrosshair === void 0 ? void 0 : setCrosshair(null); panZoom.endPan(); }, 
-                // @ts-ignore
+                }, onMouseLeave: () => { setPointer === null || setPointer === void 0 ? void 0 : setPointer((interaction === null || interaction === void 0 ? void 0 : interaction.pointer) ? { ...interaction.pointer, inside: false } : null); setCrosshair === null || setCrosshair === void 0 ? void 0 : setCrosshair(null); panZoom.endPan(); }, 
+                // @ts-expect-error web-only mouse event prop not in RN types
                 onMouseDown: (e) => {
                     if (!props.enablePanZoom)
                         return;
@@ -6170,18 +6147,14 @@ const ScatterChartInner = (props) => {
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     panZoom.startPan(x, y);
-                }, 
-                // @ts-ignore
-                onMouseUp: () => {
+                }, onMouseUp: () => {
                     var _a;
                     if (!props.enablePanZoom)
                         return;
                     panZoom.endPan();
-                    // @ts-ignore
+                    // @ts-expect-error optional web-only onDomainChange prop not in base type
                     (_a = props.onDomainChange) === null || _a === void 0 ? void 0 : _a.call(props, xDomain, yDomain);
-                }, 
-                // @ts-ignore wheel
-                onWheel: props.enableWheelZoom ? (e) => {
+                }, onWheel: props.enableWheelZoom ? (e) => {
                     var _a;
                     if (!props.enablePanZoom)
                         return;
@@ -6508,9 +6481,7 @@ const AnimatedStackedArea = React.memo(({ layer, opacity, animationProgress, dis
     }, [layer.path, opacity, layer.index]);
     const isWeb = Platform.OS === 'web';
     return (jsx(G, { ...(isWeb ? {
-            // @ts-ignore web events
             onMouseEnter: onHover,
-            // @ts-ignore web events
             onMouseLeave: onHoverOut,
         } : {}), children: jsx(AnimatedPath$9, { animatedProps: animatedProps, fill: layer.color, stroke: layer.color, strokeWidth: 1 }) }));
 });
@@ -6731,7 +6702,7 @@ const StackedAreaChart = (props) => {
             liveTooltip,
             multiTooltip
         }, ...rest, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), grid && (jsx(ChartGrid, { grid: grid, plotWidth: plotWidth, plotHeight: plotHeight, xTicks: normXTicks, yTicks: normYTicks, padding: padding, useSVG: true })), jsxs(Svg, { style: { position: 'absolute', left: padding.left, top: padding.top }, width: plotWidth, height: plotHeight, 
-                // @ts-ignore web events
+                // @ts-expect-error web events
                 onMouseMove: (e) => {
                     if (!(interaction === null || interaction === void 0 ? void 0 : interaction.setPointer))
                         return;
@@ -6741,9 +6712,7 @@ const StackedAreaChart = (props) => {
                     interaction.setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
                     // Basic crosshair support
                     setCrosshair === null || setCrosshair === void 0 ? void 0 : setCrosshair({ dataX: x / plotWidth, pixelX: x });
-                }, 
-                // @ts-ignore web events
-                onMouseLeave: () => {
+                }, onMouseLeave: () => {
                     var _a;
                     if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer)
                         (_a = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer) === null || _a === void 0 ? void 0 : _a.call(interaction, { ...interaction.pointer, inside: false });
@@ -7045,9 +7014,7 @@ const CandlestickChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_j) {
-        console.warn('CandlestickChart: useChartInteractionContext must be used inside a ChartInteractionProvider context');
-    }
+    catch ( /* optional: no ChartInteractionProvider */_j) { /* optional: no ChartInteractionProvider */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -7515,7 +7482,7 @@ const CandlestickChart = (props) => {
                                     return (jsx(AnimatedCandle, { candle: candle, colorBull: s.colorBull || '#16a34a', colorBear: s.colorBear || '#dc2626', wickColor: s.wickColor, index: index, disabled: disabled, theme: theme }, candle.id));
                                 }) }), jsx(Svg, { width: plotWidth, height: plotHeight, 
                                 // Basic pointer tracking for web (RN web exposes onMouseMove); native handled via gesture layer above ChartContainer if present
-                                // @ts-ignore web only events
+                                // @ts-expect-error web only events
                                 onMouseMove: (e) => {
                                     var _a, _b;
                                     const rect = (_b = (_a = e.currentTarget).getBoundingClientRect) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -7524,9 +7491,7 @@ const CandlestickChart = (props) => {
                                     const x = e.clientX - rect.left;
                                     const y = e.clientY - rect.top;
                                     handlePointerUpdate(x, y, { pageX: e.pageX, pageY: e.pageY });
-                                }, 
-                                // @ts-ignore web only events
-                                onMouseLeave: handlePointerLeave, children: jsx(G, { children: maSvgPaths.map(p => {
+                                }, onMouseLeave: handlePointerLeave, children: jsx(G, { children: maSvgPaths.map(p => {
                                         var _a;
                                         const vis = ((_a = interaction === null || interaction === void 0 ? void 0 : interaction.series.find(sr => sr.id === `ma-${p.period}`)) === null || _a === void 0 ? void 0 : _a.visible) !== false;
                                         return (p.d && vis) ? jsx(Path, { d: p.d, stroke: p.color, strokeWidth: 1.5, fill: "none" }, `ma-${p.period}`) : null;
@@ -7906,7 +7871,7 @@ const RadarChart = (props) => {
             multiTooltip: multiTooltip !== false,
             liveTooltip: liveTooltip !== false,
         }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), jsx(Svg, { width: width, height: height, style: { position: 'absolute', left: 0, top: 0 }, 
-                // @ts-ignore web pointer
+                // @ts-expect-error web pointer
                 onMouseMove: (e) => {
                     var _a, _b;
                     if (!setPointer)
@@ -7915,9 +7880,7 @@ const RadarChart = (props) => {
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
-                }, 
-                // @ts-ignore
-                onMouseLeave: () => {
+                }, onMouseLeave: () => {
                     if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer)
                         setPointer === null || setPointer === void 0 ? void 0 : setPointer({ ...interaction.pointer, inside: false });
                 }, children: jsxs(G, { children: [enableCrosshair && activeAxisIndex != null && (() => {
@@ -8121,7 +8084,7 @@ const AnimatedHeatmapCell = React.memo(({ cell, isHovered = false, index, disabl
     }));
     return (jsxs(Fragment, { children: [jsx(AnimatedRect$6, { animatedProps: animatedProps, 
                 // Static props; animated ones supplied via animatedProps
-                fill: cell.color, stroke: isHovered ? '#111827' : 'none', rx: cornerRadius, ry: cornerRadius }), showText && fontSize >= 8 && (jsx(AnimatedText$1, { animatedProps: textAnimatedProps, x: cell.pixelX + cell.width / 2, y: cell.pixelY + cell.height / 2 + fontSize * 0.35, fontSize: fontSize, fill: textColor, textAnchor: "middle", pointerEvents: "none", fontWeight: fontSize <= 10 ? "600" : "500", children: (_a = cell.displayValue) !== null && _a !== void 0 ? _a : (typeof cell.value === 'number'
+                fill: cell.color, stroke: isHovered ? '#111827' : 'none', rx: cornerRadius, ry: cornerRadius }), showText && fontSize >= 8 && (jsx(AnimatedText$1, { animatedProps: textAnimatedProps, x: cell.pixelX + cell.width / 2, y: cell.pixelY + cell.height / 2 + fontSize * 0.35, fontSize: fontSize, fill: textColor, textAnchor: "middle", pointerEvents: "none", fontWeight: fontSize <= 10 ? '600' : '500', children: (_a = cell.displayValue) !== null && _a !== void 0 ? _a : (typeof cell.value === 'number'
                     ? cell.value % 1 === 0
                         ? cell.value.toString()
                         : cell.value.toFixed(1)
@@ -8659,7 +8622,7 @@ const HeatmapChart = (props) => {
         };
     }, [gap, hoverCell, plotHeight]);
     return (jsxs(ChartContainer, { width: width, height: height, style: style, interactionConfig: { multiTooltip, liveTooltip, enableCrosshair }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), grid && plotWidth > 0 && plotHeight > 0 && (jsx(ChartGrid, { grid: grid, plotWidth: plotWidth, plotHeight: plotHeight, xTicks: normalizedXTicks, yTicks: normalizedYTicks, padding: padding, useSVG: true })), jsx(Svg, { width: width, height: height, style: { position: 'absolute' }, 
-                // @ts-ignore
+                // @ts-expect-error web-only mouse event prop not in RN types
                 onMouseMove: (e) => {
                     if (!setPointer)
                         return;
@@ -8674,9 +8637,7 @@ const HeatmapChart = (props) => {
                         if (col >= 0 && col < uniqueX)
                             setCrosshair === null || setCrosshair === void 0 ? void 0 : setCrosshair({ dataX: col, pixelX: x });
                     }
-                }, 
-                // @ts-ignore
-                onMouseLeave: () => { if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer)
+                }, onMouseLeave: () => { if (interaction === null || interaction === void 0 ? void 0 : interaction.pointer)
                     setPointer === null || setPointer === void 0 ? void 0 : setPointer({ ...interaction.pointer, inside: false }); }, children: jsxs(G, { x: padding.left, y: padding.top, children: [hoverCell && hoverOverlay.showColumn && columnHighlight && (jsx(Rect, { x: columnHighlight.x, y: 0, width: columnHighlight.width, height: plotHeight, fill: hoverOverlay.columnFill, opacity: hoverOverlay.columnOpacity, pointerEvents: "none" })), hoverCell && hoverOverlay.showRow && rowHighlight && (jsx(Rect, { x: 0, y: rowHighlight.y, width: plotWidth, height: rowHighlight.height, fill: hoverOverlay.rowFill, opacity: hoverOverlay.rowOpacity, pointerEvents: "none" })), processedCells.map((cellData, index) => (jsx(AnimatedHeatmapCell, { cell: cellData, isHovered: Boolean(hoverCell && hoverCell.x === cellData.x && hoverCell.y === cellData.y), index: index, totalCells: processedCells.length, disabled: animationDisabled, cornerRadius: cellCornerRadius, showText: cellData.showLabel }, `${cellData.x}-${cellData.y}`))), hoverCell && (jsx(Text$1, { x: hoverCell.pixelX + hoverCell.width / 2, y: hoverCell.pixelY + hoverCell.height / 2 + Math.min(hoverCell.height * 0.1, 6), fontSize: Math.max(10, Math.min(hoverCell.height * 0.45, 16)), fill: getContrastColor(hoverCell.color), textAnchor: "middle", pointerEvents: "none", fontFamily: 'System', fontWeight: "600", children: (_g = hoverCell.displayValue) !== null && _g !== void 0 ? _g : (Number.isFinite(hoverCell.value)
                                 ? hoverCell.value % 1 === 0
                                     ? hoverCell.value.toString()
@@ -8964,9 +8925,7 @@ const AnimatedFunnelSegment = React.memo(({ segment, animationProgress, showConv
     const totalLabelHeight = (labelLines.length - 1) * LABEL_LINE_GAP;
     const startY = midY - totalLabelHeight / 2;
     return (jsxs(G, { ...(isWeb ? {
-            // @ts-ignore web events
             onMouseEnter: onHover,
-            // @ts-ignore web events
             onMouseLeave: onHoverOut,
         } : {}), children: [jsx(AnimatedPath$7, { animatedProps: animatedProps, fill: segment.color, stroke: segment.color, strokeWidth: 1 }), jsx(Text$1, { x: segment.labelX, y: startY, fontSize: theme.fontSize.sm, fill: theme.colors.textPrimary, fontFamily: theme.fontFamily, textAnchor: segment.labelAnchor, children: labelLines.map((line, idx) => (jsx(TSpan, { x: segment.labelX, dy: idx === 0 ? 0 : LABEL_LINE_GAP, fontSize: idx === 0 ? theme.fontSize.sm : theme.fontSize.xs, fill: idx === 0 ? theme.colors.textPrimary : theme.colors.textSecondary, fontWeight: idx === 0 ? '600' : '400', children: line }, `${segment.id}-${idx}-${line}`))) })] }));
 });
@@ -9218,7 +9177,7 @@ const FunnelChart = (props) => {
     }, [dataTable, onDataTable]);
     const visibleSegmentIds = useMemo(() => new Set(visibleSegments.map((segment) => segment.id)), [visibleSegments]);
     return (jsxs(ChartContainer, { width: width, height: height, style: style, interactionConfig: { multiTooltip, liveTooltip, enableCrosshair }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), jsx(Svg, { width: width, height: height, style: { position: 'absolute' }, 
-                // @ts-ignore web events
+                // @ts-expect-error web events
                 onMouseMove: (e) => {
                     var _a;
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -9231,9 +9190,7 @@ const FunnelChart = (props) => {
                     else if ((_a = interaction === null || interaction === void 0 ? void 0 : interaction.pointer) === null || _a === void 0 ? void 0 : _a.inside) {
                         handleSegmentHover(null);
                     }
-                }, 
-                // @ts-ignore web events
-                onMouseLeave: () => {
+                }, onMouseLeave: () => {
                     handleSegmentHover(null);
                 }, children: jsxs(G, { children: [connectors.map((connector) => {
                             var _a, _b, _c, _d, _e;
@@ -9392,7 +9349,7 @@ const StackedBarChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_s) { }
+    catch ( /* noop */_s) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -9837,7 +9794,7 @@ const GroupedBarChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_x) { }
+    catch ( /* noop */_x) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -10349,14 +10306,12 @@ const GroupedBarChart = (props) => {
                     height: plotHeight,
                 }, pointerEvents: disabled ? 'none' : isWeb ? 'auto' : 'box-only', ...(isWeb
                     ? {
-                        // @ts-ignore react-native-web pointer events
                         onPointerMove: (event) => {
                             if (disabled)
                                 return;
                             const native = toNativePointerEvent$2(event).nativeEvent;
                             handlePointer(native);
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerDown: (event) => {
                             var _a, _b;
                             if (disabled)
@@ -10365,7 +10320,6 @@ const GroupedBarChart = (props) => {
                             const native = toNativePointerEvent$2(event).nativeEvent;
                             handlePointer(native);
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerUp: (event) => {
                             var _a, _b;
                             (_b = (_a = event.currentTarget) === null || _a === void 0 ? void 0 : _a.releasePointerCapture) === null || _b === void 0 ? void 0 : _b.call(_a, event.pointerId);
@@ -10373,11 +10327,9 @@ const GroupedBarChart = (props) => {
                             handlePointer(native, true);
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerLeave: () => {
                             handlePointerEnd();
                         },
-                        // @ts-ignore react-native-web pointer events
                         onPointerCancel: () => {
                             handlePointerEnd();
                         },
@@ -10465,9 +10417,7 @@ const AnimatedRadialBar = React.memo(({ datum, index, centerX, centerY, radius, 
     }, [startAngle, targetSpan, centerX, centerY, radius]);
     const isWeb = Platform.OS === 'web';
     return (jsxs(G, { ...(isWeb ? {
-            // @ts-ignore web events
             onMouseEnter: onHover,
-            // @ts-ignore web events  
             onMouseLeave: onHoverOut,
         } : {}), children: [jsx(Path, { d: trackPath, stroke: trackColor, strokeWidth: thickness, strokeLinecap: "round", fill: "none", opacity: 0.35 }), jsx(AnimatedPath$6, { animatedProps: animatedProps, stroke: color, strokeWidth: thickness, strokeLinecap: "round", fill: "none" }), showLabels && datum.label && (jsx(Text$1, { x: centerX, y: centerY - radius + thickness / 2, fontSize: theme.fontSize.sm, fill: theme.colors.textSecondary, fontFamily: theme.fontFamily, textAnchor: "middle", children: datum.label }))] }));
 });
@@ -11997,7 +11947,7 @@ const HistogramChart = (props) => {
                     majorLines: grid === null || grid === void 0 ? void 0 : grid.majorLines,
                     minorLines: grid === null || grid === void 0 ? void 0 : grid.minorLines,
                 }, plotWidth: plotWidth, plotHeight: plotHeight, xTicks: normalizedXTicks, yTicks: normalizedYTicks, padding: padding, useSVG: true })), jsx(Svg, { width: width, height: height, style: { position: 'absolute' }, 
-                // @ts-ignore web events
+                // @ts-expect-error web events
                 onMouseMove: (e) => {
                     if (!setPointer)
                         return;
@@ -12374,7 +12324,7 @@ const ComboChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_z) { }
+    catch ( /* noop */_z) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -12545,13 +12495,9 @@ const ComboChart = (props) => {
         if (!hasContinuousPointerTracking)
             return {};
         return {
-            // @ts-ignore react-native-web pointer events
             onPointerMove: handleWebPointerMove,
-            // @ts-ignore react-native-web pointer events
             onPointerDown: handleWebPointerMove,
-            // @ts-ignore react-native-web pointer events
             onPointerLeave: handlePointerLeave,
-            // @ts-ignore react-native-web pointer events
             onPointerCancel: handlePointerLeave,
         };
     }, [hasContinuousPointerTracking, handleWebPointerMove, handlePointerLeave]);
@@ -12980,7 +12926,7 @@ const RidgeChart = ({ width = 600, height = 300, series, title, subtitle, style,
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_h) { }
+    catch ( /* noop */_h) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -13192,7 +13138,7 @@ const RidgeChart = ({ width = 600, height = 300, series, title, subtitle, style,
     }, [series, bandH, plotHeight]);
     let renderIndex = -1;
     return (jsxs(ChartContainer, { width: width, height: height, style: style, interactionConfig: { multiTooltip: true, enableCrosshair: true }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), grid && plotWidth > 0 && plotHeight > 0 && (jsx(ChartGrid, { grid: grid, plotWidth: plotWidth, plotHeight: plotHeight, xTicks: normalizedXTicks, yTicks: normalizedYTicks, padding: padding, useSVG: true })), jsx(Svg, { width: width, height: height, style: { position: 'absolute' }, 
-                // @ts-ignore web
+                // @ts-expect-error web
                 onMouseMove: (e) => {
                     if (!setPointer)
                         return;
@@ -13319,14 +13265,8 @@ const AnimatedViolinShape = React.memo(({ path, fill, fillOpacity = 0.35, stroke
         onPress === null || onPress === void 0 ? void 0 : onPress();
     }, [onPress]);
     return (jsx(AnimatedPath$1, { animatedProps: animatedProps, d: path, fill: fill, fillOpacity: fillOpacity, stroke: stroke, strokeWidth: strokeWidth, pointerEvents: "auto", onPress: onPress ? handlePress : undefined, onPressIn: onFocus ? handleFocus : undefined, onPressOut: onBlur ? handleBlur : undefined, 
-        // @ts-ignore web hover events
-        onMouseEnter: onFocus ? handleFocus : undefined, 
-        // @ts-ignore web hover events
-        onMouseLeave: onBlur ? handleBlur : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverIn: onFocus ? handleFocus : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverOut: onBlur ? handleBlur : undefined }));
+        // @ts-expect-error web hover events
+        onMouseEnter: onFocus ? handleFocus : undefined, onMouseLeave: onBlur ? handleBlur : undefined, onHoverIn: onFocus ? handleFocus : undefined, onHoverOut: onBlur ? handleBlur : undefined }));
 });
 AnimatedViolinShape.displayName = 'AnimatedViolinShape';
 
@@ -13723,7 +13663,7 @@ const ViolinChart = ({ width = 400, height = 300, series, title, subtitle, style
         registerSeries,
     });
     return (jsxs(ChartContainer, { width: width, height: height, style: style, interactionConfig: { multiTooltip: true, enableCrosshair: true }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), grid && plotWidth > 0 && plotHeight > 0 && (jsx(ChartGrid, { grid: grid, plotWidth: plotWidth, plotHeight: plotHeight, xTicks: gridXTicks, yTicks: gridYTicks, padding: padding, useSVG: true })), jsx(Svg, { width: width, height: height, style: { position: 'absolute' }, 
-                // @ts-ignore web
+                // @ts-expect-error web
                 onMouseMove: (e) => {
                     if (!setPointer)
                         return;
@@ -13983,7 +13923,6 @@ const AnimatedSankeyNode = React.memo(({ node, nodeWidth, animationProgress, ind
     const outsideAnchor = fitsRight ? 'start' : 'end';
     return (jsxs(G, { children: [jsx(AnimatedRect$1, { animatedProps: animatedProps, x: node.x, width: nodeWidth, fill: node.color, rx: 2, stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, ...(isWeb
                     ? {
-                        // @ts-ignore web-specific pointer events
                         onPointerEnter: onHover,
                         onPointerLeave: onHoverOut,
                     }
@@ -14012,7 +13951,6 @@ const AnimatedSankeyLink = React.memo(({ link, animationProgress, index, dataSig
         // strokeLinecap="round"
         accessibilityLabel: accessibilityLabel, ...(!isWeb && { accessible: true }), ...(isWeb
             ? {
-                // @ts-ignore web-specific pointer events
                 onPointerEnter: onHover,
                 onPointerLeave: onHoverOut,
                 role: 'graphics-symbol',
@@ -14380,7 +14318,7 @@ const SankeyChart = (props) => {
         }
     }, [seriesRegistration, registerSeries]);
     return (jsxs(ChartContainer, { width: width, height: height, style: style, interactionConfig: { multiTooltip: true }, children: [(title || subtitle) && jsx(ChartTitle, { title: title, subtitle: subtitle }), jsx(Svg, { width: width, height: height, style: { position: 'absolute', left: 0, top: 0 }, 
-                // @ts-ignore web
+                // @ts-expect-error web
                 onMouseMove: (e) => {
                     if (!setPointer)
                         return;
@@ -14388,9 +14326,7 @@ const SankeyChart = (props) => {
                     const px = e.clientX - rect.left;
                     const py = e.clientY - rect.top;
                     setPointer({ x: px, y: py, inside: true, pageX: e.pageX, pageY: e.pageY });
-                }, 
-                // @ts-ignore web
-                onMouseLeave: () => {
+                }, onMouseLeave: () => {
                     clearHover();
                     setPointer === null || setPointer === void 0 ? void 0 : setPointer({ x: 0, y: 0, inside: false });
                 }, children: jsxs(G, { children: [internalLinks.map((l, i) => (jsx(AnimatedSankeyLink, { link: l, animationProgress: animationProgress, index: i, dataSignature: dataSignature, disabled: disabled, highlightAlpha: resolveLinkAlpha(l.key), onHover: () => handleLinkHover(l.key), onHoverOut: () => handleLinkHover(null) }, l.key))), internalNodes.map((n, i) => (jsx(AnimatedSankeyNode, { node: n, nodeWidth: resolvedNodeWidth, animationProgress: animationProgress, index: i, dataSignature: dataSignature, disabled: disabled, theme: theme, onHover: () => handleNodeHover(n.id), onHoverOut: () => handleNodeHover(null), highlightAlpha: resolveNodeAlpha(n.id), chartWidth: width, padding: { left: padding.left, right: padding.right } }, n.id)))] }) }), internalNodes.length === 0 && (jsx(View, { style: { position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }, children: jsx(Text, { style: { color: theme.colors.textSecondary, fontSize: 12 }, children: "No data" }) }))] }));
@@ -14465,7 +14401,7 @@ const DonutChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_h) { }
+    catch ( /* noop */_h) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -15145,14 +15081,8 @@ const AnimatedLink = React.memo(({ sourceX, sourceY, targetX, targetY, weight, c
         onPress === null || onPress === void 0 ? void 0 : onPress();
     }, [onPress]);
     return (jsx(AnimatedSvgPath, { animatedProps: animatedProps, stroke: color, strokeWidth: resolvedWidth, strokeLinecap: "round", strokeLinejoin: "round", fill: "none", pointerEvents: "auto", onPress: onPress ? handlePress : undefined, onPressIn: onFocus ? handleFocus : undefined, onPressOut: onBlur ? handleBlur : undefined, 
-        // @ts-ignore web-only events for hover interactions
-        onMouseEnter: onFocus ? handleFocus : undefined, 
-        // @ts-ignore web-only events for hover interactions
-        onMouseLeave: onBlur ? handleBlur : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverIn: onFocus ? handleFocus : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverOut: onBlur ? handleBlur : undefined }));
+        // @ts-expect-error web-only events for hover interactions
+        onMouseEnter: onFocus ? handleFocus : undefined, onMouseLeave: onBlur ? handleBlur : undefined, onHoverIn: onFocus ? handleFocus : undefined, onHoverOut: onBlur ? handleBlur : undefined }));
 });
 AnimatedLink.displayName = 'NetworkAnimatedLink';
 
@@ -15194,14 +15124,8 @@ const AnimatedNode = React.memo(({ id, x, y, color, label, radius = 12, index, d
         onPress === null || onPress === void 0 ? void 0 : onPress();
     }, [onPress]);
     return (jsxs(AnimatedGroup, { animatedProps: groupProps, pointerEvents: "auto", onPress: onPress ? handlePress : undefined, onPressIn: onFocus ? handleFocus : undefined, onPressOut: onBlur ? handleBlur : undefined, 
-        // @ts-ignore web hover events
-        onMouseEnter: onFocus ? handleFocus : undefined, 
-        // @ts-ignore web hover events
-        onMouseLeave: onBlur ? handleBlur : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverIn: onFocus ? handleFocus : undefined, 
-        // @ts-ignore react-native-web hover events
-        onHoverOut: onBlur ? handleBlur : undefined, children: [jsx(AnimatedCircle, { animatedProps: nodeProps, r: radius, fill: color, stroke: theme.colors.background, strokeWidth: 1.5 }), label && showLabel && (jsx(AnimatedText, { animatedProps: textProps, fontSize: theme.fontSize.xs, fill: theme.colors.textPrimary, fontFamily: theme.fontFamily, textAnchor: "middle", pointerEvents: "none", children: label }))] }, id));
+        // @ts-expect-error web hover events
+        onMouseEnter: onFocus ? handleFocus : undefined, onMouseLeave: onBlur ? handleBlur : undefined, onHoverIn: onFocus ? handleFocus : undefined, onHoverOut: onBlur ? handleBlur : undefined, children: [jsx(AnimatedCircle, { animatedProps: nodeProps, r: radius, fill: color, stroke: theme.colors.background, strokeWidth: 1.5 }), label && showLabel && (jsx(AnimatedText, { animatedProps: textProps, fontSize: theme.fontSize.xs, fill: theme.colors.textPrimary, fontFamily: theme.fontFamily, textAnchor: "middle", pointerEvents: "none", children: label }))] }, id));
 });
 AnimatedNode.displayName = 'NetworkAnimatedNode';
 
@@ -16004,16 +15928,14 @@ const NetworkChart = (props) => {
                     top: padding.top,
                     width: plotWidth,
                     height: plotHeight,
-                    // @ts-ignore web-specific CSS properties
+                    // @ts-expect-error web-specific CSS properties
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
                     MozUserSelect: 'none',
                     msUserSelect: 'none',
                 }, ...panHandlers, children: jsxs(Svg, { width: plotWidth, height: plotHeight, 
-                    // @ts-ignore web specific events
-                    onMouseMove: handlePointerMove, 
-                    // @ts-ignore web specific events
-                    onMouseLeave: handlePointerLeave, children: [renderLinks.map((link) => {
+                    // @ts-expect-error web specific events
+                    onMouseMove: handlePointerMove, onMouseLeave: handlePointerLeave, children: [renderLinks.map((link) => {
                             var _a, _b, _c, _d, _e;
                             const paletteColor = resolvedLinkPalette.length > 0
                                 ? resolvedLinkPalette[link.index % resolvedLinkPalette.length]
@@ -16436,7 +16358,7 @@ const MarimekkoChart = (props) => {
     try {
         interaction = useChartInteractionContext();
     }
-    catch (_x) { }
+    catch ( /* noop */_x) { /* noop */ }
     const registerSeries = interaction === null || interaction === void 0 ? void 0 : interaction.registerSeries;
     const updateSeriesVisibility = interaction === null || interaction === void 0 ? void 0 : interaction.updateSeriesVisibility;
     const setPointer = interaction === null || interaction === void 0 ? void 0 : interaction.setPointer;
@@ -16817,15 +16739,12 @@ const RootOffsetCapture = ({ children, style, ...rest }) => {
     try {
         ctx = useChartInteractionContext();
     }
-    catch (_a) {
-        console.warn('ChartsProvider: RootOffsetCapture must be used inside a ChartInteractionProvider context');
-    }
+    catch ( /* optional: no ChartInteractionProvider */_a) { /* optional: no ChartInteractionProvider */ }
     const measure = React.useCallback(() => {
         var _a, _b;
         if (!ref.current || !(ctx === null || ctx === void 0 ? void 0 : ctx.setRootOffset))
             return;
         // Attempt to measure DOM node (web). React Native web: stateNode or ref itself.
-        // @ts-ignore internal access best-effort
         const el = ((_b = (_a = ref.current) === null || _a === void 0 ? void 0 : _a._internalFiberInstanceHandleDEV) === null || _b === void 0 ? void 0 : _b.stateNode) || ref.current;
         if (el && el.getBoundingClientRect) {
             const r = el.getBoundingClientRect();

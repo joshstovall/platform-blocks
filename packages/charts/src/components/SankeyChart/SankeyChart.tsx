@@ -111,7 +111,6 @@ const AnimatedSankeyNode: React.FC<AnimatedSankeyNodeProps> = React.memo(({
         strokeWidth={1}
         {...(isWeb
           ? {
-              // @ts-ignore web-specific pointer events
               onPointerEnter: onHover,
               onPointerLeave: onHoverOut,
             }
@@ -215,7 +214,6 @@ const AnimatedSankeyLink: React.FC<AnimatedSankeyLinkProps> = React.memo(({
       {...(!isWeb && { accessible: true })}
       {...(isWeb
         ? {
-            // @ts-ignore web-specific pointer events
             onPointerEnter: onHover,
             onPointerLeave: onHoverOut,
             role: 'graphics-symbol',
@@ -681,13 +679,12 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position:'absolute', left:0, top:0 }}
-        // @ts-ignore web
+        // @ts-expect-error web
         onMouseMove={(e)=>{
           if(!setPointer) return; const rect = (e.currentTarget as any).getBoundingClientRect();
           const px = e.clientX - rect.left; const py = e.clientY - rect.top;
           setPointer({ x:px, y:py, inside:true, pageX:e.pageX, pageY:e.pageY });
         }}
-        // @ts-ignore web
         onMouseLeave={() => {
           clearHover();
           setPointer?.({ x: 0, y: 0, inside: false });

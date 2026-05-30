@@ -318,7 +318,7 @@ export function Dialog({
 
   const dynamicStyles = useMemo(() => StyleSheet.create({
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: variant === 'fullscreen' ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
       justifyContent: variant === 'bottomsheet' ? 'flex-end' : 'center',
       alignItems: variant === 'bottomsheet' ? 'stretch' : 'center',

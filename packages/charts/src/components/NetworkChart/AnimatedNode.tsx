@@ -94,13 +94,10 @@ export const AnimatedNode: React.FC<AnimatedNodeProps> = React.memo(
         onPress={onPress ? handlePress : undefined}
         onPressIn={onFocus ? handleFocus : undefined}
         onPressOut={onBlur ? handleBlur : undefined}
-        // @ts-ignore web hover events
+        // @ts-expect-error web hover events
         onMouseEnter={onFocus ? handleFocus : undefined}
-        // @ts-ignore web hover events
         onMouseLeave={onBlur ? handleBlur : undefined}
-        // @ts-ignore react-native-web hover events
         onHoverIn={onFocus ? handleFocus : undefined}
-        // @ts-ignore react-native-web hover events
         onHoverOut={onBlur ? handleBlur : undefined}
       >
         <AnimatedCircle

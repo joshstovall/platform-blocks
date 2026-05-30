@@ -72,6 +72,27 @@ const CONTROL_TYPES_WITH_FIELD_LABEL = new Set<PlaygroundControlType>([
   'text'
 ]);
 
+// Build a stable change-detection key for the default prop values. Defaults can
+// contain non-serializable values — React elements (e.g. `children`), functions,
+// or circular structures (React 19 dev-mode elements reference their owner) — which
+// would make a plain JSON.stringify throw, so skip those.
+function serializeDefaults(defaults: Record<string, any>): string {
+  const seen = new WeakSet<object>();
+  try {
+    return JSON.stringify(defaults, (_key, value) => {
+      if (typeof value === 'function') return undefined;
+      if (value !== null && typeof value === 'object') {
+        if ((value as any).$$typeof) return undefined; // React element / portal / etc.
+        if (seen.has(value)) return undefined; // circular
+        seen.add(value);
+      }
+      return value;
+    });
+  } catch {
+    return Object.keys(defaults).join('|');
+  }
+}
+
 export function ComponentPlayground({ component, propsMeta, config }: ComponentPlaygroundProps) {
   const { width } = useWindowDimensions();
   const isStacked = width < 1100;
@@ -79,7 +100,7 @@ export function ComponentPlayground({ component, propsMeta, config }: ComponentP
   const targetComponent = Blocks[targetName as keyof typeof Blocks] as React.ComponentType | undefined;
 
   const { controls, defaults } = useMemo(() => deriveControls(propsMeta, config), [propsMeta, config]);
-  const defaultsKey = useMemo(() => JSON.stringify(defaults), [defaults]);
+  const defaultsKey = useMemo(() => serializeDefaults(defaults), [defaults]);
   const [values, setValues] = useState<Record<string, any>>(defaults);
 
   useEffect(() => {

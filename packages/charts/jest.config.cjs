@@ -1,4 +1,4 @@
-const rnPreset = require('react-native/jest-preset');
+const rnPreset = require('@react-native/jest-preset');
 
 module.exports = {
   ...rnPreset,

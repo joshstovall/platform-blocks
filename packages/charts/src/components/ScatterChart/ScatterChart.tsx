@@ -144,7 +144,7 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
 
   const theme = useChartTheme();
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
-  try { interaction = useChartInteractionContext(); } catch { }
+  try { interaction = useChartInteractionContext(); } catch { /* noop */ }
   const crosshairEnabled = enableCrosshair !== false && interaction?.config?.enableCrosshair !== false;
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
@@ -606,7 +606,7 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
             setYDomainState(null);
             lastTapTimeRef.current = 0;
             setLastTapTime(0);
-            // @ts-ignore
+            // @ts-expect-error optional web-only onDomainChange prop not in base type
             props.onDomainChange?.(computedXDomain, computedYDomain);
           } else {
             lastTapTimeRef.current = now;
@@ -620,7 +620,7 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
       setLastPan(null);
       if (pinchTrackingRef.current) { panZoom.endPinch(); pinchTrackingRef.current = false; setPinchTracking(false); }
       // fire domain change callback after gesture ends
-      // @ts-ignore optional
+      // @ts-expect-error optional
       props.onDomainChange?.(xDomain, yDomain);
     },
     onPanResponderTerminationRequest: () => true,
@@ -796,7 +796,7 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
               onMoveShouldSetResponder: () => true,
             }
           : {})}
-        // @ts-ignore web-only hover support
+        // @ts-expect-error web-only hover support
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const x = e.clientX - rect.left;
@@ -812,9 +812,8 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
             setCrosshair?.({ dataX, pixelX: x });
           }
         }}
-        // @ts-ignore
         onMouseLeave={() => { setPointer?.(interaction?.pointer ? { ...interaction.pointer, inside: false } : null); setCrosshair?.(null); panZoom.endPan(); }}
-        // @ts-ignore
+        // @ts-expect-error web-only mouse event prop not in RN types
         onMouseDown={(e) => {
           if (!props.enablePanZoom) return;
           const rect = e.currentTarget.getBoundingClientRect();
@@ -822,14 +821,12 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
           const y = e.clientY - rect.top;
           panZoom.startPan(x, y);
         }}
-        // @ts-ignore
         onMouseUp={() => {
           if (!props.enablePanZoom) return;
           panZoom.endPan();
-          // @ts-ignore
+          // @ts-expect-error optional web-only onDomainChange prop not in base type
           props.onDomainChange?.(xDomain, yDomain);
         }}
-        // @ts-ignore wheel
         onWheel={props.enableWheelZoom ? (e: any) => {
           if (!props.enablePanZoom) return;
           if (e.cancelable) e.preventDefault();

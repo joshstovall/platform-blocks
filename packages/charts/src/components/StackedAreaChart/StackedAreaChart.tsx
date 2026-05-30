@@ -207,9 +207,7 @@ const AnimatedStackedArea: React.FC<{
   return (
     <G
       {...(isWeb ? {
-        // @ts-ignore web events
         onMouseEnter: onHover,
-        // @ts-ignore web events
         onMouseLeave: onHoverOut,
       } : {})}
     >
@@ -530,7 +528,7 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
         style={{ position: 'absolute', left: padding.left, top: padding.top }} 
         width={plotWidth} 
         height={plotHeight}
-        // @ts-ignore web events
+        // @ts-expect-error web events
         onMouseMove={(e) => {
           if (!interaction?.setPointer) return;
           const rect = (e.currentTarget as any).getBoundingClientRect();
@@ -541,7 +539,6 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
           // Basic crosshair support
           setCrosshair?.({ dataX: x / plotWidth, pixelX: x });
         }}
-        // @ts-ignore web events
         onMouseLeave={() => {
           if (interaction?.pointer) interaction?.setPointer?.({ ...interaction.pointer, inside: false });
         }}

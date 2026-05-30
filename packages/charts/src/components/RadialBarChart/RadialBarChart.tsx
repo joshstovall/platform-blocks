@@ -111,9 +111,7 @@ const AnimatedRadialBar: React.FC<{
   return (
     <G
       {...(isWeb ? {
-        // @ts-ignore web events
         onMouseEnter: onHover,
-        // @ts-ignore web events  
         onMouseLeave: onHoverOut,
       } : {})}
     >

@@ -153,7 +153,7 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try {
     interaction = useChartInteractionContext();
-  } catch {}
+  } catch { /* noop */ }
 
   const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
@@ -758,31 +758,26 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
         pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
         {...(isWeb
           ? {
-              // @ts-ignore react-native-web pointer events
               onPointerMove: (event: any) => {
                 if (disabled) return;
                 const native = toNativePointerEvent(event).nativeEvent;
                 handlePointer(native);
               },
-              // @ts-ignore react-native-web pointer events
               onPointerDown: (event: any) => {
                 if (disabled) return;
                 event.currentTarget?.setPointerCapture?.(event.pointerId);
                 const native = toNativePointerEvent(event).nativeEvent;
                 handlePointer(native);
               },
-              // @ts-ignore react-native-web pointer events
               onPointerUp: (event: any) => {
                 event.currentTarget?.releasePointerCapture?.(event.pointerId);
                 const native = toNativePointerEvent(event).nativeEvent;
                 handlePointer(native, true);
                 handlePointerEnd();
               },
-              // @ts-ignore react-native-web pointer events
               onPointerLeave: () => {
                 handlePointerEnd();
               },
-              // @ts-ignore react-native-web pointer events
               onPointerCancel: () => {
                 handlePointerEnd();
               },

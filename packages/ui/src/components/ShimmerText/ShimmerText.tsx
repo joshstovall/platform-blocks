@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     pointerEvents: 'none',
   },
   maskWrapper: {

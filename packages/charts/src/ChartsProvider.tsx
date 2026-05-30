@@ -39,14 +39,11 @@ export const GlobalChartsRoot = ChartsProvider;
 // Internal wrapper to capture the absolute page offset once so shared popover can position correctly.
 const RootOffsetCapture: React.FC<ViewProps> = ({ children, style, ...rest }) => {
   const ref = useRef<View>(null);
-  let ctx: any = null; try { ctx = useChartInteractionContext(); } catch {
-    console.warn('ChartsProvider: RootOffsetCapture must be used inside a ChartInteractionProvider context');
-  }
+  let ctx: any = null; try { ctx = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
 
   const measure = React.useCallback(() => {
     if (!ref.current || !ctx?.setRootOffset) return;
     // Attempt to measure DOM node (web). React Native web: stateNode or ref itself.
-    // @ts-ignore internal access best-effort
     const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
     if (el && el.getBoundingClientRect) {
       const r = el.getBoundingClientRect();
