@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
-import { Pressable, View, Animated, Easing, Platform, LayoutChangeEvent } from 'react-native';
+import { Pressable, View, Animated, Easing, Platform, LayoutChangeEvent, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
@@ -42,8 +42,10 @@ const getButtonStyles = (
     minWidth: isIconButton ? sizeConfig.height : sizeConfig.height,
     // For icon buttons, make width equal to height (square), otherwise use horizontal padding
     ...(isIconButton ? { width: sizeConfig.height } : { paddingHorizontal: horizontalSpacing }),
-    // Add full width support
-    ...(fullWidth && !isIconButton ? { width: '100%' as const } : {}),
+    // NOTE: fullWidth/flex are applied to the OUTER wrapper (see render), not
+    // here — the Pressable is nested two Views deep, so width/flex on it can't
+    // grow the button within a flex row. The Pressable stretches to fill the
+    // wrapper via the default column + alignItems:stretch.
     paddingVertical: Math.round(sizeConfig.padding * 0.25), // Consistent vertical padding
     borderWidth: 1,
     opacity: disabled ? DESIGN_TOKENS.opacity.disabled : loading ? DESIGN_TOKENS.opacity.pressed : 1,
@@ -265,14 +267,45 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const spacingStyles = getSpacingStyles(spacingProps);
   const baseLayoutStyles = getLayoutStyles(layoutProps);
 
-  // Apply measured width when loading to prevent size changes
-  // Use the actual measured width instead of character-based estimates
-  const layoutStyles = {
-    ...baseLayoutStyles,
-    ...(loading && measuredWidth && !layoutProps.w && !layoutProps.fullWidth
+  // The Button nests its Pressable inside wrapper Views, so width/flex applied
+  // to the Pressable can't size the button within a flex row. Split styles by
+  // who they belong to:
+  //   • width-family layout (fullWidth/w/maxW/minW) + flex → OUTER wrapper, so
+  //     the button's footprint grows/shrinks correctly in any container.
+  //   • height-family layout (h/maxH/minH) + visual style → the Pressable.
+  const {
+    width: layoutWidth,
+    maxWidth: layoutMaxWidth,
+    minWidth: layoutMinWidth,
+    ...heightLayoutStyles
+  } = baseLayoutStyles as Record<string, unknown>;
+
+  const outerWidthStyles: Record<string, unknown> = {};
+  if (layoutWidth !== undefined) outerWidthStyles.width = layoutWidth;
+  if (layoutMaxWidth !== undefined) outerWidthStyles.maxWidth = layoutMaxWidth;
+  if (layoutMinWidth !== undefined) outerWidthStyles.minWidth = layoutMinWidth;
+
+  // Hoist flex-footprint props out of the consumer `style` onto the wrapper.
+  // (Visual style — bg, border, radius, etc. — stays on the Pressable.)
+  const flatStyle = (StyleSheet.flatten(style) || {}) as Record<string, unknown>;
+  const {
+    flex: styleFlex,
+    flexGrow: styleFlexGrow,
+    flexShrink: styleFlexShrink,
+    flexBasis: styleFlexBasis,
+    ...pressableStyleRest
+  } = flatStyle;
+  const hoistedFlexStyles: Record<string, unknown> = {};
+  if (styleFlex !== undefined) hoistedFlexStyles.flex = styleFlex;
+  if (styleFlexGrow !== undefined) hoistedFlexStyles.flexGrow = styleFlexGrow;
+  if (styleFlexShrink !== undefined) hoistedFlexStyles.flexShrink = styleFlexShrink;
+  if (styleFlexBasis !== undefined) hoistedFlexStyles.flexBasis = styleFlexBasis;
+
+  // Freeze the measured width on the Pressable while loading to avoid jumps.
+  const loadingFreezeStyle =
+    loading && measuredWidth && !layoutProps.w && !layoutProps.fullWidth
       ? { width: measuredWidth, minWidth: measuredWidth }
-      : {})
-  };
+      : null;
 
   const iconSpacing = getSpacing(size) / 2;
 
@@ -474,7 +507,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   const animatedWrapperStyle = useMemo(() => ({ transform: [{ scale: scaleAnim }] }), [scaleAnim]);
 
   const buttonElement = (
-    <View style={spacingStyles}>
+    <View style={[spacingStyles, outerWidthStyles, hoistedFlexStyles]}>
       <Animated.View style={animatedWrapperStyle} collapsable={false}
 
       >
@@ -484,13 +517,14 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
           {...accessibilityProps}
           style={({ pressed }) => [
             buttonStyles,
-            layoutStyles,
+            heightLayoutStyles,
+            loadingFreezeStyle,
             // subtle visual feedback beyond scale on supported platforms
             pressed && !isInteractionDisabled ? {
               opacity: effectiveVariant === 'ghost' || effectiveVariant === 'none' ? 0.6 : 0.9,
               ...(Platform.OS !== 'web' ? { transform: [{ translateY: 1 }] } : {})
             } : null,
-            style,
+            pressableStyleRest,
           ]}
           onPress={handleInternalPress}
           onLayout={handleLayout}

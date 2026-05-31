@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Appearance } from 'react-native';
 import { PlatformBlocksTheme, PlatformBlocksThemeOverride } from './types';
 
 // Enhanced theme mode types
@@ -77,9 +77,13 @@ export function ThemeModeProvider({
     domConfig = defaultDomConfig
   } = config;
 
-  // Get system color scheme
-  const [systemColorScheme, setSystemColorScheme] = React.useState<'light' | 'dark'>('light');
-  
+  // Get system color scheme. On native, seed from Appearance immediately so an
+  // 'auto' app doesn't flash light before the listener attaches; on web we keep
+  // the 'light' default and let the matchMedia effect below resolve it.
+  const [systemColorScheme, setSystemColorScheme] = React.useState<'light' | 'dark'>(
+    () => (Platform.OS === 'web' ? 'light' : (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'))
+  );
+
   // Current mode state
   const [mode, setModeState] = React.useState<ColorSchemeMode>(() => {
     const persisted = persistence?.get?.();
@@ -97,8 +101,22 @@ export function ThemeModeProvider({
     
     updateSystemScheme(); // Set initial value
     mediaQuery.addEventListener('change', updateSystemScheme);
-    
+
     return () => mediaQuery.removeEventListener('change', updateSystemScheme);
+  }, []);
+
+  // Listen to system color scheme changes (native). The web effect above bails
+  // out on native, so without this `systemColorScheme` would be stuck at its
+  // initial value and an 'auto' app would never follow the OS theme.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    setSystemColorScheme(Appearance.getColorScheme() === 'dark' ? 'dark' : 'light');
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      setSystemColorScheme(colorScheme === 'dark' ? 'dark' : 'light');
+    });
+
+    return () => subscription.remove();
   }, []);
 
   // Resolve actual color scheme

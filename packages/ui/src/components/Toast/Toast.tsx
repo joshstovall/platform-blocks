@@ -537,17 +537,12 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
       >
       {/* Icon or Loading */}
       {(icon || loading) && (
-        <View style={{ 
-          marginRight: getSpacing('sm'), 
-          ...Platform.select({
-            android: {
-              alignSelf: 'flex-start',
-              marginTop: title ? 2 : 0, // Align with text better
-            },
-            default: {
-              marginTop: 2,
-            }
-          })
+        <View style={{
+          marginRight: getSpacing('sm'),
+          // Inherit the row's alignItems:'center' on every platform. (Android
+          // previously forced alignSelf:'flex-start', which pinned the icon to
+          // the top instead of centering it like web.)
+          marginTop: 2,
         }}>
           {loading ? (
             <View style={{ width: 20, height: 20, justifyContent: 'center', alignItems: 'center' }}>

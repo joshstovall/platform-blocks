@@ -117,7 +117,7 @@ export function Avatar({
             }}
             accessibilityLabel={accessibilityLabel}
           />
-        ) : (
+        ) : typeof fallback === 'string' || fallback == null ? (
           <Text
             {...mergeSlotProps(
               {
@@ -131,6 +131,8 @@ export function Avatar({
           >
             {fallback || '?'}
           </Text>
+        ) : (
+          fallback
         )}
       </View>
       {online && (

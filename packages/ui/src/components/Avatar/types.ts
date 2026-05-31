@@ -8,8 +8,8 @@ export interface AvatarProps {
   size?: ComponentSizeValue;
   /** Image source URL for the avatar */
   src?: string;
-  /** Initials to show as fallback when no image is provided */
-  fallback?: string;
+  /** Fallback shown when no image is provided: initials string or a custom React node (e.g. an icon). */
+  fallback?: React.ReactNode;
   /** Background color for the fallback initials */
   backgroundColor?: string;
   /** Text color for the fallback initials */

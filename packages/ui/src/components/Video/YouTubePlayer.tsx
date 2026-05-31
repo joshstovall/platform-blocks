@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, ViewStyle, ImageStyle, StyleProp, Platform } from 'react-native';
+import { View, StyleSheet, ImageStyle, StyleProp, Platform } from 'react-native';
 import { Image } from '../Image';
 import { Text } from '../Text';
 import { resolveOptionalModule } from '../../utils/optionalModule';
@@ -22,6 +22,8 @@ interface YouTubePlayerProps {
   volume?: number;
   playbackRate?: VideoPlaybackRate;
   quality?: VideoQuality;
+  /** Override the hosted player page URL. Defaults to DEFAULT_PLAYER_BASE_URL. */
+  playerBaseUrl?: string;
   youtubeOptions?: {
     start?: number;
     end?: number;
@@ -75,23 +77,10 @@ const extractYouTubeId = (input: string): string | null => {
   return null;
 };
 
-// Generate YouTube embed URL with options
-const generateEmbedUrl = (videoId: string, options: YouTubePlayerProps['youtubeOptions'] = {}) => {
-  const params = new URLSearchParams();
-
-  // Basic embed parameters
-  params.set('enablejsapi', '1');
-  params.set('origin', Platform.OS === 'web' ? window.location.origin : 'https://localhost');
-
-  // User options
-  if (options.start) params.set('start', options.start.toString());
-  if (options.end) params.set('end', options.end.toString());
-  if (options.modestbranding !== undefined) params.set('modestbranding', options.modestbranding ? '1' : '0');
-  if (options.rel !== undefined) params.set('rel', options.rel ? '1' : '0');
-  if (options.iv_load_policy !== undefined) params.set('iv_load_policy', options.iv_load_policy.toString());
-
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
-};
+// Default host for the player iframe. The hosted page wraps the YouTube IFrame
+// API and relays events via postMessage. Override per-instance with the
+// `playerBaseUrl` prop (e.g. to self-host instead of depending on this domain).
+const DEFAULT_PLAYER_BASE_URL = 'https://joshstovall.github.io/yt/test.html';
 
 export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
   source,
@@ -101,6 +90,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
   muted = false,
   volume = 1,
   playbackRate = 1,
+  quality,
+  playerBaseUrl = DEFAULT_PLAYER_BASE_URL,
   youtubeOptions,
   onPlay,
   onPause,
@@ -118,29 +109,40 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
 }, ref) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(muted);
-  const [currentVolume, setCurrentVolume] = useState(volume);
+
+  // Hot playback values that drive NO UI. Kept in refs (not state) so the
+  // 250ms polling cadence doesn't re-render the component — and so the message
+  // handler never calls setState during render (the root cause of the
+  // "Cannot update a component while rendering a different component" warning).
+  // Read only by the imperative getState() and re-emitted via callbacks.
+  const currentTimeRef = useRef(0);
+  const durationRef = useRef(0);
+  const currentVolumeRef = useRef(volume);
+  const isMutedRef = useRef(muted);
 
   const webViewRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerStateRef = useRef<any>({});
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Refs for polling to avoid dependency issues
   const isPlayingRef = useRef(isPlaying);
   const isLoadedRef = useRef(isLoaded);
 
-  // Refs for callbacks to avoid dependency issues
+  // Refs for callbacks so the message handler can stay referentially stable
+  // (deps: []) regardless of parents passing fresh inline callbacks each render.
   const onPlayRef = useRef(onPlay);
   const onPauseRef = useRef(onPause);
   const onTimeUpdateRef = useRef(onTimeUpdate);
   const onDurationChangeRef = useRef(onDurationChange);
   const onVolumeChangeRef = useRef(onVolumeChange);
+  const onMuteRef = useRef(onMute);
+  const onUnmuteRef = useRef(onUnmute);
+  const onLoadRef = useRef(onLoad);
+  const onErrorRef = useRef(onError);
+  const onBufferRef = useRef(onBuffer);
 
-  // Update refs when state changes
+  // Update refs when props change
   isPlayingRef.current = isPlaying;
   isLoadedRef.current = isLoaded;
   onPlayRef.current = onPlay;
@@ -148,6 +150,11 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
   onTimeUpdateRef.current = onTimeUpdate;
   onDurationChangeRef.current = onDurationChange;
   onVolumeChangeRef.current = onVolumeChange;
+  onMuteRef.current = onMute;
+  onUnmuteRef.current = onUnmute;
+  onLoadRef.current = onLoad;
+  onErrorRef.current = onError;
+  onBufferRef.current = onBuffer;
 
   // Extract YouTube video ID
   const videoId = useMemo(() =>
@@ -177,11 +184,9 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
       progressUpdateInterval: 250, // Request updates every 250ms for smooth progress
     };
 
-    // Use your hosted iframe
-    const baseUrl = 'https://joshstovall.github.io/yt/test.html';
     const dataParam = encodeURIComponent(JSON.stringify(config));
-    return `${baseUrl}?data=${dataParam}`;
-  }, [videoId, youtubeOptions, loop, autoPlay, muted]);
+    return `${playerBaseUrl}?data=${dataParam}`;
+  }, [videoId, youtubeOptions, loop, autoPlay, muted, playerBaseUrl]);
 
   const hasValidSource = Boolean(videoId && youtubeUrl);
   useEffect(() => {
@@ -264,19 +269,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
         return;
       }
 
-      // console.log('[YouTubePlayer] Received message:', data.eventType, data.data);
-
       switch (data.eventType) {
         case 'playerReady':
           setIsLoaded(true);
-          // Defer callbacks to avoid setState during render
-          queueMicrotask(() => {
-            if (data.data?.duration) {
-              setDuration(data.data.duration);
-              onDurationChangeRef.current?.(data.data.duration);
-            }
-            onLoad?.();
-          });
+          if (data.data?.duration && data.data.duration !== durationRef.current) {
+            durationRef.current = data.data.duration;
+            onDurationChangeRef.current?.(data.data.duration);
+          }
+          onLoadRef.current?.();
           break;
 
         case 'playerStateChange': {
@@ -287,142 +287,102 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
 
           setIsPlaying(isNowPlaying);
 
-          // Defer callbacks to avoid setState during render
-          queueMicrotask(() => {
-            // Update time and duration from additional data if available
-            if (data.data?.currentTime !== undefined) {
-              setCurrentTime(data.data.currentTime);
-            }
-            if (data.data?.duration !== undefined) {
-              setDuration(data.data.duration);
-            }
+          // Update time/duration from additional data if available.
+          if (data.data?.currentTime !== undefined) {
+            currentTimeRef.current = data.data.currentTime;
+          }
+          if (data.data?.duration !== undefined) {
+            durationRef.current = data.data.duration;
+          }
 
-            if (isNowPlaying) {
-              onPlay?.();
-              onBuffer?.(false);
-            } else if (isPaused || isEnded) {
-              onPause?.();
-            } else if (isBuffering) {
-              onBuffer?.(true);
-            }
-          });
+          if (isNowPlaying) {
+            onPlayRef.current?.();
+            onBufferRef.current?.(false);
+          } else if (isPaused || isEnded) {
+            onPauseRef.current?.();
+          } else if (isBuffering) {
+            onBufferRef.current?.(true);
+          }
           break;
         }
 
         case 'timeUpdate':
         case 'progress':
-        case 'playerState': // Handle direct state polling response
-          // Only log occasionally to avoid spam
-          // console.log('Player state update:', data.data);
-          if (data.data?.currentTime !== undefined) {
-            const newTime = data.data.currentTime;
-            // Only update if time changed significantly (prevent micro-updates causing re-renders)
-            setCurrentTime(prevTime => {
-              if (Math.abs(newTime - prevTime) > 0.1) { // Reduced threshold for smoother updates
-                onTimeUpdateRef.current?.(newTime);
-                return newTime;
-              }
-              return prevTime;
-            });
+        case 'playerState': { // Handle direct state polling response
+          // These arrive ~4x/sec while playing. They feed refs + callbacks
+          // only (no rendered state), so there's nothing to defer and no
+          // re-render — the logic runs plainly in this event handler.
+          const d = data.data ?? {};
+
+          // Time — emit only on a meaningful change to avoid micro-updates.
+          if (d.currentTime !== undefined && Math.abs(d.currentTime - currentTimeRef.current) > 0.1) {
+            currentTimeRef.current = d.currentTime;
+            onTimeUpdateRef.current?.(d.currentTime);
           }
-          if (data.data?.duration !== undefined && data.data.duration > 0) {
-            setDuration(prevDuration => {
-              if (prevDuration !== data.data.duration) {
-                onDurationChangeRef.current?.(data.data.duration);
-                return data.data.duration;
-              }
-              return prevDuration;
-            });
+          // Duration
+          if (d.duration !== undefined && d.duration > 0 && d.duration !== durationRef.current) {
+            durationRef.current = d.duration;
+            onDurationChangeRef.current?.(d.duration);
           }
-          // Handle volume and mute state if provided
-          if (data.data?.volume !== undefined) {
-            const volumeLevel = data.data.volume / 100; // YouTube sends 0-100, we use 0-1
-            setCurrentVolume(prevVolume => {
-              if (Math.abs(volumeLevel - prevVolume) > 0.01) {
-                onVolumeChangeRef.current?.(volumeLevel);
-                return volumeLevel;
-              }
-              return prevVolume;
-            });
+          // Volume — YouTube sends 0-100, we use 0-1.
+          if (d.volume !== undefined) {
+            const volumeLevel = d.volume / 100;
+            if (Math.abs(volumeLevel - currentVolumeRef.current) > 0.01) {
+              currentVolumeRef.current = volumeLevel;
+              onVolumeChangeRef.current?.(volumeLevel);
+            }
           }
-          if (data.data?.muted !== undefined) {
-            setIsMuted(prevMuted => {
-              if (prevMuted !== data.data.muted) {
-                // Defer callbacks to avoid setState during render
-                queueMicrotask(() => {
-                  if (data.data.muted) {
-                    onMute?.();
-                  } else {
-                    onUnmute?.();
-                  }
-                });
-                return data.data.muted;
-              }
-              return prevMuted;
-            });
+          // Mute
+          if (d.muted !== undefined && d.muted !== isMutedRef.current) {
+            isMutedRef.current = d.muted;
+            (d.muted ? onMuteRef.current : onUnmuteRef.current)?.();
           }
-          // Handle playing state if provided
-          if (data.data?.playing !== undefined) {
-            setIsPlaying(prevPlaying => {
-              if (prevPlaying !== data.data.playing) {
-                // Defer callbacks to avoid setState during render
-                queueMicrotask(() => {
-                  if (data.data.playing) {
-                    onPlayRef.current?.();
-                  } else {
-                    onPauseRef.current?.();
-                  }
-                });
-                return data.data.playing;
-              }
-              return prevPlaying;
-            });
+          // Playing — real state; drives the polling interval. Set with a
+          // plain value (no updater) and emit the matching callback.
+          if (d.playing !== undefined && d.playing !== isPlayingRef.current) {
+            setIsPlaying(d.playing);
+            (d.playing ? onPlayRef.current : onPauseRef.current)?.();
           }
           break;
+        }
 
         case 'playerError': {
           setHasError(true);
-          // Defer callback to avoid setState during render
-          queueMicrotask(() => {
-            const errorMessages = {
-              2: 'Invalid video ID',
-              5: 'HTML5 player error',
-              100: 'Video not found or private',
-              101: 'Video not allowed in embedded players',
-              150: 'Video not allowed in embedded players'
-            };
-            const errorMsg = errorMessages[data.data as keyof typeof errorMessages] || `YouTube error: ${data.data}`;
-            onError?.(errorMsg);
-          });
+          const errorMessages = {
+            2: 'Invalid video ID',
+            5: 'HTML5 player error',
+            100: 'Video not found or private',
+            101: 'Video not allowed in embedded players',
+            150: 'Video not allowed in embedded players'
+          };
+          const errorMsg = errorMessages[data.data as keyof typeof errorMessages] || `YouTube error: ${data.data}`;
+          onErrorRef.current?.(errorMsg);
           break;
         }
 
         case 'playbackRateChange':
-          console.log('Playback rate changed:', data.data);
-          // Handle playback rate changes if needed
+          // Acknowledged; no local state mirrors the rate.
           break;
 
         case 'playerQualityChange':
-          console.log('Quality changed:', data.data);
-          // Handle quality changes if needed
+          // Acknowledged; no local state mirrors the quality.
           break;
       }
     } catch (error) {
       console.warn('Failed to parse YouTube player message:', error);
     }
-  }, [onPlay, onPause, onTimeUpdate, onDurationChange, onVolumeChange, onMute, onUnmute, onLoad, onError, onBuffer]);
+    // Stable: all parent callbacks are read through refs, so the handler never
+    // needs to be recreated. This keeps the web `message` listener effect from
+    // re-subscribing whenever a parent passes a fresh inline callback.
+  }, []);
 
   // Send command to player
   const sendCommand = useCallback((eventName: string, meta: any = {}) => {
     const message = JSON.stringify({ eventName, meta });
 
-    console.log('[YouTubePlayer] Sending command:', eventName, meta);
-
     if (Platform.OS === 'web' && iframeRef.current?.contentWindow) {
-      console.log('[YouTubePlayer] Sending to iframe via postMessage');
       iframeRef.current.contentWindow.postMessage(message, '*');
     } else if (webViewRef.current) {
-      console.log('[YouTubePlayer] Sending to WebView via injectJavaScript');
       // React Native WebView uses injectJavaScript to trigger the message event
       const escapedMessage = message.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
       webViewRef.current.injectJavaScript(`
@@ -464,16 +424,29 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
       console.warn('YouTube fullscreen toggle not yet implemented');
     },
     getVideoElement: () => null, // YouTube player doesn't expose direct video element
-    // Add method to get current state for debugging/synchronization
+    // Current state for debugging/synchronization — reads refs so the handle
+    // stays stable across the 250ms polling cadence.
     getState: () => ({
-      currentTime,
-      duration,
-      playing: isPlaying,
-      muted: isMuted,
-      volume: currentVolume,
-      loaded: isLoaded,
+      currentTime: currentTimeRef.current,
+      duration: durationRef.current,
+      playing: isPlayingRef.current,
+      muted: isMutedRef.current,
+      volume: currentVolumeRef.current,
+      loaded: isLoadedRef.current,
     }),
-  }), [sendCommand, currentTime, duration, isPlaying, isMuted, currentVolume, isLoaded]);
+  }), [sendCommand]);
+
+  // Push playbackRate / quality to the player once it's ready and whenever the
+  // props change. (Previously these props were accepted but never applied.)
+  useEffect(() => {
+    if (!isLoaded) return;
+    sendCommand('setPlaybackRate', { playbackRate });
+  }, [isLoaded, playbackRate, sendCommand]);
+
+  useEffect(() => {
+    if (!isLoaded || !quality) return;
+    sendCommand('setPlaybackQuality', { quality });
+  }, [isLoaded, quality, sendCommand]);
 
   // Note: We don't need useEffect hooks to call onPlay/onPause/onTimeUpdate/etc
   // because they're already called within handleWebViewMessage when state changes occur
@@ -501,6 +474,18 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
 
   if (!hasValidSource) {
     return invalidSourceContent;
+  }
+
+  if (hasError) {
+    return (
+      <View style={[styles.container, style]} accessibilityLabel={accessibilityLabel}>
+        <View style={styles.errorOverlay}>
+          <Text style={styles.errorText}>Video Unavailable</Text>
+          <Text style={styles.errorSubtext}>This video could not be played.</Text>
+        </View>
+        {poster && <Image src={poster} style={styles.poster} resizeMode="cover" />}
+      </View>
+    );
   }
 
   if (Platform.OS === 'web') {
@@ -555,7 +540,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(({
 
     return (
       <View style={[
-        // styles.container, 
+        // styles.container,
         style,
         {
           flex: 1,

@@ -1,6 +1,6 @@
 {
   "name": "@platform-blocks/charts",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Data visualization chart components for React Native and Web — bar, line, area, pie, scatter, radar, heatmap, and more",
   "type": "module",
   "main": "lib/cjs/index.js",
