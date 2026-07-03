@@ -1,5 +1,5 @@
 import { Card, Column, Flex, Text, Title } from '@platform-blocks/ui';
-import { SparklineChart } from '@platform-blocks/charts';
+import { SparklineChart } from '../../';
 
 const SURFACE_SERIES = [
   {
