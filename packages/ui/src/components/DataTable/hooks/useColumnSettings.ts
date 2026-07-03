@@ -59,7 +59,10 @@ export function useColumnSettings<T = any>({
 
     const overlayId = openOverlay({
       content: createElement(ColumnSettings, {
-        column,
+        // createElement can't thread this hook's generic T into the generic
+        // ColumnSettings component, so it instantiates T as `unknown`. The row
+        // type is irrelevant to the settings panel, so cast to the erased type.
+        column: column as DataTableColumn<unknown>,
         onClose: () => {
           if (currentOverlayId.current) {
             closeOverlay(currentOverlayId.current);
