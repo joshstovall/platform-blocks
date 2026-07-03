@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Menu
 description: A dropdown menu component for navigation and actions
 source: ui/src/components/Menu
@@ -29,6 +30,7 @@ props:
     default: false
 examples:
   - basic
+  - submenu
   - context
   - positioning
 ---

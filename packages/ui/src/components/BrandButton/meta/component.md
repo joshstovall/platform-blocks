@@ -1,5 +1,6 @@
 ---
 name: BrandButton
+playground: true
 title: BrandButton
 category: inputs
 tags: [action, pressable, interactive]

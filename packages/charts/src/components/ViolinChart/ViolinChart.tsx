@@ -15,8 +15,10 @@ import { Axis } from '../../core/Axis';
 import { kde, normalizeDensity } from '../../utils/density';
 import { getColorFromScheme, colorSchemes, formatNumber } from '../../utils';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { AnimatedViolinShape } from './AnimatedViolinShape';
-import { useViolinSeriesRegistration } from './useViolinSeriesRegistration';
 import { linearScale as createLinearScale } from '../../utils/scales';
 import type { Scale } from '../../utils/scales';
 
@@ -132,7 +134,11 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
   onSeriesPress,
 }) => {
   const theme = useChartTheme();
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  // Violins fill the top of the plot (unlike bars, which grow from the baseline), so the
+  // title/subtitle need reserved headroom or they crowd/overlap the violin tops. Reserve
+  // extra top space when a title/subtitle is present so the plot drops clear below them.
+  const topReserve = subtitle ? 76 : title ? 56 : 40;
+  const basePadding = { top: topReserve, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const resolvedLegend = React.useMemo(() => {
     if (legend) return legend;
     if (!showLegend) return undefined;
@@ -172,9 +178,7 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
   } catch {
     console.warn('ViolinChart: useChartInteractionContext failed, ensure it is rendered inside a ChartInteractionProvider');
   }
-  const registerSeries = interaction?.registerSeries;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const register = interaction?.register;
 
   const allValues = React.useMemo(() => series.flatMap((s) => s.values), [series]);
   const { min: minValue, max: maxValue } = React.useMemo(() => {
@@ -404,10 +408,55 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
     }));
   }, [densData]);
 
-  // Register series for tooltip interaction
-  useViolinSeriesRegistration({
-    series: registrationData,
-    registerSeries,
+  // New interaction engine (band-summary): each violin is one band mark spanning its
+  // category slot. The band tester (orientation follows the category axis) resolves
+  // which violin the pointer is over; the tooltip shows that distribution's summary.
+  const hitSeries: HitSeries[] = React.useMemo(() => {
+    const marks: Mark[] = [];
+    densData.forEach((v, i) => {
+      if (v.visible === false) return;
+      const center = categoryCenters[i];
+      if (center == null) return;
+      const half = categoryBandwidth / 2;
+      const median = v.stats?.median;
+      const rect = isHorizontal
+        ? { x: padding.left, y: center - half + padding.top, width: plotWidth, height: categoryBandwidth }
+        : { x: center - half + padding.left, y: padding.top, width: categoryBandwidth, height: plotHeight };
+      marks.push({
+        id: i,
+        pixel: isHorizontal
+          ? { x: padding.left + plotWidth / 2, y: center + padding.top }
+          : { x: center + padding.left, y: padding.top + plotHeight / 2 },
+        value: median ?? 0,
+        datum: v,
+        label: String(v.name ?? `Violin ${i + 1}`),
+        color: v.color,
+        extent: { rect, cell: { row: 0, col: i } },
+        formattedValue: median != null ? formatNumber(median) : undefined,
+      });
+    });
+    return [{ id: 'violin', name: 'Violin', color: theme.colors.accentPalette?.[0], visible: true, marks }];
+  }, [densData, categoryCenters, categoryBandwidth, isHorizontal, padding.left, padding.top, plotWidth, plotHeight, theme.colors.accentPalette]);
+
+  const tester = React.useMemo(
+    () => new BandCategoryHitTester(hitSeries, { orientation: isHorizontal ? 'y' : 'x' }),
+    [hitSeries, isHorizontal]
+  );
+
+  React.useEffect(() => {
+    if (!register) return;
+    register('violin', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: isHorizontal ? 'y' : 'x' }, series: hitSeries });
+    return () => register('violin', null);
+  }, [register, hitSeries, isHorizontal]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction),
+    hover: true,
+    press: false,
+    tester,
   });
 
   return (
@@ -435,39 +484,6 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-expect-error web
-        onMouseMove={(e) => {
-          if (!setPointer) return; 
-          const rect = (e.currentTarget as any).getBoundingClientRect();
-          const px = e.clientX - rect.left - padding.left; 
-          const py = e.clientY - rect.top - padding.top;
-          const insidePlot = px >= 0 && px <= plotWidth && py >= 0 && py <= plotHeight;
-          setPointer({
-            x: px + padding.left,
-            y: py + padding.top,
-            inside: insidePlot,
-            pageX: e.pageX,
-            pageY: e.pageY,
-          });
-
-          if (!insidePlot || valueAxisLength <= 0) {
-            setCrosshair?.(null);
-            return;
-          }
-
-          const coordinate = clamp(isHorizontal ? px : py, 0, valueAxisLength);
-          const value = typeof valueScale.invert === 'function'
-            ? valueScale.invert(coordinate)
-            : min + (coordinate / valueAxisLength) * (max - min || 1);
-
-          setCrosshair?.({ dataX: value, pixelX: px + padding.left });
-        }}
-        onMouseLeave={() => { 
-          setCrosshair?.(null); 
-          if (interaction?.pointer && setPointer) { 
-            setPointer({ ...interaction.pointer, inside: false }); 
-          } 
-        }}
       >
         <G x={padding.left} y={padding.top}>
           {Array.isArray(valueBands) &&
@@ -1017,6 +1033,18 @@ export const ViolinChart: React.FC<ViolinChartProps> = ({
           labelColor={yAxis?.titleColor || theme.colors.textPrimary}
           labelFontSize={yAxis?.titleFontSize}
           style={{ width: padding.left, height: plotHeight }}
+        />
+      )}
+
+      {/* Gesture surface driven by useChartPointer + the band hit-tester (category
+          axis). Full-chart overlay; resolves which violin the pointer is over. */}
+      {Boolean(interaction) && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="violin-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

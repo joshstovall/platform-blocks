@@ -191,7 +191,7 @@ export const TextArea = factory<{
 
   return (
     <View style={containerStyles} testID={testID}>
-      {(label || description) && (
+      {(label || description) ? (
         <FieldHeader
           label={label}
           description={description}
@@ -202,7 +202,7 @@ export const TextArea = factory<{
           labelProps={labelProps}
           descriptionProps={descriptionProps}
         />
-      )}
+      ) : null}
       
       <View style={[inputContainerStyles, { position: 'relative' }]}>
         <TextInput
@@ -262,7 +262,7 @@ export const TextArea = factory<{
       </View>
 
       {/* Character Counter */}
-      {showCharCounter && maxLength && (
+      {showCharCounter && maxLength ? (
         <Text
           style={[
             styles.charCounter,
@@ -271,19 +271,19 @@ export const TextArea = factory<{
         >
           {charCount}/{maxLength}
         </Text>
-      )}
+      ) : null}
 
       {renderDisclaimer()}
 
       {/* Helper Text */}
-      {helperText && !error && (
+      {helperText && !error ? (
         <Text style={styles.helperText}>{helperText}</Text>
-      )}
+      ) : null}
 
       {/* Error Text */}
-      {error && (
+      {error ? (
         <Text style={styles.errorText}>{error}</Text>
-      )}
+      ) : null}
     </View>
   );
 });

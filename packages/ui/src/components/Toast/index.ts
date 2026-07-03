@@ -14,10 +14,14 @@ export {
   useToast,
   useToastApi,
   useActiveToasts,
-  ToastOptions, 
+  ToastOptions,
   ToastPosition,
   SeverityToastOptions,
   ToastMessage,
   ToastShortcut,
-  onToastsRequested
+  onToastsRequested,
+  useToastViewportOffset,
+  setToastViewportOffset
 } from './ToastProvider';
+
+export type { ToastViewportOffset } from './ToastProvider';

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Pie Chart
 tags: [chart, pie, categorical]
 category: charts

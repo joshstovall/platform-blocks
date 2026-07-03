@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Line Chart
 tags: [chart, line, timeseries]
 category: charts

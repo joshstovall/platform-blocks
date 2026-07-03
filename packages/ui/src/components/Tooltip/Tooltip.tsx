@@ -1,11 +1,13 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, ViewStyle, Platform, LayoutChangeEvent } from 'react-native';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { View, ViewStyle, Platform, LayoutChangeEvent, StyleSheet } from 'react-native';
 import { Text } from '../Text';
 
 import { factory } from '../../core/factory';
 import { getRadius, getSpacing } from '../../core/theme/sizes';
+import { createShadowStyles } from '../../core/theme/shadow';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { useDirection } from '../../core/providers/DirectionProvider';
+import { useOptionalOverlayApi } from '../../core/providers/OverlayProvider';
 import { mergeSlotProps } from '../../core/utils';
 import { measureElement, calculateOverlayPositionEnhanced, getViewport } from '../../core/utils/positioning-enhanced';
 import type { PositionResult } from '../../core/utils/positioning-enhanced';
@@ -57,9 +59,20 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<View | null>(null);
+  const overlayIdRef = useRef<string | null>(null);
 
   const theme = useTheme();
   const { isRTL } = useDirection();
+  // When an OverlayProvider is available (the default via PlatformBlocksProvider),
+  // render the popup through the root portal so it floats above the whole UI and is
+  // never clipped by an ancestor's overflow/stacking context. Falls back to inline
+  // rendering when no provider is present (e.g. standalone usage / tests).
+  const overlayApi = useOptionalOverlayApi();
+  const usePortal = overlayApi !== null;
+  // Latest api captured in a ref so the unmount cleanup can close a lingering overlay
+  // without re-subscribing the effect on every render.
+  const overlayApiRef = useRef(overlayApi);
+  overlayApiRef.current = overlayApi;
 
   const eventSettings = {
     hover: true,
@@ -308,8 +321,172 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
     }),
   });
 
-  const tooltipBackgroundColor = color || (theme.colorScheme === 'dark' ? theme.colors.surface[0] : theme.colors.gray[9]);
-  const tooltipTextColor = theme.colorScheme === 'dark' ? '#fff' : '#fff';
+  const tooltipBackgroundColor = color || (theme.colorScheme === 'dark' ? theme.colors.surface[2] : theme.colors.gray[9]);
+  const tooltipTextColor = '#fff';
+  // Subtle hairline edge + theme-aware layered elevation so the tooltip reads as a
+  // crisp floating surface rather than a flat block.
+  const tooltipBorderColor = theme.colorScheme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)';
+  const elevatedShadow = useMemo(() => createShadowStyles('lg', theme) as ViewStyle, [theme]);
+
+  const handlePopupLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
+    setOverlaySize((prev) => {
+      if (prev.width === layoutWidth && prev.height === layoutHeight) {
+        return prev;
+      }
+      return { width: layoutWidth, height: layoutHeight };
+    });
+  }, []);
+
+  // Renders the tooltip bubble. When `portaled`, positioning is handled by the
+  // OverlayRenderer via the anchor rect, so the bubble carries no positional style;
+  // inline, it is absolutely positioned relative to its wrapper.
+  const buildPopup = useCallback((portaled: boolean) => {
+    const ready = portaled ? (!!positionResult && overlaySize.width > 0) : isOverlayReady;
+    return (
+      <View
+        style={[
+          {
+            ...(portaled ? null : { position: 'absolute' as const }),
+            backgroundColor: tooltipBackgroundColor,
+            borderRadius: getRadius(radius),
+            paddingHorizontal: getSpacing('sm'),
+            paddingVertical: getSpacing('xs'),
+            minHeight: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 999999,
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: tooltipBorderColor,
+            ...elevatedShadow,
+            width: multiline ? width : undefined,
+            maxWidth: computedMaxWidth,
+            maxHeight: computedMaxHeight,
+            opacity: ready ? 1 : 0,
+          },
+          portaled ? null : positionalStyle,
+        ]}
+        pointerEvents="none"
+        onLayout={handlePopupLayout}
+      >
+        <Text
+          {...mergeSlotProps(
+            {
+              weight: '500' as const,
+              numberOfLines: multiline ? undefined : 1,
+              style: {
+                color: tooltipTextColor,
+                fontSize: 13,
+                textAlign: 'center' as const,
+                lineHeight: 16,
+              },
+            },
+            labelProps,
+          )}
+        >
+          {label}
+        </Text>
+
+        {withArrow && (
+          <View
+            style={{
+              position: 'absolute',
+              width: 0,
+              height: 0,
+              ...(arrowPlacement === 'top' && {
+                top: '100%',
+                left: '50%',
+                marginLeft: -5,
+                borderLeftWidth: 5,
+                borderRightWidth: 5,
+                borderTopWidth: 5,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                borderTopColor: tooltipBackgroundColor,
+              }),
+              ...(arrowPlacement === 'bottom' && {
+                bottom: '100%',
+                left: '50%',
+                marginLeft: -5,
+                borderLeftWidth: 5,
+                borderRightWidth: 5,
+                borderBottomWidth: 5,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                borderBottomColor: tooltipBackgroundColor,
+              }),
+              ...(arrowPlacement === 'left' && {
+                left: '100%',
+                top: '50%',
+                marginTop: -5,
+                borderTopWidth: 5,
+                borderBottomWidth: 5,
+                borderLeftWidth: 5,
+                borderTopColor: 'transparent',
+                borderBottomColor: 'transparent',
+                borderLeftColor: tooltipBackgroundColor,
+              }),
+              ...(arrowPlacement === 'right' && {
+                right: '100%',
+                top: '50%',
+                marginTop: -5,
+                borderTopWidth: 5,
+                borderBottomWidth: 5,
+                borderRightWidth: 5,
+                borderTopColor: 'transparent',
+                borderBottomColor: 'transparent',
+                borderRightColor: tooltipBackgroundColor,
+              }),
+            }}
+          />
+        )}
+      </View>
+    );
+  }, [positionResult, overlaySize.width, isOverlayReady, tooltipBackgroundColor, tooltipTextColor, tooltipBorderColor, elevatedShadow, radius, multiline, width, computedMaxWidth, computedMaxHeight, positionalStyle, handlePopupLayout, labelProps, label, withArrow, arrowPlacement]);
+
+  // Sync the portaled tooltip with the overlay layer. Opens on first show, keeps the
+  // content + anchor updated as position/size/label change, and closes when hidden.
+  useEffect(() => {
+    if (!usePortal || !overlayApi) return;
+
+    if (isOpened) {
+      // Open on `isOpened` even before a position is computed so the portaled bubble
+      // mounts and can measure itself (positioning needs the measured size). Until
+      // `positionResult` resolves the bubble renders at opacity 0 via `buildPopup`.
+      const anchor = {
+        x: positionResult?.x ?? 0,
+        y: positionResult?.y ?? 0,
+        width: overlaySize.width || width || 0,
+        height: overlaySize.height || 0,
+      };
+      const content = buildPopup(true);
+      if (overlayIdRef.current) {
+        overlayApi.updateOverlay(overlayIdRef.current, { content, anchor });
+      } else {
+        overlayIdRef.current = overlayApi.openOverlay({
+          content,
+          anchor,
+          placement: resolvedPlacement,
+          trigger: 'hover',
+          closeOnClickOutside: false,
+          closeOnEscape: false,
+          strategy: Platform.OS === 'web' ? 'fixed' : 'portal',
+          zIndex: 999999,
+        });
+      }
+    } else if (overlayIdRef.current) {
+      overlayApi.closeOverlay(overlayIdRef.current);
+      overlayIdRef.current = null;
+    }
+  }, [usePortal, overlayApi, isOpened, positionResult, overlaySize.width, overlaySize.height, resolvedPlacement, width, buildPopup]);
+
+  // Close any lingering overlay on unmount.
+  useEffect(() => () => {
+    if (overlayIdRef.current && overlayApiRef.current) {
+      overlayApiRef.current.closeOverlay(overlayIdRef.current);
+      overlayIdRef.current = null;
+    }
+  }, []);
 
   return (
     <View
@@ -319,113 +496,8 @@ function TooltipBase(props: TooltipProps, ref: React.Ref<View>) {
     >
       {enhancedChild}
 
-      {isOpened && (
-        <View
-          style={[
-            {
-              position: 'absolute',
-              backgroundColor: tooltipBackgroundColor,
-              borderRadius: getRadius(radius),
-              paddingHorizontal: getSpacing('sm'),
-              paddingVertical: getSpacing('xs'),
-              minHeight: 30,
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 999999,
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
-              elevation: 20,
-              width: multiline ? width : undefined,
-              maxWidth: computedMaxWidth,
-              maxHeight: computedMaxHeight,
-              opacity: isOverlayReady ? 1 : 0,
-            },
-            positionalStyle,
-          ]}
-          pointerEvents="none"
-          onLayout={(event: LayoutChangeEvent) => {
-            const { width: layoutWidth, height: layoutHeight } = event.nativeEvent.layout;
-            setOverlaySize((prev) => {
-              if (prev.width === layoutWidth && prev.height === layoutHeight) {
-                return prev;
-              }
-
-              return { width: layoutWidth, height: layoutHeight };
-            });
-          }}
-        >
-          <Text
-            {...mergeSlotProps(
-              {
-                weight: '500' as const,
-                numberOfLines: multiline ? undefined : 1,
-                style: {
-                  color: tooltipTextColor,
-                  fontSize: 13,
-                  textAlign: 'center' as const,
-                  lineHeight: 16,
-                },
-              },
-              labelProps,
-            )}
-          >
-            {label}
-          </Text>
-
-          {withArrow && (
-            <View
-              style={{
-                position: 'absolute',
-                width: 0,
-                height: 0,
-                ...(arrowPlacement === 'top' && {
-                  top: '100%',
-                  left: '50%',
-                  marginLeft: -5,
-                  borderLeftWidth: 5,
-                  borderRightWidth: 5,
-                  borderTopWidth: 5,
-                  borderLeftColor: 'transparent',
-                  borderRightColor: 'transparent',
-                  borderTopColor: tooltipBackgroundColor,
-                }),
-                ...(arrowPlacement === 'bottom' && {
-                  bottom: '100%',
-                  left: '50%',
-                  marginLeft: -5,
-                  borderLeftWidth: 5,
-                  borderRightWidth: 5,
-                  borderBottomWidth: 5,
-                  borderLeftColor: 'transparent',
-                  borderRightColor: 'transparent',
-                  borderBottomColor: tooltipBackgroundColor,
-                }),
-                ...(arrowPlacement === 'left' && {
-                  left: '100%',
-                  top: '50%',
-                  marginTop: -5,
-                  borderTopWidth: 5,
-                  borderBottomWidth: 5,
-                  borderLeftWidth: 5,
-                  borderTopColor: 'transparent',
-                  borderBottomColor: 'transparent',
-                  borderLeftColor: tooltipBackgroundColor,
-                }),
-                ...(arrowPlacement === 'right' && {
-                  right: '100%',
-                  top: '50%',
-                  marginTop: -5,
-                  borderTopWidth: 5,
-                  borderBottomWidth: 5,
-                  borderRightWidth: 5,
-                  borderTopColor: 'transparent',
-                  borderBottomColor: 'transparent',
-                  borderRightColor: tooltipBackgroundColor,
-                }),
-              }}
-            />
-          )}
-        </View>
-      )}
+      {/* Inline fallback popup — only when no OverlayProvider is available. */}
+      {!usePortal && isOpened && buildPopup(false)}
     </View>
   );
 }

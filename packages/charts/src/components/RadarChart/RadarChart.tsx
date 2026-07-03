@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useRef } from 'react';
+import { View } from 'react-native';
 import Svg, { Path, Circle, Line as SvgLine, G, Text as SvgText, TSpan } from 'react-native-svg';
 import Animated, {
   useSharedValue,
@@ -11,7 +12,10 @@ import Animated, {
 
 import { RadarChartProps, RadarChartSeries, RadarAxisPoint } from './types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, usePointer } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { RadarAxisHitTester } from '../../core/hittest/radarAxis';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { getColorFromScheme, colorSchemes } from '../../utils';
 
@@ -218,10 +222,8 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
   }
 
   const theme = useChartTheme();
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
   const defaultScheme = colorSchemes.default;
 
   // Extract unique axes from all series
@@ -273,73 +275,62 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
   }, [animationProgress, animationDuration, dataSignature, disabled]);
 
   // Series registration with memoization and signature guard
-  const registrationSignature = useMemo(() => {
-    return series
-      .map(s => {
-        const points = axes.map(a => {
-          const point = s.data.find(p => p.axis === a);
-          if (!point) return `${a}:0`;
-          const tooltipKey = typeof point.tooltip === 'function' ? 'fn' : String(point.tooltip ?? '');
-          return `${a}:${point.value}:${point.label ?? ''}:${point.formattedValue ?? ''}:${tooltipKey}`;
-        }).join('|');
-        return `${s.id || 'series'}-${s.name || ''}-${points}`;
-      })
-      .join('||');
-  }, [series, axes]);
 
-  const registeredSignatureRef = useRef<string | null>(null);
+  // New interaction engine: one hit-series per data series, one mark per spoke. Each
+  // mark encodes its spoke's canonical angle (0=top, CW) in dataX + extent.axisIndex,
+  // so the axis tester resolves the nearest spoke by angle. slice() then returns every
+  // series' value at that spoke (the multi-series radar tooltip).
+  const hitSeries: HitSeries[] = useMemo(() => series.map((s, si) => {
+    const override = interaction?.series.find((sr) => sr.id === (s.id || si));
+    const visible = override ? override.visible !== false : s.visible !== false;
+    const color = s.color || getColorFromScheme(si, defaultScheme);
+    const marks: Mark[] = axes.map((a, ai) => {
+      const point = s.data.find((p) => p.axis === a);
+      const val = point ? point.value : 0;
+      const rr = valueToRadius(val, maxValue);
+      const ang = angleFor(ai);
+      let custom: any;
+      if (point && point.tooltip != null) {
+        custom = typeof point.tooltip === 'function'
+          ? point.tooltip(point, { axisIndex: ai, seriesIndex: si, series: s })
+          : point.tooltip;
+      }
+      const rawFormatted = point?.formattedValue
+        ?? (typeof custom === 'string' || typeof custom === 'number' ? custom : val);
+      const formattedValue = rawFormatted == null ? undefined : String(rawFormatted);
+      return {
+        id: ai,
+        pixel: { x: centerX + Math.cos(ang) * rr, y: centerY + Math.sin(ang) * rr },
+        value: val,
+        dataX: (360 * ai) / axisCount,
+        datum: point ?? { axis: a, value: val },
+        label: s.name || `Series ${si + 1}`,
+        color,
+        extent: { axisIndex: ai },
+        formattedValue,
+        customTooltip: typeof custom === 'object' && custom !== null ? custom : undefined,
+      };
+    });
+    return { id: s.id ?? si, name: s.name || `Series ${si + 1}`, color, visible, marks };
+  }), [series, axes, centerX, centerY, angleFor, valueToRadius, maxValue, axisCount, defaultScheme, interaction?.series]);
+
+  const tester = useMemo(() => new RadarAxisHitTester(centerX, centerY, hitSeries), [centerX, centerY, hitSeries]);
 
   useEffect(() => {
-    if (!registerSeries || !registrationSignature) return;
-    if (registeredSignatureRef.current === registrationSignature) return;
+    if (!register) return;
+    register('radar', { frame: { kind: 'polar', cx: centerX, cy: centerY } as any, geometry: { kind: 'axis', cx: centerX, cy: centerY }, series: hitSeries });
+    return () => register('radar', null);
+  }, [register, hitSeries, centerX, centerY]);
 
-    series.forEach((s, si) => {
-      registerSeries({
-        id: s.id || si,
-        name: s.name || `Series ${si + 1}`,
-        color: s.color || getColorFromScheme(si, defaultScheme),
-        points: axes.map((a, ai) => {
-          const point = s.data.find(p => p.axis === a);
-          const label = point?.label ?? axisEntries[ai]?.label ?? String(a);
-          let tooltipContent: any;
-          if (point && point.tooltip !== undefined && point.tooltip !== null) {
-            tooltipContent =
-              typeof point.tooltip === 'function'
-                ? point.tooltip(point, { axisIndex: ai, seriesIndex: si, series: s })
-                : point.tooltip;
-          }
-
-          const metaPayload: Record<string, any> = {
-            axis: a,
-            raw: point,
-            label,
-            color: point?.color,
-            value: point?.value,
-          };
-
-          if (point?.formattedValue != null) {
-            metaPayload.formattedValue = point.formattedValue;
-          }
-
-          if (tooltipContent != null) {
-            metaPayload.customTooltip = tooltipContent;
-            if (typeof tooltipContent === 'string' || typeof tooltipContent === 'number') {
-              metaPayload.formattedValue = tooltipContent;
-            }
-          }
-
-          return {
-            x: ai,
-            y: point ? point.value : 0,
-            meta: metaPayload,
-          };
-        }),
-        visible: s.visible !== false,
-      });
-    });
-
-    registeredSignatureRef.current = registrationSignature;
-  }, [registerSeries, series, axes, axisEntries, defaultScheme, registrationSignature]);
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    plotWidth: width,
+    plotHeight: height,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: false,
+    tester,
+  });
 
   // Grid rings
   const ringCount = radialGrid?.rings ?? 4;
@@ -403,8 +394,8 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
     });
   }, [series, axes, centerX, centerY, valueToRadius, maxValue, angleFor, defaultScheme, interaction?.series, smoothTension]);
 
-  // Pointer-derived radial crosshair
-  const pointer = interaction?.pointer;
+  // Pointer-derived radial crosshair — pointer subscription.
+  const pointer = usePointer();
   const activeAxisIndex = useMemo(() => {
     if (!pointer || !enableCrosshair || !pointer.inside) return null;
     const dx = pointer.x - centerX;
@@ -415,15 +406,6 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
     return idx;
   }, [pointer, enableCrosshair, centerX, centerY, axisCount]);
 
-  // Update crosshair when active axis changes
-  useEffect(() => {
-    if (!enableCrosshair) return;
-    if (activeAxisIndex == null) {
-      setCrosshair?.(null);
-      return;
-    }
-    setCrosshair?.({ dataX: activeAxisIndex, pixelX: pointer?.x ?? 0 });
-  }, [activeAxisIndex, enableCrosshair, setCrosshair, pointer]);
 
   // Highlighted points for active axis
   const highlightedAxisPoints = useMemo(() => {
@@ -480,17 +462,6 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position: 'absolute', left: 0, top: 0 }}
-        // @ts-expect-error web pointer
-        onMouseMove={(e) => {
-          if (!setPointer) return;
-          const rect = (e.currentTarget as any).getBoundingClientRect?.();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
-        }}
-        onMouseLeave={() => {
-          if (interaction?.pointer) setPointer?.({ ...interaction.pointer, inside: false });
-        }}
       >
         <G>
           {/* Crosshair line */}
@@ -740,6 +711,19 @@ export const RadarChart: React.FC<RadarChartProps> = (props) => {
               updateSeriesVisibility(id, !current);
             }
           }}
+        />
+      )}
+
+      {/* Gesture surface driven by useChartPointer + the radar axis hit-tester.
+          Full-chart overlay (radar geometry is centered on the whole container);
+          feeds the pointer (for the spoke highlight) + the multi-series tooltip. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="radar-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Masonry
 description: A masonry layout component that arranges items in columns with varying heights, creating a Pinterest-style layout using FlashList for optimal performance.
 source: "@platform-blocks/ui"

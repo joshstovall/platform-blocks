@@ -1,0 +1,33 @@
+import { useState } from 'react';
+
+import { Column, Pagination, Text } from '@platform-blocks/ui';
+
+export default function Demo() {
+  const totalItems = 248;
+  const [pageSize, setPageSize] = useState(10);
+  const [current, setCurrent] = useState(1);
+
+  const total = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  return (
+    <Column gap="sm">
+      <Pagination
+        current={current}
+        total={total}
+        onChange={setCurrent}
+        showTotal
+        totalItems={totalItems}
+        pageSize={pageSize}
+        showSizeChanger
+        pageSizeOptions={[10, 20, 50, 100]}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrent(1);
+        }}
+      />
+      <Text size="xs" colorVariant="secondary">
+        Page {current} of {total} · {pageSize} rows per page
+      </Text>
+    </Column>
+  );
+}

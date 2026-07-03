@@ -116,10 +116,11 @@ export const CopyPageMenu: React.FC<CopyPageMenuProps> = ({
     <Menu>
       <Button
         size={size}
-        variant="outline"
+        variant="secondary"
         startIcon={<Icon name="copy" size="sm" />}
         endIcon={<Icon name="chevron-down" size="xs" />}
         loading={copying}
+        radius="xl"
       >
         Copy Page
       </Button>

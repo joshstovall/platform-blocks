@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, Button, Card, Badge, Select, AutoComplete, ColorPicker, Text, Column, Row } from '@platform-blocks/ui';
+import { Input, Button, Card, Badge, Select, AutoComplete, ColorInput, Text, Column, Row } from '@platform-blocks/ui';
 
 export default function Demo() {
   const [inputValue, setInputValue] = useState('Test unified styling');
@@ -56,8 +56,8 @@ export default function Demo() {
             helperText="Also uses new ClearButton"
           />
           
-          <ColorPicker
-            label="ColorPicker Component"
+          <ColorInput
+            label="ColorInput Component"
             value={colorValue}
             onChange={setColorValue}
             clearable

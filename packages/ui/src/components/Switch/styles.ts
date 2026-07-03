@@ -5,7 +5,11 @@ import { PlatformBlocksTheme } from '../../core/theme/types';
 import { DESIGN_TOKENS } from '../../core/design-tokens';
 
 export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlocksTheme }) => {
-  const { checked, disabled, error, size, color, theme } = props;
+  const { checked, disabled, error, size, color, theme, variant = 'filled' } = props;
+  // Variants whose track keeps a visible resting border, and whose thumb rests
+  // as a gray element (colored/whitened by the animation when on).
+  const hasRestingBorder = variant === 'outline' || variant === 'android';
+  const thumbRestsGray = variant === 'outline' || variant === 'android';
 
   // Define size mappings using design tokens
   const sizeMap: Partial<Record<ComponentSize, { width: number; height: number; thumb: number }>> = {
@@ -111,7 +115,15 @@ export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlock
       width: thumb,
       height: thumb,
       borderRadius: thumb / 2,
-      backgroundColor: disabled ? theme.colors.gray[4] : 'white',
+      // Center any thumb content (onIcon / offIcon / label).
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      // Outline/android thumbs are the colored element (animated on/off); their
+      // resting color is the "off" gray so there's no flash before animation runs.
+      backgroundColor: disabled
+        ? theme.colors.gray[4]
+        : (thumbRestsGray ? theme.colors.gray[4] : 'white'),
       position: 'absolute',
       top: (height - thumb) / 2 - DESIGN_TOKENS.radius.xs, // Account for border
       left: 0, // Start position, will be animated via translateX
@@ -123,6 +135,9 @@ export const useSwitchStyles = (props: SwitchStyleProps & { theme: PlatformBlock
       borderColor: (() => {
         if (disabled) return disabledColor;
         if (error) return errorColor;
+        // Outline/android keep a visible resting border (the animated style tints
+        // it toward the active color when on); filled/ios hide the border.
+        if (hasRestingBorder) return theme.colors.gray[4];
         return 'transparent';
       })(),
       borderRadius: height / 2,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Platform } from 'react-native';
 import { Text, useTheme, Image } from '@platform-blocks/ui';
 import { FinderFile } from './types';
@@ -13,7 +13,13 @@ export const PreviewFile: React.FC<PreviewFileProps> = ({ file, style }) => {
   const theme = useTheme();
   const isDark = theme.colorScheme === 'dark';
   const [imageError, setImageError] = useState(false);
-  useEffect(() => { setImageError(false); }, [file?.id]);
+  // Reset the error flag when the previewed file changes. Adjusting state during
+  // render (React's recommended pattern) avoids a setState-in-effect.
+  const [prevFileId, setPrevFileId] = useState(file?.id);
+  if (file?.id !== prevFileId) {
+    setPrevFileId(file?.id);
+    setImageError(false);
+  }
 
   if (!file || file.type !== 'file') return null;
 

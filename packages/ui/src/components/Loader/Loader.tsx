@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { View, Platform, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,6 +16,12 @@ import { getIconSize } from '../../core/theme/sizes';
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import type { LoaderProps, LoaderVariant } from './types';
+
+// On web we drive the loop with a native CSS animation (react-native-web's
+// `animationKeyframes` style props) instead of reanimated. Reanimated 4's
+// infinite `withRepeat(..., -1)` loops don't run on web, which left every
+// spinner frozen; CSS keyframes are immune to that and never touch the JS thread.
+const IS_WEB = Platform.OS === 'web';
 
 interface LoaderFactoryPayload {
   props: LoaderProps;
@@ -43,6 +49,9 @@ function LoaderBase(props: LoaderProps, ref: React.Ref<View>) {
   const animationValue = useSharedValue(0);
 
   useEffect(() => {
+    // Web uses CSS keyframes (see Web* loaders); only run the reanimated loop on native.
+    if (IS_WEB) return;
+
     animationValue.value = withRepeat(
       withTiming(1, { duration: speed }),
       -1,
@@ -55,6 +64,18 @@ function LoaderBase(props: LoaderProps, ref: React.Ref<View>) {
   }, [animationValue, speed]);
 
   const renderLoader = () => {
+    if (IS_WEB) {
+      switch (variant) {
+        case 'bars':
+          return <WebBarsLoader size={loaderSize} color={loaderColor} speed={speed} />;
+        case 'dots':
+          return <WebDotsLoader size={loaderSize} color={loaderColor} speed={speed} />;
+        case 'oval':
+        default:
+          return <WebOvalLoader size={loaderSize} color={loaderColor} speed={speed} />;
+      }
+    }
+
     switch (variant) {
       case 'bars':
         return <BarsLoader size={loaderSize} color={loaderColor} animationValue={animationValue} />;
@@ -83,6 +104,133 @@ function LoaderBase(props: LoaderProps, ref: React.Ref<View>) {
       {...otherProps}
     >
       {renderLoader()}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Web loaders — driven by react-native-web CSS keyframes (no reanimated).
+// CRITICAL: react-native-web only compiles `animationKeyframes` when it comes
+// from StyleSheet.create() (the atomic-CSS path). Inline styles silently drop
+// it — see RNW's compiler `inline()` ("No support for 'animationKeyframes'").
+// So the keyframes live in the StyleSheet below; only the plain animation*
+// props (duration/delay) and geometry/color are passed inline.
+// ---------------------------------------------------------------------------
+
+const webLoaderStyles = IS_WEB
+  ? StyleSheet.create({
+      ovalSpin: {
+        // NOTE: transforms inside `animationKeyframes` must be CSS strings — RNW
+        // does not normalize the RN `[{ rotate }]` array form here (it stringifies
+        // to "[object Object]"), which silently breaks the animation.
+        animationKeyframes: [
+          {
+            '0%': { transform: 'rotate(0deg)' },
+            '100%': { transform: 'rotate(360deg)' },
+          },
+        ],
+        animationDuration: '1000ms',
+        animationTimingFunction: 'linear',
+        animationIterationCount: 'infinite',
+      },
+      barPulse: {
+        animationKeyframes: [
+          {
+            '0%': { height: '30%' },
+            '30%': { height: '100%' },
+            '60%': { height: '30%' },
+            '100%': { height: '30%' },
+          },
+        ],
+        animationDuration: '1000ms',
+        animationTimingFunction: 'ease-in-out',
+        animationIterationCount: 'infinite',
+      },
+      dotPulse: {
+        animationKeyframes: [
+          {
+            '0%': { opacity: 0.5, transform: 'scale(0.8)' },
+            '30%': { opacity: 1, transform: 'scale(1.2)' },
+            '60%': { opacity: 0.5, transform: 'scale(0.8)' },
+            '100%': { opacity: 0.5, transform: 'scale(0.8)' },
+          },
+        ],
+        animationDuration: '1000ms',
+        animationTimingFunction: 'ease-in-out',
+        animationIterationCount: 'infinite',
+      },
+    } as any)
+  : ({} as any);
+
+function WebOvalLoader({ size, color, speed }: { size: number; color: string; speed: number }) {
+  return (
+    <View
+      style={[
+        webLoaderStyles.ovalSpin,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: Math.max(2, size / 10),
+          borderTopColor: color,
+          borderRightColor: 'transparent',
+          borderBottomColor: 'transparent',
+          borderLeftColor: 'transparent',
+          animationDuration: `${speed}ms`,
+        } as any,
+      ]}
+    />
+  );
+}
+
+function WebBarsLoader({ size, color, speed }: { size: number; color: string; speed: number }) {
+  const barWidth = size / 8;
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: size }}>
+      {[0, 1, 2].map((index) => (
+        <View
+          key={index}
+          style={[
+            webLoaderStyles.barPulse,
+            {
+              width: barWidth,
+              height: '30%',
+              backgroundColor: color,
+              marginHorizontal: barWidth / 4,
+              borderRadius: barWidth / 2,
+              animationDuration: `${speed}ms`,
+              animationDelay: `${index * (speed / 6)}ms`,
+            } as any,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+function WebDotsLoader({ size, color, speed }: { size: number; color: string; speed: number }) {
+  const dotSize = size / 4;
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+      {[0, 1, 2].map((index) => (
+        <View
+          key={index}
+          style={[
+            webLoaderStyles.dotPulse,
+            {
+              width: dotSize,
+              height: dotSize,
+              borderRadius: dotSize / 2,
+              backgroundColor: color,
+              marginHorizontal: dotSize / 4,
+              animationDuration: `${speed}ms`,
+              animationDelay: `${index * (speed / 6)}ms`,
+            } as any,
+          ]}
+        />
+      ))}
     </View>
   );
 }

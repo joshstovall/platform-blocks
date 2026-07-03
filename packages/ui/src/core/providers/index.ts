@@ -1,4 +1,4 @@
-export { OverlayProvider, useOverlay, useOverlayApi, useOverlays } from './OverlayProvider';
+export { OverlayProvider, useOverlay, useOverlayApi, useOptionalOverlayApi, useOverlays } from './OverlayProvider';
 export { OverlayRenderer } from './OverlayRenderer';
 export type { OverlayConfig } from './OverlayProvider';
 

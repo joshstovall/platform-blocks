@@ -15,24 +15,6 @@ const sizeExamples: Array<{
     rows: 3,
   },
   {
-    id: 'sm',
-    label: 'Small (sm)',
-    helper: 'Great for short notes or metadata fields.',
-    rows: 3,
-  },
-  {
-    id: 'md',
-    label: 'Medium (md)',
-    helper: 'Default size suited for general forms.',
-    rows: 4,
-  },
-  {
-    id: 'lg',
-    label: 'Large (lg)',
-    helper: 'Provides extra room for detailed responses.',
-    rows: 5,
-  },
-  {
     id: 'xl',
     label: 'Extra large (xl)',
     helper: 'Use for long-form content or message drafting.',
@@ -48,12 +30,7 @@ export default function Demo() {
       <Column gap="md">
         {sizeExamples.map((example) => (
           <Column gap="sm" key={example.id}>
-            <Text size="sm" weight="semibold">
-              {example.label}
-            </Text>
-            <Text size="sm" colorVariant="secondary">
-              {example.helper}
-            </Text>
+           
             <TextArea
               label={example.label}
               placeholder={`Placeholder for ${example.label.toLowerCase()}`}

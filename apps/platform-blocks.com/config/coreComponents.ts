@@ -39,7 +39,8 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Knob', category: 'input', icon: 'knob', description: 'Rotary knob input for selecting values within a range' },
   { name: 'TextArea', category: 'input', icon: 'textarea', description: 'Multi-line text input with auto-resize and character counter' },
   { name: 'AutoComplete', category: 'input', icon: 'autocomplete', description: 'Predictive text input with keyboard-aware suggestions and async loading' },
-  { name: 'ColorPicker', category: 'input', icon: 'colors', description: 'Color selection input with swatches and hex input' },
+  { name: 'ColorInput', category: 'input', icon: 'colors', description: 'Color selection input with swatches and hex input' },
+  { name: 'ColorPicker', category: 'input', icon: 'colors', description: 'Color selection input with swatches' },
   { name: 'EmojiPicker', category: 'input', icon: 'emoji', description: 'Emoji selection panel with categories, search, and skin tone support' },
 
   // Date Components
@@ -63,6 +64,8 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Carousel', category: 'display', icon: 'carousel' },
   { name: 'Spoiler', category: 'display', icon: 'spoiler', description: 'Hides content until clicked' },
   { name: 'ColorSwatch', category: 'display', icon: 'colors', description: 'Individual color swatch for use in color palettes and pickers' },
+  { name: 'DataList', category: 'display', icon: 'colors', description: 'Data list rendering' },
+  
 
   // Typography Components
   { name: 'Text', category: 'typography', icon: 'text' },
@@ -82,6 +85,7 @@ export const CORE_COMPONENTS: CoreComponentConfig[] = [
   { name: 'Badge', category: 'data', icon: 'badge', description: 'Small status or counter indicator positioned on a parent element' },
   { name: 'Table', category: 'display', icon: 'table' },
   { name: 'DataTable', category: 'data', icon: 'datatable', description: 'Data grid with sorting, filtering, and pagination' },
+  { name: 'DataList', category: 'data', icon: 'list', description: 'Display label/value pairs in a semantic description list' },
   { name: 'QRCode', category: 'data', icon: 'qrcode' },
   { name: 'Markdown', category: 'data', icon: 'markdown' },
   { name: 'Rating', category: 'data', icon: 'rating' },

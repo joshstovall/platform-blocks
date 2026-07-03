@@ -1,11 +1,21 @@
 import React from 'react';
 import { SpacingProps } from '../../core/utils';
 import type { TextProps } from '../Text';
+import type { PaginationProps } from '../Pagination';
 
 // Core type aliases
 export type SortDirection = 'asc' | 'desc' | null;
 export type FilterType = 'text' | 'number' | 'select' | 'date' | 'boolean';
 export type ColumnDataType = 'text' | 'number' | 'date' | 'boolean' | 'currency' | 'percentage';
+
+/** Built-in aggregation, or a custom reducer over the group's rows. */
+export type AggregateType<T = any> =
+  | 'sum'
+  | 'avg'
+  | 'min'
+  | 'max'
+  | 'count'
+  | ((rows: T[]) => number | string);
 
 export interface DataTableColumn<T = any> {
   /** Unique identifier for the column */
@@ -44,6 +54,14 @@ export interface DataTableColumn<T = any> {
   align?: 'left' | 'center' | 'right';
   /** Sticky positioning */
   sticky?: 'left' | 'right';
+  /**
+   * Aggregation for this column, shown in group-header rows (per group) and the
+   * footer totals row (grand total). Numeric results are formatted with the
+   * column's `dataType`; pass a function for custom aggregates.
+   */
+  aggregate?: AggregateType<T>;
+  /** Custom formatter for this column's aggregate value. */
+  aggregateFormat?: (value: number | string) => React.ReactNode;
 }
 
 export interface DataTableFilter {
@@ -96,6 +114,25 @@ export interface DataTableProps<T = any> extends SpacingProps {
   pagination?: DataTablePagination;
   /** Pagination change handler */
   onPaginationChange?: (pagination: DataTablePagination) => void;
+  /**
+   * Server-side (manual) pagination for API-backed tables. When true the
+   * `data` prop is treated as the already-fetched current page: the table
+   * performs no client-side slicing, filtering, sorting, or search, and uses
+   * `pagination.total` as the authoritative row count for the page count and
+   * "X-Y of N" summary. The sort / filter / search controls still fire their
+   * respective callbacks so you can refetch — use them in controlled mode
+   * (`sortBy`+`onSortChange`, `filters`+`onFilterChange`, `searchValue`+
+   * `onSearchChange`). Requires `pagination.total` to be set.
+   */
+  manualPagination?: boolean;
+  /**
+   * Props forwarded to the underlying `Pagination` component in the footer
+   * (e.g. `siblings`, `boundaries`, `variant`, `size`, `color`, `showFirst`,
+   * `showPrevNext`, `labels`). Values here override the DataTable defaults, so
+   * you can also disable the built-in total (`showTotal={false}`) or size
+   * changer (`showSizeChanger={false}`).
+   */
+  paginationProps?: Omit<PaginationProps, 'current' | 'total' | 'onChange'>;
   /** Enable row selection */
   selectable?: boolean;
   /** Selected row identifiers */
@@ -169,7 +206,7 @@ export interface DataTableProps<T = any> extends SpacingProps {
     disabled?: boolean;
     /** Whether to hide this action */
     hidden?: boolean;
-    /** Optional tooltip text (future enhancement; currently ignored) */
+    /** Optional tooltip text shown on hover/long-press over the action button. */
     tooltip?: string;
   }>;
   /** Width of the actions column */
@@ -238,4 +275,52 @@ export interface DataTableProps<T = any> extends SpacingProps {
   headerTextProps?: Omit<TextProps, 'children'>;
   /** Override props applied to default-rendered cell text (cells without a custom `cell` renderer). */
   cellTextProps?: Omit<TextProps, 'children'>;
+
+  /**
+   * Accessible name for the grid, exposed as `aria-label` on web (screen
+   * readers announce it when entering the table). Defaults to "Data table".
+   */
+  ariaLabel?: string;
+
+  /** Show a CSV export button in the toolbar. Exports the current view
+   *  (filtered + sorted, all pages) using the visible columns. */
+  exportable?: boolean;
+  /** File name for the downloaded CSV (default: "data.csv"). */
+  exportFileName?: string;
+  /**
+   * Called with the generated CSV string and the exported rows. When provided
+   * it replaces the built-in web download (use it to handle export on native
+   * or to post the data elsewhere).
+   */
+  onExport?: (csv: string, rows: T[]) => void;
+
+  /** Enable drag-to-reorder of column headers (web). */
+  enableColumnReordering?: boolean;
+  /** Controlled column order (array of column keys). */
+  columnOrder?: string[];
+  /** Called with the new key order after a drag-reorder. */
+  onColumnOrderChange?: (order: string[]) => void;
+
+  // --- Row grouping & aggregation ---
+  /**
+   * Group rows by this column key. Renders a collapsible group-header row before
+   * each group (showing the value, count, and per-column aggregates). Grouping
+   * spans all filtered rows, so client pagination is bypassed while active, and
+   * it is not applied in `virtual` mode.
+   */
+  groupBy?: string;
+  /** Whether groups start expanded (default: true). */
+  groupsDefaultExpanded?: boolean;
+  /** Custom renderer for the group-header label cell. */
+  renderGroupHeader?: (info: {
+    value: any;
+    rows: T[];
+    count: number;
+    expanded: boolean;
+    toggle: () => void;
+  }) => React.ReactNode;
+  /** Render a footer row with grand-total aggregates for aggregate columns. */
+  showFooterTotals?: boolean;
+  /** Label shown in the first cell of the footer totals row (default: "Total"). */
+  footerLabel?: string;
 }

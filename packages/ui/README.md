@@ -70,7 +70,7 @@ export function App() {
 `Text` · `H1`–`H6` · `P` · `Strong` · `Code` · `Kbd` · `Mark` · `Highlight` · `Markdown` · `ShimmerText`
 
 ### Forms & inputs
-`Input` · `TextArea` · `NumberInput` · `PasswordInput` · `PinInput` · `PhoneInput` · `Search` · `Select` · `AutoComplete` · `Checkbox` · `Radio` · `Switch` · `Slider` · `RangeSlider` · `Knob` · `ToggleButton` · `SegmentedControl` · `DatePicker` · `TimePicker` · `Calendar` · `ColorPicker` · `EmojiPicker` · `FileInput` · `Rating` · `Form`
+`Input` · `TextArea` · `NumberInput` · `PasswordInput` · `PinInput` · `PhoneInput` · `Search` · `Select` · `AutoComplete` · `Checkbox` · `Radio` · `Switch` · `Slider` · `RangeSlider` · `Knob` · `ToggleButton` · `SegmentedControl` · `DatePicker` · `TimePicker` · `Calendar` · `ColorInput` · `ColorPicker` · `EmojiPicker` · `FileInput` · `Rating` · `Form`
 
 ### Navigation
 `Tabs` · `Breadcrumbs` · `Menu` · `Pagination` · `Stepper`

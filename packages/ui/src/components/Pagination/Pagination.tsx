@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Text } from '../Text';
 import { Icon } from '../Icon';
+import { Button } from '../Button';
+import { Menu, MenuItem, MenuLabel, MenuDropdown } from '../Menu';
 import { PaginationProps, type PaginationMetrics } from './types';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
@@ -354,6 +356,51 @@ export const Pagination = factory<{
     );
   };
 
+  const renderSizeChanger = () => {
+    if (!showSizeChanger || !onPageSizeChange) return null;
+
+    const colorScheme = theme.colors[color] || theme.colors.primary;
+    const buttonSize = (typeof size === 'string' && ['xs', 'sm', 'md', 'lg', 'xl'].includes(size)
+      ? size
+      : 'sm') as 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+    return (
+      <View style={isRTL ? { marginRight: 12 } : { marginLeft: 12 }}>
+        <Menu position="top-end" offset={4}>
+          <MenuDropdown>
+            <MenuLabel>Rows per page</MenuLabel>
+            {pageSizeOptions.map((opt) => (
+              <MenuItem
+                key={opt}
+                onPress={() => {
+                  if (opt !== pageSize) onPageSizeChange(opt);
+                }}
+                startSection={
+                  opt === pageSize ? (
+                    <Icon name="check" size={14} color={colorScheme[6]} />
+                  ) : undefined
+                }
+              >
+                {`${opt} / page`}
+              </MenuItem>
+            ))}
+            {!pageSizeOptions.includes(pageSize) && (
+              <MenuItem disabled>{`${pageSize} / page`}</MenuItem>
+            )}
+          </MenuDropdown>
+          <Button
+            variant="outline"
+            size={buttonSize}
+            disabled={disabled}
+            endIcon={<Icon name="chevron-down" size={sizeMetrics.iconSize} />}
+          >
+            {`${pageSize} / page`}
+          </Button>
+        </Menu>
+      </View>
+    );
+  };
+
   return (
     <View
       ref={ref}
@@ -403,6 +450,8 @@ export const Pagination = factory<{
         current === total,
         'last'
       )}
+
+      {renderSizeChanger()}
     </View>
   );
 });

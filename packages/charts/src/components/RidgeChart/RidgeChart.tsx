@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import Svg, { G, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { RidgeChartProps } from './types';
 import type { RidgeTooltipContext } from './types';
@@ -9,8 +10,10 @@ import { Axis } from '../../core/Axis';
 import { kde, normalizeDensity } from '../../utils/density';
 import { getColorFromScheme, colorSchemes } from '../../utils';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { AnimatedRidgeArea } from './AnimatedRidgeArea';
-import { useRidgeSeriesRegistration } from './useRidgeSeriesRegistration';
 import type { Scale } from '../../utils/scales';
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -61,7 +64,7 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
   statsMarkers,
 }) => {
   const theme = useChartTheme();
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const padding = basePadding;
   const plotWidth = Math.max(0, width - padding.left - padding.right);
   const plotHeight = Math.max(0, height - padding.top - padding.bottom);
@@ -70,10 +73,8 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
   
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try { interaction = useChartInteractionContext(); } catch { /* noop */ }
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
   
   // Domain inferred from all samples
   const allValues = series.flatMap(s => s.values);
@@ -267,11 +268,49 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
     };
   }, [statsMarkers, amplitudeHeight]);
 
-  // Register series for tooltip interaction
-  useRidgeSeriesRegistration({
-    series: registrationData,
-    registerSeries,
-    updateSeriesVisibility,
+  // New interaction engine (band-summary): each ridge is one band mark spanning its
+  // horizontal row. The band tester (orientation 'y', category axis vertical) resolves
+  // which ridge the pointer is over; the tooltip shows that distribution's summary.
+  // Hidden ridges keep their row slot (baseY uses the original index) but get no mark.
+  const hitSeries: HitSeries[] = React.useMemo(() => {
+    const marks: Mark[] = [];
+    densities.forEach((r, i) => {
+      if (r.visible === false) return;
+      const median = r.stats?.median ?? r.stats?.mean;
+      const fmt = r.valueFormatter;
+      const formattedValue = median != null
+        ? `${typeof fmt === 'function' ? fmt(median) : median}${r.unitSuffix ?? ''}`
+        : undefined;
+      marks.push({
+        id: i,
+        pixel: { x: padding.left + plotWidth / 2, y: i * bandH + bandH / 2 + padding.top },
+        value: median ?? 0,
+        datum: r,
+        label: String(r.name ?? `Ridge ${i + 1}`),
+        color: r.color,
+        extent: { rect: { x: padding.left, y: i * bandH + padding.top, width: plotWidth, height: bandH }, cell: { row: 0, col: i } },
+        formattedValue,
+      });
+    });
+    return [{ id: 'ridge', name: 'Ridge', color: theme.colors.accentPalette?.[0], visible: true, marks }];
+  }, [densities, padding.left, padding.top, plotWidth, bandH, theme.colors.accentPalette]);
+
+  const tester = React.useMemo(() => new BandCategoryHitTester(hitSeries, { orientation: 'y' }), [hitSeries]);
+
+  React.useEffect(() => {
+    if (!register) return;
+    register('ridge', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: 'y' }, series: hitSeries });
+    return () => register('ridge', null);
+  }, [register, hitSeries]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction),
+    hover: true,
+    press: false,
+    tester,
   });
 
   // Generate normalized ticks for ChartGrid
@@ -317,22 +356,6 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-expect-error web
-        onMouseMove={(e) => {
-          if (!setPointer) return; 
-          const rect = (e.currentTarget as any).getBoundingClientRect();
-          const px = e.clientX - rect.left - padding.left; 
-          const py = e.clientY - rect.top - padding.top;
-          setPointer({ x: px + padding.left, y: py + padding.top, inside: true, pageX: e.pageX, pageY: e.pageY });
-          const dataX = min + ((px / plotWidth) * (max - min || 1));
-          setCrosshair?.({ dataX, pixelX: px + padding.left });
-        }}
-        onMouseLeave={() => { 
-          setCrosshair?.(null); 
-          if (interaction?.pointer && setPointer) { 
-            setPointer({ ...interaction.pointer, inside: false }); 
-          } 
-        }}
       >
         <G x={padding.left} y={padding.top}>
           {densities.map((r, i) => {
@@ -473,6 +496,18 @@ export const RidgeChart: React.FC<RidgeChartProps> = ({
           labelColor={yAxis?.titleColor || theme.colors.textPrimary}
           labelFontSize={yAxis?.titleFontSize}
           style={{ width: padding.left, height: plotHeight }}
+        />
+      )}
+
+      {/* Gesture surface driven by useChartPointer + the band hit-tester (orientation
+          'y'). Full-chart overlay; resolves which ridge the pointer is over. */}
+      {Boolean(interaction) && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="ridge-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

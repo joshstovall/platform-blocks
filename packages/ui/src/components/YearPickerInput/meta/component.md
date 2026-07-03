@@ -1,5 +1,6 @@
 ---
 name: YearPickerInput
+playground: true
 category: input
 status: beta
 since: 0.1.0

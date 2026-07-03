@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useCallback, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Rect, G, Text as SvgText } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing, SharedValue } from 'react-native-reanimated';
 
@@ -8,7 +8,10 @@ import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, useActiveTarget } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import type { InteractionConfig } from '../../interaction/ChartInteractionContext';
 import { ChartInteractionEvent } from '../../types';
 import { bandScale, linearScale, generateNiceTicks, type Scale } from '../../utils/scales';
@@ -16,7 +19,6 @@ import { formatNumber } from '../../utils';
 import { createColorAssigner } from '../../colors';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
-const isWeb = Platform.OS === 'web';
 
 type ResolvedSeries = {
   id: string;
@@ -54,27 +56,14 @@ interface ComputedBar {
   visible: boolean;
 }
 
-const toNativePointerEvent = (event: any) => {
-  const rect = event?.currentTarget?.getBoundingClientRect?.();
-  return {
-    nativeEvent: {
-      locationX: rect ? event.clientX - rect.left : 0,
-      locationY: rect ? event.clientY - rect.top : 0,
-      pageX: event?.pageX ?? event?.clientX,
-      pageY: event?.pageY ?? event?.clientY,
-    },
-  };
-};
 
+// Pure visual bar. Pointer/press is handled by the shared gesture surface +
+// hit-test engine (overlay + useChartPointer below), not per-rect handlers.
 const AnimatedGroupedBar: React.FC<{
   bar: ComputedBar;
   animationProgress: SharedValue<number>;
   borderRadius: number;
-  disabled: boolean;
-  onHoverIn: (bar: ComputedBar, event?: any) => void;
-  onHoverOut: (bar: ComputedBar, event?: any) => void;
-  onPress: (bar: ComputedBar, event: any) => void;
-}> = React.memo(({ bar, animationProgress, borderRadius, disabled, onHoverIn, onHoverOut, onPress }) => {
+}> = React.memo(({ bar, animationProgress, borderRadius }) => {
   const animatedProps = useAnimatedProps(() => {
     const progress = animationProgress.value;
     const height = bar.height * progress;
@@ -87,8 +76,6 @@ const AnimatedGroupedBar: React.FC<{
     } as any;
   }, [bar]);
 
-  const isWeb = Platform.OS === 'web';
-
   return (
     <AnimatedRect
       animatedProps={animatedProps}
@@ -96,27 +83,7 @@ const AnimatedGroupedBar: React.FC<{
       ry={borderRadius}
       fill={bar.color}
       opacity={bar.visible ? 1 : 0}
-      pointerEvents={bar.visible ? 'auto' : 'none'}
-      {...(isWeb
-        ? {
-            onPointerEnter: (event: any) => !disabled && onHoverIn(bar, event),
-            onPointerLeave: (event: any) => onHoverOut(bar, event),
-            onPointerDown: (event: any) => {
-              if (disabled) return;
-              event.currentTarget?.setPointerCapture?.(event.pointerId);
-            },
-            onPointerUp: (event: any) => {
-              if (disabled) return;
-              event.currentTarget?.releasePointerCapture?.(event.pointerId);
-              onPress(bar, toNativePointerEvent(event));
-            },
-            onPointerCancel: (event: any) => onHoverOut(bar, event),
-          }
-        : {
-            onPressIn: (event: any) => !disabled && onHoverIn(bar, event),
-            onPressOut: (event: any) => onHoverOut(bar, event),
-            onPress: (event: any) => !disabled && onPress(bar, { nativeEvent: event.nativeEvent }),
-          })}
+      pointerEvents="none"
     />
   );
 });
@@ -154,14 +121,16 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
   try {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
+  // Target-only subscription: this chart draws a crosshair from the active target, which
+  // moves in category steps — so it re-renders only when the active column changes, not on
+  // every pointer frame.
+  const { activeTarget } = useActiveTarget();
 
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
   const interactionSeries = interaction?.series;
 
-  const basePadding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const basePadding = { top: 40, right: 24, bottom: 64, left: yAxis?.title ? 104 : 80 };
   const padding = React.useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -223,7 +192,6 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     return map;
   }, [resolvedSeries]);
 
-  const wantsCrosshairUpdates = (enableCrosshair !== false) || Boolean(multiTooltip);
 
   const interactionConfig = useMemo<InteractionConfig | undefined>(() => {
     const config: InteractionConfig = {};
@@ -378,12 +346,6 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     });
   }, [categories, outerScale, plotWidth]);
 
-  const categoryCenters = useMemo(() => {
-    if (plotWidth <= 0) return [] as number[];
-    const bandwidth = outerScale.bandwidth ? outerScale.bandwidth() : categories.length ? plotWidth / categories.length : 0;
-    return categories.map((category) => (outerScale(category) ?? 0) + bandwidth / 2);
-  }, [categories, outerScale, plotWidth]);
-
   const normalizedYTicks = useMemo(() => {
     if (plotHeight <= 0) return [] as number[];
     return valueTicks.map((tick) => valueScale(tick) / plotHeight);
@@ -410,214 +372,80 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
     return scale;
   }, [valueScale, valueTicks]);
 
-  const hoverRef = useRef<string | null>(null);
+  const handleBarPress = useCallback((bar: ComputedBar, nativeEvent: any) => {
+    const dataPoint = {
+      category: bar.category,
+      value: bar.value,
+      color: bar.color,
+      id: bar.dataPoint?.id,
+      data: bar.dataPoint?.data,
+    };
 
-  const extractNativeEvent = (event: any) => {
-    if (!event) return undefined;
-    if (event.nativeEvent) return event.nativeEvent;
-    return toNativePointerEvent(event).nativeEvent;
-  };
+    const interactionEvent: ChartInteractionEvent<typeof dataPoint> = {
+      nativeEvent,
+      chartX: (padding.left + bar.x + bar.width / 2) / width,
+      chartY: (padding.top + bar.y + bar.height / 2) / height,
+      dataX: bar.categoryIndex,
+      dataY: bar.value,
+      dataPoint,
+    };
 
-  const updatePointerCoords = useCallback((chartX: number, chartY: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
-    if (!setPointer && !setCrosshair) return;
-    const plotX = chartX - padding.left;
-    const plotY = chartY - padding.top;
-    const insideX = plotX >= 0 && plotX <= plotWidth;
-    const insideY = plotY >= 0 && plotY <= plotHeight;
-    if (setPointer) {
-      setPointer({
-        x: chartX,
-        y: chartY,
-        inside: insideX && insideY,
-        insideX,
-        insideY,
-        pageX: meta?.pageX,
-        pageY: meta?.pageY,
-        data: meta?.data ?? null,
-      });
-    }
-    if (wantsCrosshairUpdates && setCrosshair && insideX) {
-      const clampedX = Math.max(0, Math.min(plotWidth, plotX));
-      let closestIndex = 0;
-      if (categoryCenters.length) {
-        let bestDistance = Infinity;
-        for (let i = 0; i < categoryCenters.length; i += 1) {
-          const dist = Math.abs(categoryCenters[i] - clampedX);
-          if (dist < bestDistance) {
-            bestDistance = dist;
-            closestIndex = i;
-          }
-        }
-      }
-      const pixelX = padding.left + clampedX;
-      setCrosshair({ dataX: closestIndex, pixelX });
-    }
-  }, [setPointer, setCrosshair, padding.left, padding.top, plotWidth, plotHeight, wantsCrosshairUpdates, categoryCenters]);
+    onDataPointPress?.(dataPoint, interactionEvent);
+    onPress?.(interactionEvent);
+  }, [height, onDataPointPress, onPress, width, padding.left, padding.top]);
 
-  const clearPointerState = useCallback(() => {
-    hoverRef.current = null;
-    if (setPointer) {
-      setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
-    }
-    if (wantsCrosshairUpdates) {
-      setCrosshair?.(null);
-    }
-  }, [setPointer, setCrosshair, wantsCrosshairUpdates]);
-
-  const handleHoverIn = useCallback(
-    (bar: ComputedBar, event?: any) => {
-      hoverRef.current = bar.id;
-      const pointerX = padding.left + bar.x + bar.width / 2;
-      const pointerY = padding.top + (bar.isPositive ? bar.y : bar.y + bar.height);
-      const native = extractNativeEvent(event);
-      const seriesEntry = resolvedSeriesMap.get(bar.seriesId);
-      const datum = seriesEntry?.dataLookup.get(bar.category) || bar.dataPoint || { category: bar.category, value: bar.value };
-      updatePointerCoords(pointerX, pointerY, {
-        pageX: native?.pageX,
-        pageY: native?.pageY,
-        data: {
-          type: 'grouped-bar',
-          category: bar.category,
-          categoryIndex: bar.categoryIndex,
-          seriesId: bar.seriesId,
-          seriesName: seriesEntry?.name,
-          seriesIndex: bar.seriesIndex,
-          value: bar.value,
-          datum,
-        },
-      });
-    },
-    [padding.left, padding.top, resolvedSeriesMap, updatePointerCoords]
-  );
-
-  const handleHoverOut = useCallback(
-    (bar: ComputedBar, event?: any, options?: { preserveCrosshair?: boolean; suppressPointerReset?: boolean }) => {
-      if (hoverRef.current !== bar.id) return;
-      hoverRef.current = null;
-      if (!options?.suppressPointerReset) {
-        const native = extractNativeEvent(event);
-        if (native?.pageX != null || native?.pageY != null) {
-          const pointerX = padding.left + bar.x + bar.width / 2;
-          const pointerY = padding.top + (bar.isPositive ? bar.y : bar.y + bar.height);
-          setPointer?.({
-            x: pointerX,
-            y: pointerY,
-            inside: false,
-            insideX: false,
-            insideY: false,
-            pageX: native?.pageX,
-            pageY: native?.pageY,
-            data: null,
-          });
-        } else {
-          setPointer?.(null);
-        }
-      }
-      const preserve = options?.preserveCrosshair ?? true;
-      if (wantsCrosshairUpdates && !preserve) {
-        setCrosshair?.(null);
-      }
-    },
-    [padding.left, padding.top, setCrosshair, setPointer, wantsCrosshairUpdates]
-  );
-
-  const handlePress = useCallback(
-    (bar: ComputedBar, pressEvent: any) => {
-      const dataPoint = {
+  // New interaction engine: each grouped bar is a band mark with its rect
+  // (container-origin) + category-index key. One hit-series per series → rect
+  // membership resolves the hovered bar; slice() returns every series' bar at the
+  // category (the grouped-column tooltip).
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const bySeries = new Map<string, Mark[]>();
+    resolvedSeries.forEach((s) => bySeries.set(s.id, []));
+    computedBars.forEach((bar) => {
+      const arr = bySeries.get(bar.seriesId);
+      if (!arr) return;
+      const fallbackDatum: GroupedDatumInput = bar.dataPoint ?? { category: bar.category, value: bar.value };
+      const formatted = formatValueLabel(bar.value, fallbackDatum, {
         category: bar.category,
-        value: bar.value,
-        color: bar.color,
-        id: bar.dataPoint?.id,
-        data: bar.dataPoint?.data,
-      };
-
-      const interactionEvent: ChartInteractionEvent<typeof dataPoint> = {
-        nativeEvent: pressEvent.nativeEvent,
-        chartX: (padding.left + bar.x + bar.width / 2) / width,
-        chartY: (padding.top + bar.y + bar.height / 2) / height,
-        dataX: bar.categoryIndex,
-        dataY: bar.value,
-        dataPoint,
-      };
-
-      onDataPointPress?.(dataPoint, interactionEvent);
-      onPress?.(interactionEvent);
-    },
-    [height, onDataPointPress, onPress, width, padding.left, padding.top]
-  );
-
-  const handlePointer = useCallback((nativeEvent: any, firePress: boolean = false) => {
-    if (!nativeEvent || disabled) return;
-    const { locationX, locationY, pageX, pageY } = nativeEvent;
-    if (typeof locationX !== 'number' || typeof locationY !== 'number') return;
-    const chartX = padding.left + locationX;
-    const chartY = padding.top + locationY;
-    updatePointerCoords(chartX, chartY, { pageX, pageY });
-
-    let target: ComputedBar | null = null;
-    for (const bar of computedBars) {
-      if (!bar.visible || bar.height <= 0) continue;
-      const withinX = locationX >= bar.x && locationX <= bar.x + bar.width;
-      const withinY = locationY >= bar.y && locationY <= bar.y + bar.height;
-      if (withinX && withinY) {
-        target = bar;
-        break;
-      }
-    }
-
-    if (target) {
-      handleHoverIn(target);
-      if (firePress) {
-        handlePress(target, { nativeEvent });
-      }
-    } else {
-      hoverRef.current = null;
-    }
-  }, [disabled, padding.left, padding.top, updatePointerCoords, computedBars, handleHoverIn, handlePress]);
-
-  const handlePointerEnd = useCallback(() => {
-    clearPointerState();
-  }, [clearPointerState]);
-
-  const registerSignatureRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    if (registerSignatureRef.current === dataSignature) return;
-    registerSignatureRef.current = dataSignature;
-
-    resolvedSeries.forEach((seriesEntry) => {
-      const points = categories.map((category) => {
-        const datum = seriesEntry.dataLookup.get(category);
-        const value = datum?.value ?? 0;
-        const fallbackDatum: GroupedDatumInput = datum ?? { category, value };
-        const labelText = formatValueLabel(value, fallbackDatum, {
-          category,
-          categoryIndex: categoryIndexMap.get(category) ?? 0,
-          series: seriesEntry,
-        });
-        return {
-          x: categoryIndexMap.get(category) ?? 0,
-          y: value,
-          meta: {
-            category,
-            value,
-            color: datum?.color || seriesEntry.color,
-            id: datum?.id,
-            data: datum?.data,
-            formattedValue: labelText,
-          },
-        };
+        categoryIndex: bar.categoryIndex,
+        series: resolvedSeriesMap.get(bar.seriesId)!,
       });
-
-      registerSeries({
-        id: seriesEntry.id,
-        name: seriesEntry.name || `Series ${seriesEntry.seriesIndex + 1}`,
-        color: seriesEntry.color,
-        points,
-        visible: seriesEntry.visible,
+      arr.push({
+        id: bar.categoryIndex,
+        pixel: { x: bar.x + bar.width / 2 + padding.left, y: bar.y + padding.top },
+        value: bar.value,
+        datum: bar,
+        extent: { rect: { x: bar.x + padding.left, y: bar.y + padding.top, width: bar.width, height: bar.height } },
+        formattedValue: formatted == null ? undefined : String(formatted),
       });
     });
-  }, [registerSeries, resolvedSeries, categories, categoryIndexMap, dataSignature, formatValueLabel]);
+    return resolvedSeries.map((s) => ({
+      id: s.id,
+      name: s.name || `Series ${s.seriesIndex + 1}`,
+      color: s.color,
+      visible: s.visible !== false,
+      marks: bySeries.get(s.id) ?? [],
+    }));
+  }, [computedBars, resolvedSeries, resolvedSeriesMap, padding.left, padding.top, formatValueLabel]);
+
+  const tester = useMemo(() => new BandCategoryHitTester(hitSeries, { orientation: 'x' }), [hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register('grouped-bar', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: 'x' }, series: hitSeries });
+    return () => register('grouped-bar', null);
+  }, [register, hitSeries]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: true,
+    tester,
+    onPress: (e, target) => { if (target) handleBarPress(target.datum as ComputedBar, (e.raw as any)?.nativeEvent ?? e.raw); },
+  });
 
   return (
     <ChartContainer
@@ -630,7 +458,7 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
       interactionConfig={interactionConfig}
       {...rest}
     >
-      {(title || subtitle) && <ChartTitle title={title} subtitle={subtitle} />}
+      {(title || subtitle) && <ChartTitle title={title} subtitle={subtitle} style={{ top: -24 }} />}
 
       {grid?.show !== false && (
         <ChartGrid
@@ -660,15 +488,12 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
               bar={bar}
               animationProgress={animationProgress}
               borderRadius={3}
-              disabled={disabled}
-              onHoverIn={handleHoverIn}
-                onHoverOut={(target, event) => handleHoverOut(target, event, { preserveCrosshair: true, suppressPointerReset: true })}
-              onPress={handlePress}
             />
           ) : null
         ))}
-        {(enableCrosshair || multiTooltip) && interaction?.crosshair && (() => {
-          const relativeX = (interaction.crosshair.pixelX ?? 0) - padding.left;
+        {(enableCrosshair || multiTooltip) && activeTarget && (() => {
+          // Guide line driven by the hit-test engine's active target (container-origin pixel).
+          const relativeX = (activeTarget.pixel?.x ?? 0) - padding.left;
           if (!Number.isFinite(relativeX)) return null;
           const clampedX = Math.max(0, Math.min(plotWidth, relativeX));
           return (
@@ -747,57 +572,18 @@ export const GroupedBarChart: React.FC<GroupedBarChartProps> = (props) => {
         })}
       </Svg>
 
-      <View
-        style={{
-          position: 'absolute',
-          left: padding.left,
-          top: padding.top,
-          width: plotWidth,
-          height: plotHeight,
-        }}
-        pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
-        {...(isWeb
-          ? {
-              onPointerMove: (event: any) => {
-                if (disabled) return;
-                const native = toNativePointerEvent(event).nativeEvent;
-                handlePointer(native);
-              },
-              onPointerDown: (event: any) => {
-                if (disabled) return;
-                event.currentTarget?.setPointerCapture?.(event.pointerId);
-                const native = toNativePointerEvent(event).nativeEvent;
-                handlePointer(native);
-              },
-              onPointerUp: (event: any) => {
-                event.currentTarget?.releasePointerCapture?.(event.pointerId);
-                const native = toNativePointerEvent(event).nativeEvent;
-                handlePointer(native, true);
-                handlePointerEnd();
-              },
-              onPointerLeave: () => {
-                handlePointerEnd();
-              },
-              onPointerCancel: () => {
-                handlePointerEnd();
-              },
-            }
-          : {
-              onStartShouldSetResponder: () => !disabled,
-              onMoveShouldSetResponder: () => !disabled,
-              onResponderGrant: (e: any) => {
-                handlePointer(e.nativeEvent);
-              },
-              onResponderMove: (e: any) => {
-                handlePointer(e.nativeEvent);
-              },
-              onResponderRelease: () => {
-                handlePointerEnd();
-              },
-              onResponderTerminate: handlePointerEnd,
-              onResponderTerminationRequest: () => true,
-            })}
-      />
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder), driven by useChartPointer + the band hit-tester. Full-chart
+          overlay so pointer coords are container-origin, matching the bar rects. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="grouped-bar-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
+        />
+      )}
 
       {xAxis?.show !== false && (
         <Axis

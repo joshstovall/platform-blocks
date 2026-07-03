@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Simple auto-complete with a sports dataset, helper copy, and selection feedback.
+Simple auto-complete. Start typing to filter the list. Selecting an option fills the input.

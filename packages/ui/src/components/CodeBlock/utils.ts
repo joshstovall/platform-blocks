@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
 import type { CodeBlockToken } from './types';
 
@@ -83,20 +84,112 @@ export function getSyntaxColors(
     return applyOverrides(base, overrides);
   }
 
+  // Derive token colors from the active app theme so the code block visually
+  // integrates with the surrounding UI. The theme's palette scales are oriented
+  // opposite between modes: the dark theme runs dark -> light while the light
+  // theme runs light -> dark, but in BOTH the base/brand sits near index 5 and
+  // higher indices give more contrast against that theme's background. So we
+  // reach for a slightly-past-base shade in each mode (a touch higher in light
+  // mode for saturation on a pale surface). The One-Dark hexes are kept only as
+  // fallbacks for when a given scale is absent from the theme.
+  const c = theme.colors as Record<string, string[] | undefined>;
+
+  const shade = (scale: string[] | undefined, darkIdx: number, lightIdx: number): string | undefined => {
+    if (!scale || !scale.length) return undefined;
+    const idx = isDark ? darkIdx : lightIdx;
+    return scale[Math.min(Math.max(idx, 0), scale.length - 1)];
+  };
+
+  // Pick the first available scale from the candidate list, then the shade for
+  // the current color scheme; fall back to the provided hex if none resolve.
+  const pick = (
+    candidates: Array<string[] | undefined>,
+    darkIdx: number,
+    lightIdx: number,
+    fallback: string
+  ): string => {
+    for (const scale of candidates) {
+      const color = shade(scale, darkIdx, lightIdx);
+      if (color) return color;
+    }
+    return fallback;
+  };
+
   const base: SyntaxColorMap = {
-    keyword: isDark ? '#c678dd' : '#a626a4',
-    string: isDark ? '#98c379' : '#50a14f',
-    comment: isDark ? '#5c6370' : '#a0a1a7',
-    number: isDark ? '#d19a66' : '#986801',
-    function: isDark ? '#61afef' : '#4078f2',
-    operator: isDark ? '#56b6c2' : '#0184bc',
-    punctuation: isDark ? '#abb2bf' : '#383a42',
-    tag: isDark ? '#e06c75' : '#e45649',
-    attribute: isDark ? '#d19a66' : '#986801',
-    className: isDark ? '#e5c07b' : '#c18401',
+    keyword: pick([c.purple, c.violet, c.primary], 5, 6, isDark ? '#c678dd' : '#a626a4'),
+    string: pick([c.success], 5, 6, isDark ? '#98c379' : '#50a14f'),
+    comment: theme.text.muted ?? pick([c.gray], 5, 5, isDark ? '#5c6370' : '#a0a1a7'),
+    number: pick([c.warning, c.amber], 5, 6, isDark ? '#d19a66' : '#986801'),
+    function: pick([c.sky, c.primary], 5, 6, isDark ? '#61afef' : '#4078f2'),
+    operator: pick([c.cyan, c.teal, c.tertiary], 5, 6, isDark ? '#56b6c2' : '#0184bc'),
+    punctuation: theme.text.secondary ?? (isDark ? '#abb2bf' : '#383a42'),
+    tag: pick([c.error, c.pink], 5, 6, isDark ? '#e06c75' : '#e45649'),
+    attribute: pick([c.warning, c.amber], 5, 6, isDark ? '#d19a66' : '#986801'),
+    className: pick([c.amber, c.warning, c.tertiary], 5, 6, isDark ? '#e5c07b' : '#c18401'),
   };
 
   return applyOverrides(base, overrides);
+}
+
+/**
+ * Builds a react-syntax-highlighter (Prism) theme object from a resolved syntax
+ * color map, so the web highlighter uses the same theme-derived palette as the
+ * native tokenizer instead of a generic prebuilt Prism theme.
+ */
+export function buildPrismTheme(
+  colors: SyntaxColorMap,
+  baseColor: string,
+  fontFamily?: string
+): Record<string, CSSProperties> {
+  const token = (color: string, extra?: CSSProperties): CSSProperties => ({
+    color,
+    background: 'none',
+    ...extra,
+  });
+
+  const rootStyle: CSSProperties = {
+    color: baseColor,
+    background: 'none',
+    ...(fontFamily ? { fontFamily } : {}),
+  };
+
+  return {
+    'code[class*="language-"]': rootStyle,
+    'pre[class*="language-"]': rootStyle,
+    comment: token(colors.comment, { fontStyle: 'italic' }),
+    prolog: token(colors.comment),
+    doctype: token(colors.comment),
+    cdata: token(colors.comment),
+    punctuation: token(colors.punctuation),
+    namespace: { opacity: 0.7 } as CSSProperties,
+    property: token(colors.tag),
+    tag: token(colors.tag),
+    boolean: token(colors.number),
+    number: token(colors.number),
+    constant: token(colors.number),
+    symbol: token(colors.tag),
+    deleted: token(colors.tag),
+    selector: token(colors.string),
+    'attr-name': token(colors.attribute),
+    string: token(colors.string),
+    char: token(colors.string),
+    builtin: token(colors.className),
+    inserted: token(colors.string),
+    operator: token(colors.operator),
+    entity: token(colors.operator, { cursor: 'help' }),
+    url: token(colors.operator),
+    atrule: token(colors.keyword),
+    'attr-value': token(colors.string),
+    keyword: token(colors.keyword),
+    function: token(colors.function),
+    'function-variable': token(colors.function),
+    'class-name': token(colors.className),
+    regex: token(colors.operator),
+    important: token(colors.keyword, { fontWeight: 'bold' }),
+    variable: token(colors.punctuation),
+    bold: { fontWeight: 'bold' } as CSSProperties,
+    italic: { fontStyle: 'italic' } as CSSProperties,
+  };
 }
 
 function applyOverrides(

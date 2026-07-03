@@ -16,7 +16,7 @@ export default function Demo() {
       </Text>
       <Row gap="md" wrap="wrap">
         {COLOR_VARIANTS.map(({ label, color }) => (
-          <Switch key={color} checked label={label} color={color} disabled />
+          <Switch key={color} defaultChecked label={label} labelPosition="right" color={color} />
         ))}
       </Row>
     </Column>

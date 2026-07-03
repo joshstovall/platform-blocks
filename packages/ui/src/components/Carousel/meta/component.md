@@ -1,5 +1,6 @@
 ---
 name: Carousel
+playground: true
 title: Carousel
 category: data-display
 tags: [carousel, slider, gallery, swipe]

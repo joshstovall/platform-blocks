@@ -1,4 +1,5 @@
 ---
+playground: true
 title: FileInput
 description: A file upload component with drag-and-drop, validation, and preview capabilities
 source: ui/src/components/FileInput

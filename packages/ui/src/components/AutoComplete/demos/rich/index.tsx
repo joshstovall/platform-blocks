@@ -6,7 +6,6 @@ import {
   Row,
   Text,
   Block,
-  Divider,
   MenuItemButton,
 } from '@platform-blocks/ui'
 
@@ -34,17 +33,38 @@ export default function Demo() {
     { label: 'Golf', value: 'golf', emoji: '⛳', color: '#15803d', price: 110.0, duration: '4–5 hrs' },
   ];
 
+  // Shared rich row, reused for the dropdown options and the selected-value
+  // overlay rendered inside the input box.
+  const renderSportRow = (sport: RichSportOption) => (
+    <Row align="center" gap="md" px="md" py="sm">
+      <Text size="xl" mr="md">
+        {sport.emoji}
+      </Text>
+      <Column grow={1} gap="xs">
+        <Row align="center" gap="sm">
+          <Text weight="semibold">{sport.label}</Text>
+          <Block w={12} h={12} radius="full" bg={sport.color} />
+          <Text size="xs" colorVariant="secondary">
+            {sport.duration}
+          </Text>
+        </Row>
+        <Text size="sm" weight="semibold" color="primary.solid">
+          ${sport.price.toFixed(2)}
+        </Text>
+      </Column>
+    </Row>
+  )
+
   return (
     <Column gap="sm" fullWidth>
-      <Text weight="semibold">Rich item rendering</Text>
-      <Text size="sm" colorVariant="secondary">
-        Enhance suggestions with emoji, metadata, and pricing using a custom renderer.
-      </Text>
       <AutoComplete
         label="Search sports"
         placeholder="Search sports with rich details..."
         data={richSportData}
         value={value}
+        clearable
+        // Drop focus after selecting so the rich value overlay shows immediately.
+        refocusAfterSelect={false}
         onChangeText={(next) => {
           setValue(next)
           if (!next) setSelectedSport(null)
@@ -56,7 +76,6 @@ export default function Demo() {
         }}
         renderItem={(item, index, helpers) => {
           const sport = item as RichSportOption
-          const isLast = index === richSportData.length - 1
           const isActive = helpers?.isSelected || selectedSport?.value === sport.value
 
           return (
@@ -69,27 +88,23 @@ export default function Demo() {
               onPress={() => helpers?.onSelect?.(sport)}
               style={{ alignItems: 'stretch', gap: 0 }}
             >
-              <Column>
-                <Row align="center" gap="md" px="md" py="sm">
-                  <Text size="xl" mr="md">
-                    {sport.emoji}
-                  </Text>
-                  <Column grow={1} gap="xs">
-                    <Row align="center" gap="sm">
-                      <Text weight="semibold">{sport.label}</Text>
-                      <Block w={12} h={12} radius="full" bg={sport.color} />
-                      <Text size="xs" colorVariant="secondary">
-                        {sport.duration}
-                      </Text>
-                    </Row>
-                    <Text size="sm" weight="semibold" color="primary.solid">
-                      ${sport.price.toFixed(2)}
-                    </Text>
-                  </Column>
-                </Row>
-                {!isLast && <Divider colorVariant="subtle" />}
-              </Column>
+              <Column>{renderSportRow(sport)}</Column>
             </MenuItemButton>
+          )
+        }}
+        // Render the chosen sport as a compact rich row inside the input box
+        // (single line so it fits the field height).
+        renderValue={(item) => {
+          const sport = item as RichSportOption
+          return (
+            <Row align="center" gap="sm">
+              <Text size="lg">{sport.emoji}</Text>
+              <Text weight="semibold">{sport.label}</Text>
+              <Block w={10} h={10} radius="full" bg={sport.color} />
+              <Text size="sm" weight="semibold" color="primary.solid">
+                ${sport.price.toFixed(2)}
+              </Text>
+            </Row>
           )
         }}
         minSearchLength={1}

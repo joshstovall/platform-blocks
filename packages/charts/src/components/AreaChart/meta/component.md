@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Area Chart
 tags: [chart, area, timeseries]
 category: charts

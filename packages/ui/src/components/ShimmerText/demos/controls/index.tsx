@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Column, Row, ShimmerText, Slider, Switch, Text } from '@platform-blocks/ui';
+import { Block, Row, ShimmerText, Slider, Switch, Text } from '@platform-blocks/ui';
 
 const MIN_SPREAD = 1;
 const MAX_SPREAD = 4;
@@ -25,7 +25,7 @@ export default function Demo() {
   };
 
   return (
-    <Column gap="lg" align="flex-start" w="100%">
+    <Block gap="lg" align="flex-start" fullWidth>
       <ShimmerText
         spread={spread}
         repeat={repeat}
@@ -39,7 +39,7 @@ export default function Demo() {
         Interactive shimmer headline
       </ShimmerText>
 
-      <Column gap="md" w="100%">
+      <Block gap="md" w="100%">
         <Text variant="small" weight="medium">
           Spread: {spread.toFixed(1)}
         </Text>
@@ -50,9 +50,9 @@ export default function Demo() {
           max={MAX_SPREAD}
           step={SPREAD_STEP}
         />
-      </Column>
+      </Block>
 
-      <Column gap="sm" w="100%">
+      <Block gap="sm" w="100%">
         <Row align="center" justify="space-between">
           <Text variant="small">Repeat animation</Text>
           <Switch checked={repeat} onChange={handleRepeatChange} />
@@ -61,7 +61,7 @@ export default function Demo() {
           <Text variant="small">Run once</Text>
           <Switch checked={once} onChange={handleOnceChange} />
         </Row>
-      </Column>
-    </Column>
+      </Block>
+    </Block>
   );
 }

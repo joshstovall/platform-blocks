@@ -1,5 +1,6 @@
 ---
 name: ContextMenu
+playground: true
 title: ContextMenu
 category: navigation
 tags: [menu, context, rightclick, longpress, actions]

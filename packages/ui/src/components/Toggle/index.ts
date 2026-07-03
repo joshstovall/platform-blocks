@@ -4,6 +4,7 @@ export {
 } from './Toggle';
 export { ToggleBar } from './ToggleBar';
 export type {
+  ToggleProps,
   ToggleButtonProps,
   ToggleGroupProps,
   ToggleGroupContextValue

@@ -250,7 +250,9 @@ export const Highlight: React.FC<HighlightProps> = ({
     return extractColorFromStyle(restProps?.style);
   }, [rest, theme]);
 
-  const fallbackTextColor = theme.states?.highlightText ?? theme.text.primary;
+  // Default to the surrounding text color so a highlight reads like a normal
+  // marker (yellow background, unchanged text) rather than recoloring the text.
+  const fallbackTextColor = theme.text.primary;
 
   const { resolvedTextColor, isTextColorLight } = useMemo(() => {
     const candidate = highlightDerived.color ?? outerColor ?? fallbackTextColor;

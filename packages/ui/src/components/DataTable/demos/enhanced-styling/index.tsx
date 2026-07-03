@@ -51,6 +51,7 @@ const columns: DataTableColumn<Employee>[] = [
     header: 'Email',
     accessor: 'email',
     sortable: true,
+    minWidth: 200,
     cell: (value) => (
       <Text colorVariant="primary" weight="medium">
         {value}

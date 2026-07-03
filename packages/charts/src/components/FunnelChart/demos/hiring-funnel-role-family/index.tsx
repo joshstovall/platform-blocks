@@ -5,22 +5,29 @@ type HiringMeta = {
   topDeclineReason?: string;
 };
 
+const compact = (value: number) => {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `${value}`;
+};
+
 const EXTERNAL_CANDIDATES = [
-  { label: 'Applications received', value: 780, meta: { medianDays: 0 } as HiringMeta, trendDelta: 0.05 },
-  { label: 'Recruiter screen', value: 420, meta: { medianDays: 3, topDeclineReason: 'Insufficient architecture depth' } as HiringMeta, trendDelta: 0.03 },
-  { label: 'Hiring manager interview', value: 210, meta: { medianDays: 6, topDeclineReason: 'Product strategy alignment' } as HiringMeta, trendDelta: -0.02 },
-  { label: 'Panel interview', value: 120, meta: { medianDays: 12, topDeclineReason: 'Leadership signal gaps' } as HiringMeta, trendDelta: -0.04 },
-  { label: 'Offers extended', value: 48, meta: { medianDays: 18, topDeclineReason: 'Compensation delta' } as HiringMeta, trendDelta: 0.01 },
-  { label: 'Offers accepted', value: 22, meta: { medianDays: 24 } as HiringMeta, trendDelta: 0.02 },
+  { label: 'Applied', value: 780, meta: { medianDays: 0 } as HiringMeta },
+  { label: 'Screen', value: 420, meta: { medianDays: 3, topDeclineReason: 'Insufficient architecture depth' } as HiringMeta },
+  { label: 'HM interview', value: 210, meta: { medianDays: 6, topDeclineReason: 'Product strategy alignment' } as HiringMeta },
+  { label: 'Panel', value: 120, meta: { medianDays: 12, topDeclineReason: 'Leadership signal gaps' } as HiringMeta },
+  { label: 'Offered', value: 48, meta: { medianDays: 18, topDeclineReason: 'Compensation delta' } as HiringMeta },
+  { label: 'Accepted', value: 22, meta: { medianDays: 24 } as HiringMeta },
 ];
 
 const INTERNAL_TRANSFERS = [
-  { label: 'Applications received', value: 220, meta: { medianDays: 0 } as HiringMeta, trendDelta: 0.08 },
-  { label: 'Recruiter screen', value: 188, meta: { medianDays: 2, topDeclineReason: 'Role scope mismatch' } as HiringMeta, trendDelta: 0.06 },
-  { label: 'Hiring manager interview', value: 150, meta: { medianDays: 5, topDeclineReason: 'Org fit feedback' } as HiringMeta, trendDelta: 0.02 },
-  { label: 'Panel interview', value: 110, meta: { medianDays: 9, topDeclineReason: 'Leadership depth' } as HiringMeta, trendDelta: 0.01 },
-  { label: 'Offers extended', value: 72, meta: { medianDays: 14, topDeclineReason: 'Comp band negotiations' } as HiringMeta, trendDelta: 0.03 },
-  { label: 'Offers accepted', value: 44, meta: { medianDays: 18 } as HiringMeta, trendDelta: 0.05 },
+  { label: 'Applied', value: 220, meta: { medianDays: 0 } as HiringMeta },
+  { label: 'Screen', value: 188, meta: { medianDays: 2, topDeclineReason: 'Role scope mismatch' } as HiringMeta },
+  { label: 'HM interview', value: 150, meta: { medianDays: 5, topDeclineReason: 'Org fit feedback' } as HiringMeta },
+  { label: 'Panel', value: 110, meta: { medianDays: 9, topDeclineReason: 'Leadership depth' } as HiringMeta },
+  { label: 'Offered', value: 72, meta: { medianDays: 14, topDeclineReason: 'Comp band negotiations' } as HiringMeta },
+  { label: 'Accepted', value: 44, meta: { medianDays: 18 } as HiringMeta },
 ];
 
 const HIRING_SERIES = [
@@ -50,43 +57,20 @@ const findSeriesContext = (step: unknown) => STEP_LOOKUP.get(step as any) ?? nul
 export default function Demo() {
   return (
     <FunnelChart
-      title="Hiring funnel — Staff engineer role family"
-      subtitle="Comparing external candidates vs. internal transfers with stage speed and drop reasons"
-      width={720}
-      height={560}
+      title="Hiring funnel — Staff engineer"
+      subtitle="External candidates vs. internal transfers"
+      width={620}
+      height={480}
       series={HIRING_SERIES}
       layout={{
         shape: 'bar',
-        gap: 18,
+        gap: 10,
         align: 'center',
-        minSegmentHeight: 56,
         showConversion: false,
         seriesMode: 'grouped',
-        connectors: { show: true, labelOffset: 8 },
+        connectors: { show: false },
       }}
-      valueFormatter={(value, _index, context) => {
-        const stage = context?.step;
-        const lookup = stage ? findSeriesContext(stage) : null;
-        const meta = stage?.meta as HiringMeta | undefined;
-        const lines: string[] = [`${value.toLocaleString()} candidates`];
-
-        if (context?.previousValue) {
-          lines.push(`Drop ${context.dropValue.toLocaleString()} (${(context.dropRate * 100).toFixed(1)}%)`);
-        } else {
-          lines.push('Pipeline intake');
-        }
-
-        if (meta?.medianDays != null) {
-          lines.push(`Median time: ${meta.medianDays} days`);
-        }
-        if (meta?.topDeclineReason && context?.previousValue) {
-          lines.push(`Top decline: ${meta.topDeclineReason}`);
-        }
-        if (lookup) {
-          lines.push(`${lookup.series.name}`);
-        }
-        return lines;
-      }}
+      valueFormatter={(value) => compact(value)}
       tooltip={{
         show: true,
         formatter: (step) => {

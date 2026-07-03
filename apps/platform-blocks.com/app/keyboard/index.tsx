@@ -158,7 +158,7 @@ handleSelectionComplete({
               Rather than scattering <Text weight="semibold">Platform.OS</Text> checks, the new hook wraps
               <Text weight="semibold">useDeviceInfo</Text> and returns consistent booleans such as
               <Text weight="semibold">shouldUseModal</Text>, <Text weight="semibold">shouldUseOverlay</Text>, and
-              <Text weight="semibold">shouldUsePortal</Text>. Components like ColorPicker, Select, AutoComplete, and
+              <Text weight="semibold">shouldUsePortal</Text>. Components like ColorInput, Select, AutoComplete, and
               Spotlight now read from this single source of truth so they line up with keyboard management and
               responsive breakpoints automatically.
             </Text>

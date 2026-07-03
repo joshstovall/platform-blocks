@@ -1,4 +1,5 @@
 ---
+playground: true
 displayName: PinInput
 description: A specialized input component for entering PIN codes, OTP, and other sequential digit/character inputs.
 category: input

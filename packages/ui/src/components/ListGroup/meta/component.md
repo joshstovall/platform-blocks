@@ -1,5 +1,6 @@
 ---
 name: ListGroup
+playground: true
 title: ListGroup
 category: display
 tags: [list, group, items, divider, sections]

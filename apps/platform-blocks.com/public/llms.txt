@@ -1,6 +1,6 @@
 # Platform Blocks UI Knowledge Base
 
-Generated: 2026-05-31T23:25:14.476Z
+Generated: 2026-07-03T11:56:58.404Z
 
 ## Package Overview
 - Name: @platform-blocks/ui
@@ -130,7 +130,7 @@ export function App() {
 `Text` · `H1`–`H6` · `P` · `Strong` · `Code` · `Kbd` · `Mark` · `Highlight` · `Markdown` · `ShimmerText`
 
 ### Forms & inputs
-`Input` · `TextArea` · `NumberInput` · `PasswordInput` · `PinInput` · `PhoneInput` · `Search` · `Select` · `AutoComplete` · `Checkbox` · `Radio` · `Switch` · `Slider` · `RangeSlider` · `Knob` · `ToggleButton` · `SegmentedControl` · `DatePicker` · `TimePicker` · `Calendar` · `ColorPicker` · `EmojiPicker` · `FileInput` · `Rating` · `Form`
+`Input` · `TextArea` · `NumberInput` · `PasswordInput` · `PinInput` · `PhoneInput` · `Search` · `Select` · `AutoComplete` · `Checkbox` · `Radio` · `Switch` · `Slider` · `RangeSlider` · `Knob` · `ToggleButton` · `SegmentedControl` · `DatePicker` · `TimePicker` · `Calendar` · `ColorInput` · `ColorPicker` · `EmojiPicker` · `FileInput` · `Rating` · `Form`
 
 ### Navigation
 `Tabs` · `Breadcrumbs` · `Menu` · `Pagination` · `Stepper`
@@ -237,7 +237,7 @@ The Accordion component groups related content into expandable sections.
   Chevron placement relative to the header text.
 `density` ('comfortable' | 'compact' | 'spacious') [optional, default: 'comfortable']
   Space efficiency / vertical density preset.
-- … 8 more props documented
+- … 22 more props documented
 
 ### Demos
 
@@ -371,7 +371,7 @@ const knowledgeBase = [
   Content to render inside AppShell.Navbar when autoLayout is enabled
 `asideContent` (React.ReactNode | (() => React.ReactNode)) [optional]
   Content to render inside AppShell.Aside when autoLayout is enabled
-- … 22 more props documented
+- … 36 more props documented
 
 ### Demos
 
@@ -566,109 +566,6 @@ import {
 }
 ```
 
-## Component: <AppStoreButton>
-# AppStoreButton (deprecated)
-
-### Props
-`store` (AppStoreType) [required]
-  The app store type
-`size` (AppStoreButtonSize) [optional, default: 'md']
-  Button size
-`locale` (SupportedLocale) [optional, default: 'en']
-  Locale for button text
-`style` (any) [optional]
-  Custom styles
-`onPress` (() => void) [optional]
-  Press handler
-`disabled` (boolean) [optional, default: false]
-  Whether button is disabled
-`testID` (string) [optional]
-  Test ID for testing
-
-### Demos
-
-- Basic usage | (id: AppStoreButton.basic) | tags: app store, download, buttons
-  Use `AppStoreButton` when you need a brand-safe download CTA—set the `store` prop to any supported storefront and drop the component directly into your layout without extra wrappers.
-
-```tsx
-import type { AppStoreButtonProps } from '@platform-blocks/ui';
-import { AppStoreButton, Column, Row, Text } from '@platform-blocks/ui';
-type StoreName = AppStoreButtonProps['store'];
-const storeGroups: { title: string; stores: { store: StoreName; label: string }[] }[] = [
-  {
-    title: 'Popular app stores',
-    stores: [
-      { store: 'app-store', label: 'App Store' },
-      { store: 'google-play', label: 'Google Play' },
-      { store: 'microsoft-store', label: 'Microsoft Store' },
-    ],
-  },
-  {
-    title: 'Alternative storefronts',
-    stores: [
-      { store: 'amazon-appstore', label: 'Amazon Appstore' },
-      { store: 'mac-app-store', label: 'Mac App Store' },
-      { store: 'f-droid', label: 'F-Droid' },
-    ],
-  },
-];
-  const handlePress = (label: string) => {
-    console.log(`Open ${label}`);
-  };
-  return (
-    <Column gap="lg">
-      {storeGroups.map(({ title, stores }) => (
-        <Column key={title} gap="xs">
-          <Text size="sm" weight="medium">
-            {title}
-          </Text>
-          <Row gap="md" wrap="wrap">
-            {stores.map(({ store, label }) => (
-              <AppStoreButton
-                key={store}
-                store={store}
-                onPress={() => handlePress(label)}
-              />
-            ))}
-          </Row>
-        </Column>
-      ))}
-    </Column>
-  );
-}
-```
-
-- Sizes | (id: AppStoreButton.sizes) | tags: sizes, responsiveness
-  Adjust the `size` prop (`sm` through `xl`) to align the badge density with its container—smaller tokens fit compact toolbars while larger ones headline marketing sections.
-
-```tsx
-import type { AppStoreButtonProps } from '@platform-blocks/ui';
-import { AppStoreButton, Column, Row, Text } from '@platform-blocks/ui';
-type ButtonSize = NonNullable<AppStoreButtonProps['size']>;
-const sizeSections: { label: string; token: ButtonSize }[] = [
-  { label: 'Small', token: 'sm' },
-  { label: 'Medium (default)', token: 'md' },
-  { label: 'Large', token: 'lg' },
-  { label: 'Extra large', token: 'xl' },
-];
-  return (
-    <Column gap="lg">
-      {sizeSections.map(({ label, token }) => (
-        <Column key={token} gap="xs">
-          <Text size="sm" weight="medium">
-            {label}
-          </Text>
-          <Row gap="md">
-            <AppStoreButton store="app-store" size={token} />
-            <AppStoreButton store="google-play" size={token} />
-          </Row>
-        </Column>
-      ))}
-    </Column>
-  );
-}
-```
-
 ## Component: <AreaChart>
 Area (filled) chart for visualizing cumulative or stacked trends.
 
@@ -679,6 +576,25 @@ Area (filled) chart for visualizing cumulative or stacked trends.
   Opacity used when rendering stacked layers (if not provided defaults to fillOpacity).
 `stackOrder` ('normal' | 'reverse') [optional]
   Adjust the stacking order when using stacked layouts.
+`data` (ChartDataPoint[]) [optional]
+  Data points (single series) or array of series (multiseries)
+`series` (LineChartSeries[]) [optional]
+  Multiple data series
+`lineColor` (string) [optional]
+  Line color (for single series)
+`lineThickness` (number) [optional]
+  Line thickness (for single series)
+`lineStyle` ('solid' | 'dashed' | 'dotted') [optional]
+  Line style (for single series)
+`showPoints` (boolean) [optional]
+  Show data points (for single series)
+`pointSize` (number) [optional]
+  Point size (for single series)
+`pointColor` (string) [optional]
+  Point color (for single series)
+`smooth` (boolean) [optional]
+  Smooth curve
+- … 66 more props documented
 
 ### Demos
 
@@ -722,7 +638,6 @@ const WEEKLY_SIGNUPS = [
 ```
 
 - Inventory Levels Warehouses | (id: AreaChart.inventory-levels-warehouses)
-  **Story focus**
 
 ```tsx
 import { AreaChart } from '@platform-blocks/charts';
@@ -824,16 +739,16 @@ The AutoComplete component provides search functionality with suggestions, suppo
   Controls border radius; accepts size tokens or numeric value
 `clearable` (boolean) [optional]
   Show built-in clear button when there is text
-- … 66 more props documented
+- … 70 more props documented
 
 ### Demos
 
 - Basic | (id: AutoComplete.basic) | tags: basic, getting-started, search
-  Simple auto-complete with a sports dataset, helper copy, and selection feedback.
+  Simple auto-complete. Start typing to filter the list. Selecting an option fills the input.
 
 ```tsx
 import { useMemo, useState } from 'react';
-import { AutoComplete, Column, Text } from '@platform-blocks/ui';
+import { AutoComplete } from '@platform-blocks/ui';
 import type { AutoCompleteOption } from '../../types';
 const sports: AutoCompleteOption[] = [
   { label: 'Football', value: 'football' },
@@ -853,44 +768,33 @@ const sports: AutoCompleteOption[] = [
   const [selectedSport, setSelectedSport] = useState<AutoCompleteOption | null>(null);
   const displayValue = useMemo(() => selectedSport?.label ?? inputValue, [selectedSport, inputValue]);
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Basic auto-complete</Text>
-      <Text size="sm" colorVariant="secondary">
-        Start typing to filter the list of sports. Selecting an option fills the input.
-      </Text>
-      <AutoComplete
-        label="Choose a sport"
-        placeholder="Search for a sport..."
-        data={sports}
-        value={displayValue}
-        onChangeText={(value) => {
-          setInputValue(value);
-          if (!value) setSelectedSport(null);
-        }}
-        onSelect={(item) => {
-          setSelectedSport(item);
-          setInputValue(item.label);
-        }}
-        displayProperty="label"
-        minSearchLength={1}
-        fullWidth
-      />
-      {selectedSport && (
-        <Text size="xs" colorVariant="secondary">
-          Selected: {selectedSport.label}
-        </Text>
-      )}
-    </Column>
+    <AutoComplete
+      label="Choose a sport"
+      placeholder="Search for a sport..."
+      data={sports}
+      value={displayValue}
+      onChangeText={(value) => {
+        setInputValue(value);
+        if (!value) setSelectedSport(null);
+      }}
+      onSelect={(item) => {
+        setSelectedSport(item);
+        setInputValue(item.label);
+      }}
+      displayProperty="label"
+      minSearchLength={1}
+      fullWidth
+    />
   );
 }
 ```
 
-- Multi Select | (id: AutoComplete.multi) | tags: multi-select, multiple, selection
-  Multi-select AutoComplete that toggles genres and renders removable chips.
+- Multi-select tags | (id: AutoComplete.multi) | tags: multi-select, multiple, selection
+  Tap an item to add or remove it. Selected genres render as removable chips.
 
 ```tsx
 import { useState } from 'react'
-import { AutoComplete, Chip, Column, Icon, Text } from '@platform-blocks/ui'
+import { AutoComplete, Chip, Icon } from '@platform-blocks/ui'
 import type { AutoCompleteOption } from '../../types'
 const musicGenres: AutoCompleteOption[] = [
   { label: 'Pop', value: 'pop' },
@@ -913,45 +817,36 @@ const musicGenres: AutoCompleteOption[] = [
     )
   }
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Multi-select tags</Text>
-      <Text size="sm" colorVariant="secondary">
-        Tap an item to add or remove it. Selected genres render as removable chips.
-      </Text>
-      <AutoComplete
-        label="Music genres"
-        placeholder="Search genres..."
-        data={musicGenres}
-        value={inputValue}
-        onChangeText={setInputValue}
-        onSelect={handleToggle}
-        multiSelect
-        selectedValues={selectedGenres}
-        minSearchLength={0}
-        clearable
-        onClear={() => {
-          setSelectedGenres([])
-          setInputValue('')
-        }}
-  selectedValuesContainerStyle={{ flexWrap: 'wrap', gap: 6 }}
-        renderSelectedValue={(item, _index, helpers) => (
-          <Chip
-            key={item.value}
-            size="sm"
-            variant="filled"
-            color="primary"
-            endIcon={<Icon name="x" size={12} color="currentColor" />}
-            onRemove={helpers.onRemove}
-          >
-            {item.label}
-          </Chip>
-        )}
-        fullWidth
-      />
-      <Text size="xs" colorVariant="secondary">
-        Selected {selectedGenres.length} genre{selectedGenres.length === 1 ? '' : 's'}.
-      </Text>
-    </Column>
+    <AutoComplete
+      label="Music genres"
+      placeholder="Search genres..."
+      data={musicGenres}
+      value={inputValue}
+      onChangeText={setInputValue}
+      onSelect={handleToggle}
+      multiSelect
+      selectedValues={selectedGenres}
+      minSearchLength={0}
+      clearable
+      onClear={() => {
+        setSelectedGenres([])
+        setInputValue('')
+      }}
+      selectedValuesContainerStyle={{ flexWrap: 'wrap', gap: 6 }}
+      renderSelectedValue={(item, _index, helpers) => (
+        <Chip
+          key={item.value}
+          size="sm"
+          variant="filled"
+          color="primary"
+          endIcon={<Icon name="x" size={12} color="currentColor" />}
+          onRemove={helpers.onRemove}
+        >
+          {item.label}
+        </Chip>
+      )}
+      fullWidth
+    />
   )
 }
 ```
@@ -964,8 +859,8 @@ The Avatar component displays user profile images, initials, or icons. Supports 
   Size of the avatar
 `src` (string) [optional]
   Image source URL for the avatar
-`fallback` (string) [optional]
-  Initials to show as fallback when no image is provided
+`fallback` (React.ReactNode) [optional]
+  Fallback shown when no image is provided: initials string or a custom React node (e.g. an icon).
 `backgroundColor` (string) [optional]
   Background color for the fallback initials
 `textColor` (string) [optional]
@@ -1005,15 +900,15 @@ import { Avatar } from '@platform-blocks/ui'
   Display every avatar size token with guidance on when to use each scale.
 
 ```tsx
-import { Avatar, Column } from '@platform-blocks/ui'
+import { Avatar, Block } from '@platform-blocks/ui'
   return (
-    <Column align="flex-start">
-      <Avatar size="xs" fallback="XS" label="Extra Small (xs)" />
-      <Avatar size="sm" fallback="SM" label="Small (sm)" />
-      <Avatar size="md" fallback="MD" label="Medium (md)" />
-      <Avatar size="lg" fallback="LG" label="Large (lg)" />
-      <Avatar size="xl" fallback="XL" label="Extra Large (xl)" />
-    </Column>
+    <Block align="center" direction="row" gap="sm">
+      <Avatar size="xs" fallback="XS" />
+      <Avatar size="sm" fallback="SM" />
+      <Avatar size="md" fallback="MD" />
+      <Avatar size="lg" fallback="LG" />
+      <Avatar size="xl" fallback="XL" />
+    </Block>
   )
 }
 ```
@@ -1023,7 +918,7 @@ The Badge component displays compact elements that represent an input, attribute
 
 ### Props
 `children` (React.ReactNode) [required]
-`size` (ComponentSizeValue) [optional, default: 'md']
+`size` (ComponentSizeValue) [optional]
 `variant` ('filled' | 'outline' | 'light' | 'subtle' | 'gradient') [optional]
 `v` ('filled' | 'outline' | 'light' | 'subtle' | 'gradient') [optional]
   Alias for variant
@@ -1034,9 +929,9 @@ The Badge component displays compact elements that represent an input, attribute
 `startIcon` (React.ReactNode) [optional]
 `endIcon` (React.ReactNode) [optional]
 `onRemove` (() => void) [optional]
-`removePosition` ('left' | 'right') [optional, default: 'right']
-`disabled` (boolean) [optional, default: false]
-- … 5 more props documented
+`removePosition` ('left' | 'right') [optional]
+`disabled` (boolean) [optional]
+- … 19 more props documented
 
 ### Demos
 
@@ -1102,7 +997,7 @@ Discrete / categorical bar chart visualization component.
   Y-axis configuration
 `grid` (ChartGrid) [optional]
   Grid configuration
-- … 22 more props documented
+- … 54 more props documented
 
 ### Demos
 
@@ -1248,6 +1143,15 @@ A polymorphic building block component that serves as a foundational element to 
   Accessibility role
 `className` (string) [optional]
   Custom className (for web)
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+`mr` (number) [optional]
+  Margin applied to the right side
+`mb` (number) [optional]
+  Margin applied to the bottom side
+- … 41 more props documented
 
 ### Demos
 
@@ -1456,6 +1360,19 @@ The BrandButton component provides a flexible interactive element supporting var
   Button text
 `color` (string) [optional]
   Override icon color (overrides brand default colors)
+`key` (React.Key) [optional]
+  allow React key without complaint in TS where JSX key is forwarded in type checking
+`children` (React.ReactNode) [optional]
+  Button text content - alternative to title prop
+`onPress` (() => void) [optional]
+  Called when the button is pressed
+`onPressIn` (() => void) [optional]
+  Called when the button press starts (for immediate feedback)
+`onPressOut` (() => void) [optional]
+  Called when the button press ends
+`onHoverIn` (() => void) [optional]
+  Called when the button is hovered (web/desktop only)
+- … 32 more props documented
 
 ### Demos
 
@@ -1634,6 +1551,9 @@ The Breadcrumbs component displays hierarchical navigation links to help users u
   Override props applied to each item's label `<Text>` (style, weight, ff, size, colorVariant).
 `separatorProps` (Omit<TextProps, 'children'>) [optional]
   Override props applied to the separator `<Text>` when it's a string.
+`m` (number) [optional]
+  Margin applied to all sides
+- … 13 more props documented
 
 ### Demos
 
@@ -1676,6 +1596,33 @@ const ITEMS = [
 
 ## Component: <BubbleChart>
 Scatter-style plot where point radius encodes a third quantitative dimension.
+
+### Props
+`data` (T[]) [required, default: []]
+  Dataset to render
+`dataKey` (BubbleChartDataKey<T>) [required]
+  Mapping between dataset keys and chart dimensions
+`range` ([number, number]) [optional, default: [36, 576]]
+  Bubble area range (min/max) used to derive radius. Defaults to [36, 576].
+`minBubbleSize` (number) [optional]
+  Optional minimum bubble radius override (px).
+`maxBubbleSize` (number) [optional]
+  Optional maximum bubble radius override (px).
+`color` (string) [optional]
+  Base fill color when data does not provide one.
+`colorScale` ((value: any, record: T, index: number) => string | undefined) [optional]
+  Optional color scale function allowing categorical values to resolve to palette entries.
+`bubbleOpacity` (number) [optional]
+  Bubble fill opacity. Defaults to 0.85.
+`bubbleStrokeColor` (string) [optional, default: 'rgba(0,0,0,0.12)']
+  Bubble outline color.
+`bubbleStrokeWidth` (number) [optional, default: 1]
+  Bubble outline width. Defaults to 1.
+`textColor` (string) [optional]
+  Axis/grid text color override.
+`gridColor` (string) [optional]
+  Grid line color override.
+- … 44 more props documented
 
 ### Demos
 
@@ -1820,11 +1767,11 @@ The Button component provides a flexible interactive element supporting variants
   Called when the button is long-pressed
 `onLayout` ((event: any) => void) [optional]
   Called when the button layout is calculated
-`variant` ('filled' | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'link' | 'none') [optional, default: 'primary']
+`variant` ('filled' | 'light' | 'subtle' | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'link' | 'none') [optional, default: 'primary']
   Button visual variant
-`size` (SizeValue) [optional, default: 'md']
-  Button size
-- … 16 more props documented
+`color` (string) [optional]
+  Theme color the button is tinted with. A palette token (`primary`, `success`, `error`, …) or any raw CSS/hex color. Applies to the color-bearing variants (`filled`, `light`, `subtle`, `outline`, `gradient`) and to the text of `ghost`/`link`. Defaults to `primary`. `secondary` stays neutral by design.
+- … 31 more props documented
 
 ### Demos
 
@@ -1972,7 +1919,7 @@ Visualizes financial OHLC price movements over time.
   Background grid configuration
 `legend` (ChartLegend) [optional]
   Legend display options
-- … 17 more props documented
+- … 52 more props documented
 
 ### Demos
 
@@ -2164,6 +2111,7 @@ The Card component provides a flexible container for displaying content. Six var
 `onContextMenu` ((e: any) => void) [optional]
   Web-only events passthrough
 `testID` (string) [optional]
+- … 14 more props documented
 
 ### Demos
 
@@ -2247,7 +2195,7 @@ The Carousel component displays a series of content in a horizontal scrollable v
   Align the visible slides within the viewport when there is extra space
 `containScroll` (false | 'trimSnaps' | 'keepSnaps') [optional]
   Contain leading/trailing space by trimming or keeping snap points
-- … 20 more props documented
+- … 34 more props documented
 
 ### Demos
 
@@ -2417,7 +2365,7 @@ The Checkbox component allows users to select one or more options from a set. Su
   Error message
 `description` (string) [optional]
   Helper text
-- … 6 more props documented
+- … 22 more props documented
 
 ### Demos
 
@@ -2448,12 +2396,12 @@ import { Checkbox, Column, Text } from '@platform-blocks/ui';
 
 ```tsx
 import { useState } from 'react';
-import { Checkbox, Column, Text } from '@platform-blocks/ui';
+import { Checkbox, Column } from '@platform-blocks/ui';
 const SIZES = [
-  { key: 'xs', label: 'Extra small', description: 'Dense tables and compact lists.' },
-  { key: 'sm', label: 'Small', description: 'Standard data tables.' },
-  { key: 'md', label: 'Medium', description: 'Default for forms and settings.' },
-  { key: 'lg', label: 'Large', description: 'Touch-heavy or marketing layouts.' }
+  { key: 'xs', label: 'Extra small' },
+  { key: 'sm', label: 'Small' },
+  { key: 'md', label: 'Medium' },
+  { key: 'lg', label: 'Large' }
 ] as const;
   const [values, setValues] = useState<Record<string, boolean>>({ xs: false, sm: true, md: true, lg: false });
   const toggle = (size: string) => {
@@ -2463,23 +2411,16 @@ const SIZES = [
     }));
   };
   return (
-    <Column gap="sm">
-      <Text weight="medium">Size tokens</Text>
-      <Column gap="xs">
-        {SIZES.map(({ key, label, description }) => (
-          <Column key={key} gap="xs">
-            <Checkbox
-              size={key}
-              label={label}
-              checked={Boolean(values[key])}
-              onChange={() => toggle(key)}
-            />
-            <Text variant="small" colorVariant="muted">
-              {description}
-            </Text>
-          </Column>
-        ))}
-      </Column>
+    <Column>
+      {SIZES.map(({ key, label }) => (
+        <Checkbox
+          key={key}
+          size={key}
+          label={label}
+          checked={Boolean(values[key])}
+          onChange={() => toggle(key)}
+        />
+      ))}
     </Column>
   );
 }
@@ -2490,18 +2431,20 @@ The Chip component displays compact elements that represent an input, attribute,
 
 ### Props
 `children` (React.ReactNode) [required]
-`size` (SizeValue) [optional, default: 'md']
-`variant` ('filled' | 'outline' | 'light' | 'subtle' | 'gradient') [optional, default: 'filled']
-`color` ('primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string) [optional, default: 'primary']
+`size` (SizeValue) [optional]
+`variant` ('filled' | 'outline' | 'light' | 'subtle' | 'gradient') [optional]
+`color` ('primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string) [optional]
 `onPress` (() => void) [optional]
+`dot` (boolean) [optional]
+  Show a small leading status dot. Defaults to the chip's resolved text color.
+`dotColor` (string) [optional]
+  Override the dot color (any CSS/theme color string). Only used when `dot` is set.
 `startIcon` (React.ReactNode) [optional]
 `endIcon` (React.ReactNode) [optional]
 `onRemove` (() => void) [optional]
-`removePosition` ('left' | 'right') [optional, default: 'right']
-`disabled` (boolean) [optional, default: false]
-`style` (StyleProp<ViewStyle>) [optional]
-`textStyle` (StyleProp<TextStyle>) [optional]
-- … 3 more props documented
+`removePosition` ('left' | 'right') [optional]
+`disabled` (boolean) [optional]
+- … 19 more props documented
 
 ### Demos
 
@@ -2566,7 +2509,7 @@ The CodeBlock component renders source code with optional syntax highlighting, c
   Custom styles for the code block container and text
 `textStyle` (StyleProp<TextStyle>) [optional]
   Custom styles for the code text
-- … 12 more props documented
+- … 26 more props documented
 
 ### Demos
 
@@ -2652,7 +2595,7 @@ Displays content that can be revealed or hidden with an animation.
 
 ### Props
 `isCollapsed` (boolean) [required]
-  Whether the content is revealed/expanded
+  Whether the content is collapsed (hidden). `false` reveals/expands it.
 `children` (ReactNode) [required]
   Content to show/hide
 `duration` (number) [optional, default: 300]
@@ -2700,8 +2643,8 @@ import { useState } from 'react';
 }
 ```
 
-## Component: <ColorPicker>
-The ColorPicker component provides an intuitive interface for selecting colors through various input methods including color wheel, hex input, and preset swatches.
+## Component: <ColorInput>
+The ColorInput component provides an intuitive interface for selecting colors through various input methods including color wheel, hex input, and preset swatches.
 
 ### Props
 `value` (string) [optional]
@@ -2728,20 +2671,20 @@ The ColorPicker component provides an intuitive interface for selecting colors t
   Variant of the picker
 `radius` ('none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl') [optional, default: 'md']
   Radius of the picker
-- … 20 more props documented
+- … 34 more props documented
 
 ### Demos
 
-- Basic Usage | (id: ColorPicker.basic)
+- Basic Usage | (id: ColorInput.basic)
   Simple color picker with default settings.
 
 ```tsx
 import { useState } from 'react';
-import { ColorPicker, Column, Text } from '@platform-blocks/ui';
+import { ColorInput, Column, Text } from '@platform-blocks/ui';
   const [color, setColor] = useState('#FF6B6B');
   return (
     <Column gap="xs" fullWidth>
-      <ColorPicker
+      <ColorInput
         value={color}
         onChange={setColor}
         label="Favorite color"
@@ -2757,12 +2700,12 @@ import { ColorPicker, Column, Text } from '@platform-blocks/ui';
 }
 ```
 
-- Custom Swatches | (id: ColorPicker.swatches)
+- Custom Swatches | (id: ColorInput.swatches)
   Color picker with custom swatch palettes.
 
 ```tsx
 import { useState } from 'react';
-import { ColorPicker, Column, Text } from '@platform-blocks/ui';
+import { ColorInput, Column, Text } from '@platform-blocks/ui';
   const [color1, setColor1] = useState('#2196F3');
   const [color2, setColor2] = useState('#4CAF50');
   const [color3, setColor3] = useState('#FF9800');
@@ -2780,7 +2723,7 @@ import { ColorPicker, Column, Text } from '@platform-blocks/ui';
         <Text size="sm" weight="semibold">
           Custom blue palette
         </Text>
-        <ColorPicker
+        <ColorInput
           value={color1}
           onChange={setColor1}
           swatches={blueSwatches}
@@ -2792,7 +2735,7 @@ import { ColorPicker, Column, Text } from '@platform-blocks/ui';
         <Text size="sm" weight="semibold">
           Custom green palette
         </Text>
-        <ColorPicker
+        <ColorInput
           value={color2}
           onChange={setColor2}
           swatches={greenSwatches}
@@ -2804,12 +2747,74 @@ import { ColorPicker, Column, Text } from '@platform-blocks/ui';
         <Text size="sm" weight="semibold">
           Without swatches
         </Text>
-        <ColorPicker
+        <ColorInput
           value={color3}
           onChange={setColor3}
           withSwatches={false}
           label="Color wheel only"
           fullWidth
+        />
+      </Column>
+    </Column>
+  );
+}
+```
+
+## Component: <ColorPicker>
+ColorPicker is a lightweight alternative to ColorInput for cases where a full hex input and dropdown chrome are unnecessary. It renders a single color preview that toggles a compact popover of preset swatches — no text input, no positionin…
+
+### Props
+`value` (string) [optional]
+  Current color value in hex format (controlled)
+`defaultValue` (string) [optional, default: '']
+  Initial color value for uncontrolled usage
+`onChange` ((color: string) => void) [optional]
+  Callback fired when a swatch is selected
+`swatches` (string[]) [optional, default: DEFAULT_SWATCHES]
+  Preset colors to choose from
+`size` (number) [optional, default: 28]
+  Size of the trigger + swatches in pixels
+`columns` (number) [optional, default: 5]
+  Number of swatches per row in the popover
+`disabled` (boolean) [optional, default: false]
+  Whether the picker is disabled
+`accessibilityLabel` (string) [optional]
+  Accessibility label for the trigger
+`style` (StyleProp<ViewStyle>) [optional]
+  Custom style for the outer wrapper
+`testID` (string) [optional]
+  Test ID
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+- … 12 more props documented
+
+### Demos
+
+- Basic | (id: ColorPicker.basic)
+
+```tsx
+import { useState } from 'react';
+import { Column, Row, Text, ColorPicker } from '@platform-blocks/ui';
+  const [color, setColor] = useState('#4ECDC4');
+  return (
+    <Column gap="md">
+      <Row gap="sm" align="center">
+        <ColorPicker value={color} onChange={setColor} />
+        <Text size="sm" colorVariant="secondary">
+          Selected: {color}
+        </Text>
+      </Row>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Larger, custom swatches
+        </Text>
+        <ColorPicker
+          defaultValue="#5F27CD"
+          size={36}
+          columns={4}
+          swatches={['#0F172A', '#5F27CD', '#54A0FF', '#4ECDC4', '#96CEB4', '#FECA57', '#F8B500', '#FF6B6B']}
         />
       </Column>
     </Column>
@@ -2845,7 +2850,7 @@ A simple square component for displaying colors, designed as a building block fo
   Custom checkmark color
 `accessibilityLabel` (string) [optional]
   Accessibility label
-- … 1 more props documented
+- … 15 more props documented
 
 ### Demos
 
@@ -3077,6 +3082,7 @@ Combines multiple chart types (e.g., bars and line) for richer comparison.
   Grid line configuration
 `legend` (ChartLegend) [optional]
   Legend display options
+- … 35 more props documented
 
 ### Demos
 
@@ -3153,8 +3159,57 @@ const LAYERS = [
 }
 ```
 
+## Component: <ContextMenu>
+The ContextMenu component provides a context-sensitive menu that appears on right-click (web) or long-press (mobile) with customizable actions.
+
+### Props
+`children` ((props: { onContextMenu: (e: any) => void; onPressIn: (e: any) => void }) => React.ReactNode) [required]
+  Render prop for the trigger
+`items` (ContextMenuItem[]) [required]
+`closeOnSelect` (boolean) [optional]
+  Close after selection (default true)
+`longPressDelay` (number) [optional]
+  Long press duration (ms) for native
+`maxHeight` (number) [optional]
+  Optional maximum height (scrolls)
+`onOpen` (() => void) [optional]
+  Called when menu opens
+`onClose` (() => void) [optional]
+  Called when menu closes
+`open` (boolean) [optional]
+  Controlled open
+`position` ({ x: number; y: number }) [optional]
+  Controlled position
+`portalId` (string) [optional]
+  Portal target id (web) - simple placeholder for future portal integration
+`style` (any) [optional]
+
+### Demos
+
+- Basic Usage | (id: ContextMenu.basic) | tags: rightclick, longpress
+  Wrap any trigger element with `ContextMenu` and pass an `items` array. The menu opens on right-click (web) or long-press (mobile); the `children` render prop receives the handlers to spread onto your trigger.
+
+```tsx
+import { ContextMenu, Card, Text } from '@platform-blocks/ui';
+const ITEMS = [
+  { id: 'copy', label: 'Copy' },
+  { id: 'rename', label: 'Rename' },
+  { id: 'delete', label: 'Delete', danger: true },
+];
+  return (
+    <ContextMenu items={ITEMS}>
+      {(triggerProps) => (
+        <Card {...triggerProps} style={{ padding: 24, alignItems: 'center' }}>
+          <Text variant="p">Right-click or long-press me</Text>
+        </Card>
+      )}
+    </ContextMenu>
+  );
+}
+```
+
 ## Component: <CopyButton>
-# CopyButton
+Small utility component for copying text values to the clipboard with optional toast feedback. Used inside components like `CodeBlock` and `QRCode` to standardize UX.
 
 ### Props
 `value` (string) [required]
@@ -3249,7 +3304,7 @@ The DataTable component provides a feature-rich interface for displaying tabular
   Current sorting state
 `onSortChange` ((sort: DataTableSort[]) => void) [optional]
   Sorting change callback
-- … 68 more props documented
+- … 71 more props documented
 
 ### Demos
 
@@ -3533,7 +3588,7 @@ DatePickerInput wraps the inline `DatePicker` in an accessible input experience.
   Disable interaction
 `withAsterisk` (boolean) [optional]
   Show required indicator
-- … 7 more props documented
+- … 44 more props documented
 
 ### Demos
 
@@ -3708,19 +3763,19 @@ The Divider component provides a visual separator between content sections. Supp
 ### Props
 `orientation` (DividerOrientation) [optional]
   Layout direction of the line. `'horizontal'` spans width; `'vertical'` spans height. Defaults to `'horizontal'`.
-`variant` (DividerVariant) [optional, default: 'solid']
+`variant` (DividerVariant) [optional]
   Visual style of the line. `'gradient'` fades transparent → color → transparent. Defaults to `'solid'`.
 `color` (string) [optional]
   Explicit hex/rgb color. Overrides `colorVariant` when set.
-`colorVariant` (DividerColorVariant) [optional, default: 'border']
+`colorVariant` (DividerColorVariant) [optional]
   Semantic color variant. Defaults to `'border'`.
-`size` (SizeValue | number) [optional, default: 1]
+`size` (SizeValue | number) [optional]
   Thickness of the divider (default 1). Accepts a size token or pixel value.
 `opacity` (number) [optional]
   Multiplied with the divider's overall opacity. Convenience prop equivalent to `style={{ opacity }}`.
 `label` (React.ReactNode) [optional]
   Optional content rendered in the middle of the line.
-`labelPosition` ('left' | 'center' | 'right') [optional, default: 'center']
+`labelPosition` ('left' | 'center' | 'right') [optional]
   Where the `label` sits along the line. Defaults to `'center'`.
 `labelProps` (Omit<TextProps, 'children'>) [optional]
   Override props applied to the label `<Text>` (only when `label` is a string).
@@ -3728,6 +3783,9 @@ The Divider component provides a visual separator between content sections. Supp
   Style override applied to the outer wrapping `View`.
 `testID` (string) [optional]
   Test identifier forwarded to the wrapping `View`.
+`m` (number) [optional]
+  Margin applied to all sides
+- … 13 more props documented
 
 ### Demos
 
@@ -3833,7 +3891,7 @@ Circular proportional chart with a hollow center (variant of pie chart).
   Index of the ring whose slices feed the legend (defaults to primaryRingIndex)
 `inheritColorByLabel` (boolean) [optional, default: true]
   When true, slices across rings reuse colors based on their label/id
-- … 11 more props documented
+- … 46 more props documented
 
 ### Demos
 
@@ -3901,7 +3959,7 @@ The EmojiPicker component
   Whether picker is disabled
 `searchPlaceholder` (string) [optional, default: 'Search emoji…']
   Placeholder text for search
-`emojis` ({ label: string; emoji: string }[]) [optional, default: [{ label: 'Thumbs Up']
+`emojis` ({ label: string; emoji: string }[]) [optional, default: [{ label: 'Thumbs Up', emoji: '👍' }, { label: 'Heart', emoji: '❤️' }, { labe...]
   Number of frequently used / quick emojis to show in quick variant
 `defaultOpened` (boolean) [optional]
   Default opened (uncontrolled)
@@ -3913,6 +3971,9 @@ The EmojiPicker component
   Show background for the whole quick variant component
 `testID` (string) [optional]
   Test id
+`m` (number) [optional]
+  Margin applied to all sides
+- … 13 more props documented
 
 ### Demos
 
@@ -3973,7 +4034,7 @@ The FileInput component provides a user-friendly interface for file uploads with
   Custom drop zone content
 `showFileList` (boolean) [optional]
   Whether to show file list
-- … 13 more props documented
+- … 49 more props documented
 
 ### Demos
 
@@ -4078,7 +4139,7 @@ Flex provides a powerful and intuitive way to create flexible layouts using CSS 
   Children elements
 `style` (ViewStyle) [optional]
   Custom styles
-- … 2 more props documented
+- … 16 more props documented
 
 ### Demos
 
@@ -4152,6 +4213,53 @@ import { Flex, Card, Text } from '@platform-blocks/ui';
 }
 ```
 
+## Component: <Form>
+Form manages values, validation, and submission state for a group of inputs. Wrap each control in a `Form.Field` (which injects value and change handlers via context) and submit with `Form.Submit`.
+
+### Props
+`initialValues` (Record<string, any>) [optional]
+  Initial form values
+`validationSchema` (ValidationSchema) [optional]
+  Form validation schema
+`onSubmit` ((values: Record<string, any>) => void | Promise<void>) [optional]
+  Submit handler
+`validate` ((values: Record<string, any>) => Record<string, string> | Promise<Record<string, string>>) [optional]
+  Validation handler
+`disabled` (boolean) [optional]
+  Whether form is disabled
+`validateOnChange` (boolean) [optional]
+  Whether to validate on change
+`validateOnBlur` (boolean) [optional]
+  Whether to validate on blur
+`children` (React.ReactNode) [required]
+  Children components
+
+### Demos
+
+- Basic Usage | (id: Form.basic) | tags: form, fields, validation
+  `Form` manages values, validation, and submission state. Wrap each input in a `Form.Field` (which injects value/change handlers via context) and trigger submission with `Form.Submit`.
+
+```tsx
+import { Form, Input, Column } from '@platform-blocks/ui';
+  return (
+    <Form
+      initialValues={{ name: '', email: '' }}
+      onSubmit={(values) => console.log('submit', values)}
+    >
+      <Column gap="md" style={{ width: '100%', maxWidth: 400 }}>
+        <Form.Field name="name">
+          <Input label="Full name" placeholder="Ada Lovelace" />
+        </Form.Field>
+        <Form.Field name="email">
+          <Input label="Email" placeholder="ada@example.com" />
+        </Form.Field>
+        <Form.Submit>Create account</Form.Submit>
+      </Column>
+    </Form>
+  );
+}
+```
+
 ## Component: <FunnelChart>
 Shows progressive reduction of data through stages (conversion pipeline).
 
@@ -4178,6 +4286,9 @@ Shows progressive reduction of data through stages (conversion pipeline).
   Render hidden accessibility table
 `onDataTable` ((payloads: FunnelDataTablePayload[]) => void) [optional]
   Callback invoked with data table payload
+`width` (number) [optional, default: 360]
+  Chart width
+- … 34 more props documented
 
 ### Demos
 
@@ -4594,7 +4705,7 @@ Visualises progress toward a bounded target using a semicircular gauge with conf
   Tick configuration
 `labels` (GaugeChartLabelConfig) [optional]
   Label configuration
-- … 9 more props documented
+- … 39 more props documented
 
 ### Demos
 
@@ -4716,7 +4827,7 @@ A text component that displays text with gradient colors. Supports customizable 
 ### Demos
 
 - Angles | (id: GradientText.angles)
-  # Gradient Angles
+  Different gradient directions using the `angle` prop.
 
 ```tsx
 import { View, StyleSheet } from 'react-native';
@@ -4781,7 +4892,7 @@ const styles = StyleSheet.create({
 ```
 
 - Basic | (id: GradientText.basic)
-  # Basic Gradient Text
+  Simple examples of gradient text with different colors and styles.
 
 ```tsx
 import { View, StyleSheet } from 'react-native';
@@ -4839,6 +4950,15 @@ Responsive 12‑column layout primitive with span-based children. Each `GridItem
   Custom styles
 `testID` (string) [optional]
   Test ID for testing
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+`mr` (number) [optional]
+  Margin applied to the right side
+`mb` (number) [optional]
+  Margin applied to the bottom side
+- … 10 more props documented
 
 ### Demos
 
@@ -4920,7 +5040,7 @@ Bar chart grouping multiple series side-by-side for comparison.
   Gap between grouped categories
 `innerBarSpacing` (number) [optional, default: 0.1]
   Gap between bars inside a group
-`legend` (ChartLegend) [optional, default: { show: true]
+`legend` (ChartLegend) [optional, default: { show: true, position: 'bottom', align: 'center' }]
   Legend configuration
 `xAxis` (ChartAxis) [optional]
   X-axis configuration
@@ -4938,7 +5058,7 @@ Bar chart grouping multiple series side-by-side for comparison.
   Enable multi-series aggregated tooltip content
 `liveTooltip` (boolean) [optional]
   Keep tooltip visible while pointer moves within chart
-- … 1 more props documented
+- … 36 more props documented
 
 ### Demos
 
@@ -5106,7 +5226,7 @@ Color-coded matrix for intensity visualization across two dimensions.
   Enable wheel-based zooming
 `wheelZoomStep` (number) [optional]
   Step factor applied to wheel zoom
-- … 20 more props documented
+- … 55 more props documented
 
 ### Demos
 
@@ -5289,7 +5409,7 @@ Distribution of continuous data split into bins.
   Rounded bar corners
 `barGap` (number) [optional, default: 0.08]
   Gap ratio between bars (0-1)
-- … 18 more props documented
+- … 48 more props documented
 
 ### Demos
 
@@ -5417,6 +5537,13 @@ The `Icon` component displays icons with optional captions and overlays, providi
   Whether the icon is purely decorative (skip a11y)
 `mirrorInRTL` (boolean) [optional]
   Whether to mirror this icon in RTL mode. If not specified, uses auto-detection based on icon name
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+`mr` (number) [optional]
+  Margin applied to the right side
+- … 11 more props documented
 
 ### Demos
 
@@ -5841,7 +5968,7 @@ An IconButton is a clickable button that contains an icon and is used to perform
   Icon size override (defaults to appropriate size for button size)
 `tooltip` (string) [optional]
   Tooltip text to show on hover/focus - when provided, wraps button in Tooltip component
-- … 4 more props documented
+- … 18 more props documented
 
 ### Demos
 
@@ -6155,7 +6282,7 @@ The `Image` component displays images with optional captions and overlays, provi
   Border color
 `rounded` (boolean) [optional]
   Whether image should be rounded
-- … 9 more props documented
+- … 25 more props documented
 
 ### Demos
 
@@ -6405,7 +6532,7 @@ A versatile text input component that provides a consistent interface for text e
   Text auto-capitalization behavior
 `autoCorrect` (boolean) [optional]
   Whether to enable auto-correct
-- … 12 more props documented
+- … 58 more props documented
 
 ### Demos
 
@@ -6540,6 +6667,7 @@ A visual component for displaying keyboard keys, shortcuts, and key combinations
   Custom font family (overrides the default monospace stack)
 `ff` (string) [optional]
   Shorthand alias for `fontFamily`
+- … 14 more props documented
 
 ### Demos
 
@@ -6610,7 +6738,7 @@ The Knob component provides a rotary control for adjusting values with touch, mo
   Fired when the user ends dragging
 `size` (number) [optional]
   Diameter of the control in pixels
-- … 18 more props documented
+- … 32 more props documented
 
 ### Demos
 
@@ -6714,7 +6842,7 @@ Basic line chart visualization component.
   Fill color
 `fillOpacity` (number) [optional, default: 0.3]
   Fill opacity
-- … 28 more props documented
+- … 63 more props documented
 
 ### Demos
 
@@ -6919,7 +7047,7 @@ A versatile component for creating styled hyperlinks and navigation elements wit
   Accessibility label
 `target` ('_blank' | '_self') [optional, default: '_self']
   Whether this link opens in a new tab/window (web only)
-- … 2 more props documented
+- … 16 more props documented
 
 ### Demos
 
@@ -6983,6 +7111,36 @@ const references = [
 }
 ```
 
+## Component: <ListGroup>
+The ListGroup component provides an organized list structure with items, dividers, and sections for displaying grouped content.
+
+### Props
+`children` (React.ReactNode) [required]
+`variant` ('default' | 'bordered' | 'flush') [optional, default: 'default']
+`size` (ComponentSizeValue) [optional, default: 'md']
+`radius` ('sm' | 'md' | 'lg' | number) [optional, default: 'md']
+`dividers` (boolean) [optional, default: true]
+`insetDividers` (boolean) [optional, default: false]
+`style` (StyleProp<ViewStyle>) [optional]
+
+### Demos
+
+- Basic Usage | (id: ListGroup.basic) | tags: list, items
+  Compose a vertical list by nesting `ListGroupItem` elements inside a `ListGroup`. Use the `variant` prop to switch between `default`, `bordered`, and `flush` styles.
+
+```tsx
+import { ListGroup, ListGroupItem } from '@platform-blocks/ui';
+  return (
+    <ListGroup variant="bordered" style={{ width: '100%', maxWidth: 360 }}>
+      <ListGroupItem>Overview</ListGroupItem>
+      <ListGroupItem>Analytics</ListGroupItem>
+      <ListGroupItem>Reports</ListGroupItem>
+      <ListGroupItem>Settings</ListGroupItem>
+    </ListGroup>
+  );
+}
+```
+
 ## Component: <Loader>
 A animated loading component for indicating ongoing processes and loading states with various sizes and styles.
 
@@ -6999,6 +7157,19 @@ A animated loading component for indicating ongoing processes and loading states
   Container style
 `testID` (string) [optional]
   Test ID for testing
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+`mr` (number) [optional]
+  Margin applied to the right side
+`mb` (number) [optional]
+  Margin applied to the bottom side
+`ml` (number) [optional]
+  Margin applied to the left side
+`mx` (number) [optional]
+  Horizontal margin applied to left and right sides
+- … 8 more props documented
 
 ### Demos
 
@@ -7160,6 +7331,13 @@ Visualize categorical mix alongside overall weight with a mosaic-style variable-
   Override padding around the chart plot area.
 `categoryLabelFormatter` ((category: MarimekkoCategory, index: number) => string) [optional]
   Formatter applied to categorical labels along the x-axis.
+`width` (number) [optional, default: 640]
+  Chart width
+`height` (number) [optional, default: 400]
+  Chart height
+`testID` (string) [optional]
+  Chart test ID for testing
+- … 32 more props documented
 
 ### Demos
 
@@ -7297,6 +7475,15 @@ Markdown component provides a way to render Markdown content with custom styling
   Custom font family applied to all rendered text (overrides the theme font)
 `ff` (string) [optional]
   Shorthand alias for `fontFamily`
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+`mr` (number) [optional]
+  Margin applied to the right side
+`mb` (number) [optional]
+  Margin applied to the bottom side
+- … 10 more props documented
 
 ### Demos
 
@@ -7389,7 +7576,7 @@ Masonry provides an efficient way to create Pinterest-style layouts where items 
   Flash list props to pass through
 `onEndReached` (((info: { distanceFromEnd: number }) => void) | null) [optional]
   Callback when the end of the list is reached (for pagination / infinite scroll)
-- … 10 more props documented
+- … 24 more props documented
 
 ### Demos
 
@@ -7643,7 +7830,7 @@ The Menu component provides a dropdown interface for navigation links, actions, 
   Menu content shadow
 `radius` ('none' | 'sm' | 'md' | 'lg' | 'xl') [optional, default: 'md']
   Border radius
-- … 4 more props documented
+- … 18 more props documented
 
 ### Demos
 
@@ -7773,7 +7960,7 @@ A row button used inside menus and command palettes. The inner label `<Text>` ac
   Whether to use compact styling
 `rounded` (boolean) [optional]
   Whether to use fully rounded corners
-- … 18 more props documented
+- … 32 more props documented
 
 ### Demos
 
@@ -7991,7 +8178,7 @@ Form-friendly wrapper around `MonthPicker` that renders an input field and opens
   Dialog title text
 `onOpen` (() => void) [optional]
   Called when the picker dialog opens
-- … 1 more props documented
+- … 43 more props documented
 
 ### Demos
 
@@ -8039,15 +8226,17 @@ Graph structure visualization (nodes & links) for relationships.
   Y axis configuration when using coordinate layouts
 `padding` (Partial<{ top: number; right: number; bottom: number; left: number }>) [optional]
   Optional padding overrides
-`coordinateAccessor` ({) [optional]
+`coordinateAccessor` ({ x?: (node: NetworkNode, index: number) => number; y?: (node: NetworkNode, index: number) => number; }) [optional]
   Accessor overrides for coordinate layouts
-`x` ((node: NetworkNode, index: number) => number) [optional]
-`y` ((node: NetworkNode, index: number) => number) [optional]
 `showLabels` (boolean) [optional, default: true]
   Show node labels
 `nodeRadius` (number) [optional, default: 12]
   Radius override for nodes
-- … 14 more props documented
+`nodeRadiusRange` ([number, number]) [optional]
+  Optional range that scales node radius by node value
+`nodeValueAccessor` ((node: NetworkNode, index: number) => number) [optional]
+  Optional accessor to extract numeric value for node sizing
+- … 42 more props documented
 
 ### Demos
 
@@ -8161,7 +8350,7 @@ The Notice component displays important messages to users with different severit
 `onClose` (() => void) [optional]
 `style` (StyleProp<ViewStyle>) [optional]
 `testID` (string) [optional]
-- … 2 more props documented
+- … 16 more props documented
 
 ### Demos
 
@@ -8286,25 +8475,25 @@ The `NumberInput` component is a numeric text input field that provides built-in
   Change handler
 `allowDecimal` (boolean) [optional]
   Allow decimal values
-`allowNegative` (boolean) [optional, default: true]
+`allowNegative` (boolean) [optional]
   Allow negative values
-`allowLeadingZeros` (boolean) [optional, default: true]
+`allowLeadingZeros` (boolean) [optional]
   Allow leading zeros while editing
 `allowedDecimalSeparators` (string[]) [optional]
   Additional characters that should be treated as decimal separators
-`decimalSeparator` (string) [optional, default: DEFAULT_DECIMAL_SEPARATOR]
+`decimalSeparator` (string) [optional]
   Decimal separator character
 `decimalScale` (number) [optional]
   Maximum number of digits after the decimal point
-`fixedDecimalScale` (boolean) [optional, default: false]
+`fixedDecimalScale` (boolean) [optional]
   When true, pads the decimal part with trailing zeros to match decimalScale
 `min` (number) [optional]
   Minimum value
 `max` (number) [optional]
   Maximum value
-`step` (number) [optional, default: 1]
+`step` (number) [optional]
   Step increment
-- … 40 more props documented
+- … 84 more props documented
 
 ### Demos
 
@@ -8313,26 +8502,17 @@ The `NumberInput` component is a numeric text input field that provides built-in
 
 ```tsx
 import { useState } from 'react';
-import { Column, NumberInput, Text } from '@platform-blocks/ui';
+import { NumberInput } from '@platform-blocks/ui';
   const [quantity, setQuantity] = useState<number | undefined>(2);
   return (
-    <Column gap="sm">
-      <Text weight="semibold">Basic number input</Text>
-      <Text size="sm" colorVariant="secondary">
-        Controlled numeric field with increment buttons and a minimum of zero.
-      </Text>
-      <NumberInput
-        label="Quantity"
-        placeholder="Enter amount"
-        value={quantity}
-        onChange={setQuantity}
-        min={0}
-        step={1}
-      />
-      <Text size="xs" colorVariant="secondary">
-        Current value: {quantity ?? '—'}
-      </Text>
-    </Column>
+    <NumberInput
+      label="Quantity"
+      placeholder="Enter amount"
+      value={quantity}
+      onChange={setQuantity}
+      min={0}
+      step={1}
+    />
   );
 }
 ```
@@ -8350,10 +8530,6 @@ import { Column, NumberInput, Text } from '@platform-blocks/ui';
     : undefined;
   return (
     <Column gap="lg">
-      <Text weight="semibold">Formatted values</Text>
-      <Text size="sm" colorVariant="secondary">
-        Pair currency formatting with percentage discounts to display a calculated total.
-      </Text>
       <Column gap="sm">
         <NumberInput
           label="List price"
@@ -8548,10 +8724,11 @@ A comprehensive pagination component that provides intuitive navigation through 
   Show first/last page buttons
 `showPrevNext` (boolean) [optional, default: true]
   Show previous/next buttons
-`labels` ({) [optional, default: {}]
+`labels` ({ first?: ReactNode; previous?: ReactNode; next?: ReactNode; last?: ReactNode; }) [optional, default: {}]
   Custom labels for navigation buttons
-`first` (ReactNode) [optional]
-- … 18 more props documented
+`disabled` (boolean) [optional, default: false]
+  Whether pagination is disabled
+- … 28 more props documented
 
 ### Demos
 
@@ -8626,6 +8803,17 @@ Highlight the small number of categories that drive the majority of impact with 
   Base color used for the cumulative line series.
 `categoryLabelFormatter` ((category: string, index: number) => string) [optional]
   Optional formatter applied to the categorical axis labels.
+`enableCrosshair` (boolean) [optional]
+  Enable crosshair indicator across layers
+`multiTooltip` (boolean) [optional]
+  Enable multi-series tooltip aggregation
+`liveTooltip` (boolean) [optional]
+  Follow pointer live with tooltip
+`xDomain` ([number, number]) [optional]
+  Explicit override for the shared x-domain
+`yDomain` ([number, number]) [optional]
+  Explicit override for the primary y-domain
+- … 41 more props documented
 
 ### Demos
 
@@ -8711,6 +8899,19 @@ The `PhoneInput` component provides a flexible way to capture telephone numbers 
   Show country code prefix in display
 `mask` (string) [optional]
   Custom mask pattern (overrides country-based mask). Use '0' for digits, other characters as literals
+`variant` (InputVariant) [optional]
+  Visual variant of the input. `default` (light surface + border), `filled` (gray fill, no border), `outline` (transparent fill, border only), `unstyled` (no border, no fill).
+`label` (React.ReactNode) [optional]
+  Input label (string or component)
+`disabled` (boolean) [optional]
+  Whether input is disabled
+`required` (boolean) [optional]
+  Whether input is required
+`placeholder` (string) [optional]
+  Input placeholder
+`error` (string) [optional]
+  Error message
+- … 38 more props documented
 
 ### Demos
 
@@ -8842,7 +9043,7 @@ Proportional slice chart for categorical part-to-whole representation.
   Automatically wrap labels that exceed width
 `labelMaxCharsPerLine` (number) [optional]
   Maximum characters per label line when wrapping
-- … 18 more props documented
+- … 53 more props documented
 
 ### Demos
 
@@ -8943,7 +9144,7 @@ A specialized input component designed for entering PIN codes, one-time password
   Whether to allow paste
 `oneTimeCode` (boolean) [optional, default: false]
   One-time code auto-complete
-- … 13 more props documented
+- … 55 more props documented
 
 ### Demos
 
@@ -9048,7 +9249,7 @@ Popover sits on the same overlay primitives as Menu and Tooltip, making it suita
   Close when pressing Escape
 `clickOutsideEvents` (string[]) [optional]
   Events considered for outside click detection (web only)
-- … 33 more props documented
+- … 47 more props documented
 
 ### Demos
 
@@ -9132,6 +9333,11 @@ The Progress component displays the completion progress of a task or process. Su
 `fullWidth` (boolean) [optional]
 `style` (StyleProp<ViewStyle>) [optional]
 `testID` (string) [optional]
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+- … 12 more props documented
 
 ### Demos
 
@@ -9238,16 +9444,17 @@ The QRCode component generates QR codes for encoding text, URLs, or other data. 
   Corner (finder) shape variant - DEPRECATED: Finder patterns always remain square
 `cornerRadius` (number) [optional]
   Rounded corner radius factor (0-1) applied when moduleShape='rounded'
-`gradient` ({) [optional]
+`gradient` ({ type?: 'linear' | 'radial'; from: string; to: string; rotation?: number; }) [optional]
   Gradient fill (overrides color)
-`type` ('linear' | 'radial') [optional]
-`from` (string) [required]
-  Start color
-`to` (string) [required]
-  End color
-`rotation` (number) [optional]
-  (linear) rotation deg (0=left->right)
-- … 16 more props documented
+`errorCorrectionLevel` ('L' | 'M' | 'Q' | 'H') [optional]
+  Error correction level
+`quietZone` (number) [optional]
+  Quiet zone size (border modules around the QR code). Defaults to 1 for compact layouts. Set to 4 for strict QR code standard compliance. Set to 0 to remove all padding around the code.
+`logo` ({ uri: string; element?: React.ReactNode; size?: number; backgroundColor?: string; borderRadius?: number; }) [optional]
+  Logo to display in the center of the QR code
+`style` (StyleProp<ViewStyle>) [optional]
+  Custom container style
+- … 23 more props documented
 
 ### Demos
 
@@ -9321,6 +9528,7 @@ Displays multivariate data across axes starting from the same origin.
   Tooltip configuration
 `annotations` (any[]) [optional]
   Additional annotations to render
+- … 30 more props documented
 
 ### Demos
 
@@ -9468,7 +9676,7 @@ Circular bar segments representing values radially.
   Enable aggregated tooltip across arcs
 `liveTooltip` (boolean) [optional, default: true]
   Keep tooltip following the pointer
-- … 3 more props documented
+- … 38 more props documented
 
 ### Demos
 
@@ -9529,7 +9737,7 @@ Radio buttons allow users to select a single option from a group of mutually exc
   Helper text
 `labelPosition` ('left' | 'right') [optional, default: 'right']
   Label position relative to radio
-- … 5 more props documented
+- … 21 more props documented
 
 ### Demos
 
@@ -9659,15 +9867,14 @@ An interactive component for displaying star ratings and allowing users to provi
 `count` (number) [optional]
 `readOnly` (boolean) [optional]
 `allowFraction` (boolean) [optional]
-`allowHalf` (boolean) [optional]
-  Deprecated
 `precision` (number) [optional]
 `size` (SizeValue | number) [optional]
 `color` (string) [optional]
 `emptyColor` (string) [optional]
 `hoverColor` (string) [optional]
 `onChange` ((value: number) => void) [optional]
-- … 12 more props documented
+`onHover` ((value: number) => void) [optional]
+- … 25 more props documented
 
 ### Demos
 
@@ -9733,6 +9940,13 @@ Layered density plots (joyplot) comparing distributions across categories.
   Grid line configuration
 `statsMarkers` (RidgeStatsMarkersConfig) [optional]
   Optional statistic marker configuration
+`width` (number) [optional]
+  Chart width
+`height` (number) [optional]
+  Chart height
+`testID` (string) [optional]
+  Chart test ID for testing
+- … 27 more props documented
 
 ### Demos
 
@@ -9915,7 +10129,7 @@ The Ring component displays progress or status using a radial indicator. It supp
   Track color behind the progress stroke
 `progressColor` (string | ((value: number, percent: number) => string)) [optional]
   Progress stroke color or resolver
-- … 15 more props documented
+- … 29 more props documented
 
 ### Demos
 
@@ -10059,7 +10273,7 @@ Flow diagram showing volume between nodes.
   Receive callbacks when a link is hovered/focused
 `highlightOnHover` (boolean) [optional, default: true]
   Highlight hovered nodes/links (defaults to true)
-- … 1 more props documented
+- … 29 more props documented
 
 ### Demos
 
@@ -10169,7 +10383,7 @@ Plots data points in two-dimensional space for correlation analysis.
   Zoom mode (axes constrained)
 `minZoom` (number) [optional]
   Minimum zoom scale (domain fraction)
-- … 18 more props documented
+- … 53 more props documented
 
 ### Demos
 
@@ -10383,7 +10597,7 @@ The Search component provides a search input with debouncing, loading states, an
 `clearButton` (boolean) [optional]
 `loading` (boolean) [optional]
 `endSection` (React.ReactNode) [optional]
-- … 5 more props documented
+- … 19 more props documented
 
 ### Demos
 
@@ -10484,7 +10698,7 @@ Segmented controls present a small set of exclusive options. The indicator anima
   Adjust text color automatically for filled/outline variants
 `withItemsBorders` (boolean) [optional]
   Render dividers between items
-- … 12 more props documented
+- … 26 more props documented
 
 ### Demos
 
@@ -10582,7 +10796,7 @@ Select provides a dropdown interface for choosing from predefined options. It su
   Helper copy displayed beneath the control.
 `error` (string) [optional]
   Error message shown beneath the control in error state.
-- … 13 more props documented
+- … 27 more props documented
 
 ### Demos
 
@@ -10821,6 +11035,11 @@ Skeleton components provide visual placeholders for text, avatars, and blocks to
   Style overrides for the skeleton container
 `testID` (string) [optional]
   Optional test identifier
+`m` (number) [optional]
+  Margin applied to all sides
+`mt` (number) [optional]
+  Margin applied to the top side
+- … 12 more props documented
 
 ### Demos
 
@@ -10911,7 +11130,7 @@ The Slider component allows users to select a value or range of values by moving
   Track height/width
 `thumbSize` (number) [optional]
   Thumb size
-- … 27 more props documented
+- … 69 more props documented
 
 ### Demos
 
@@ -11113,7 +11332,7 @@ Compact inline trend indicator for dense data summaries.
   Provide min/max to avoid re-scaling jitter across multiple sparklines
 `highlightLast` (boolean) [optional, default: true]
   Show last value bubble
-- … 7 more props documented
+- … 37 more props documented
 
 ### Demos
 
@@ -11248,7 +11467,7 @@ The Spoiler component automatically collapses content that exceeds a specified h
   Optional style
 `renderControl` ((args: { opened: boolean; toggle: () => void; showLabel: string; hideLabel: string }) => React.ReactNode) [optional]
   Render custom control
-- … 4 more props documented
+- … 18 more props documented
 
 ### Demos
 
@@ -11460,6 +11679,21 @@ Area chart with multiple series stacked to show cumulative contributions.
 `opacity` (number) [optional, default: 0.55]
   base opacity for layers
 `stackMode` ('absolute' | 'percentage') [optional, default: 'absolute']
+`lineColor` (string) [optional]
+  Line color (for single series)
+`lineThickness` (number) [optional]
+  Line thickness (for single series)
+`lineStyle` ('solid' | 'dashed' | 'dotted') [optional]
+  Line style (for single series)
+`showPoints` (boolean) [optional]
+  Show data points (for single series)
+`pointSize` (number) [optional]
+  Point size (for single series)
+`pointColor` (string) [optional]
+  Point color (for single series)
+`fillColor` (string) [optional]
+  Fill color
+- … 64 more props documented
 
 ### Demos
 
@@ -11559,7 +11793,7 @@ Bar chart with segments stacked to show part-to-whole by category.
   Stacked bar series to render
 `barSpacing` (number) [optional, default: 0.25]
   Gap between stacked groups
-`legend` (ChartLegend) [optional, default: { show: true]
+`legend` (ChartLegend) [optional, default: { show: true, position: 'bottom', align: 'center' }]
   Legend configuration
 `xAxis` (ChartAxis) [optional]
   X-axis configuration
@@ -11569,6 +11803,17 @@ Bar chart with segments stacked to show part-to-whole by category.
   Grid line configuration
 `animation` (ChartAnimation) [optional]
   Animation configuration
+`width` (number) [optional, default: 400]
+  Chart width
+`height` (number) [optional, default: 300]
+  Chart height
+`testID` (string) [optional]
+  Chart test ID for testing
+`style` (any) [optional]
+  Additional styles
+`accessibilityLabel` (string) [optional]
+  Accessibility label surfaced to assistive tech
+- … 30 more props documented
 
 ### Demos
 
@@ -11811,6 +12056,8 @@ Switch components provide a way to toggle between two states, typically represen
   Change handler
 `size` (SizeValue) [optional, default: 'md']
   Switch size
+`variant` ('filled' | 'outline' | 'ios' | 'android') [optional, default: 'filled']
+  Visual style of the switch. - `filled` (default): solid track that fills with `color` when on, white thumb. - `outline`: transparent track with a colored border and a colored thumb when on. - `ios`: iOS-style pill — a large white thumb that nearly fills a rounded track. - `android`: Material-3-style — an outlined track with a small dot thumb that grows and turns white as the switch turns on.
 `color` (ColorValue) [optional, default: 'primary']
   Switch color theme when on
 `label` (React.ReactNode) [optional]
@@ -11825,9 +12072,7 @@ Switch components provide a way to toggle between two states, typically represen
   Helper text
 `labelPosition` ('left' | 'right' | 'top' | 'bottom') [optional, default: 'right']
   Label position relative to switch
-`children` (React.ReactNode) [optional]
-  Switch content/children (alternative to label)
-- … 9 more props documented
+- … 26 more props documented
 
 ### Demos
 
@@ -11860,22 +12105,18 @@ import { Column, Switch, Text } from '@platform-blocks/ui';
 ```tsx
 import type { SwitchProps } from '@platform-blocks/ui';
 import { Column, Row, Switch, Text } from '@platform-blocks/ui';
-const SIZES: NonNullable<SwitchProps['size']>[] = ['sm', 'md', 'lg', 'xl'];
+const SIZES: NonNullable<SwitchProps['size']>[] = ['sm', 'md', 'lg', 'xl', '2xl', '3xl'];
   return (
     <Column gap="md">
-      <Column gap="sm">
+      <Row gap="sm" align="center">
         {SIZES.map((size) => (
           <Switch
             key={size}
             defaultChecked
             size={size}
-            label={`${String(size).toUpperCase()} switch`}
+            label={`${String(size).toUpperCase()}`}
+            labelPosition="top"
           />
-        ))}
-      </Column>
-      <Row gap="md" wrap="wrap">
-        {SIZES.map((size) => (
-          <Switch key={`${size}-comparison`} checked size={size} disabled />
         ))}
       </Row>
     </Column>
@@ -11910,7 +12151,7 @@ The Table component offers a minimal semantic wrapper (thead, tbody, tr, th, td)
   Table layout mode
 `variant` ('default' | 'vertical') [optional]
   Variant of table layout
-- … 9 more props documented
+- … 18 more props documented
 
 ### Demos
 
@@ -12009,7 +12250,7 @@ The `TableOfContents` component automatically discovers headings on the page (h1
   Automatically adjust text color for contrast when using filled variant
 `style` (any) [optional]
   Additional styles to apply to the container
-- … 2 more props documented
+- … 16 more props documented
 
 ### Demos
 
@@ -12136,7 +12377,7 @@ Tabs organize content into multiple sections that users can navigate between. Th
   Enables animated indicator transitions between tabs.
 `animationDuration` (number) [optional, default: 250]
   Duration (ms) for indicator animations when `animated` is true.
-- … 17 more props documented
+- … 32 more props documented
 
 ### Demos
 
@@ -12260,7 +12501,7 @@ Text component provides consistent typography with various variants, colors, and
   Line height as a multiplier (e.g., 1.5) or absolute value
 `tracking` (number) [optional]
   Letter spacing (tracking) in pixels or em units
-- … 11 more props documented
+- … 25 more props documented
 
 ### Demos
 
@@ -12365,7 +12606,7 @@ The TextArea component provides a multi-line text input with support for auto-re
   Text auto-capitalization behavior
 `autoCorrect` (boolean) [optional]
   Whether to enable auto-correct
-- … 13 more props documented
+- … 59 more props documented
 
 ### Demos
 
@@ -12789,7 +13030,7 @@ Semantic heading component mapping `order={1..6}` to typography variants `h1..h6
   Color of the prefix decoration
 `prefixSize` (number) [optional]
   Size of the prefix decoration in pixels
-- … 12 more props documented
+- … 47 more props documented
 
 ### Demos
 
@@ -12863,7 +13104,7 @@ The Toast component provides non-blocking notification messages that appear temp
   Whether the toast is visible
 `animationDuration` (number) [optional, default: 300]
   Animation duration in ms
-- … 14 more props documented
+- … 28 more props documented
 
 ### Demos
 
@@ -12924,6 +13165,33 @@ const toastPositions = [
 
 ## Component: <Toggle>
 Toggle provides an intuitive way to select between multiple options. It supports both single and multi-selection modes with various visual styles and orientations for different use cases.
+
+### Props
+`value` (string | number) [required]
+  Value for this toggle button
+`selected` (boolean) [optional, default: false]
+  Whether this button is selected
+`onPress` ((value: string | number) => void) [optional]
+  Callback when button is pressed
+`disabled` (boolean) [optional, default: false]
+  Whether the button is disabled
+`children` (React.ReactNode) [required]
+  Button content
+`size` (SizeValue) [optional, default: 'md']
+  Size of the toggle button
+`color` (string) [optional]
+  Color variant
+`colorVariant` ('primary' | 'secondary' | 'success' | 'error' | 'warning') [optional]
+  Named color variant from theme
+`variant` ('solid' | 'ghost') [optional, default: 'solid']
+  Visual style variant
+`style` (any) [optional]
+  Custom styles
+`testID` (string) [optional]
+  Test ID for testing
+`m` (number) [optional]
+  Margin applied to all sides
+- … 13 more props documented
 
 ### Demos
 
@@ -13015,9 +13283,9 @@ Tooltip provides contextual information without disrupting the user's workflow. 
   Open delay in ms
 `closeDelay` (number) [optional, default: 0]
   Close delay in ms
-`events` ({) [optional]
+`events` ({ hover?: boolean; focus?: boolean; touch?: boolean; }) [optional]
   Events that trigger tooltip
-- … 7 more props documented
+- … 4 more props documented
 
 ### Demos
 
@@ -13316,7 +13584,7 @@ A comprehensive video player component that supports YouTube videos, MP4 files, 
 `quality` (VideoQuality) [optional]
 `controls` (boolean | VideoControls) [optional]
   Controls configuration
-- … 26 more props documented
+- … 35 more props documented
 
 ### Demos
 
@@ -13524,7 +13792,7 @@ Distribution visualization combining box plot and kernel density.
   Value range highlights rendered across the chart
 `showLegend` (boolean) [optional]
   Legacy legend toggle (prefer `legend` prop)
-- … 5 more props documented
+- … 35 more props documented
 
 ### Demos
 
@@ -13679,7 +13947,7 @@ Waveform component provides visualization and interaction capabilities for audio
   Color for the progress indicator
 `interactive` (boolean) [optional]
   Whether the waveform is interactive (clickable for seeking)
-- … 31 more props documented
+- … 29 more props documented
 
 ### Demos
 
@@ -13836,6 +14104,9 @@ Input component that opens `YearPicker` inside a modal dialog. Ideal for setting
   Called when the picker dialog opens
 `onClose` (() => void) [optional]
   Called when the picker dialog closes
+`variant` (InputVariant) [optional]
+  Visual variant of the input. `default` (light surface + border), `filled` (gray fill, no border), `outline` (transparent fill, border only), `unstyled` (no border, no fill).
+- … 41 more props documented
 
 ### Demos
 
@@ -13900,7 +14171,7 @@ import { Column, Text, YearPickerInput } from '@platform-blocks/ui';
 
 ## Docs Screens
 - screens/ChartDetailScreen.tsx: // Lightweight meta loader – chart meta mirrors component meta file naming: /charts/src/{ChartName}/meta/component.md // For now we lazy import markdown meta similarly to component detail (future: consolidate loaders) interface ChartDetail…
-- screens/ComponentDetailScreen.tsx: interface ComponentDetailScreenProps { component?: string } interface DemoSectionProps { demo: any; preview: React.ReactNode; description?: string; } 
+- screens/ComponentDetailScreen.tsx: interface ComponentDetailScreenProps { component?: string } interface DemoSectionProps { demo: any; preview: React.ReactNode; description?: string; hideTitle?: boolean; }
 - screens/ComponentListScreen.tsx: // Using new demos system exclusively export default function ComponentListScreen() { const router = useRouter(); const [searchQuery, setSearchQuery] = useState(''); const [selectedCategory, setSelectedCategory] = useState<string | null>(n…
 - screens/ExampleDetailScreen.tsx: // Import mini-app examples interface ExampleDetailScreenProps { category?: string; } const FULLSCREEN_EXAMPLES = new Set<string>([ 'chatroom', 'todo-app',
 - screens/ExampleListScreen.tsx: interface ExampleApp { id: string; title: string; description: string; category: string; icon: string; difficulty: 'Beginner' | 'Intermediate' | 'Advanced'; tags: string[];

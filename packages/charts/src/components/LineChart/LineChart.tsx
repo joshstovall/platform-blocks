@@ -191,7 +191,7 @@ const createFillPath = (points: Array<{ chartX: number; chartY: number }>, plotH
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { LineChartProps, ChartInteractionEvent, ChartDataPoint, LineChartSeries } from '../../types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, usePointer } from '../../interaction/ChartInteractionContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import type { Scale } from '../../utils/scales';
 import { Axis } from '../../core/Axis';
@@ -211,7 +211,8 @@ import {
   colorSchemes,
   formatNumber
 } from '../../utils';
-import { useNearestPoint } from '../../hooks/useNearestPoint';
+import { PointSeriesHitTester } from '../../core/hittest/point';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { usePanZoom } from '../../hooks/usePanZoom';
 // Removed per-series hook-based decimation to avoid nested hook calls; using pure helper instead.
 
@@ -265,10 +266,16 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   // use shared interaction context (optional if not wrapped by provider externally)
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try { interaction = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
-  const setSharedCrosshair = interaction?.setCrosshair;
+  // Pointer subscription: LineChart draws a pointer-tracking crosshair, so it re-renders
+  // each frame during hover.
+  const pointer = usePointer();
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
   const sharedConfig = interaction?.config;
-  const wantsSharedCrosshair = React.useMemo(() => !!(props.enableCrosshair || sharedConfig?.multiTooltip), [props.enableCrosshair, sharedConfig?.multiTooltip]);
-  const registerSeries = interaction?.registerSeries;
+  // Multi-series tooltip → drive the shared ChartActiveTooltip (activeSlice). Single
+  // mode keeps LineChart's own selectedPoint tooltip; feeding activeTarget only in
+  // multi mode avoids doubling with the built-in tooltip.
+  const feedShared = !!sharedConfig?.multiTooltip;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
   const initializeDomains = interaction?.initializeDomains;
@@ -391,7 +398,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
   }, [initializeDomains, xDomain, yDomain, interaction?.domains]);
 
   // Chart dimensions - adjust padding based on legend position to prevent overlap
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const legendPadding = React.useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -492,98 +499,58 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
 
   const shouldRenderGradients = gradientConfigs.length > 0;
 
-  // Register series with interaction context (points in data coords only)
-  React.useEffect(() => {
-    if (!registerSeries) return;
-    chartSeriesData.forEach((s, i) => {
-      const points = s.chartPoints?.map((point: any, idx: number) => {
-        const raw = s.data[idx];
-        return {
-          x: point.x,
-          y: point.y,
-          pixelX: point.chartX,
-          pixelY: point.chartY,
-          meta: {
-            ...raw,
-            chartX: point.chartX,
-            chartY: point.chartY,
-          },
-        };
-      }) ?? s.data.map((p) => ({ x: p.x, y: p.y, meta: p }));
-      registerSeries({
-        id: s.id ?? i,
-        name: s.name || `Series ${i + 1}`,
-        color: s.color,
-        points,
-        visible: s.visible !== false,
-      });
-    });
-  }, [registerSeries, chartSeriesData]);
-
-  // Handle chart interaction
-  const nearestPoint = useNearestPoint(chartSeriesData as any, xDomain, yDomain, plotWidth, plotHeight);
-
-  const pointerToDataX = React.useCallback((chartX: number) => {
-    if (plotWidth <= 0) return xDomain[0];
-    const clamped = Math.max(0, Math.min(plotWidth, chartX));
-    const span = xDomain[1] - xDomain[0];
-    if (props.xScaleType === 'log') {
-      const safeMin = Math.max(xDomain[0], 1e-12);
-      const safeMax = Math.max(xDomain[1], 1e-12);
-      const logMin = Math.log(safeMin);
-      const logMax = Math.log(safeMax);
-      if (logMax === logMin) return safeMin;
-      const ratio = clamped / Math.max(plotWidth, 1);
-      return Math.exp(logMin + (logMax - logMin) * ratio);
-    }
-    return xDomain[0] + (span === 0 ? 0 : (clamped / Math.max(plotWidth, 1)) * span);
-  }, [plotWidth, props.xScaleType, xDomain]);
-
-  const updateCrosshairFromPointer = React.useCallback((chartX: number) => {
-    if (!wantsSharedCrosshair || !setSharedCrosshair) return;
-    const dataX = pointerToDataX(chartX);
-    const clampedX = Math.max(0, Math.min(plotWidth, chartX));
-    setSharedCrosshair({ dataX, pixelX: clampedX });
-  }, [pointerToDataX, plotWidth, setSharedCrosshair, wantsSharedCrosshair]);
+  // New interaction engine: a point hit-tester over the rendered series (container-origin
+  // marks). Replaces the legacy useNearestPoint routine + crosshair/registerSeries feed.
+  const tester = React.useMemo(() => {
+    const hitSeries: HitSeries[] = chartSeriesData.map((s: any, i: number) => ({
+      id: s.id ?? i,
+      name: s.name || `Series ${i + 1}`,
+      color: s.color,
+      visible: s.visible !== false,
+      marks: (s.chartPoints ?? []).map((p: any, idx: number): Mark => ({
+        id: p.id ?? idx,
+        pixel: { x: p.chartX + padding.left, y: p.chartY + padding.top },
+        value: p.y,
+        datum: s.data?.[idx] ?? p,
+        dataX: p.x,
+        dataY: p.y,
+        label: s.name || `Series ${i + 1}`,
+        color: p.color || s.color,
+        formattedValue: String(p.y),
+      })),
+    }));
+    return new PointSeriesHitTester(hitSeries);
+  }, [chartSeriesData, padding.left, padding.top]);
 
   const evaluateNearestPoint = useCallback((chartX: number, chartY: number, nativeEvent?: any, fireCallbacks: boolean = false) => {
-    updateCrosshairFromPointer(chartX);
-    const closestPoint = nearestPoint(chartX, chartY, 30) as any;
-    if (closestPoint) {
-      const dp = closestPoint.dataPoint;
-      setSelectedPoint(dp);
-      // Resolve rendered chart coordinates & color from current series (so highlight uses exact point position)
-      let resolved: { chartX: number; chartY: number; color: string; id?: any; seriesId?: any } | null = null;
-      for (const s of chartSeriesData) {
-        if (!s.chartPoints) continue;
-        const hit = s.chartPoints.find((p: any) => (p.id != null && dp.id != null ? p.id === dp.id : (p.x === dp.x && p.y === dp.y)));
-        if (hit) { resolved = { chartX: hit.chartX, chartY: hit.chartY, color: hit.color || s.color, id: hit.id, seriesId: s.id ?? undefined }; break; }
+    const px = chartX + padding.left;
+    const py = chartY + padding.top;
+    const target = tester.hit({ px, py, maxDistance: 30 });
+    if (target) {
+      setSelectedPoint(target.datum as any);
+      const resolvedX = target.pixel.x - padding.left;
+      const resolvedY = target.pixel.y - padding.top;
+      const changed = !highlightPoint || highlightPoint.chartX !== resolvedX || highlightPoint.chartY !== resolvedY;
+      if (changed) {
+        setPointer?.({ x: resolvedX, y: resolvedY, inside: true });
+        setHighlightPoint({ chartX: resolvedX, chartY: resolvedY, color: target.color || '', id: target.markId, seriesId: target.seriesId });
       }
-      if (resolved) {
-        // Only update pointer & crosshair if anchor actually changed (reduces churn & drives tooltip movement policy)
-        const pointerChanged = !highlightPoint || highlightPoint.chartX !== resolved.chartX || highlightPoint.chartY !== resolved.chartY;
-        if (pointerChanged) {
-          setPointer?.({ x: resolved.chartX, y: resolved.chartY, inside: true });
-          setHighlightPoint(resolved);
-        }
+      // Multi mode: drive the shared ChartActiveTooltip (single mode uses selectedPoint).
+      if (feedShared) {
+        setActiveTarget?.(target);
+        setActiveSlice?.(tester.slice({ px, py, maxDistance: 30 }));
       }
       if (fireCallbacks && nativeEvent) {
-        const interactionEvent: ChartInteractionEvent = {
-          nativeEvent,
-          chartX,
-          chartY,
-          dataPoint: dp,
-          distance: closestPoint.distance,
-        };
-        onDataPointPress?.(dp, interactionEvent);
+        onDataPointPress?.(target.datum as any, { nativeEvent, chartX, chartY, dataPoint: target.datum, distance: target.distance });
       }
-    } else if (fireCallbacks) {
-      if (interaction?.pointer) {
-        setPointer?.({ ...interaction.pointer, inside: true });
-      }
+    } else {
       setHighlightPoint(null);
+      if (feedShared) { setActiveTarget?.(null); setActiveSlice?.([]); }
+      if (fireCallbacks && pointer) {
+        setPointer?.({ ...pointer, inside: true });
+      }
     }
-  }, [nearestPoint, onDataPointPress, interaction?.pointer, chartSeriesData, highlightPoint, updateCrosshairFromPointer]);
+  }, [tester, padding.left, padding.top, highlightPoint, setPointer, feedShared, setActiveTarget, setActiveSlice, onDataPointPress, pointer]);
 
   const handlePress = (event: any) => {
     if (disabled) return;
@@ -729,7 +696,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           if (now - lastTapTimeRef.current < 300) { // double within 300ms
             setXDomainState(null);
             setYDomainState(null);
-            setSharedCrosshair?.(null);
+            setActiveTarget?.(null); setActiveSlice?.([]);
             setSelectedPoint(null);
             props.onDomainChange?.(computedXDomain, computedYDomain);
             lastTapTimeRef.current = 0;
@@ -750,8 +717,8 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
         setPinchTracking(false);
       }
       props.onDomainChange?.(xDomain, yDomain);
-      if (interaction?.pointer) {
-        setPointer?.({ ...interaction.pointer, inside: false });
+      if (pointer) {
+        setPointer?.({ ...pointer, inside: false });
       }
     },
     onPanResponderTerminationRequest: () => true,
@@ -910,6 +877,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
 
       {/* Chart interaction area */}
       <View
+        testID="line-gesture-surface"
         style={{
           position: 'absolute',
           left: padding.left,
@@ -941,7 +909,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           }
         }}
         // @ts-expect-error web-only mouse event prop not in RN types
-        onMouseLeave={(e) => { if (isMousePanning) { setIsMousePanning(false); setLastPan(null); } if (interaction?.pointer) { setPointer?.({ ...interaction.pointer, inside: false }); } setSharedCrosshair?.(null); setBrushStart(null); setBrushCurrent(null); }}
+        onMouseLeave={(e) => { if (isMousePanning) { setIsMousePanning(false); setLastPan(null); } if (pointer) { setPointer?.({ ...pointer, inside: false }); } setActiveTarget?.(null); setActiveSlice?.([]); setHighlightPoint(null); setSelectedPoint(null); setBrushStart(null); setBrushCurrent(null); }}
         // @ts-expect-error web-only mouse event prop not in RN types
         onMouseUp={(e) => {
           if (props.enableBrushZoom && brushStart && brushCurrent) {
@@ -959,7 +927,7 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
           }
           setBrushStart(null); setBrushCurrent(null);
           if (isMousePanning) { setIsMousePanning(false); setLastPan(null); panZoom.endPan(); props.onDomainChange?.(xDomain, yDomain); }
-          if (interaction?.pointer) { setPointer?.({ ...interaction.pointer, inside: true }); }
+          if (pointer) { setPointer?.({ ...pointer, inside: true }); }
         }}
         // @ts-expect-error web-only mouse event prop not in RN types
         onMouseMove={(e) => {
@@ -1224,22 +1192,29 @@ export const LineChart: React.FC<LineChartProps> = (props) => {
             return null;
           })}
 
-          {/* Crosshair */}
-          {props.enableCrosshair && interaction?.crosshair && (
-            <View
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: interaction.crosshair.pixelX,
-                top: 0,
-                height: plotHeight,
-                width: 1,
-                backgroundColor: theme.colors.grid || 'rgba(0,0,0,0.2)',
-              }}
-            />
-          )}
+          {/* Crosshair — a vertical guide that tracks the cursor x anywhere inside the plot
+              (not just near a point). Snaps to the highlighted point when one is in range,
+              otherwise follows the raw pointer x. Rendered inside the plot-origin <Pressable>
+              (same space as the highlight Circle + tooltip), so x is used directly. */}
+          {props.enableCrosshair && pointer?.inside && (() => {
+            const crosshairX = highlightPoint ? highlightPoint.chartX : (pointer.x ?? 0);
+            if (!Number.isFinite(crosshairX)) return null;
+            return (
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: Math.max(0, Math.min(plotWidth, crosshairX)),
+                  top: 0,
+                  height: plotHeight,
+                  width: 1,
+                  backgroundColor: theme.colors.grid || 'rgba(0,0,0,0.2)',
+                }}
+              />
+            );
+          })()}
 
-          {/* Single tooltip (multi handled globally by ChartPopover) */}
+          {/* Single-point tooltip (multi-series slice handled globally by ChartActiveTooltip) */}
           {tooltip?.show !== false && selectedPoint && !sharedConfig?.multiTooltip && (
             <View
               style={{

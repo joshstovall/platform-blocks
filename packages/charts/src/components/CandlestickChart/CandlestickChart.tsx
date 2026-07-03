@@ -22,8 +22,7 @@ import {
 import type { Scale } from '../../utils/scales';
 import { AnimatedCandle } from './AnimatedCandle';
 import type { CandleDataPoint } from './AnimatedCandle';
-import { useCandlestickSeriesRegistration } from './useCandlestickSeriesRegistration';
-import type { CandlestickChartSeriesRegistration } from './useCandlestickSeriesRegistration';
+import type { ActiveTarget } from '../../core/hittest/types';
 
 const toNumeric = (value: number | string | Date): number => {
   if (value instanceof Date) return value.getTime();
@@ -109,10 +108,10 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
   }, [xAxis?.labelFormatter, xScaleType]);
   let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
   try { interaction = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
-  const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
   const defaultScheme = colorSchemes.default;
   const xDomain = React.useMemo<[number, number]>(() => {
     if (!flattened.length) {
@@ -139,7 +138,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
     return [min, max];
   }, [flattened]);
 
-  const basePadding = { top: 40, right: 20, bottom: volumeEnabled ? 72 : 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: volumeEnabled ? 72 : 60, left: yAxis?.title ? 104 : 80 };
   const padding = React.useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -463,20 +462,40 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
       pageY: meta?.pageY,
       data: payload,
     });
-    if (!enableCrosshair) return;
-    if (withinX) {
-      const dataX = axisScaleX.invert ? axisScaleX.invert(px) : xDomain[0] + (plotWidth ? (px / plotWidth) * (xDomain[1] - xDomain[0]) : 0);
-      setCrosshair?.({ dataX, pixelX: px });
+    // New engine: publish each series' candle at the hovered x as an ActiveTarget slice
+    // (OHLC in formattedValue / the chart's tooltip formatter in customTooltip) so
+    // ChartActiveTooltip renders them — replaces the legacy crosshair + registerSeries.
+    if (inside && payload) {
+      const slice: ActiveTarget[] = payload.candles.map((entry) => {
+        const d = entry.datum as any;
+        const ohlc = `O ${d.open}  H ${d.high}  L ${d.low}  C ${d.close}${d.volume != null ? `  Vol ${d.volume}` : ''}`;
+        return {
+          seriesId: entry.seriesId,
+          markId: entry.dataIndex,
+          kind: 'point',
+          datum: d,
+          pixel: { x: entry.candle.chartX + padding.left, y: py + padding.top },
+          value: d.close,
+          distance: 0,
+          label: entry.seriesName,
+          formattedValue: typeof entry.formatted === 'string' ? entry.formatted : ohlc,
+          customTooltip: entry.formatted != null && typeof entry.formatted !== 'string' ? entry.formatted : undefined,
+        };
+      });
+      setActiveTarget?.(slice[0] ?? null);
+      setActiveSlice?.(slice);
     } else {
-      setCrosshair?.(null);
+      setActiveTarget?.(null);
+      setActiveSlice?.([]);
     }
-  }, [setPointer, plotWidth, plotHeight, disabled, resolvePointerPayload, enableCrosshair, axisScaleX, xDomain, setCrosshair]);
+  }, [setPointer, plotWidth, plotHeight, disabled, resolvePointerPayload, padding.left, padding.top, setActiveTarget, setActiveSlice]);
 
   const handlePointerLeave = React.useCallback(() => {
     if (!setPointer) return;
     setPointer(null);
-    setCrosshair?.(null);
-  }, [setPointer, setCrosshair]);
+    setActiveTarget?.(null);
+    setActiveSlice?.([]);
+  }, [setPointer, setActiveTarget, setActiveSlice]);
 
   // Build MA SVG paths (after scale helpers) for smoother rendering
   // Moving averages per series (only first series currently used if multiple) – could extend to all later
@@ -509,49 +528,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
     });
   }, [maLines, scaleX, scaleY]);
 
-  // Register series for tooltip interaction
-  const candlestickSeriesData: CandlestickChartSeriesRegistration[] = React.useMemo(() => {
-    const candlestickSeries = series.map((s, i) => ({
-      id: String(s.id ?? i),
-      name: s.name || `Series ${i + 1}`,
-      color: s.colorBull || '#16a34a',
-      colorBull: s.colorBull || '#16a34a',
-      colorBear: s.colorBear || '#dc2626',
-      wickColor: s.wickColor,
-      visible: s.visible !== false,
-      data: s.data.map(d => ({
-        x: d.x,
-        open: d.open,
-        close: d.close,
-        high: d.high,
-        low: d.low,
-        volume: d.volume,
-      })),
-    }));
-
-    // Add moving averages as overlay series if enabled
-    const maOverlaySeries = showMovingAverages ? maLines.map((ma) => ({
-      id: `ma-${ma.period}`,
-      name: `${ma.period} MA`,
-      color: ma.color,
-      visible: true,
-      data: ma.points.map((p) => ({
-        x: p.x,
-        open: p.y,
-        close: p.y,
-        high: p.y,
-        low: p.y,
-      })),
-    })) : [];
-
-    return [...candlestickSeries, ...maOverlaySeries];
-  }, [series, showMovingAverages, maLines]);
-
-  useCandlestickSeriesRegistration({
-    series: candlestickSeriesData,
-    registerSeries,
-    tooltipFormatter: tooltip?.formatter,
-  });
 
   return (
     <ChartContainer
@@ -588,6 +564,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = (props) => {
         }}
       >
         <View
+          testID="candlestick-gesture-surface"
           style={{ width: plotWidth, height: plotHeight }}
           onStartShouldSetResponder={() => !disabled}
           onResponderGrant={(e) => {

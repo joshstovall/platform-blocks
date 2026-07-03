@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Heatmap Chart
 tags: [chart, heatmap, matrix]
 category: charts

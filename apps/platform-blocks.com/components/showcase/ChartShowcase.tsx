@@ -6,7 +6,7 @@ import { BarChart, LineChart, PieChart, ScatterChart, AreaChart, StackedAreaChar
 export function ChartShowcase() {
   const isWeb = Platform.OS === 'web';
   return (
-    <GlobalChartsRoot config={{ multiTooltip: true, liveTooltip: true, enableCrosshair: true, popoverPortal: true, popoverFollowMode: 'crosshair', crosshairPixelThreshold: 3, pointerPixelThreshold: 4, aggregatorMaxSeries: 5 }} style={{ position: 'relative' }}>
+    <GlobalChartsRoot config={{ multiTooltip: true, liveTooltip: true, enableCrosshair: true, popoverPortal: true, pointerPixelThreshold: 4, aggregatorMaxSeries: 5 }} style={{ position: 'relative' }}>
       <View>
         <BarChart
           title="Sample Bar Chart"
@@ -249,11 +249,12 @@ function StackedAreaChartDemo() {
   );
 }
 
-function CandlestickChartDemo() {
-  // Simple synthetic OHLC data
-  const base = 50;
-  let lastClose = base;
-  const candles = Array.from({ length: 40 }, (_, i) => {
+// Simple synthetic OHLC data — generated once at module load so the Math.random
+// calls stay out of the render path (react-hooks/purity forbids them there,
+// even inside useMemo).
+const CANDLESTICK_DATA = (() => {
+  let lastClose = 50;
+  return Array.from({ length: 40 }, (_, i) => {
     const open = lastClose;
     const change = (Math.random() - 0.5) * 4;
     const close = Math.max(10, open + change);
@@ -262,6 +263,10 @@ function CandlestickChartDemo() {
     lastClose = close;
     return { x: i, open, high, low, close };
   });
+})();
+
+function CandlestickChartDemo() {
+  const candles = CANDLESTICK_DATA;
   const candleSeries = [
     { id: 'cndl', name: 'Price', data: candles, colorBull: '#16a34a', colorBear: '#dc2626' },
     // Synthetic comparison series offset for legend toggle demo
@@ -437,11 +442,15 @@ function RadialBarChartDemo() {
   );
 }
 
+// Small sparkline sequences — generated once at module load (see purity note above).
+const SPARKLINE_A = Array.from({ length: 24 }, (_, i) => 40 + Math.sin(i / 2) * 8 + (Math.random() - 0.5) * 4);
+const SPARKLINE_B = Array.from({ length: 24 }, (_, i) => 30 + Math.cos(i / 3) * 6 + (Math.random() - 0.5) * 3);
+const SPARKLINE_C = Array.from({ length: 24 }, (_, i) => 20 + (Math.sin(i / 4) + 1) * 5 + (Math.random() - 0.5) * 2);
+
 function SparklineChartDemo() {
-  // Generate some small sparkline sequences
-  const seriesA = Array.from({ length: 24 }, (_, i) => 40 + Math.sin(i / 2) * 8 + (Math.random() - 0.5) * 4);
-  const seriesB = Array.from({ length: 24 }, (_, i) => 30 + Math.cos(i / 3) * 6 + (Math.random() - 0.5) * 3);
-  const seriesC = Array.from({ length: 24 }, (_, i) => 20 + (Math.sin(i / 4) + 1) * 5 + (Math.random() - 0.5) * 2);
+  const seriesA = SPARKLINE_A;
+  const seriesB = SPARKLINE_B;
+  const seriesC = SPARKLINE_C;
   const wrapperStyle = { flexDirection: 'row', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' } as any;
   const itemStyle = { backgroundColor: 'rgba(0,0,0,0.04)', padding: 8, borderRadius: 8 };
   return (
@@ -462,8 +471,12 @@ function SparklineChartDemo() {
   );
 }
 
+// Static demo data — generated once at module load so it stays out of the
+// render path (react-hooks/purity forbids Math.random during render, even in useMemo).
+const HISTOGRAM_VALUES = Array.from({ length: 600 }, () => (Math.random() * 0.8 + Math.random() * 0.2) * 100);
+
 function HistogramChartDemo() {
-  const values = React.useMemo(() => Array.from({ length: 600 }, () => (Math.random() * 0.8 + Math.random() * 0.2) * 100), []);
+  const values = HISTOGRAM_VALUES;
   return (
     <HistogramChart
       title="Histogram + Density"
@@ -480,12 +493,17 @@ function HistogramChartDemo() {
   );
 }
 
+// Random portions generated once at module load (see purity note above); the
+// sin/cos series are pure so they can stay inline.
+const COMBO_BAR_DATA = Array.from({ length: 15 }, (_, i) => ({ x: i * 2, y: Math.random() * 40 + 10 }));
+const COMBO_DENSITY_VALUES = Array.from({ length: 300 }, () => (Math.random() * 0.6 + Math.random() * 0.4) * 60);
+
 function ComboChartDemo() {
   // Mixed synthetic data
   const lineData = Array.from({ length: 30 }, (_, i) => ({ x: i, y: Math.sin(i / 4) * 20 + 50 }));
   const areaData = Array.from({ length: 30 }, (_, i) => ({ x: i, y: Math.cos(i / 5) * 10 + 30 }));
-  const barData = Array.from({ length: 15 }, (_, i) => ({ x: i * 2, y: Math.random() * 40 + 10 }));
-  const values = Array.from({ length: 300 }, () => (Math.random() * 0.6 + Math.random() * 0.4) * 60);
+  const barData = COMBO_BAR_DATA;
+  const values = COMBO_DENSITY_VALUES;
   return (
     <View style={{ marginTop: 12, marginBottom: 24 }}>
       <Title>Combo (Bar + Line + Area + Density)</Title>
@@ -587,11 +605,15 @@ function SankeyChartDemo() {
   );
 }
 
+// Nodes + random links generated once at module load (see purity note above).
+const NETWORK_NODES = Array.from({ length: 14 }, (_, i) => ({ id: `N${i}`, name: `N${i}`, group: i % 4 }));
+const NETWORK_LINKS = Array.from({ length: 24 }, () => {
+  const a = Math.floor(Math.random() * NETWORK_NODES.length); let b = Math.floor(Math.random() * NETWORK_NODES.length); if (b === a) b = (b + 1) % NETWORK_NODES.length; return { source: NETWORK_NODES[a].id, target: NETWORK_NODES[b].id, weight: Math.random() * 3 + 1 };
+});
+
 function NetworkChartDemo() {
-  const nodes = Array.from({ length: 14 }, (_, i) => ({ id: `N${i}`, name: `N${i}`, group: i % 4 }));
-  const links = Array.from({ length: 24 }, () => {
-    const a = Math.floor(Math.random() * nodes.length); let b = Math.floor(Math.random() * nodes.length); if (b === a) b = (b + 1) % nodes.length; return { source: nodes[a].id, target: nodes[b].id, weight: Math.random() * 3 + 1 };
-  });
+  const nodes = NETWORK_NODES;
+  const links = NETWORK_LINKS;
   return (
     <NetworkChart
       title="Network"

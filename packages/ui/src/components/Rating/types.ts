@@ -11,7 +11,6 @@ export interface RatingProps extends SpacingProps, DisclaimerSupport {
   count?: number;
   readOnly?: boolean;
   allowFraction?: boolean;
-  allowHalf?: boolean; // Deprecated
   precision?: number;
   size?: SizeValue | number;
   color?: string;

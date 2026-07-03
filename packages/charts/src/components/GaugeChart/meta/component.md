@@ -1,7 +1,8 @@
 ---
+playground: true
 title: GaugeChart
 component: GaugeChart
-category: feedback
+category: charts
 ---
 
 Visualises progress toward a bounded target using a semicircular gauge with configurable ranges, ticks, labels, and animated needle. Ported from the UI Gauge component to the charts package so it can slot into chart demos, interaction providers, and theming helpers.

@@ -9,7 +9,7 @@ import { useHover } from '../../hooks';
 import { Text } from '../Text';
 import { CopyButton } from '../CopyButton/CopyButton';
 import { Spoiler } from '../Spoiler';
-import { normalizeLanguage, parseHighlightLines, createNativeHighlighter } from './utils';
+import { normalizeLanguage, parseHighlightLines, createNativeHighlighter, getSyntaxColors, buildPrismTheme } from './utils';
 import { resolveOptionalModule } from '../../utils/optionalModule';
 import type {
   CodeBlockColorOverrides,
@@ -19,10 +19,10 @@ import type {
 } from './types';
 
 // Syntax highlighter - only loaded on web, native uses built-in tokenizer
-// These are initialized lazily on first use to avoid Metro bundling issues
+// These are initialized lazily on first use to avoid Metro bundling issues.
+// Token colors come from a theme-derived Prism theme (buildPrismTheme), not a
+// prebuilt Prism stylesheet, so the highlighting follows the app color theme.
 let PrismSyntaxHighlighter: any = null;
-let prismLightTheme: any = null;
-let prismDarkTheme: any = null;
 let syntaxHighlighterInitialized = false;
 
 // Use indirect require via new Function to prevent Metro from statically analyzing imports
@@ -87,18 +87,6 @@ function initSyntaxHighlighter() {
         PrismSyntaxHighlighter.registerLanguage('bash', bash);
       } catch {
         // Language not available
-      }
-
-      // Load themes
-      try {
-        prismLightTheme = safeRequire('react-syntax-highlighter/dist/esm/styles/prism/prism').default;
-      } catch {
-        // Theme not available
-      }
-      try {
-        prismDarkTheme = safeRequire('react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus').default;
-      } catch {
-        // Theme not available
       }
     }
   } catch {
@@ -514,6 +502,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
   const highlightBackgroundColor = React.useMemo(() => resolvedColors.highlightBackground ?? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'), [resolvedColors.highlightBackground, isDark]);
   const highlightAccentColor = resolvedColors.highlightAccent ?? theme.colors.primary[5];
   const highlightColors = React.useMemo(() => ({ background: highlightBackgroundColor, accent: highlightAccentColor }), [highlightAccentColor, highlightBackgroundColor]);
+  const syntaxColors = React.useMemo(() => getSyntaxColors(theme, isDark, variant, resolvedColors.tokenOverrides), [theme, isDark, variant, resolvedColors.tokenOverrides]);
   const nativeHighlighter = React.useMemo(() => createNativeHighlighter(theme, isDark, variant, resolvedColors.tokenOverrides), [theme, isDark, variant, resolvedColors.tokenOverrides]);
 
   const [hovered, hoverHandlers] = useHover();
@@ -627,12 +616,16 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     if (!(isWeb && highlight && PrismSyntaxHighlighter)) {
       return null;
     }
-    const themeObj = isDark ? prismDarkTheme || prismLightTheme : prismLightTheme;
+    const prismTheme = buildPrismTheme(
+      syntaxColors,
+      (styles.codeText.color as string) ?? theme.text.primary,
+      styles.codeText.fontFamily as string | undefined
+    );
 
     return (
       <PrismSyntaxHighlighter
         language={normalizedLang}
-        style={themeObj}
+        style={prismTheme}
         PreTag="div"
         customStyle={{
           background: 'transparent',
@@ -688,7 +681,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     isWeb,
     normalizedLang,
     prismShowLineNumbers,
+    styles.codeText.color,
     styles.codeText.fontFamily,
+    syntaxColors,
+    theme.text.primary,
     wrap,
   ]);
 
@@ -783,19 +779,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
             }
           : {})}
       >
-        {isWeb && variant === 'code' ? (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: 2,
-              pointerEvents: 'none',
-              backgroundColor: hovered ? theme.colors.primary[5] : 'transparent',
-            }}
-          />
-        ) : null}
         {inlineTitleVisible ? (
           <InlineTitleRow
             label={inlineTitleLabel}

@@ -1,5 +1,15 @@
 import React, { ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import {
+  Icon,
+  Button,
+  Input,
+  MenuDropdown,
+  MenuItem,
+  ListGroup,
+  ListGroupItem,
+  Form,
+} from '@platform-blocks/ui';
 
 export type PlaygroundControlType = 'boolean' | 'segmented' | 'select' | 'number' | 'text' | 'color' | 'size-slider';
 
@@ -63,6 +73,7 @@ const TAB_COLOR_OPTIONS = ['primary', 'secondary', 'gray', 'tertiary'];
 const INPUT_TYPES: Array<'text' | 'password' | 'email' | 'tel' | 'number' | 'search'> = ['text', 'email', 'password', 'number', 'tel', 'search'];
 const SWITCH_LABEL_POSITIONS: Array<'left' | 'right' | 'top' | 'bottom'> = ['left', 'right', 'top', 'bottom'];
 const SWITCH_COLOR_OPTIONS = ['primary', 'secondary', 'success', 'warning', 'error', 'gray'];
+const SWITCH_VARIANTS: Array<'filled' | 'outline' | 'ios' | 'android'> = ['filled', 'outline', 'ios', 'android'];
 const CARD_VARIANTS: Array<'outline' | 'filled' | 'elevated' | 'subtle' | 'ghost' | 'gradient'> = ['outline', 'filled', 'elevated', 'subtle', 'ghost', 'gradient'];
 const CARD_SHADOW_OPTIONS = ['none', 'xs', 'sm', 'md', 'lg', 'xl'];
 const TOOLTIP_POSITIONS: Array<'top' | 'bottom' | 'left' | 'right'> = ['top', 'bottom', 'left', 'right'];
@@ -187,6 +198,7 @@ const SHIMMER_DIRECTIONS: Array<'ltr' | 'rtl'> = ['ltr', 'rtl'];
 const SHIMMER_COLOR_PRESETS = ['#94a3b8', '#cbd5f5', '#f8fafc', '#facc15', '#38bdf8'];
 
 const GRADIENT_DEFAULT_COLORS = ['#a855f7', '#ec4899', '#f97316'];
+const GRADIENT_STOP_PRESETS = ['#a855f7', '#ec4899', '#f97316', '#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#e11d48', '#14b8a6', '#0f172a'];
 
 const LOADER_VARIANTS: Array<'bars' | 'dots' | 'oval'> = ['dots', 'bars', 'oval'];
 const LOADER_COLOR_PRESETS = ['#6366f1', '#22c55e', '#0ea5e9', '#f97316', '#f43f5e'];
@@ -248,6 +260,485 @@ const buildAccordionPlaygroundItems = () =>
       item.body
     ),
   }));
+
+// ---------------------------------------------------------------------------
+// Sample data + helpers for data-driven / compositional component playgrounds
+// ---------------------------------------------------------------------------
+
+const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=640&q=80';
+const SAMPLE_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+const GALLERY_IMAGES = [
+  { src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80', alt: 'Circuit board', title: 'Circuitry' },
+  { src: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80', alt: 'Aurora', title: 'Aurora' },
+  { src: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=800&q=80', alt: 'Galaxy', title: 'Deep field' },
+];
+
+const TREE_DATA = [
+  {
+    id: 'src', label: 'src', startOpen: true, children: [
+      { id: 'components', label: 'components', children: [
+        { id: 'button', label: 'Button.tsx' },
+        { id: 'card', label: 'Card.tsx' },
+      ] },
+      { id: 'index', label: 'index.ts' },
+    ]
+  },
+  { id: 'package', label: 'package.json' },
+  { id: 'readme', label: 'README.md' },
+];
+
+const TABLE_COLUMNS = [
+  { key: 'name', title: 'Name' },
+  { key: 'role', title: 'Role' },
+  { key: 'status', title: 'Status' },
+];
+const TABLE_DATA = [
+  { name: 'Ada Lovelace', role: 'Engineer', status: 'Active' },
+  { name: 'Alan Turing', role: 'Researcher', status: 'Active' },
+  { name: 'Grace Hopper', role: 'Admiral', status: 'Away' },
+];
+
+const DATATABLE_DATA = [
+  { id: '1', mission: 'Artemis I', crew: 4, phase: 'Complete' },
+  { id: '2', mission: 'Artemis II', crew: 4, phase: 'Training' },
+  { id: '3', mission: 'Europa Clipper', crew: 0, phase: 'Transit' },
+];
+const DATATABLE_COLUMNS = [
+  { key: 'mission', header: 'Mission', accessor: 'mission', sortable: true },
+  { key: 'crew', header: 'Crew', accessor: 'crew' },
+  { key: 'phase', header: 'Phase', accessor: 'phase' },
+];
+
+const MASONRY_COLORS = ['#6366f1', '#22c55e', '#f97316', '#e11d48', '#0ea5e9', '#a855f7', '#14b8a6', '#f59e0b'];
+const MASONRY_DATA = Array.from({ length: 8 }, (_, i) => ({ id: String(i), height: 80 + (i % 4) * 40, color: MASONRY_COLORS[i] }));
+
+const SPOTLIGHT_ACTIONS = [
+  { id: 'home', label: 'Go home', description: 'Return to the dashboard' },
+  { id: 'new', label: 'New project', description: 'Create a new project' },
+  { id: 'settings', label: 'Open settings', description: 'Adjust your preferences' },
+];
+
+const CONTEXT_MENU_ITEMS = [
+  { id: 'copy', label: 'Copy' },
+  { id: 'rename', label: 'Rename' },
+  { id: 'delete', label: 'Delete', danger: true },
+];
+
+// These sub-components carry required props (e.g. ListGroupItem.size is injected
+// by its parent at runtime) that the bare createElement call can't satisfy, so we
+// address them as loose component types — matching how this file treats View/Text.
+const MenuDropdownAny = MenuDropdown as React.ComponentType<any>;
+const MenuItemAny = MenuItem as React.ComponentType<any>;
+const ListGroupItemAny = ListGroupItem as React.ComponentType<any>;
+const FormFieldAny = Form.Field as React.ComponentType<any>;
+
+// Builds the trigger + dropdown children for the Menu playground.
+const buildMenuChildren = () => [
+  React.createElement(Button, { key: 'trigger', title: 'Open menu', variant: 'outline' }),
+  React.createElement(MenuDropdownAny, { key: 'dropdown' }, [
+    React.createElement(MenuItemAny, { key: 'profile' }, 'Profile'),
+    React.createElement(MenuItemAny, { key: 'settings' }, 'Settings'),
+    React.createElement(MenuItemAny, { key: 'logout' }, 'Log out'),
+  ]),
+];
+
+// Builds ListGroupItem children for the ListGroup playground.
+const buildListGroupChildren = () =>
+  ['Overview', 'Analytics', 'Reports', 'Settings'].map((label) =>
+    React.createElement(ListGroupItemAny, { key: label }, label)
+  );
+
+// Builds Form.Field children for the Form playground.
+const buildFormChildren = () => [
+  React.createElement(FormFieldAny, { key: 'name', name: 'name' },
+    React.createElement(Input, { label: 'Full name', placeholder: 'Ada Lovelace' })
+  ),
+  React.createElement(FormFieldAny, { key: 'email', name: 'email' },
+    React.createElement(Input, { label: 'Email', placeholder: 'ada@example.com' })
+  ),
+];
+
+const INPUT_VARIANTS = ['default', 'filled', 'outline', 'unstyled'];
+
+// Layout / plumbing props shared by the field-style inputs that add noise to the
+// playground control list and are hidden by default.
+const INPUT_NOISE_PROPS = [
+  'value', 'defaultValue', 'name', 'startSection', 'endSection', 'startSectionProps', 'endSectionProps',
+  'labelProps', 'descriptionProps', 'placeholderTextColor', 'keyboardFocusId', 'debounceMs', 'onEnter',
+  'onFocus', 'onBlur', 'clearButtonLabel',
+];
+
+// ---------------------------------------------------------------------------
+// Charts (@platform-blocks/charts) — sample data + shared control config
+// ---------------------------------------------------------------------------
+
+// Color-picker swatches for the optional per-chart color overrides. These mirror
+// the charts theme's default accent palette (see packages/charts/src/colors.ts →
+// paletteDefault) so the presets line up with the colors charts auto-assign from
+// the (theme-aware) accent palette when a color prop is left unset.
+const CHART_COLOR_PRESETS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'];
+
+// Charts expose a large surface of object-shaped config, interaction internals,
+// and accessibility props that don't map to simple playground controls. The data
+// itself is supplied via initialProps (sourced from each chart's `basic` demo),
+// so these are hidden from the generated control list.
+const CHART_HIDDEN_PROPS = [
+  ...COMMON_EVENT_PROPS,
+  // Data inputs — provided via initialProps
+  'data', 'series', 'layers', 'nodes', 'links', 'rings', 'dataKey', 'values',
+  // Object-shaped configuration
+  'xAxis', 'yAxis', 'yAxisRight', 'grid', 'legend', 'tooltip', 'animation',
+  'annotations', 'thresholds', 'bands', 'valueLabel', 'valueLabels', 'colorScale',
+  'colorOptions', 'quadrants', 'labels', 'labelTextStyle', 'track', 'ticks', 'needle',
+  'centerLabel', 'centerSubLabel', 'ranges', 'statsMarkers', 'valueBands', 'radialGrid',
+  'defaultSliceStyle', 'padding', 'chartPadding', 'layout', 'connectors', 'cellSize',
+  'domain', 'xDomain', 'yDomain', 'yDomainRight', 'rangeHighlights', 'hoverHighlight',
+  'gradientLegend', 'accessibilityTable', 'movingAveragePeriods', 'movingAverageColors',
+  'nodeRadiusRange', 'linkWidthRange', 'linkPalette', 'range',
+  // Formatter / render callbacks
+  'valueFormatter', 'labelFormatter', 'categoryLabelFormatter', 'renderCenterContent',
+  'ariaLabelFormatter', 'onDomainChange', 'onSliceHover',
+  // Interaction internals
+  'enablePanZoom', 'zoomMode', 'minZoom', 'maxZoom', 'enableWheelZoom', 'wheelZoomStep',
+  'invertWheelZoom', 'resetOnDoubleTap', 'clampToInitialDomain', 'invertPinchZoom',
+  'enableBrushZoom', 'decimationThreshold', 'useSpatialIndex', 'disableAnimations',
+  'disableAnimation', 'xScaleType', 'yScaleType', 'maxAnimatedCells', 'enableSeriesToggle',
+  'keyboardNavigation', 'legendToggleEnabled',
+  // Meta / a11y / misc
+  'accessibilityLabel', 'accessibilityHint', 'accessibilityRole', 'accessible',
+  'importantForAccessibility', 'useOwnInteractionProvider', 'suppressPopover',
+  'animationEasing', 'animationDuration', 'title', 'subtitle', 'id', 'name', 'style', 'testID',
+];
+
+// Reusable width/height numeric controls (charts are sized in px).
+const CHART_WIDTH_CONTROL = { controlType: 'number' as const, min: 240, max: 720, step: 20 };
+const CHART_HEIGHT_CONTROL = { controlType: 'number' as const, min: 160, max: 480, step: 20 };
+
+// -- Sample datasets (mirrors each chart's `basic` demo) --------------------
+const AREA_CHART_DATA = [
+  { x: 0, y: 42 }, { x: 1, y: 68 }, { x: 2, y: 83 }, { x: 3, y: 97 },
+  { x: 4, y: 124 }, { x: 5, y: 138 }, { x: 6, y: 152 }, { x: 7, y: 167 },
+];
+
+const BAR_CHART_DATA = [
+  { id: 'q1', category: 'Q1', value: 420_000 },
+  { id: 'q2', category: 'Q2', value: 515_000 },
+  { id: 'q3', category: 'Q3', value: 468_500 },
+  { id: 'q4', category: 'Q4', value: 590_200 },
+];
+
+const BUBBLE_CHART_DATA = [
+  { company: 'Aster Labs', revenue: 320, growth: 28, valuation: 920 },
+  { company: 'Blue Harbor', revenue: 180, growth: 35, valuation: 620 },
+  { company: 'Canopy', revenue: 250, growth: 22, valuation: 710 },
+  { company: 'Delta Systems', revenue: 140, growth: 44, valuation: 540 },
+  { company: 'Elevate', revenue: 460, growth: 18, valuation: 1080 },
+  { company: 'Fieldstone', revenue: 210, growth: 31, valuation: 680 },
+  { company: 'Glowforge', revenue: 120, growth: 52, valuation: 480 },
+  { company: 'Horizon', revenue: 390, growth: 24, valuation: 960 },
+];
+const BUBBLE_CHART_DATA_KEY = { x: 'revenue', y: 'growth', z: 'valuation', label: 'company', id: 'company' };
+
+const CANDLESTICK_SERIES = [
+  {
+    id: 'apple',
+    name: 'Apple Inc.',
+    colorBull: '#34C38F',
+    colorBear: '#F56565',
+    wickColor: '#6B7280',
+    data: [
+      { x: new Date('2023-10-02'), open: 154, high: 158, low: 153, close: 157 },
+      { x: new Date('2023-10-03'), open: 157, high: 161, low: 156, close: 160 },
+      { x: new Date('2023-10-04'), open: 160, high: 164, low: 159, close: 162 },
+      { x: new Date('2023-10-05'), open: 162, high: 166, low: 161, close: 165 },
+      { x: new Date('2023-10-06'), open: 165, high: 168, low: 163, close: 164 },
+      { x: new Date('2023-10-09'), open: 164, high: 167, low: 162, close: 166 },
+      { x: new Date('2023-10-10'), open: 166, high: 170, low: 165, close: 169 },
+      { x: new Date('2023-10-11'), open: 169, high: 172, low: 167, close: 168 },
+    ],
+  },
+];
+
+const COMBO_CHART_LAYERS = [
+  {
+    type: 'bar' as const, id: 'revenue', name: 'Monthly revenue', opacity: 0.85,
+    data: [
+      { x: 1, y: 420 }, { x: 2, y: 455 }, { x: 3, y: 508 },
+      { x: 4, y: 480 }, { x: 5, y: 532 }, { x: 6, y: 575 },
+    ],
+  },
+  {
+    type: 'line' as const, id: 'active-users', name: 'Active users', targetAxis: 'right' as const,
+    thickness: 3, showPoints: true, pointSize: 6,
+    data: [
+      { x: 1, y: 110 }, { x: 2, y: 134 }, { x: 3, y: 149 },
+      { x: 4, y: 158 }, { x: 5, y: 166 }, { x: 6, y: 172 },
+    ],
+  },
+];
+
+const DONUT_CHART_DATA = [
+  { label: 'Design', value: 28 },
+  { label: 'Engineering', value: 42 },
+  { label: 'Marketing', value: 18 },
+  { label: 'Support', value: 12 },
+];
+
+const FUNNEL_CHART_SERIES = {
+  id: 'pipeline',
+  name: 'Q2 pipeline',
+  steps: [
+    { label: 'Website visits', value: 32_500 },
+    { label: 'Sign-ups', value: 9_600 },
+    { label: 'Qualified leads', value: 4_350 },
+    { label: 'Trials started', value: 2_150 },
+    { label: 'Customers', value: 1_120 },
+  ],
+};
+
+const GAUGE_CHART_RANGES = [
+  { from: 0, to: 40, color: '#F87171', label: 'High' },
+  { from: 40, to: 70, color: '#FBBF24', label: 'Moderate' },
+  { from: 70, to: 100, color: '#34D399', label: 'Optimal' },
+];
+
+const GROUPED_BAR_SERIES = [
+  {
+    id: '2024', name: '2024',
+    data: [
+      { id: 'analytics-24', category: 'Analytics', value: 420 },
+      { id: 'automation-24', category: 'Automation', value: 365 },
+      { id: 'integrations-24', category: 'Integrations', value: 298 },
+    ],
+  },
+  {
+    id: '2025', name: '2025',
+    data: [
+      { id: 'analytics-25', category: 'Analytics', value: 512 },
+      { id: 'automation-25', category: 'Automation', value: 418 },
+      { id: 'integrations-25', category: 'Integrations', value: 342 },
+    ],
+  },
+  {
+    id: 'target', name: 'Target',
+    data: [
+      { id: 'analytics-target', category: 'Analytics', value: 540 },
+      { id: 'automation-target', category: 'Automation', value: 440 },
+      { id: 'integrations-target', category: 'Integrations', value: 360 },
+    ],
+  },
+];
+
+const HEATMAP_CHART_DATA = {
+  rows: ['Morning', 'Afternoon', 'Evening'],
+  cols: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  values: [
+    [12, 18, 25, 22, 28],
+    [8, 14, 19, 24, 20],
+    [6, 9, 12, 15, 11],
+  ],
+};
+const HEATMAP_COLOR_SCALE = { min: 0, max: 30, colors: ['#EBF4FF', '#60A5FA', '#1D4ED8'] };
+
+const HISTOGRAM_CHART_DATA = [
+  4, 6, 7, 8, 9, 9, 10, 11, 11, 12, 12, 12, 13, 13, 14, 14, 14, 15, 16, 16,
+  16, 17, 18, 18, 18, 19, 20, 20, 22, 24, 25,
+];
+
+const LINE_CHART_SERIES = [
+  {
+    id: 'north-america', name: 'North America',
+    data: [
+      { x: 1, y: 120 }, { x: 2, y: 138 }, { x: 3, y: 152 }, { x: 4, y: 167 },
+      { x: 5, y: 176 }, { x: 6, y: 189 }, { x: 7, y: 205 }, { x: 8, y: 220 },
+      { x: 9, y: 232 }, { x: 10, y: 246 }, { x: 11, y: 260 }, { x: 12, y: 278 },
+    ],
+  },
+  {
+    id: 'emea', name: 'EMEA',
+    data: [
+      { x: 1, y: 96 }, { x: 2, y: 108 }, { x: 3, y: 117 }, { x: 4, y: 126 },
+      { x: 5, y: 134 }, { x: 6, y: 142 }, { x: 7, y: 150 }, { x: 8, y: 158 },
+      { x: 9, y: 168 }, { x: 10, y: 175 }, { x: 11, y: 182 }, { x: 12, y: 191 },
+    ],
+  },
+];
+
+const MARIMEKKO_CHART_DATA = [
+  { label: 'Inbound', segments: [{ label: 'North America', value: 52 }, { label: 'EMEA', value: 34 }, { label: 'APAC', value: 24 }] },
+  { label: 'Outbound', segments: [{ label: 'North America', value: 44 }, { label: 'EMEA', value: 28 }, { label: 'APAC', value: 18 }] },
+  { label: 'Partnerships', segments: [{ label: 'North America', value: 29 }, { label: 'EMEA', value: 22 }, { label: 'APAC', value: 15 }] },
+  { label: 'Expansion', segments: [{ label: 'North America', value: 37 }, { label: 'EMEA', value: 18 }, { label: 'APAC', value: 12 }] },
+];
+
+const NETWORK_CHART_NODES = [
+  { id: 'product', name: 'Product', group: 'teams', value: 12 },
+  { id: 'design', name: 'Design', group: 'teams', value: 8 },
+  { id: 'engineering', name: 'Engineering', group: 'teams', value: 18 },
+  { id: 'marketing', name: 'Marketing', group: 'teams', value: 10 },
+  { id: 'sales', name: 'Sales', group: 'teams', value: 9 },
+  { id: 'support', name: 'Support', group: 'teams', value: 7 },
+  { id: 'platform', name: 'Platform', group: 'initiatives', value: 15 },
+  { id: 'ai', name: 'AI', group: 'initiatives', value: 11 },
+];
+const NETWORK_CHART_LINKS = [
+  { source: 'platform', target: 'engineering', value: 6 },
+  { source: 'platform', target: 'product', value: 5 },
+  { source: 'platform', target: 'support', value: 2 },
+  { source: 'ai', target: 'product', value: 4 },
+  { source: 'ai', target: 'marketing', value: 3 },
+  { source: 'ai', target: 'sales', value: 2 },
+  { source: 'product', target: 'design', value: 7 },
+  { source: 'product', target: 'engineering', value: 8 },
+  { source: 'marketing', target: 'sales', value: 5 },
+  { source: 'support', target: 'sales', value: 4 },
+];
+
+const PARETO_CHART_DATA = [
+  { label: 'Authentication', value: 118 },
+  { label: 'Checkout', value: 96 },
+  { label: 'Notifications', value: 64 },
+  { label: 'Analytics', value: 42 },
+  { label: 'Billing', value: 31 },
+  { label: 'Integrations', value: 27 },
+  { label: 'Mobile', value: 19 },
+  { label: 'Reporting', value: 17 },
+];
+
+const PIE_CHART_DATA = [
+  { id: 'direct', label: 'Direct', value: 55 },
+  { id: 'organic', label: 'Organic', value: 25 },
+  { id: 'referral', label: 'Referral', value: 15 },
+  { id: 'social', label: 'Social', value: 5 },
+];
+
+const RADAR_CHART_SERIES = [
+  {
+    id: 'current', name: 'Current quarter',
+    data: [
+      { axis: 'Sales', value: 42 }, { axis: 'Marketing', value: 30 }, { axis: 'R&D', value: 50 },
+      { axis: 'Support', value: 35 }, { axis: 'Operations', value: 24 }, { axis: 'Finance', value: 18 },
+    ],
+  },
+  {
+    id: 'target', name: 'Target',
+    data: [
+      { axis: 'Sales', value: 48 }, { axis: 'Marketing', value: 36 }, { axis: 'R&D', value: 44 },
+      { axis: 'Support', value: 40 }, { axis: 'Operations', value: 28 }, { axis: 'Finance', value: 22 },
+    ],
+  },
+];
+
+const RADIAL_BAR_DATA = [
+  { id: 'uptime', label: 'Uptime', value: 99, max: 100 },
+  { id: 'nps', label: 'NPS', value: 72, max: 100 },
+  { id: 'retention', label: 'Retention', value: 86, max: 100 },
+  { id: 'sla', label: 'SLA', value: 94, max: 100 },
+];
+
+const RIDGE_CHART_SERIES = [
+  { id: '2019', name: '2019', values: [42, 44, 45, 46, 47, 48, 49, 49, 50, 52, 53, 54, 55, 55, 55, 57, 58, 60, 62] },
+  { id: '2020', name: '2020', values: [38, 39, 40, 41, 42, 43, 44, 46, 48, 50, 51, 51, 52, 53, 53, 54, 55, 57, 59] },
+  { id: '2021', name: '2021', values: [45, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 59, 60, 61, 62, 63, 64] },
+  { id: '2022', name: '2022', values: [50, 51, 52, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 65, 66, 67, 68, 69] },
+];
+
+const SANKEY_CHART_NODES = [
+  { id: 'solar', name: 'Solar' },
+  { id: 'wind', name: 'Wind' },
+  { id: 'hydro', name: 'Hydro' },
+  { id: 'grid', name: 'Grid' },
+  { id: 'battery', name: 'Battery Storage' },
+  { id: 'residential', name: 'Residential' },
+  { id: 'commercial', name: 'Commercial' },
+  { id: 'industrial', name: 'Industrial' },
+];
+const SANKEY_CHART_LINKS = [
+  { source: 'solar', target: 'grid', value: 32 },
+  { source: 'wind', target: 'grid', value: 28 },
+  { source: 'hydro', target: 'grid', value: 18 },
+  { source: 'solar', target: 'battery', value: 6 },
+  { source: 'wind', target: 'battery', value: 4 },
+  { source: 'battery', target: 'grid', value: 8 },
+  { source: 'grid', target: 'residential', value: 30 },
+  { source: 'grid', target: 'commercial', value: 24 },
+  { source: 'grid', target: 'industrial', value: 16 },
+];
+
+const SCATTER_CHART_SERIES = [
+  {
+    id: 'marketing', name: 'Marketing spend', pointSize: 8,
+    data: [
+      { x: 18, y: 42 }, { x: 22, y: 48 }, { x: 25, y: 54 }, { x: 27, y: 58 },
+      { x: 30, y: 61 }, { x: 34, y: 66 }, { x: 38, y: 70 },
+    ],
+  },
+  {
+    id: 'events', name: 'Event sponsorship', pointSize: 7,
+    data: [
+      { x: 12, y: 36 }, { x: 16, y: 41 }, { x: 19, y: 44 }, { x: 23, y: 47 },
+      { x: 27, y: 55 }, { x: 32, y: 62 }, { x: 35, y: 65 },
+    ],
+  },
+];
+const SCATTER_CHART_DATA = SCATTER_CHART_SERIES.flatMap((serie) => serie.data);
+
+const SPARKLINE_CHART_DATA = [32, 36, 31, 40, 44, 47, 46, 52, 58, 60, 64, 67, 70, 72];
+
+const STACKED_AREA_SERIES = [
+  {
+    id: 'mobile', name: 'Mobile',
+    data: [
+      { x: 1, y: 22 }, { x: 2, y: 26 }, { x: 3, y: 28 }, { x: 4, y: 32 }, { x: 5, y: 36 }, { x: 6, y: 38 },
+      { x: 7, y: 42 }, { x: 8, y: 44 }, { x: 9, y: 47 }, { x: 10, y: 50 }, { x: 11, y: 52 }, { x: 12, y: 55 },
+    ],
+  },
+  {
+    id: 'web', name: 'Web',
+    data: [
+      { x: 1, y: 18 }, { x: 2, y: 20 }, { x: 3, y: 22 }, { x: 4, y: 25 }, { x: 5, y: 26 }, { x: 6, y: 27 },
+      { x: 7, y: 28 }, { x: 8, y: 30 }, { x: 9, y: 32 }, { x: 10, y: 33 }, { x: 11, y: 34 }, { x: 12, y: 35 },
+    ],
+  },
+  {
+    id: 'api', name: 'API',
+    data: [
+      { x: 1, y: 12 }, { x: 2, y: 14 }, { x: 3, y: 15 }, { x: 4, y: 16 }, { x: 5, y: 18 }, { x: 6, y: 19 },
+      { x: 7, y: 21 }, { x: 8, y: 22 }, { x: 9, y: 23 }, { x: 10, y: 24 }, { x: 11, y: 25 }, { x: 12, y: 27 },
+    ],
+  },
+];
+
+const STACKED_BAR_SERIES = [
+  {
+    id: 'new-business', name: 'New business',
+    data: [
+      { id: 'q1-new', category: 'Q1', value: 220 }, { id: 'q2-new', category: 'Q2', value: 250 },
+      { id: 'q3-new', category: 'Q3', value: 240 }, { id: 'q4-new', category: 'Q4', value: 280 },
+    ],
+  },
+  {
+    id: 'expansion', name: 'Expansion',
+    data: [
+      { id: 'q1-exp', category: 'Q1', value: 110 }, { id: 'q2-exp', category: 'Q2', value: 135 },
+      { id: 'q3-exp', category: 'Q3', value: 150 }, { id: 'q4-exp', category: 'Q4', value: 165 },
+    ],
+  },
+  {
+    id: 'renewal', name: 'Renewal',
+    data: [
+      { id: 'q1-renew', category: 'Q1', value: 180 }, { id: 'q2-renew', category: 'Q2', value: 172 },
+      { id: 'q3-renew', category: 'Q3', value: 188 }, { id: 'q4-renew', category: 'Q4', value: 194 },
+    ],
+  },
+];
+
+const VIOLIN_CHART_SERIES = [
+  { id: 'north', name: 'North region', values: [45, 47, 48, 49, 50, 51, 52, 53, 53, 54, 55, 55, 56, 58, 59, 60, 61] },
+  { id: 'south', name: 'South region', values: [38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 52, 53, 54] },
+  { id: 'west', name: 'West region', values: [52, 53, 54, 55, 56, 57, 58, 59, 60, 60, 61, 62, 63, 64, 65, 65, 66] },
+];
 
 const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
   Accordion: {
@@ -489,20 +980,39 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
     initialProps: {
       label: 'Enable notifications',
       description: 'Send weekly launch recaps.',
-      checked: true,
-      size: 'md',
+      defaultChecked: true,
+      variant: 'filled',
+      size: '2xl',
       color: 'primary',
       labelPosition: 'right',
       onLabel: 'On',
       offLabel: 'Off'
     },
-    pinnedProps: ['checked', 'label', 'size', 'color', 'labelPosition', 'disabled', 'required', 'description'],
+    pinnedProps: ['checked', 'label', 'variant', 'size', 'color', 'labelPosition', 'disabled', 'required', 'description'],
     hiddenProps: [...COMMON_EVENT_PROPS, 'controls', 'children', 'onIcon', 'offIcon'],
     controlOverrides: {
+      variant: { controlType: 'select', options: SWITCH_VARIANTS },
       size: { controlType: 'segmented', options: SIZE_TOKENS },
       color: { controlType: 'select', options: SWITCH_COLOR_OPTIONS },
       labelPosition: { controlType: 'segmented', options: SWITCH_LABEL_POSITIONS }
-    }
+    },
+    extraControls: [
+      {
+        name: 'thumbIcons',
+        label: 'Thumb icons',
+        controlType: 'boolean',
+        initialValue: false,
+        description: 'Render check / ✕ icons inside the moving thumb (onIcon / offIcon).',
+      },
+    ],
+    transformProps: (values) => {
+      const { thumbIcons, ...rest } = values;
+      if (thumbIcons) {
+        rest.onIcon = React.createElement(Icon, { name: 'check', size: 12, stroke: 3, color: '#111827' });
+        rest.offIcon = React.createElement(Icon, { name: 'close', size: 12, stroke: 3, color: '#6B7280' });
+      }
+      return rest;
+    },
   },
   Tabs: {
     id: 'Tabs',
@@ -710,6 +1220,44 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       return React.cloneElement(node, undefined, items);
     }
   },
+  DataList: {
+    id: 'DataList',
+    component: 'DataList',
+    initialProps: {
+      orientation: 'horizontal',
+      size: 'md',
+      withDivider: false,
+      labelWidth: 120,
+    },
+    pinnedProps: ['orientation', 'size', 'withDivider', 'labelWidth'],
+    hiddenProps: [...COMMON_EVENT_PROPS],
+    controlOverrides: {
+      orientation: { controlType: 'segmented', options: ['horizontal', 'vertical'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      labelWidth: { controlType: 'number', min: 60, max: 240, step: 10 },
+    },
+    previewWrapper: (node) => {
+      if (!React.isValidElement(node)) return node;
+      const Item = (node.type as any)?.Item;
+      const ItemLabel = (node.type as any)?.ItemLabel;
+      const ItemValue = (node.type as any)?.ItemValue;
+      if (!Item || !ItemLabel || !ItemValue) return node;
+      const rows = [
+        { label: 'Name', value: 'John Doe' },
+        { label: 'Email', value: 'john@example.com' },
+        { label: 'Role', value: 'Software Engineer' },
+      ];
+      const items = rows.map((row) =>
+        React.createElement(
+          Item,
+          { key: row.label },
+          React.createElement(ItemLabel, undefined, row.label),
+          React.createElement(ItemValue, undefined, row.value),
+        )
+      );
+      return React.cloneElement(node, undefined, items);
+    }
+  },
   Waveform: {
     id: 'Waveform',
     component: 'Waveform',
@@ -717,7 +1265,6 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       peaks: WAVEFORM_SAMPLE,
       width: 320,
       height: 80,
-      color: '#6366f1',
       progressColor: '#22c55e',
       variant: 'bars',
       barWidth: 2,
@@ -796,7 +1343,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       textColor: '#f1f5f9'
     },
     pinnedProps: ['size', 'src', 'fallback', 'online', 'showText', 'gap', 'indicatorColor', 'backgroundColor', 'textColor'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'accessibilityLabel', 'style'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'accessibilityLabel', 'style', 'fallbackProps', 'labelProps', 'descriptionProps'],
     controlOverrides: {
       size: { controlType: 'segmented', options: SIZE_TOKENS },
       src: { controlType: 'text', placeholder: 'https://example.com/avatar.jpg' },
@@ -814,7 +1361,6 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       orientation: 'horizontal',
       iconPosition: 'left',
       size: 'md',
-      color: '#6366f1',
       allowNextStepsSelect: true
     },
     pinnedProps: ['active', 'orientation', 'iconPosition', 'size', 'color', 'allowNextStepsSelect'],
@@ -852,7 +1398,6 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       text: 'Synchronizing telemetry feed',
       variant: 'h5',
       size: 'lg',
-      color: '#94a3b8',
       shimmerColor: '#f8fafc',
       spread: 2.5,
       duration: 1.6,
@@ -900,7 +1445,21 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       weight: { controlType: 'segmented', options: FONT_WEIGHT_OPTIONS },
       angle: { controlType: 'number', min: 0, max: 360, step: 5 },
       position: { controlType: 'number', min: 0, max: 1, step: 0.05 }
-    }
+    },
+    // The `colors` prop is an array, which flat controls can't edit directly — so
+    // expose three individual color pickers and reassemble them in transformProps.
+    extraControls: [
+      { name: 'color1', label: 'Gradient color 1', controlType: 'color', initialValue: GRADIENT_DEFAULT_COLORS[0], colorPresets: GRADIENT_STOP_PRESETS },
+      { name: 'color2', label: 'Gradient color 2', controlType: 'color', initialValue: GRADIENT_DEFAULT_COLORS[1], colorPresets: GRADIENT_STOP_PRESETS },
+      { name: 'color3', label: 'Gradient color 3 (optional)', controlType: 'color', initialValue: GRADIENT_DEFAULT_COLORS[2], colorPresets: GRADIENT_STOP_PRESETS },
+    ],
+    transformProps: (values) => {
+      const { color1, color2, color3, ...rest } = values;
+      const picked = [color1, color2, color3].filter((c) => typeof c === 'string' && c.trim());
+      // GradientText requires at least two stops — fall back to the defaults otherwise.
+      rest.colors = picked.length >= 2 ? picked : GRADIENT_DEFAULT_COLORS;
+      return rest;
+    },
   },
   Loader: {
     id: 'Loader',
@@ -908,7 +1467,6 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
     initialProps: {
       variant: 'dots',
       size: 'md',
-      color: '#6366f1',
       speed: 700
     },
     pinnedProps: ['variant', 'size', 'color', 'speed'],
@@ -955,7 +1513,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
     controlOverrides: {
       variant: { controlType: 'segmented', options: ['filled', 'outline', 'light', 'subtle', 'gradient'] },
       size: { controlType: 'segmented', options: SIZE_TOKENS },
-      color: { controlType: 'segmented', options: ['primary', 'secondary', 'success', 'warning', 'error', 'gray'] },
+      color: { controlType: 'select', options: ['primary', 'secondary', 'success', 'warning', 'error', 'gray'] },
       children: { controlType: 'text', placeholder: 'Badge label' },
     },
   },
@@ -1120,7 +1678,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       allowFraction: false,
     },
     pinnedProps: ['value', 'count', 'size', 'readOnly', 'allowFraction', 'color', 'emptyColor', 'gap'],
-    hiddenProps: [...COMMON_EVENT_PROPS, 'onHover', 'character', 'emptyCharacter', 'hoverColor', 'style', 'testID', 'accessibilityLabel', 'accessibilityHint', 'label', 'labelPosition', 'labelGap', 'allowHalf', 'precision', 'defaultValue', 'showTooltip'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'onHover', 'character', 'emptyCharacter', 'hoverColor', 'style', 'testID', 'accessibilityLabel', 'accessibilityHint', 'label', 'labelPosition', 'labelGap', 'precision', 'defaultValue', 'showTooltip'],
     controlOverrides: {
       size: { controlType: 'segmented', options: SIZE_TOKENS },
       count: { controlType: 'number', min: 1, max: 10, step: 1 },
@@ -1292,6 +1850,7 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       maxLength: 500,
       showCharCounter: true,
       disabled: false,
+      editable: true,
       resize: 'vertical',
     },
     pinnedProps: ['label', 'placeholder', 'size', 'rows', 'autoResize', 'maxLength', 'showCharCounter', 'resize', 'disabled', 'error'],
@@ -1454,6 +2013,1708 @@ const PLAYGROUND_CONFIGS: Record<string, ComponentPlaygroundConfig> = {
       position: { controlType: 'segmented', options: ['top', 'bottom'] },
     },
     previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 420 } }, node),
+  },
+  AppStoreBadge: {
+    id: 'AppStoreBadge',
+    component: 'AppStoreBadge',
+    initialProps: {
+      brand: 'apple',
+      primaryText: 'Download on the',
+      secondaryText: 'App Store',
+      size: 'md',
+      disabled: false,
+    },
+    pinnedProps: ['brand', 'primaryText', 'secondaryText', 'size', 'disabled', 'darkMode'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'backgroundColor', 'textColor', 'borderColor'],
+    controlOverrides: {
+      brand: { controlType: 'select', options: ['apple', 'google', 'app-store', 'galaxy-store', 'amazonAppstore', 'chromeWebStore'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+  },
+  Blockquote: {
+    id: 'Blockquote',
+    component: 'Blockquote',
+    initialProps: {
+      children: 'Design is not just what it looks like and feels like. Design is how it works.',
+      author: 'Steve Jobs',
+      source: 'Apple',
+      border: true,
+      alignment: 'left',
+    },
+    pinnedProps: ['variant', 'size', 'alignment', 'border', 'shadow', 'verified', 'author', 'source'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'links', 'rating', 'date', 'quoteIcon', 'quoteIconPosition', 'quoteIconSize', 'verifiedTooltip', 'color'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      alignment: { controlType: 'segmented', options: ['left', 'center', 'right'] },
+      author: { controlType: 'text', placeholder: 'Author name' },
+      source: { controlType: 'text', placeholder: 'Source' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 520 } }, node),
+  },
+  BrandButton: {
+    id: 'BrandButton',
+    component: 'BrandButton',
+    initialProps: {
+      brand: 'google',
+      title: 'Continue with Google',
+      variant: 'filled',
+      size: 'md',
+      iconPosition: 'left',
+      fullWidth: false,
+      loading: false,
+      disabled: false,
+    },
+    pinnedProps: ['brand', 'title', 'variant', 'size', 'iconPosition', 'iconVariant', 'fullWidth', 'loading', 'disabled'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'key', 'color', 'textColor', 'colorVariant', 'tooltip', 'tooltipPosition', 'labelProps', 'loadingTitle', 'onPressIn', 'onPressOut', 'onLongPress', 'onLayout', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      brand: { controlType: 'select', options: ['google', 'apple', 'facebook', 'github', 'x', 'microsoft', 'discord', 'spotify', 'slack', 'linkedin'] },
+      variant: { controlType: 'segmented', options: ['filled', 'outline', 'ghost'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      iconPosition: { controlType: 'segmented', options: ['left', 'right'] },
+      title: { controlType: 'text', placeholder: 'Button label' },
+    },
+  },
+  BrandIcon: {
+    id: 'BrandIcon',
+    component: 'BrandIcon',
+    initialProps: {
+      brand: 'github',
+      size: 48,
+      variant: 'default',
+      invertInDarkMode: true,
+    },
+    pinnedProps: ['brand', 'size', 'variant', 'color', 'invertInDarkMode', 'decorative'],
+    hiddenProps: ['style', 'label', 'colorScheme'],
+    controlOverrides: {
+      brand: { controlType: 'text', placeholder: 'Brand name (e.g. github, apple)' },
+      size: { controlType: 'number', min: 16, max: 96, step: 4 },
+      color: { controlType: 'color', placeholder: 'auto' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24 } }, node),
+  },
+  Calendar: {
+    id: 'Calendar',
+    component: 'Calendar',
+    initialProps: {
+      type: 'single',
+      size: 'md',
+      numberOfMonths: 1,
+      firstDayOfWeek: 0,
+      highlightToday: true,
+      hideOutsideDates: false,
+      hideWeekdays: false,
+    },
+    pinnedProps: ['type', 'size', 'numberOfMonths', 'firstDayOfWeek', 'highlightToday', 'hideOutsideDates', 'hideWeekdays', 'withCellSpacing'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'date', 'defaultDate', 'value', 'minDate', 'maxDate', 'excludeDate', 'locale', 'getDayProps', 'renderDay', 'level', 'defaultLevel', 'onLevelChange', 'onDateChange', 'static', 'weekendDays'],
+    controlOverrides: {
+      type: { controlType: 'segmented', options: ['single', 'multiple', 'range'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      numberOfMonths: { controlType: 'number', min: 1, max: 3, step: 1 },
+      firstDayOfWeek: { controlType: 'number', min: 0, max: 6, step: 1 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  Carousel: {
+    id: 'Carousel',
+    component: 'Carousel',
+    initialProps: {
+      orientation: 'horizontal',
+      showArrows: true,
+      showDots: true,
+      autoPlay: false,
+      loop: true,
+      itemsPerPage: 1,
+      align: 'center',
+      height: 200,
+      slideGap: 12,
+    },
+    pinnedProps: ['orientation', 'showArrows', 'showDots', 'autoPlay', 'loop', 'itemsPerPage', 'align', 'height', 'slideGap', 'dragFree'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'itemStyle', 'breakpoints', 'slideSize', 'itemGap', 'windowSize', 'containScroll', 'startIndex', 'slidesToScroll', 'dragThreshold', 'duration', 'skipSnaps', 'snapToItem', 'arrowPosition', 'arrowSize', 'dotSize', 'scrollEnabled', 'reducedMotion', 'autoPlayInterval', 'autoPlayPauseOnTouch', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      orientation: { controlType: 'segmented', options: ['horizontal', 'vertical'] },
+      align: { controlType: 'segmented', options: ['start', 'center', 'end'] },
+      itemsPerPage: { controlType: 'number', min: 1, max: 4, step: 1 },
+      height: { controlType: 'number', min: 120, max: 360, step: 20 },
+      slideGap: { controlType: 'number', min: 0, max: 32, step: 2 },
+    },
+    transformProps: (values) => ({
+      ...values,
+      children: MASONRY_COLORS.slice(0, 4).map((color, i) =>
+        React.createElement(
+          View,
+          { key: i, style: { flex: 1, height: values.height ?? 200, borderRadius: 12, backgroundColor: color, alignItems: 'center', justifyContent: 'center' } },
+          React.createElement(Text, { style: { color: '#fff', fontWeight: '700', fontSize: 24 } }, `Slide ${i + 1}`)
+        )
+      ),
+    }),
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 480 } }, node),
+  },
+  Collapse: {
+    id: 'Collapse',
+    component: 'Collapse',
+    initialProps: {
+      isCollapsed: false,
+      duration: 300,
+      timing: 'ease-out',
+      animateOnMount: false,
+      fadeContent: true,
+      collapsedHeight: 0,
+      children: React.createElement(
+        View,
+        { style: { padding: 16, borderRadius: 12, backgroundColor: 'rgba(99,102,241,0.12)' } },
+        React.createElement(Text, { style: { fontSize: 14, color: '#334155' } }, 'This content can be smoothly collapsed and expanded. Toggle the isCollapsed control to see the animation.')
+      ),
+    },
+    pinnedProps: ['isCollapsed', 'duration', 'timing', 'animateOnMount', 'fadeContent', 'collapsedHeight'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'contentStyle', 'easing', 'onAnimationStart', 'onAnimationEnd'],
+    controlOverrides: {
+      duration: { controlType: 'number', min: 0, max: 1000, step: 50 },
+      timing: { controlType: 'segmented', options: ['ease', 'ease-in', 'ease-out', 'linear'] },
+      collapsedHeight: { controlType: 'number', min: 0, max: 80, step: 4 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 420 } }, node),
+  },
+  ColorInput: {
+    id: 'ColorInput',
+    component: 'ColorInput',
+    initialProps: {
+      label: 'Brand color',
+      defaultValue: '#6366f1',
+      format: 'hex',
+      size: 'md',
+      variant: 'default',
+      radius: 'md',
+      showPreview: true,
+      showInput: true,
+      withSwatches: true,
+      withAlpha: false,
+      clearable: false,
+      disabled: false,
+    },
+    pinnedProps: ['format', 'size', 'variant', 'radius', 'showPreview', 'showInput', 'withSwatches', 'withAlpha', 'clearable', 'disabled', 'required'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'swatches', 'placement', 'flip', 'shift', 'boundary', 'offset', 'autoReposition', 'fallbackPlacements', 'keyboardAvoidance', 'previewStyle', 'inputStyle', 'error', 'description', 'placeholder', 'label', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      format: { controlType: 'segmented', options: ['hex', 'rgba', 'hsla'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: INPUT_VARIANTS },
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  ColorSwatch: {
+    id: 'ColorSwatch',
+    component: 'ColorSwatch',
+    initialProps: {
+      size: 48,
+      selected: false,
+      disabled: false,
+      showBorder: true,
+      showCheckmark: true,
+      borderWidth: 1,
+      borderRadius: 8,
+    },
+    pinnedProps: ['color', 'size', 'selected', 'disabled', 'showBorder', 'showCheckmark', 'borderWidth', 'borderRadius'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'borderColor', 'checkmarkColor', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      color: { controlType: 'color', placeholder: '#6366f1', colorPresets: MASONRY_COLORS.slice(0, 6) },
+      size: { controlType: 'number', min: 16, max: 96, step: 4 },
+      borderWidth: { controlType: 'number', min: 0, max: 6, step: 1 },
+      borderRadius: { controlType: 'number', min: 0, max: 48, step: 2 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', paddingVertical: 16 } }, node),
+  },
+  ContextMenu: {
+    id: 'ContextMenu',
+    component: 'ContextMenu',
+    initialProps: {
+      closeOnSelect: true,
+      maxHeight: 240,
+    },
+    pinnedProps: ['closeOnSelect', 'longPressDelay', 'maxHeight'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'items', 'open', 'position', 'onOpen', 'onClose'],
+    controlOverrides: {
+      maxHeight: { controlType: 'number', min: 120, max: 400, step: 20 },
+    },
+    transformProps: (values) => ({
+      ...values,
+      items: CONTEXT_MENU_ITEMS,
+      children: (triggerProps: any) =>
+        React.createElement(
+          View,
+          { ...triggerProps, style: { paddingVertical: 24, paddingHorizontal: 32, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', borderColor: '#cbd5e1', alignItems: 'center' } },
+          React.createElement(Text, { style: { color: '#475569', fontWeight: '600' } }, 'Right-click / long-press me')
+        ),
+    }),
+    previewWrapper: (node) => React.createElement(View, { style: { minHeight: 160, alignItems: 'center', justifyContent: 'center' } }, node),
+  },
+  CopyButton: {
+    id: 'CopyButton',
+    component: 'CopyButton',
+    initialProps: {
+      value: 'npm install @platform-blocks/ui',
+      label: 'Copy',
+      iconOnly: false,
+      size: 'md',
+      disableToast: false,
+    },
+    pinnedProps: ['value', 'label', 'iconOnly', 'size', 'mode', 'buttonVariant', 'disableToast'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'onCopy', 'toastTitle', 'toastMessage', 'iconName', 'copiedIconName', 'iconColor', 'copiedIconColor', 'tooltip', 'tooltipPosition'],
+    controlOverrides: {
+      value: { controlType: 'text', placeholder: 'Text to copy' },
+      label: { controlType: 'text', placeholder: 'Button label' },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+  },
+  DataTable: {
+    id: 'DataTable',
+    component: 'DataTable',
+    initialProps: {
+      data: DATATABLE_DATA,
+      columns: DATATABLE_COLUMNS,
+      searchable: true,
+      selectable: false,
+      striped: true,
+      variant: 'default',
+      density: 'md',
+      fullWidth: true,
+      showRowDividers: true,
+    },
+    pinnedProps: ['searchable', 'selectable', 'striped', 'variant', 'density', 'fullWidth', 'showRowDividers', 'loading', 'enhancedHover'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'id', 'data', 'columns', 'error', 'emptyMessage', 'searchPlaceholder', 'searchValue', 'onSearchChange',
+      'sortBy', 'onSortChange', 'filters', 'onFilterChange', 'pagination', 'onPaginationChange', 'selectedRows', 'onSelectionChange',
+      'getRowId', 'onRowClick', 'editMode', 'onEditModeChange', 'onCellEdit', 'bulkActions', 'height', 'virtual', 'enableColumnResizing',
+      'rowFeatureToggle', 'initialHiddenColumns', 'onColumnVisibilityChange', 'onColumnSettings', 'showColumnVisibilityManager',
+      'rowsPerPageOptions', 'showRowsPerPageControl', 'rowActions', 'actionsColumnWidth', 'headerBackgroundColor', 'enhancedLoading',
+      'enhancedEmptyState', 'hoverColor', 'enhancedSelection', 'borderColor', 'hoverHighlight', 'rowBorderWidth', 'rowBorderColor',
+      'rowBorderStyle', 'columnBorderWidth', 'columnBorderColor', 'columnBorderStyle', 'showOuterBorder', 'outerBorderWidth',
+      'outerBorderColor', 'expandableRowRender', 'initialExpandedRows', 'expandedRows', 'onExpandedRowsChange', 'allowMultipleExpanded',
+      'expandIcon', 'collapseIcon', 'headerTextProps', 'cellTextProps',
+      'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      variant: { controlType: 'segmented', options: ['default', 'minimal', 'bordered'] },
+      density: { controlType: 'segmented', options: ['sm', 'md', 'lg'] },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%' } }, node),
+  },
+  DatePicker: {
+    id: 'DatePicker',
+    component: 'DatePicker',
+    initialProps: {
+      type: 'single',
+    },
+    pinnedProps: ['type'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'defaultValue', 'calendarProps'],
+    controlOverrides: {
+      type: { controlType: 'segmented', options: ['single', 'multiple', 'range'] },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  DatePickerInput: {
+    id: 'DatePickerInput',
+    component: 'DatePickerInput',
+    initialProps: {
+      label: 'Launch date',
+      placeholder: 'Pick a date',
+      type: 'single',
+      clearable: true,
+      size: 'md',
+      variant: 'default',
+      dropdownType: 'popover',
+      closeOnSelect: true,
+    },
+    pinnedProps: ['label', 'placeholder', 'type', 'size', 'variant', 'clearable', 'disabled', 'required', 'withAsterisk', 'dropdownType', 'closeOnSelect'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'calendarProps', 'displayFormat', 'valueFormat', 'withInput', 'onOpen', 'onClose', 'error', 'helperText', 'description', 'onClear', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      type: { controlType: 'segmented', options: ['single', 'multiple', 'range'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: INPUT_VARIANTS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  EmojiPicker: {
+    id: 'EmojiPicker',
+    component: 'EmojiPicker',
+    initialProps: {
+      variant: 'quick',
+      showBackground: false,
+      disabled: false,
+    },
+    pinnedProps: ['variant', 'searchPlaceholder', 'showBackground', 'disabled'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'emojis', 'defaultOpened', 'onOpenChange', 'onSearchChange', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      searchPlaceholder: { controlType: 'text', placeholder: 'Search emoji…' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', paddingVertical: 16 } }, node),
+  },
+  FileInput: {
+    id: 'FileInput',
+    component: 'FileInput',
+    initialProps: {
+      label: 'Upload files',
+      multiple: true,
+      showFileList: true,
+      enableDragDrop: true,
+      imagePreview: true,
+      size: 'md',
+      disabled: false,
+      clearable: true,
+    },
+    pinnedProps: ['label', 'variant', 'multiple', 'showFileList', 'enableDragDrop', 'imagePreview', 'size', 'disabled', 'clearable', 'required'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'accept', 'maxSize', 'maxFiles', 'onUpload', 'onProgress', 'onFilesChange',
+      'onFileRemove', 'PreviewComponent', 'validateFile', 'uploadSettings', 'placeholder', 'error', 'helperText', 'description',
+      'withAsterisk', 'onChangeText', 'onClear', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      label: { controlType: 'text', placeholder: 'Field label' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 420 } }, node),
+  },
+  Form: {
+    id: 'Form',
+    component: 'Form',
+    initialProps: {
+      disabled: false,
+      validateOnChange: true,
+      validateOnBlur: true,
+    },
+    pinnedProps: ['disabled', 'validateOnChange', 'validateOnBlur'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'initialValues', 'validationSchema', 'onSubmit', 'validate'],
+    transformProps: (values) => ({ ...values, initialValues: {}, children: buildFormChildren() }),
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 400 } }, node),
+  },
+  Gallery: {
+    id: 'Gallery',
+    component: 'Gallery',
+    initialProps: {
+      images: GALLERY_IMAGES,
+      showThumbnails: true,
+      showMetadata: true,
+      showDownloadButton: false,
+      allowKeyboardNavigation: true,
+      allowSwipeNavigation: true,
+      overlayOpacity: 0.9,
+    },
+    pinnedProps: ['showThumbnails', 'showMetadata', 'showDownloadButton', 'allowKeyboardNavigation', 'allowSwipeNavigation', 'overlayOpacity'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'images', 'initialIndex', 'onClose', 'onImageChange', 'onDownload', 'animationDuration'],
+    controlOverrides: {
+      overlayOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', height: 360, borderRadius: 12, overflow: 'hidden' } }, node),
+  },
+  Image: {
+    id: 'Image',
+    component: 'Image',
+    initialProps: {
+      src: SAMPLE_IMAGE,
+      alt: 'Sample photograph',
+      w: 240,
+      h: 160,
+      resizeMode: 'cover',
+      rounded: 'md',
+      circle: false,
+    },
+    pinnedProps: ['resizeMode', 'w', 'h', 'aspectRatio', 'rounded', 'circle', 'borderWidth', 'borderColor'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'src', 'source', 'alt', 'fallback', 'loading', 'onLoad', 'onError', 'onLoadStart', 'onLoadEnd', 'containerStyle', 'imageStyle', 'size', 'accessibilityLabel', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      resizeMode: { controlType: 'segmented', options: ['cover', 'contain', 'stretch', 'center'] },
+      w: { controlType: 'number', min: 80, max: 480, step: 20 },
+      h: { controlType: 'number', min: 80, max: 480, step: 20 },
+      rounded: { controlType: 'select', options: RADIUS_TOKENS },
+      borderWidth: { controlType: 'number', min: 0, max: 8, step: 1 },
+      borderColor: { controlType: 'color' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', paddingVertical: 8 } }, node),
+  },
+  Indicator: {
+    id: 'Indicator',
+    component: 'Indicator',
+    initialProps: {
+      label: '3',
+      size: 16,
+      placement: 'top-end',
+      offset: 4,
+      invisible: false,
+      children: React.createElement(
+        View,
+        { style: { width: 56, height: 56, borderRadius: 12, backgroundColor: '#e2e8f0' } }
+      ),
+    },
+    pinnedProps: ['label', 'size', 'color', 'placement', 'offset', 'borderWidth', 'invisible'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'labelProps', 'borderColor'],
+    controlOverrides: {
+      size: { controlType: 'number', min: 6, max: 32, step: 1 },
+      color: { controlType: 'color', placeholder: '#e11d48', colorPresets: ['#e11d48', '#22c55e', '#f97316', '#6366f1', '#0ea5e9'] },
+      placement: { controlType: 'select', options: ['top-start', 'top-end', 'bottom-start', 'bottom-end'] },
+      offset: { controlType: 'number', min: -8, max: 16, step: 1 },
+      label: { controlType: 'text', placeholder: 'Badge label' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24 } }, node),
+  },
+  Link: {
+    id: 'Link',
+    component: 'Link',
+    initialProps: {
+      children: 'Visit Platform Blocks',
+      href: 'https://platform-blocks.com',
+      size: 'lg',
+      variant: 'default',
+      external: true,
+      disabled: false,
+    },
+    pinnedProps: ['size', 'variant', 'color', 'external', 'disabled', 'target'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'href', 'textStyle', 'fontFamily', 'ff', 'accessibilityLabel', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: ['default', 'subtle', 'underline'] },
+      color: { controlType: 'color' },
+      target: { controlType: 'segmented', options: ['_self', '_blank'] },
+    },
+  },
+  ListGroup: {
+    id: 'ListGroup',
+    component: 'ListGroup',
+    initialProps: {
+      variant: 'default',
+      size: 'md',
+    },
+    pinnedProps: ['variant', 'size'],
+    hiddenProps: [...COMMON_EVENT_PROPS],
+    controlOverrides: {
+      variant: { controlType: 'segmented', options: ['default', 'bordered', 'flush'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+    transformProps: (values) => ({ ...values, children: buildListGroupChildren() }),
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 360 } }, node),
+  },
+  LoadingOverlay: {
+    id: 'LoadingOverlay',
+    component: 'LoadingOverlay',
+    initialProps: {
+      visible: true,
+    },
+    pinnedProps: ['visible', 'zIndex'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'overlayProps', 'loaderProps', 'loader'],
+    controlOverrides: {
+      zIndex: { controlType: 'number', min: 0, max: 1000, step: 10 },
+    },
+    previewWrapper: (node) => React.createElement(
+      View,
+      { style: { width: '100%', maxWidth: 420, height: 180, borderRadius: 12, overflow: 'hidden', backgroundColor: 'rgba(148,163,184,0.12)', padding: 16 } },
+      [
+        React.createElement(Text, { key: 'bg', style: { fontSize: 15, color: '#334155' } }, 'Content sits behind the overlay while it is visible. Toggle the visible control to reveal it.'),
+        node,
+      ]
+    ),
+  },
+  Masonry: {
+    id: 'Masonry',
+    component: 'Masonry',
+    initialProps: {
+      data: MASONRY_DATA,
+      numColumns: 3,
+      gap: 8,
+      optimizeItemArrangement: true,
+      scrollEnabled: false,
+      renderItem: ({ item }: any) =>
+        React.createElement(View, { style: { height: item.height, borderRadius: 12, backgroundColor: item.color } }),
+    },
+    pinnedProps: ['numColumns', 'gap', 'optimizeItemArrangement', 'scrollEnabled'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'data', 'renderItem', 'contentContainerStyle', 'loading', 'emptyContent', 'flashListProps',
+      'onEndReached', 'onEndReachedThreshold', 'onViewableItemsChanged', 'ListEmptyComponent', 'ListFooterComponent',
+      'ListHeaderComponent', 'estimatedItemSize', 'refreshControl', 'onScroll', 'scrollEventThrottle',
+      'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      numColumns: { controlType: 'number', min: 1, max: 5, step: 1 },
+      gap: { controlType: 'number', min: 0, max: 24, step: 2 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', height: 360 } }, node),
+  },
+  Menu: {
+    id: 'Menu',
+    component: 'Menu',
+    initialProps: {
+      trigger: 'click',
+      position: 'bottom',
+      offset: 4,
+      shadow: 'md',
+      radius: 'md',
+      closeOnClickOutside: true,
+      closeOnEscape: true,
+      disabled: false,
+    },
+    pinnedProps: ['trigger', 'position', 'offset', 'shadow', 'radius', 'w', 'closeOnClickOutside', 'closeOnEscape', 'disabled'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'opened', 'maxH', 'strategy', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      trigger: { controlType: 'segmented', options: ['click', 'hover'] },
+      position: { controlType: 'select', options: ['auto', 'top', 'bottom', 'left', 'right'] },
+      shadow: { controlType: 'segmented', options: ['none', 'xs', 'sm', 'md', 'lg', 'xl'] },
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+      offset: { controlType: 'number', min: 0, max: 24, step: 2 },
+    },
+    transformProps: (values) => ({ ...values, children: buildMenuChildren() }),
+    previewWrapper: (node) => React.createElement(View, { style: { minHeight: 200, alignItems: 'center', justifyContent: 'flex-start', paddingVertical: 16 } }, node),
+  },
+  MenuItemButton: {
+    id: 'MenuItemButton',
+    component: 'MenuItemButton',
+    initialProps: {
+      title: 'Settings',
+      size: 'md',
+      active: false,
+      disabled: false,
+      danger: false,
+      compact: false,
+      rounded: false,
+      fullWidth: false,
+    },
+    pinnedProps: ['title', 'size', 'active', 'disabled', 'danger', 'compact', 'rounded', 'fullWidth'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'startIcon', 'endIcon', 'tone', 'hoverTone', 'activeTone', 'textColor', 'hoverTextColor',
+      'activeTextColor', 'labelProps', 'onPressIn', 'onPressOut', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onFocus', 'onBlur',
+      'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      title: { controlType: 'text', placeholder: 'Item label' },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 260 } }, node),
+  },
+  MiniCalendar: {
+    id: 'MiniCalendar',
+    component: 'MiniCalendar',
+    initialProps: {
+      size: 'md',
+    },
+    pinnedProps: ['size'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'defaultDate', 'getDayProps', 'nextControlProps', 'previousControlProps', 'minDate', 'maxDate'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  MonthPicker: {
+    id: 'MonthPicker',
+    component: 'MonthPicker',
+    initialProps: {
+      size: 'md',
+      monthsPerRow: 3,
+      hideHeader: false,
+    },
+    pinnedProps: ['size', 'monthsPerRow', 'hideHeader'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'year', 'onYearChange', 'minDate', 'maxDate', 'locale', 'monthLabelFormat'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      monthsPerRow: { controlType: 'number', min: 1, max: 4, step: 1 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  MonthPickerInput: {
+    id: 'MonthPickerInput',
+    component: 'MonthPickerInput',
+    initialProps: {
+      label: 'Billing month',
+      placeholder: 'Pick a month',
+      clearable: true,
+      size: 'md',
+      variant: 'default',
+      closeOnSelect: true,
+    },
+    pinnedProps: ['label', 'placeholder', 'size', 'variant', 'clearable', 'disabled', 'required', 'withAsterisk', 'closeOnSelect'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'locale', 'formatOptions', 'formatValue', 'monthPickerProps', 'modalTitle', 'onOpen', 'onClose', 'error', 'helperText', 'description', 'onClear', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: INPUT_VARIANTS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  Overlay: {
+    id: 'Overlay',
+    component: 'Overlay',
+    initialProps: {
+      opacity: 0.6,
+      backgroundOpacity: 0.6,
+      blur: 0,
+      radius: 'md',
+      center: true,
+      fixed: false,
+      children: React.createElement(Text, { style: { color: '#fff', fontWeight: '700', fontSize: 16 } }, 'Overlay content'),
+    },
+    pinnedProps: ['opacity', 'backgroundOpacity', 'blur', 'radius', 'center', 'fixed', 'gradient', 'zIndex'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'color'],
+    controlOverrides: {
+      opacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      backgroundOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      blur: { controlType: 'number', min: 0, max: 20, step: 1 },
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+      zIndex: { controlType: 'number', min: 0, max: 1000, step: 10 },
+    },
+    previewWrapper: (node) => React.createElement(
+      View,
+      { style: { width: '100%', maxWidth: 420, height: 200, borderRadius: 12, overflow: 'hidden', backgroundColor: '#e2e8f0', padding: 16 } },
+      [
+        React.createElement(Text, { key: 'bg', style: { fontSize: 15, color: '#334155' } }, 'Background content behind the overlay.'),
+        node,
+      ]
+    ),
+  },
+  PhoneInput: {
+    id: 'PhoneInput',
+    component: 'PhoneInput',
+    initialProps: {
+      label: 'Phone number',
+      country: 'US',
+      size: 'md',
+      variant: 'default',
+      showCountryCode: true,
+      autoDetect: true,
+      clearable: true,
+      disabled: false,
+    },
+    pinnedProps: ['label', 'country', 'size', 'variant', 'showCountryCode', 'autoDetect', 'clearable', 'disabled', 'required'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'mask', 'placeholder', 'error', 'helperText', 'description', 'withAsterisk', 'onClear', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: INPUT_VARIANTS },
+      country: { controlType: 'select', options: ['US', 'GB', 'CA', 'AU', 'DE', 'FR', 'JP', 'IN', 'BR'] },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  PinInput: {
+    id: 'PinInput',
+    component: 'PinInput',
+    initialProps: {
+      length: 4,
+      mask: false,
+      size: 'md',
+      type: 'numeric',
+      disabled: false,
+      oneTimeCode: false,
+      spacing: 8,
+    },
+    pinnedProps: ['length', 'mask', 'size', 'type', 'disabled', 'oneTimeCode', 'spacing', 'autoFocus'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'maskChar', 'manageFocus', 'enforceOrderInitialOnly', 'placeholder', 'allowPaste', 'borderRadius', 'onComplete', 'textInputProps', 'autoCapitalize', 'autoCorrect', 'selectTextOnFocus', 'textContentType', 'textAlign', 'spellCheck', 'selectionColor', 'showSoftInputOnFocus', 'error', 'helperText', 'description', 'withAsterisk', 'onClear', 'variant', 'label', 'required', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      length: { controlType: 'number', min: 3, max: 8, step: 1 },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      type: { controlType: 'segmented', options: ['numeric', 'alphanumeric'] },
+      spacing: { controlType: 'number', min: 0, max: 24, step: 2 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', paddingVertical: 8 } }, node),
+  },
+  QRCode: {
+    id: 'QRCode',
+    component: 'QRCode',
+    initialProps: {
+      value: 'https://platform-blocks.com',
+      size: 180,
+      errorCorrectionLevel: 'M',
+      moduleShape: 'square',
+      finderShape: 'square',
+      quietZone: 4,
+      showCopyButton: false,
+    },
+    pinnedProps: ['value', 'size', 'backgroundColor', 'color', 'moduleShape', 'finderShape', 'cornerRadius', 'errorCorrectionLevel', 'quietZone', 'showCopyButton'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'logo', 'gradient', 'onError', 'onLoadStart', 'onLoadEnd', 'copyOnPress', 'copyToastTitle', 'copyToastMessage', 'accessibilityLabel', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      value: { controlType: 'text', placeholder: 'URL or text' },
+      size: { controlType: 'number', min: 80, max: 320, step: 10 },
+      color: { controlType: 'color', placeholder: '#000000' },
+      backgroundColor: { controlType: 'color', placeholder: '#ffffff' },
+      moduleShape: { controlType: 'segmented', options: ['square', 'rounded', 'dot'] },
+      finderShape: { controlType: 'segmented', options: ['square', 'rounded', 'circle'] },
+      errorCorrectionLevel: { controlType: 'segmented', options: ['L', 'M', 'Q', 'H'] },
+      quietZone: { controlType: 'number', min: 0, max: 16, step: 1 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center', paddingVertical: 8 } }, node),
+  },
+  Search: {
+    id: 'Search',
+    component: 'Search',
+    initialProps: {
+      placeholder: 'Search…',
+      size: 'md',
+      clearButton: true,
+      loading: false,
+      autoFocus: false,
+    },
+    pinnedProps: ['placeholder', 'size', 'radius', 'clearButton', 'loading', 'autoFocus', 'buttonMode', 'debounce'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'defaultValue', 'onSubmit', 'endSection', 'rightComponent', 'accessibilityLabel', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+      debounce: { controlType: 'number', min: 0, max: 1000, step: 50 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 360 } }, node),
+  },
+  Spoiler: {
+    id: 'Spoiler',
+    component: 'Spoiler',
+    initialProps: {
+      maxHeight: 60,
+      showLabel: 'Show more',
+      hideLabel: 'Hide',
+      initiallyOpen: false,
+      transitionDuration: 200,
+      size: 'md',
+      disabled: false,
+      children: React.createElement(
+        Text,
+        { style: { fontSize: 14, color: '#334155', lineHeight: 22 } },
+        'Platform Blocks is a cross-platform design system for React Native and web. This block of text is intentionally long so that the Spoiler component clips it and reveals a show/hide control. Adjust the maxHeight to change how much is visible before clipping.'
+      ),
+    },
+    pinnedProps: ['maxHeight', 'showLabel', 'hideLabel', 'transitionDuration', 'size', 'disabled', 'transparentFade'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'opened', 'renderControl', 'fadeColor', 'controlProps', 'disableFadeAnimation', 'initiallyOpen', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      maxHeight: { controlType: 'number', min: 20, max: 200, step: 10 },
+      transitionDuration: { controlType: 'number', min: 0, max: 800, step: 50 },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      showLabel: { controlType: 'text', placeholder: 'Show more' },
+      hideLabel: { controlType: 'text', placeholder: 'Hide' },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 420 } }, node),
+  },
+  Spotlight: {
+    id: 'Spotlight',
+    component: 'Spotlight',
+    initialProps: {
+      actions: SPOTLIGHT_ACTIONS,
+      nothingFound: 'Nothing found…',
+      limit: 5,
+      scrollable: true,
+      variant: 'default',
+    },
+    pinnedProps: ['limit', 'scrollable', 'maxHeight', 'width', 'height', 'variant'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'actions', 'store', 'searchProps', 'shortcut', 'highlightQuery', 'nothingFound'],
+    controlOverrides: {
+      limit: { controlType: 'number', min: 1, max: 10, step: 1 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 480, alignItems: 'center' } }, node),
+  },
+  Table: {
+    id: 'Table',
+    component: 'Table',
+    initialProps: {
+      data: TABLE_DATA,
+      columns: TABLE_COLUMNS,
+      striped: true,
+      highlightOnHover: true,
+      withTableBorder: true,
+      withColumnBorders: false,
+      withRowBorders: true,
+      variant: 'default',
+      layout: 'auto',
+      fullWidth: true,
+    },
+    pinnedProps: ['striped', 'highlightOnHover', 'withTableBorder', 'withColumnBorders', 'withRowBorders', 'variant', 'layout', 'fullWidth', 'horizontalSpacing', 'verticalSpacing'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'data', 'columns', 'captionSide', 'tabularNums', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      variant: { controlType: 'segmented', options: ['default', 'vertical'] },
+      layout: { controlType: 'segmented', options: ['auto', 'fixed'] },
+      horizontalSpacing: { controlType: 'select', options: SIZE_TOKENS },
+      verticalSpacing: { controlType: 'select', options: SIZE_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 520 } }, node),
+  },
+  TableOfContents: {
+    id: 'TableOfContents',
+    component: 'TableOfContents',
+    initialProps: {
+      variant: 'filled',
+      size: 'sm',
+      minDepthToOffset: 1,
+      depthOffset: 20,
+      autoContrast: false,
+      initialData: [
+        { value: 'Introduction', depth: 1, id: 'introduction' },
+        { value: 'Installation', depth: 1, id: 'installation' },
+        { value: 'Usage', depth: 2, id: 'usage' },
+        { value: 'API reference', depth: 1, id: 'api' },
+      ],
+    },
+    pinnedProps: ['variant', 'size', 'color', 'radius', 'minDepthToOffset', 'depthOffset', 'autoContrast'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'scrollSpyOptions', 'getControlProps', 'initialData', 'reinitializeRef', 'onActiveChange', 'container', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      variant: { controlType: 'segmented', options: ['none', 'filled', 'light'] },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      radius: { controlType: 'select', options: RADIUS_TOKENS },
+      depthOffset: { controlType: 'number', min: 0, max: 40, step: 4 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 280 } }, node),
+  },
+  TimePicker: {
+    id: 'TimePicker',
+    component: 'TimePicker',
+    initialProps: {
+      withSeconds: false,
+      allowInput: true,
+      minuteStep: 1,
+      size: 'md',
+      disabled: false,
+      clearable: true,
+      fullWidth: false,
+    },
+    pinnedProps: ['format', 'withSeconds', 'allowInput', 'minuteStep', 'secondStep', 'size', 'disabled', 'clearable', 'fullWidth'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'defaultValue', 'panelWidth', 'columnWidth', 'inputWidth', 'onOpen', 'onClose', 'title', 'autoClose', 'label', 'description', 'error', 'helperText', 'labelProps', 'descriptionProps', 'placeholderTextColor', 'startSectionProps', 'endSectionProps', 'clearButtonLabel'],
+    controlOverrides: {
+      format: { controlType: 'segmented', options: ['12', '24'] },
+      minuteStep: { controlType: 'number', min: 1, max: 30, step: 1 },
+      secondStep: { controlType: 'number', min: 1, max: 30, step: 1 },
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  TimePickerInput: {
+    id: 'TimePickerInput',
+    component: 'TimePickerInput',
+    initialProps: {
+      label: 'Meeting time',
+      placeholder: 'Select time',
+      clearable: true,
+      size: 'md',
+    },
+    pinnedProps: ['label', 'placeholder', 'size', 'clearable', 'disabled'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 320 } }, node),
+  },
+  Title: {
+    id: 'Title',
+    component: 'Title',
+    initialProps: {
+      text: 'Mission Control',
+      order: 2,
+      underline: false,
+      afterline: false,
+      subtitle: 'Systems nominal',
+      align: 'left',
+    },
+    pinnedProps: ['text', 'order', 'underline', 'afterline', 'align', 'weight', 'colorVariant', 'uppercase', 'size'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'underlineColor', 'underlineStroke', 'afterlineGap', 'underlineOffset', 'prefix', 'prefixVariant',
+      'prefixColor', 'prefixSize', 'prefixLength', 'prefixGap', 'prefixRadius', 'containerStyle', 'startIcon', 'endIcon', 'action',
+      'subtitleProps', 'subtitleSpacing', 'tx', 'txParams', 'c', 'color', 'lineHeight', 'tracking', 'fontFamily', 'ff', 'as',
+      'selectable', 'value', 'numberOfLines', 'ellipsizeMode', 'variant', 'prefix',
+      'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      text: { controlType: 'text', placeholder: 'Title text' },
+      order: { controlType: 'number', min: 1, max: 6, step: 1 },
+      align: { controlType: 'segmented', options: ['left', 'center', 'right'] },
+      weight: { controlType: 'segmented', options: FONT_WEIGHT_OPTIONS },
+      colorVariant: { controlType: 'select', options: TEXT_COLOR_VARIANTS },
+      subtitle: { controlType: 'text', placeholder: 'Subtitle' },
+    },
+  },
+  Tree: {
+    id: 'Tree',
+    component: 'Tree',
+    initialProps: {
+      data: TREE_DATA,
+      collapsible: true,
+      indent: 16,
+      accordion: false,
+      selectionMode: 'single',
+      expandOnClick: true,
+      striped: false,
+      useAnimations: true,
+    },
+    pinnedProps: ['collapsible', 'indent', 'accordion', 'expandAll', 'selectionMode', 'checkboxes', 'striped', 'expandOnClick', 'useAnimations'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'data', 'onNavigate', 'onNodePress', 'renderLabel', 'selectedIds', 'defaultSelectedIds',
+      'onSelectionChange', 'onActiveNodeChange', 'checkedIds', 'defaultCheckedIds', 'onCheckedChange', 'cascadeCheck',
+      'expandedIds', 'onToggle', 'filterQuery', 'hideFiltered', 'noResultsFallback', 'highlight',
+    ],
+    controlOverrides: {
+      indent: { controlType: 'number', min: 8, max: 40, step: 2 },
+      selectionMode: { controlType: 'segmented', options: ['none', 'single', 'multiple'] },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 360 } }, node),
+  },
+  Video: {
+    id: 'Video',
+    component: 'Video',
+    initialProps: {
+      source: SAMPLE_VIDEO,
+      w: 360,
+      aspectRatio: 16 / 9,
+      controls: true,
+      autoPlay: false,
+      loop: false,
+      muted: true,
+      volume: 1,
+      playbackRate: 1,
+      timeline: true,
+    },
+    pinnedProps: ['controls', 'autoPlay', 'loop', 'muted', 'volume', 'playbackRate', 'w', 'aspectRatio', 'timeline'],
+    hiddenProps: [
+      ...COMMON_EVENT_PROPS, 'source', 'poster', 'quality', 'youtubeOptions', 'onPlay', 'onPause', 'onSeek', 'onTimeUpdate',
+      'onDurationChange', 'onVolumeChange', 'onPlaybackRateChange', 'onQualityChange', 'onFullscreenChange', 'onError', 'onLoad',
+      'onLoadStart', 'onBuffer', 'onTimelineEvent', 'videoStyle', 'controlsStyle', 'accessibilityLabel', 'h',
+      'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+    ],
+    controlOverrides: {
+      volume: { controlType: 'number', min: 0, max: 1, step: 0.1 },
+      playbackRate: { controlType: 'number', min: 0.25, max: 2, step: 0.25 },
+      w: { controlType: 'number', min: 240, max: 640, step: 20 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 480, alignItems: 'center' } }, node),
+  },
+  YearPicker: {
+    id: 'YearPicker',
+    component: 'YearPicker',
+    initialProps: {
+      size: 'md',
+      yearsPerRow: 3,
+      hideHeader: false,
+    },
+    pinnedProps: ['size', 'yearsPerRow', 'hideHeader', 'totalYears'],
+    hiddenProps: [...COMMON_EVENT_PROPS, 'value', 'decade', 'onDecadeChange', 'minDate', 'maxDate'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      yearsPerRow: { controlType: 'number', min: 1, max: 4, step: 1 },
+      totalYears: { controlType: 'number', min: 6, max: 24, step: 3 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  YearPickerInput: {
+    id: 'YearPickerInput',
+    component: 'YearPickerInput',
+    initialProps: {
+      label: 'Year',
+      placeholder: 'Pick a year',
+      clearable: true,
+      size: 'md',
+      variant: 'default',
+      closeOnSelect: true,
+    },
+    pinnedProps: ['label', 'placeholder', 'size', 'variant', 'clearable', 'disabled', 'required', 'withAsterisk', 'closeOnSelect'],
+    hiddenProps: [...COMMON_EVENT_PROPS, ...INPUT_NOISE_PROPS, 'formatValue', 'yearPickerProps', 'modalTitle', 'onOpen', 'onClose', 'error', 'helperText', 'description', 'onClear', 'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'],
+    controlOverrides: {
+      size: { controlType: 'segmented', options: SIZE_TOKENS },
+      variant: { controlType: 'segmented', options: INPUT_VARIANTS },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { width: '100%', maxWidth: 280 } }, node),
+  },
+
+  // ----------------------------- Charts -----------------------------------
+  AreaChart: {
+    id: 'AreaChart',
+    component: 'AreaChart',
+    initialProps: {
+      title: 'Weekly signups',
+      subtitle: 'Organic vs virality',
+      width: 360,
+      height: 240,
+      data: AREA_CHART_DATA,
+      areaOpacity: 0.35,
+      lineThickness: 2,
+      lineStyle: 'solid',
+      showPoints: true,
+      pointSize: 4,
+      smooth: false,
+      fill: true,
+      fillOpacity: 0.3,
+      layout: 'overlap',
+      grid: { show: true, style: 'dashed' },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'layout', 'fill', 'fillOpacity', 'areaOpacity', 'smooth', 'lineThickness', 'lineStyle', 'showPoints', 'pointSize', 'stackOrder'],
+    hiddenProps: CHART_HIDDEN_PROPS.filter((p) => p !== 'layout'),
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      layout: { controlType: 'segmented', options: ['overlap', 'stacked', 'stackedPercentage'] },
+      lineStyle: { controlType: 'segmented', options: ['solid', 'dashed', 'dotted'] },
+      stackOrder: { controlType: 'segmented', options: ['normal', 'reverse'] },
+      areaFillMode: { controlType: 'segmented', options: ['single', 'series'] },
+      areaOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      fillOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      lineThickness: { controlType: 'number', min: 1, max: 6, step: 0.5 },
+      pointSize: { controlType: 'number', min: 2, max: 10, step: 1 },
+      lineColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      fillColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      pointColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+    },
+  },
+  BarChart: {
+    id: 'BarChart',
+    component: 'BarChart',
+    initialProps: {
+      title: 'Quarterly revenue',
+      subtitle: 'North America',
+      width: 380,
+      height: 260,
+      data: BAR_CHART_DATA,
+      barSpacing: 0.25,
+      barBorderRadius: 6,
+      orientation: 'vertical',
+      layout: 'single',
+      stackMode: 'normal',
+      grid: { show: true, style: 'dotted' },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'orientation', 'layout', 'stackMode', 'barColor', 'barSpacing', 'barBorderRadius'],
+    hiddenProps: CHART_HIDDEN_PROPS.filter((p) => p !== 'layout'),
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      orientation: { controlType: 'segmented', options: ['vertical', 'horizontal'] },
+      layout: { controlType: 'segmented', options: ['single', 'grouped', 'stacked'] },
+      stackMode: { controlType: 'segmented', options: ['normal', '100%'] },
+      barColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      barSpacing: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+      barBorderRadius: { controlType: 'number', min: 0, max: 16, step: 1 },
+    },
+  },
+  BubbleChart: {
+    id: 'BubbleChart',
+    component: 'BubbleChart',
+    initialProps: {
+      title: 'Revenue vs Growth',
+      subtitle: 'Bubble size shows valuation (in millions)',
+      width: 520,
+      height: 360,
+      data: BUBBLE_CHART_DATA,
+      dataKey: BUBBLE_CHART_DATA_KEY,
+      range: [64, 1152],
+      grid: { show: true },
+      xAxis: {},
+      yAxis: {},
+      withTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'color', 'bubbleOpacity', 'bubbleStrokeWidth', 'bubbleStrokeColor', 'withTooltip'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'label', 'minBubbleSize', 'maxBubbleSize'],
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      color: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      bubbleStrokeColor: { controlType: 'color', colorPresets: ['rgba(0,0,0,0.12)', '#94A3B8', '#4C6EF5'] },
+      bubbleOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      bubbleStrokeWidth: { controlType: 'number', min: 0, max: 4, step: 0.5 },
+    },
+  },
+  CandlestickChart: {
+    id: 'CandlestickChart',
+    component: 'CandlestickChart',
+    initialProps: {
+      title: 'AAPL daily candles',
+      subtitle: 'Daily open / high / low / close',
+      width: 520,
+      height: 360,
+      series: CANDLESTICK_SERIES,
+      gap: 0.3,
+      barWidth: 12,
+      showMovingAverages: false,
+      showVolume: false,
+      grid: { show: true },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      liveTooltip: true,
+      xScaleType: 'time',
+    },
+    pinnedProps: ['width', 'height', 'barWidth', 'gap', 'showMovingAverages', 'showVolume', 'volumeHeightRatio', 'enableCrosshair', 'liveTooltip'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      barWidth: { controlType: 'number', min: 4, max: 24, step: 1 },
+      gap: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+      volumeHeightRatio: { controlType: 'number', min: 0.1, max: 0.5, step: 0.05 },
+    },
+  },
+  ComboChart: {
+    id: 'ComboChart',
+    component: 'ComboChart',
+    initialProps: {
+      title: 'Revenue vs. active users',
+      subtitle: 'First half of FY25',
+      width: 540,
+      height: 340,
+      layers: COMBO_CHART_LAYERS,
+      xAxis: { show: true },
+      yAxis: { show: true },
+      yAxisRight: { show: true },
+      yDomain: [0, 650],
+      yDomainRight: [80, 200],
+      grid: { show: true, style: 'dashed' },
+      legend: { show: true, position: 'bottom' },
+      enableCrosshair: true,
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+    },
+  },
+  DonutChart: {
+    id: 'DonutChart',
+    component: 'DonutChart',
+    initialProps: {
+      title: 'Team allocation',
+      data: DONUT_CHART_DATA,
+      size: 260,
+      innerRadiusRatio: 0.55,
+      padAngle: 1.5,
+      startAngle: -90,
+      endAngle: 270,
+      inheritColorByLabel: true,
+      isolateOnClick: false,
+      legend: { show: true, position: 'bottom' },
+    },
+    pinnedProps: ['size', 'innerRadiusRatio', 'thickness', 'ringGap', 'padAngle', 'startAngle', 'endAngle', 'inheritColorByLabel', 'isolateOnClick'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'width', 'height', 'emptyLabel'],
+    controlOverrides: {
+      size: { controlType: 'number', min: 160, max: 360, step: 10 },
+      innerRadiusRatio: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+      thickness: { controlType: 'number', min: 8, max: 60, step: 2 },
+      ringGap: { controlType: 'number', min: 0, max: 20, step: 1 },
+      padAngle: { controlType: 'number', min: 0, max: 8, step: 0.5 },
+      startAngle: { controlType: 'number', min: -180, max: 180, step: 10 },
+      endAngle: { controlType: 'number', min: -180, max: 360, step: 10 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  FunnelChart: {
+    id: 'FunnelChart',
+    component: 'FunnelChart',
+    initialProps: {
+      title: 'Product acquisition funnel',
+      width: 420,
+      height: 420,
+      series: FUNNEL_CHART_SERIES,
+      layout: { shape: 'trapezoid', gap: 8, showConversion: false, align: 'center', connectors: { show: false } },
+      legend: { show: false },
+      tooltip: { show: true },
+    },
+    pinnedProps: ['width', 'height'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+    },
+  },
+  GaugeChart: {
+    id: 'GaugeChart',
+    component: 'GaugeChart',
+    initialProps: {
+      title: 'System Health',
+      subtitle: 'Live CPU utilisation',
+      width: 320,
+      height: 240,
+      value: 68,
+      min: 0,
+      max: 100,
+      thickness: 16,
+      track: { opacity: 0.2 },
+      ranges: GAUGE_CHART_RANGES,
+      ticks: { major: 5, minor: 4 },
+      needle: { length: 0.85, centerSize: 6, showCenter: true },
+      legend: { show: true, position: 'bottom' },
+    },
+    pinnedProps: ['value', 'min', 'max', 'thickness', 'width', 'height'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'markers'],
+    controlOverrides: {
+      value: { controlType: 'number', min: 0, max: 100, step: 1 },
+      min: { controlType: 'number', min: 0, max: 100, step: 5 },
+      max: { controlType: 'number', min: 0, max: 200, step: 5 },
+      thickness: { controlType: 'number', min: 4, max: 40, step: 2 },
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+    },
+  },
+  GroupedBarChart: {
+    id: 'GroupedBarChart',
+    component: 'GroupedBarChart',
+    initialProps: {
+      title: 'Product revenue by segment',
+      subtitle: 'Comparison vs targets',
+      width: 520,
+      height: 320,
+      series: GROUPED_BAR_SERIES,
+      barSpacing: 0.15,
+      innerBarSpacing: 0.2,
+      grid: { show: true },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true, position: 'bottom' },
+      colorOptions: { hash: false },
+    },
+    pinnedProps: ['width', 'height', 'barSpacing', 'innerBarSpacing', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      barSpacing: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+      innerBarSpacing: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+    },
+  },
+  HeatmapChart: {
+    id: 'HeatmapChart',
+    component: 'HeatmapChart',
+    initialProps: {
+      title: 'Support ticket load',
+      subtitle: 'Average tickets per hour',
+      width: 520,
+      height: 320,
+      data: HEATMAP_CHART_DATA,
+      colorScale: HEATMAP_COLOR_SCALE,
+      cellSize: { width: 48, height: 44 },
+      gap: 4,
+      xAxis: { show: true },
+      yAxis: { show: true },
+      grid: { show: false },
+      tooltip: { show: true },
+      legend: { show: true, position: 'bottom' },
+    },
+    pinnedProps: ['width', 'height', 'gap', 'cellCornerRadius', 'showCellLabels'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      gap: { controlType: 'number', min: 0, max: 12, step: 1 },
+      cellCornerRadius: { controlType: 'number', min: 0, max: 16, step: 1 },
+    },
+  },
+  HistogramChart: {
+    id: 'HistogramChart',
+    component: 'HistogramChart',
+    initialProps: {
+      title: 'Session duration distribution',
+      subtitle: 'Product analytics cohort',
+      width: 460,
+      height: 280,
+      data: HISTOGRAM_CHART_DATA,
+      bins: 10,
+      showDensity: true,
+      densityThickness: 3,
+      barGap: 0.15,
+      tooltip: { show: true },
+      enableCrosshair: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'bins', 'binMethod', 'showDensity', 'density', 'densityThickness', 'barGap', 'barColor', 'densityColor', 'barOpacity', 'barRadius'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      bins: { controlType: 'number', min: 4, max: 30, step: 1 },
+      binMethod: { controlType: 'select', options: ['sturges', 'sqrt', 'fd'] },
+      densityThickness: { controlType: 'number', min: 1, max: 6, step: 0.5 },
+      barGap: { controlType: 'number', min: 0, max: 0.6, step: 0.05 },
+      barColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      densityColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      barOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      barRadius: { controlType: 'number', min: 0, max: 12, step: 1 },
+      bandwidth: { controlType: 'number', min: 0.5, max: 6, step: 0.5 },
+    },
+  },
+  LineChart: {
+    id: 'LineChart',
+    component: 'LineChart',
+    initialProps: {
+      title: 'Monthly active customers',
+      subtitle: 'FY25',
+      width: 560,
+      height: 320,
+      series: LINE_CHART_SERIES,
+      lineThickness: 2,
+      lineStyle: 'solid',
+      showPoints: true,
+      pointSize: 4,
+      smooth: false,
+      fill: false,
+      fillOpacity: 0.3,
+      grid: { show: true, style: 'dashed' },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true, position: 'bottom' },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'lineThickness', 'lineStyle', 'smooth', 'showPoints', 'pointSize', 'fill', 'fillOpacity', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      lineStyle: { controlType: 'segmented', options: ['solid', 'dashed', 'dotted'] },
+      areaFillMode: { controlType: 'segmented', options: ['single', 'series'] },
+      lineThickness: { controlType: 'number', min: 1, max: 6, step: 0.5 },
+      pointSize: { controlType: 'number', min: 2, max: 10, step: 1 },
+      fillOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      lineColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      fillColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      pointColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+    },
+  },
+  MarimekkoChart: {
+    id: 'MarimekkoChart',
+    component: 'MarimekkoChart',
+    initialProps: {
+      title: 'Pipeline contribution by segment',
+      subtitle: 'Quarter to date',
+      width: 720,
+      height: 440,
+      data: MARIMEKKO_CHART_DATA,
+      columnGap: 16,
+      legend: { show: true, position: 'bottom' },
+      yAxis: { title: 'Segment share (%)' },
+      grid: { show: true, style: 'dotted' },
+    },
+    pinnedProps: ['width', 'height', 'columnGap', 'segmentBorderRadius'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: { controlType: 'number', min: 400, max: 800, step: 20 },
+      height: CHART_HEIGHT_CONTROL,
+      columnGap: { controlType: 'number', min: 0, max: 40, step: 2 },
+      segmentBorderRadius: { controlType: 'number', min: 0, max: 16, step: 1 },
+    },
+  },
+  NetworkChart: {
+    id: 'NetworkChart',
+    component: 'NetworkChart',
+    initialProps: {
+      title: 'Cross-team collaboration',
+      width: 560,
+      height: 420,
+      nodes: NETWORK_CHART_NODES,
+      links: NETWORK_CHART_LINKS,
+      showLabels: true,
+    },
+    pinnedProps: ['width', 'height', 'showLabels', 'nodeRadius', 'linkCurveStrength'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'linkShape'],
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      nodeRadius: { controlType: 'number', min: 4, max: 24, step: 1 },
+      linkCurveStrength: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+    },
+  },
+  ParetoChart: {
+    id: 'ParetoChart',
+    component: 'ParetoChart',
+    initialProps: {
+      title: 'Monthly defect analysis',
+      subtitle: 'Product QA triage',
+      width: 720,
+      height: 420,
+      data: PARETO_CHART_DATA,
+      valueSeriesLabel: 'Defects',
+      cumulativeSeriesLabel: 'Cumulative impact',
+      sortDirection: 'desc',
+      grid: { show: true, style: 'dotted' },
+      legend: { show: true, position: 'bottom' },
+      yAxis: { title: 'Defects reported' },
+      yAxisRight: { title: 'Cumulative share' },
+    },
+    pinnedProps: ['width', 'height', 'sortDirection', 'barColor', 'lineColor', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'valueSeriesLabel', 'cumulativeSeriesLabel'],
+    controlOverrides: {
+      width: { controlType: 'number', min: 400, max: 800, step: 20 },
+      height: CHART_HEIGHT_CONTROL,
+      sortDirection: { controlType: 'segmented', options: ['desc', 'asc', 'none'] },
+      barColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      lineColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+    },
+  },
+  PieChart: {
+    id: 'PieChart',
+    component: 'PieChart',
+    initialProps: {
+      title: 'Traffic sources',
+      width: 380,
+      height: 340,
+      data: PIE_CHART_DATA,
+      innerRadius: 70,
+      outerRadius: 150,
+      showLabels: true,
+      labelPosition: 'outside',
+      showValues: true,
+      startAngle: -90,
+      endAngle: 270,
+      padAngle: 0,
+      legend: { show: true, position: 'right' },
+      tooltip: { show: true },
+    },
+    pinnedProps: ['width', 'height', 'innerRadius', 'outerRadius', 'padAngle', 'showLabels', 'labelPosition', 'showValues', 'startAngle', 'endAngle'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      innerRadius: { controlType: 'number', min: 0, max: 140, step: 5 },
+      outerRadius: { controlType: 'number', min: 60, max: 180, step: 5 },
+      padAngle: { controlType: 'number', min: 0, max: 10, step: 0.5 },
+      startAngle: { controlType: 'number', min: -180, max: 180, step: 10 },
+      endAngle: { controlType: 'number', min: -180, max: 360, step: 10 },
+      labelPosition: { controlType: 'segmented', options: ['inside', 'outside', 'center'] },
+      labelStrategy: { controlType: 'select', options: ['auto', 'inside', 'outside', 'center'] },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  RadarChart: {
+    id: 'RadarChart',
+    component: 'RadarChart',
+    initialProps: {
+      title: 'Team capability radar',
+      width: 420,
+      height: 360,
+      series: RADAR_CHART_SERIES,
+      maxValue: 60,
+      radialGrid: { rings: 5, shape: 'polygon', showAxes: true },
+      smooth: true,
+      fill: true,
+      legend: { show: true, position: 'bottom' },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'maxValue', 'smooth', 'fill', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'colorScheme'],
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      maxValue: { controlType: 'number', min: 10, max: 100, step: 5 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  RadialBarChart: {
+    id: 'RadialBarChart',
+    component: 'RadialBarChart',
+    initialProps: {
+      title: 'Quarterly KPIs',
+      subtitle: 'Progress toward goals',
+      width: 360,
+      height: 360,
+      data: RADIAL_BAR_DATA,
+      barThickness: 16,
+      gap: 12,
+      showValueLabels: true,
+      animate: true,
+      legend: { show: true, position: 'bottom' },
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'barThickness', 'gap', 'minAngle', 'startAngle', 'endAngle', 'showValueLabels', 'animate'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'radius'],
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      barThickness: { controlType: 'number', min: 6, max: 40, step: 2 },
+      gap: { controlType: 'number', min: 0, max: 30, step: 2 },
+      minAngle: { controlType: 'number', min: 0, max: 90, step: 5 },
+      startAngle: { controlType: 'number', min: -180, max: 180, step: 10 },
+      endAngle: { controlType: 'number', min: 0, max: 360, step: 10 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  RidgeChart: {
+    id: 'RidgeChart',
+    component: 'RidgeChart',
+    initialProps: {
+      title: 'Customer satisfaction distribution',
+      subtitle: 'Annual NPS density',
+      width: 560,
+      height: 360,
+      series: RIDGE_CHART_SERIES,
+      samples: 96,
+      bandwidth: 3,
+      statsMarkers: { enabled: true, showP90: true, showLabels: true },
+    },
+    pinnedProps: ['width', 'height', 'samples', 'bandwidth', 'bandPadding', 'amplitudeScale'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      samples: { controlType: 'number', min: 16, max: 160, step: 8 },
+      bandwidth: { controlType: 'number', min: 0.5, max: 8, step: 0.5 },
+      bandPadding: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      amplitudeScale: { controlType: 'number', min: 0.5, max: 3, step: 0.1 },
+    },
+  },
+  SankeyChart: {
+    id: 'SankeyChart',
+    component: 'SankeyChart',
+    initialProps: {
+      title: 'Renewable energy flow',
+      width: 560,
+      height: 360,
+      nodes: SANKEY_CHART_NODES,
+      links: SANKEY_CHART_LINKS,
+      highlightOnHover: true,
+    },
+    pinnedProps: ['width', 'height', 'nodeWidth', 'nodePadding', 'highlightOnHover'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      nodeWidth: { controlType: 'number', min: 4, max: 40, step: 2 },
+      nodePadding: { controlType: 'number', min: 0, max: 40, step: 2 },
+    },
+  },
+  ScatterChart: {
+    id: 'ScatterChart',
+    component: 'ScatterChart',
+    initialProps: {
+      title: 'Spend vs. qualified leads',
+      subtitle: 'Campaign cohort',
+      width: 520,
+      height: 340,
+      data: SCATTER_CHART_DATA,
+      series: SCATTER_CHART_SERIES,
+      pointSize: 6,
+      pointOpacity: 1,
+      showTrendline: 'per-series',
+      grid: { show: true },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true, position: 'bottom' },
+      tooltip: { show: true },
+      enableCrosshair: true,
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'pointSize', 'pointOpacity', 'pointColor', 'showTrendline', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: [...CHART_HIDDEN_PROPS, 'allowAddPoints', 'allowDragPoints'],
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      pointSize: { controlType: 'number', min: 2, max: 14, step: 1 },
+      pointOpacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      pointColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      trendlineColor: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+    },
+  },
+  SparklineChart: {
+    id: 'SparklineChart',
+    component: 'SparklineChart',
+    initialProps: {
+      width: 220,
+      height: 80,
+      data: SPARKLINE_CHART_DATA,
+      fill: true,
+      fillOpacity: 0.18,
+      smooth: true,
+      showPoints: false,
+      pointSize: 4,
+      strokeWidth: 2.5,
+      highlightLast: false,
+      domain: { y: [20, 80] },
+    },
+    pinnedProps: ['width', 'height', 'color', 'fill', 'fillOpacity', 'smooth', 'showPoints', 'pointSize', 'strokeWidth', 'highlightLast', 'highlightExtrema'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: { controlType: 'number', min: 120, max: 480, step: 20 },
+      height: { controlType: 'number', min: 40, max: 200, step: 10 },
+      color: { controlType: 'color', colorPresets: CHART_COLOR_PRESETS },
+      fillOpacity: { controlType: 'number', min: 0, max: 1, step: 0.02 },
+      pointSize: { controlType: 'number', min: 2, max: 10, step: 1 },
+      strokeWidth: { controlType: 'number', min: 0.5, max: 6, step: 0.5 },
+    },
+    previewWrapper: (node) => React.createElement(View, { style: { alignItems: 'center' } }, node),
+  },
+  StackedAreaChart: {
+    id: 'StackedAreaChart',
+    component: 'StackedAreaChart',
+    initialProps: {
+      title: 'Active users by surface',
+      subtitle: 'Monthly totals',
+      width: 560,
+      height: 340,
+      series: STACKED_AREA_SERIES,
+      stackOrder: 'normal',
+      stackMode: 'absolute',
+      opacity: 0.65,
+      grid: { show: true },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true, position: 'bottom' },
+      enableCrosshair: true,
+      multiTooltip: true,
+      liveTooltip: true,
+    },
+    pinnedProps: ['width', 'height', 'stackOrder', 'stackMode', 'opacity', 'smooth', 'lineThickness', 'lineStyle', 'showPoints', 'enableCrosshair', 'multiTooltip', 'liveTooltip'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      stackOrder: { controlType: 'segmented', options: ['normal', 'reverse'] },
+      stackMode: { controlType: 'segmented', options: ['absolute', 'percentage'] },
+      lineStyle: { controlType: 'segmented', options: ['solid', 'dashed', 'dotted'] },
+      opacity: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      lineThickness: { controlType: 'number', min: 0, max: 6, step: 0.5 },
+    },
+  },
+  StackedBarChart: {
+    id: 'StackedBarChart',
+    component: 'StackedBarChart',
+    initialProps: {
+      title: 'Quarterly ARR by motion',
+      width: 520,
+      height: 320,
+      series: STACKED_BAR_SERIES,
+      barSpacing: 0.25,
+      grid: { show: true },
+      xAxis: { show: true },
+      yAxis: { show: true },
+      legend: { show: true, position: 'bottom' },
+    },
+    pinnedProps: ['width', 'height', 'barSpacing'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      barSpacing: { controlType: 'number', min: 0, max: 0.9, step: 0.05 },
+    },
+  },
+  ViolinChart: {
+    id: 'ViolinChart',
+    component: 'ViolinChart',
+    initialProps: {
+      title: 'Delivery time distribution',
+      width: 560,
+      height: 360,
+      series: VIOLIN_CHART_SERIES,
+      samples: 128,
+      bandwidth: 3.5,
+      showLegend: true,
+      legendPosition: 'bottom',
+    },
+    pinnedProps: ['width', 'height', 'samples', 'bandwidth', 'violinWidthRatio', 'stackOverlap', 'showLegend', 'legendPosition'],
+    hiddenProps: CHART_HIDDEN_PROPS,
+    controlOverrides: {
+      width: CHART_WIDTH_CONTROL,
+      height: CHART_HEIGHT_CONTROL,
+      samples: { controlType: 'number', min: 16, max: 200, step: 8 },
+      bandwidth: { controlType: 'number', min: 0.5, max: 8, step: 0.5 },
+      violinWidthRatio: { controlType: 'number', min: 0.2, max: 1, step: 0.05 },
+      stackOverlap: { controlType: 'number', min: 0, max: 1, step: 0.05 },
+      legendPosition: { controlType: 'segmented', options: ['top', 'bottom'] },
+    },
   },
 };
 

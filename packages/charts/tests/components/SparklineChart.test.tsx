@@ -1,9 +1,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import Svg from 'react-native-svg';
 import { ChartThemeProvider } from '../../src/theme/ChartThemeContext';
-import { ChartInteractionProvider, useChartInteractionContext } from '../../src/interaction/ChartInteractionContext';
+import { ChartInteractionProvider, useChartInteractionContext, useChartInteractionVolatile } from '../../src/interaction/ChartInteractionContext';
 import { SparklineChart } from '../../src/components/SparklineChart/SparklineChart';
 
 jest.mock('../../src/components/SparklineChart/AnimatedSparkline', () => {
@@ -21,11 +20,12 @@ const { AnimatedSparkline } = require('../../src/components/SparklineChart/Anima
 
 const InteractionSpy: React.FC<{ onRender?: (ctx: ReturnType<typeof useChartInteractionContext>) => void }> = ({ onRender }) => {
   const ctx = useChartInteractionContext();
-  onRender?.(ctx);
+  const __vol = useChartInteractionVolatile();
+  onRender?.({ ...ctx, ...__vol });
   return <Text testID="interaction-spy" />;
 };
 
-describe('SparklineChart', () => {
+describe('SparklineChart (hit-test engine)', () => {
   beforeEach(() => {
     AnimatedSparkline.mockClear();
   });
@@ -48,7 +48,7 @@ describe('SparklineChart', () => {
     );
   };
 
-  it('passes geometry to AnimatedSparkline and registers formatted series', async () => {
+  it('passes geometry to AnimatedSparkline and registers a hit-tester with formatted marks', async () => {
     let ctxRef: ReturnType<typeof useChartInteractionContext> | null = null;
     renderSparkline({
       onContext: (ctx) => {
@@ -63,41 +63,49 @@ describe('SparklineChart', () => {
     expect(callArgs.points).toHaveLength(4);
     expect(callArgs.highlightLast).toBe(true);
 
+    // The chart registers a point hit-tester with the store. Query it at the last
+    // point's container-origin pixel and assert the mark carries the formatted value.
+    const lastPoint = callArgs.points[3];
     await waitFor(() => {
-      expect(ctxRef?.series.length).toBeGreaterThan(0);
+      const target = ctxRef?.hitTest({ px: lastPoint.chartX, py: lastPoint.chartY });
+      expect(target).not.toBeNull();
+      expect(target?.seriesId).toBe('spark-series');
+      expect(target?.formattedValue).toBe('$5.00');
     });
-
-    const registeredSeries = ctxRef?.series[0];
-    expect(registeredSeries?.id).toBe('spark-series');
-    expect(registeredSeries?.points).toHaveLength(4);
-    const lastPointMeta = registeredSeries?.points?.[3]?.meta;
-    expect(lastPointMeta?.formattedValue).toBe('$5.00');
   });
 
-  it('updates pointer position on responder events and resets on release', async () => {
+  it('sets the active target on pointer move over the gesture surface and clears it on release', async () => {
     let ctxRef: ReturnType<typeof useChartInteractionContext> | null = null;
-    const { UNSAFE_getByType } = renderSparkline({
+    const { getByTestId } = renderSparkline({
       onContext: (ctx) => {
         ctxRef = ctx;
       },
+      valueFormatter: (value) => `$${value.toFixed(2)}`,
     });
 
-    const svgNode = UNSAFE_getByType(Svg);
+    const callArgs = AnimatedSparkline.mock.calls[AnimatedSparkline.mock.calls.length - 1][0];
+    const targetPoint = callArgs.points[3];
+    const surface = getByTestId('sparkline-gesture-surface');
 
-    fireEvent(svgNode, 'responderGrant', { nativeEvent: { locationX: 10, locationY: 12, pageX: 30, pageY: 32 } });
-    fireEvent(svgNode, 'responderMove', { nativeEvent: { locationX: 18, locationY: 20, pageX: 38, pageY: 44 } });
+    // Native responder path (Platform.OS defaults to ios in the RN jest preset).
+    fireEvent(surface, 'responderGrant', {
+      nativeEvent: { locationX: targetPoint.chartX, locationY: targetPoint.chartY, pageX: 30, pageY: 32 },
+    });
+    fireEvent(surface, 'responderMove', {
+      nativeEvent: { locationX: targetPoint.chartX, locationY: targetPoint.chartY, pageX: 30, pageY: 32 },
+    });
 
     await waitFor(() => {
       expect(ctxRef?.pointer?.inside).toBe(true);
-      expect(ctxRef?.pointer?.x).toBeGreaterThan(0);
-      expect(ctxRef?.crosshair?.dataX).not.toBeUndefined();
+      expect(ctxRef?.activeTarget?.seriesId).toBe('spark-series');
+      expect(ctxRef?.activeTarget?.formattedValue).toBe('$5.00');
     });
 
-    fireEvent(svgNode, 'responderRelease', { nativeEvent: {} });
+    fireEvent(surface, 'responderRelease', { nativeEvent: {} });
 
     await waitFor(() => {
       expect(ctxRef?.pointer?.inside).toBe(false);
-      expect(ctxRef?.crosshair).toBeNull();
+      expect(ctxRef?.activeTarget).toBeNull();
     });
   });
 });

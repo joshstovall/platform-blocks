@@ -2,18 +2,7 @@ import { StyleSheet } from 'react-native';
 import { PlatformBlocksTheme, SizeToken, SizeValue } from '../../core/theme/types';
 import { InputStyleProps, InputVariant } from './types';
 import { px } from '../../core/utils';
-import { getControlLabelFontSize, getControlIconSize } from '../../core/theme/sizes';
-
-/**
- * @deprecated Use `getControlLabelFontSize` from `core/theme/sizes` instead.
- * Kept as a thin re-export so existing callers continue to compile.
- */
-export const resolveInputLabelFontSize = (size: SizeValue): number => getControlLabelFontSize(size);
-
-/**
- * @deprecated Use `getControlIconSize` from `core/theme/sizes` instead.
- */
-export const resolveInputIconSize = (size: SizeValue): number => getControlIconSize(size);
+import { getControlLabelFontSize } from '../../core/theme/sizes';
 
 export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = false) => {
   const getSizeStyles = (size: SizeValue) => {
@@ -68,8 +57,8 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
   const getInputStyles = (props: InputStyleProps, radiusStyles?: any) => {
     const baseStyles = getSizeStyles(props.size);
     const inputRadius = radiusStyles ?? { borderRadius: 10 };
-    const horizontalPadding = Math.max(12, baseStyles.padding);
-    const verticalPadding = Math.max(8, Math.round(baseStyles.padding * 0.75));
+    const horizontalPadding = Math.max(14, baseStyles.padding);
+    const verticalPadding = Math.max(9, Math.round(baseStyles.padding * 0.75));
 
     return StyleSheet.create({
       container: {
@@ -112,11 +101,11 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
       inputContainer: (() => {
         const variant: InputVariant = props.variant ?? 'default';
         const isDark = theme.colorScheme === 'dark';
+        // Focus is indicated by the boxShadow ring below (not a solid border),
+        // so the border color only changes for error/resting states.
         const focusBorder = props.error
           ? theme.colors.error[5]
-          : props.focused
-            ? theme.colors.primary[5]
-            : theme.backgrounds.border;
+          : theme.backgrounds.border;
 
         // Per-variant fill + border. We always reserve `borderWidth: 2` to avoid layout shift
         // when the variant transitions between focus states; `unstyled` uses transparent borders.
@@ -140,12 +129,10 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
               backgroundColor: props.disabled
                 ? (isDark ? '#2C2C2E' : theme.colors.gray[1])
                 : (isDark ? theme.colors.gray[8] : theme.colors.gray[1]),
-              // Filled hides the border unless focused or in error
+              // Filled hides the border unless in error (focus shows only the ring)
               borderColor: props.error
                 ? theme.colors.error[5]
-                : props.focused
-                  ? theme.colors.primary[5]
-                  : 'transparent',
+                : 'transparent',
               borderWidth: 2,
             };
           }
@@ -161,6 +148,16 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
 
         const showElevationShadow = variant === 'default' && !props.disabled && theme.colorScheme === 'light';
 
+        // Focus ring + optional elevation are both box-shadows; combine them into a
+        // single comma-separated value so one does not clobber the other.
+        const boxShadowLayers: string[] = [];
+        if (props.focused && !props.disabled && variant !== 'unstyled' && theme.states?.focusRing) {
+          boxShadowLayers.push(`0 0 0 2px ${theme.states.focusRing}`);
+        }
+        if (showElevationShadow) {
+          boxShadowLayers.push('0 1px 2px rgba(0, 0, 0, 0.05)');
+        }
+
         return {
           alignItems: 'center',
           flexDirection: 'row',
@@ -171,13 +168,9 @@ export const createInputStyles = (theme: PlatformBlocksTheme, isRTL: boolean = f
           minHeight: baseStyles.minHeight,
           borderWidth: fill.borderWidth,
           borderColor: fill.borderColor,
-          // Optional focus shadow (web only) without affecting layout
-          ...(props.focused && !props.disabled && variant !== 'unstyled' && typeof window !== 'undefined' && theme.states?.focusRing && {
-            boxShadow: `0 0 0 2px ${theme.states.focusRing}`,
-          }),
-          // Add iOS-style shadow only when enabled (avoid implying elevation for disabled or non-default variants)
-          ...(showElevationShadow && {
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+          // Focus ring (all platforms) + optional elevation, merged so neither is clobbered.
+          ...(boxShadowLayers.length > 0 && {
+            boxShadow: boxShadowLayers.join(', '),
           }),
           elevation: variant === 'default' && !props.disabled ? 1 : 0,
           ...(typeof window !== 'undefined' && props.disabled && ({ cursor: 'not-allowed', opacity: 0.75 } as any)),

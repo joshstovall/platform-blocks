@@ -7,10 +7,6 @@ export default function Demo() {
 
   return (
     <Column gap="sm" fullWidth>
-      <Text weight="semibold">Basic text area</Text>
-      <Text size="sm" colorVariant="secondary">
-        Controlled message field with helper copy and simple max-length feedback.
-      </Text>
       <TextArea
         label="Message"
         placeholder="Enter your message"

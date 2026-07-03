@@ -1,5 +1,6 @@
 ---
 name: Search
+playground: true
 title: Search
 category: input
 tags: [search, input, filter, debounce]

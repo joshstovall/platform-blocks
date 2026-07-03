@@ -1,5 +1,12 @@
 import { FunnelChart } from '../../';
 
+const compact = (value: number) => {
+	const abs = Math.abs(value);
+	if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+	if (abs >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+	return `${value}`;
+};
+
 const SALES_FUNNEL = {
 	id: 'pipeline',
 	name: 'Q2 pipeline',
@@ -17,33 +24,20 @@ export default function Demo() {
 		<FunnelChart
 			title="Product acquisition funnel"
 			width={420}
-			height={460}
+			height={420}
 			series={SALES_FUNNEL}
 			layout={{
 				shape: 'trapezoid',
-				gap: 12,
-				showConversion: true,
+				gap: 8,
+				showConversion: false,
 				align: 'center',
+				connectors: { show: false },
 			}}
-			valueFormatter={(value, index, context) => {
-				const label = index === 0 ? `${value.toLocaleString()} visitors` : `${value.toLocaleString()} leads`;
-				const lines = [label];
-				if (context?.conversion != null) {
-					lines.push(`Retention ${(context.conversion * 100).toFixed(1)}%`);
-				}
-				if (context?.dropValue && context.previousValue) {
-					lines.push(
-						`Drop ${(context.dropRate * 100).toFixed(1)}% (${context.dropValue.toLocaleString()} lost)`
-					);
-				}
-				return lines;
-			}}
+			valueFormatter={(value) => compact(value)}
 			legend={{ show: false }}
-			multiTooltip
-			enableCrosshair
 			tooltip={{
 				show: true,
-				formatter: (step) => `${step.label}: ${step.value.toLocaleString()}`
+				formatter: (step) => `${step.label}: ${step.value.toLocaleString()}`,
 			}}
 		/>
 	);

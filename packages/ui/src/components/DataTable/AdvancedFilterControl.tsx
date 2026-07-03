@@ -6,6 +6,7 @@ import { Select } from '../Select';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { useTheme } from '../../core';
+import { useDebouncedCallback } from '../../hooks';
 import type { DataTableColumn, DataTableFilter, FilterType } from './types';
 
 interface AdvancedFilterControlProps<T = any> {
@@ -13,43 +14,45 @@ interface AdvancedFilterControlProps<T = any> {
   currentFilter?: DataTableFilter;
   onFilterChange: (filter: DataTableFilter | null) => void;
   data?: T[]; // For auto-generating filter options
+  /** Show the operator selector by default (used in the header filter popover). */
+  showOperators?: boolean;
+  /** Auto-focus the value input on mount (used when opened from the header filter popover). */
+  autoFocus?: boolean;
 }
 
 interface FilterState {
   operator: DataTableFilter['operator'];
   value: any;
-  secondValue?: any; // For range filters
 }
 
 export function AdvancedFilterControl<T = any>({
   column,
   currentFilter,
   onFilterChange,
-  data = []
+  data = [],
+  showOperators = false,
+  autoFocus = false
 }: AdvancedFilterControlProps<T>) {
   const theme = useTheme();
-  
+
   const [filterState, setFilterState] = useState<FilterState>({
     operator: 'contains',
-    value: currentFilter?.value ?? '',
-    secondValue: undefined
+    value: currentFilter?.value ?? ''
   });
 
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(showOperators);
 
   // Update local state when currentFilter changes
   useEffect(() => {
     if (currentFilter) {
       setFilterState({
         operator: currentFilter.operator,
-        value: currentFilter.value,
-        secondValue: undefined
+        value: currentFilter.value
       });
     } else {
       setFilterState({
         operator: getDefaultOperator(column.filterType),
-        value: '',
-        secondValue: undefined
+        value: ''
       });
     }
   }, [currentFilter, column.filterType]);
@@ -135,26 +138,31 @@ export function AdvancedFilterControl<T = any>({
       }));
   }
 
-  // Apply filter
-  const applyFilter = () => {
-    if (!filterState.value && filterState.value !== 0 && filterState.value !== false) {
+  // Commit a specific value/operator to the parent. Empty values clear the filter.
+  const commitFilter = (
+    value: any,
+    operator: DataTableFilter['operator']
+  ) => {
+    if (!value && value !== 0 && value !== false) {
       onFilterChange(null);
       return;
     }
 
     onFilterChange({
       column: column.key,
-      operator: filterState.operator,
-      value: filterState.value
+      operator,
+      value
     });
   };
+
+  // Auto-apply while the user types, debounced so we don't filter on every keystroke.
+  const debouncedCommit = useDebouncedCallback(commitFilter, 300);
 
   // Clear filter
   const clearFilter = () => {
     setFilterState({
       operator: getDefaultOperator(column.filterType),
-      value: '',
-      secondValue: undefined
+      value: ''
     });
     onFilterChange(null);
   };
@@ -232,7 +240,10 @@ export function AdvancedFilterControl<T = any>({
                   }))}
                   value={filterState.operator}
                   onChange={(value) => {
-                    setFilterState(prev => ({ ...prev, operator: value as DataTableFilter['operator'] }));
+                    const operator = value as DataTableFilter['operator'];
+                    setFilterState(prev => ({ ...prev, operator }));
+                    debouncedCommit.cancel();
+                    commitFilter(filterState.value, operator);
                   }}
                 />
               </View>
@@ -241,11 +252,14 @@ export function AdvancedFilterControl<T = any>({
               size="xs"
               placeholder={showAdvanced ? 'Value' : '= Value'}
               value={String(filterState.value ?? '')}
-              onChangeText={(value) => {
-                setFilterState(prev => ({ ...prev, value: value ? parseFloat(value) : '' }));
+              onChangeText={(text) => {
+                const value = text ? parseFloat(text) : '';
+                setFilterState(prev => ({ ...prev, value }));
+                debouncedCommit(value, filterState.operator);
               }}
-              onBlur={applyFilter}
+              onBlur={debouncedCommit.flush}
               keyboardType="numeric"
+              autoFocus={autoFocus}
               style={commonStyle}
             />
           </View>
@@ -266,7 +280,10 @@ export function AdvancedFilterControl<T = any>({
                   }))}
                   value={filterState.operator}
                   onChange={(value) => {
-                    setFilterState(prev => ({ ...prev, operator: value as DataTableFilter['operator'] }));
+                    const operator = value as DataTableFilter['operator'];
+                    setFilterState(prev => ({ ...prev, operator }));
+                    debouncedCommit.cancel();
+                    commitFilter(filterState.value, operator);
                   }}
                 />
               </View>
@@ -277,8 +294,10 @@ export function AdvancedFilterControl<T = any>({
               value={String(filterState.value ?? '')}
               onChangeText={(value) => {
                 setFilterState(prev => ({ ...prev, value }));
+                debouncedCommit(value, filterState.operator);
               }}
-              onBlur={applyFilter}
+              onBlur={debouncedCommit.flush}
+              autoFocus={autoFocus}
               style={commonStyle}
             />
           </View>
@@ -299,7 +318,10 @@ export function AdvancedFilterControl<T = any>({
                   }))}
                   value={filterState.operator}
                   onChange={(value) => {
-                    setFilterState(prev => ({ ...prev, operator: value as DataTableFilter['operator'] }));
+                    const operator = value as DataTableFilter['operator'];
+                    setFilterState(prev => ({ ...prev, operator }));
+                    debouncedCommit.cancel();
+                    commitFilter(filterState.value, operator);
                   }}
                 />
               </View>
@@ -310,8 +332,10 @@ export function AdvancedFilterControl<T = any>({
               value={String(filterState.value ?? '')}
               onChangeText={(value) => {
                 setFilterState(prev => ({ ...prev, value }));
+                debouncedCommit(value, filterState.operator);
               }}
-              onBlur={applyFilter}
+              onBlur={debouncedCommit.flush}
+              autoFocus={autoFocus}
               style={commonStyle}
             />
           </View>
@@ -338,7 +362,7 @@ export function AdvancedFilterControl<T = any>({
             <Icon 
               name="settings" 
               size={12} 
-              color={showAdvanced ? theme.colors.primary[6] : theme.colors.gray[5]} 
+              color={showAdvanced ? theme.colors.primary[6] : theme.colors.gray[6]}
             />
           </Pressable>
         )}
@@ -367,9 +391,9 @@ export function AdvancedFilterControl<T = any>({
           borderRadius: 3,
           alignSelf: 'flex-start'
         }}>
-          <Text style={{ 
-            fontSize: 10, 
-            color: theme.colors.primary[7],
+          <Text style={{
+            fontSize: 10,
+            color: theme.colors.primary[8],
             fontWeight: '500'
           }}>
             {getAvailableOperators(column.filterType)

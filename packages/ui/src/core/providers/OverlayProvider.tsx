@@ -13,6 +13,12 @@ export interface OverlayConfig {
     width: number;
     height: number;
   };
+  /**
+   * The anchor/trigger DOM node (web). Used by the non-blocking outside-click
+   * detection so clicking the trigger doesn't count as an "outside" click (the
+   * trigger handles its own toggle). Optional — omit for cursor-anchored overlays.
+   */
+  anchorNode?: any;
   width?: number | string;
   maxWidth?: number | string;
   maxHeight?: number | string;
@@ -157,6 +163,12 @@ export function useOverlayApi(): OverlayApiValue {
     throw new Error('useOverlayApi must be used within an OverlayProvider');
   }
   return api;
+}
+
+// Non-throwing variant: returns null when no OverlayProvider is present so
+// components can gracefully fall back to inline rendering (e.g. standalone/tests).
+export function useOptionalOverlayApi(): OverlayApiValue | null {
+  return useContext(OverlayApiContext);
 }
 
 export function useOverlays(): OverlayConfig[] {

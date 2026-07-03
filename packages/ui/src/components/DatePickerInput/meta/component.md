@@ -1,4 +1,5 @@
 ---
+playground: true
 title: DatePickerInput
 description: Input-based date picker that opens a modal calendar for selecting single dates, ranges, or multiple values.
 source: "@platform-blocks/ui"

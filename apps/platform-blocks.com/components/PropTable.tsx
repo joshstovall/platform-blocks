@@ -143,21 +143,6 @@ export function PropTable({ props }: PropTableProps) {
         </TextAny>
       ),
     },
-    // {
-    //   key: 'description',
-    //   header: 'Description',
-    //   accessor: 'description',
-    //   minWidth: 200,
-    //   filterable: true,
-    //   filterType: 'text',
-    //   align: 'left',
-    //   cell: (value: string) =>
-    //     value && (
-    //       <TextAny variant="small" colorVariant="secondary">
-    //         {value}
-    //       </TextAny>
-    //     )
-    // }
   ].filter(Boolean) as DataTableColumn<PropMetadata>[];
 
   return (

@@ -74,3 +74,22 @@ export interface MenuDropdownProps extends SpacingProps {
   /** Test ID for testing */
   testID?: string;
 }
+
+export interface MenuSubProps extends SpacingProps {
+  /** Trigger label shown in the parent dropdown */
+  label: React.ReactNode;
+  /** Submenu items (Menu.Item / Menu.Divider / nested Menu.Sub) */
+  children: React.ReactNode;
+  /** Left section content on the trigger row */
+  startSection?: React.ReactNode;
+  /** Whether the submenu trigger is disabled */
+  disabled?: boolean;
+  /** Trigger color variant */
+  color?: 'default' | 'danger' | 'success' | 'warning';
+  /** Submenu content width */
+  w?: number;
+  /** Maximum height for scrollable submenu content */
+  maxH?: number;
+  /** Test ID for testing */
+  testID?: string;
+}

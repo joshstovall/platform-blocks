@@ -1,6 +1,7 @@
 ---
+playground: true
 title: ColorPicker
-description: A color selection component with various input methods and preset swatches
+description: A compact swatch-only color picker — a single preview trigger that opens a small preset palette.
 source: ui/src/components/ColorPicker
 status: stable
 category: Input
@@ -13,43 +14,24 @@ props:
     description: Initial color value for uncontrolled usage
   - name: onChange
     type: function
-    description: Callback when color changes
-  - name: placeholder
-    type: string
-    description: Placeholder text for the input
-  - name: label
-    type: string
-    description: Label for the color picker
-  - name: helperText
-    type: string
-    description: Additional help text
+    description: Callback fired when a swatch is selected
+  - name: swatches
+    type: string[]
+    description: Preset colors to choose from
+  - name: size
+    type: number
+    description: Size of the trigger + swatches in pixels
+    default: 28
+  - name: columns
+    type: number
+    description: Number of swatches per row in the popover
+    default: 5
   - name: disabled
     type: boolean
     description: Whether the picker is disabled
     default: false
-  - name: withSwatches
-    type: boolean
-    description: Whether to show color swatches
-    default: true
-  - name: swatches
-    type: string[]
-    description: Custom color swatches array
-  - name: size
-    type: string
-    description: Size variant
-    default: md
-  - name: variant
-    type: string
-    description: Visual variant
-    default: default
-  - name: error
-    type: string
-    description: Error message to display
 examples:
   - basic
-  - swatches
-  - states
-  - variants
 ---
 
-The ColorPicker component provides an intuitive interface for selecting colors through various input methods including color wheel, hex input, and preset swatches.
+ColorPicker is a lightweight alternative to ColorInput for cases where a full hex input and dropdown chrome are unnecessary. It renders a single color preview that toggles a compact popover of preset swatches — no text input, no positioning engine.

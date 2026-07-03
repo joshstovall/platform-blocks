@@ -47,7 +47,7 @@ export interface UseDropdownPositioningReturn {
  * - Overlay lifecycle management
  * - Click outside and escape key handling
  * 
- * Used by both AutoComplete and ColorPicker components to ensure consistent
+ * Used by both AutoComplete and ColorInput components to ensure consistent
  * dropdown behavior across the component library.
  * 
  * @example
@@ -129,6 +129,7 @@ export function useDropdownPositioning(
     const overlayId = openOverlay({
       content,
       anchor,
+      anchorNode: anchorRef.current,
       width,
       maxHeight,
       strategy: 'fixed',

@@ -1,5 +1,6 @@
 ---
 name: Blockquote
+playground: true
 title: Blockquote
 category: typography
 tags: [blockquote, text, typography]

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: QRCode
 category: data-display
 tags: [qrcode, barcode, scan, data, encoding]

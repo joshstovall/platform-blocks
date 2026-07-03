@@ -1,4 +1,5 @@
 ------
+playground: true
 
 title: DatePicker
 

@@ -9,6 +9,7 @@ import { useChartTheme } from '../../theme/ChartThemeContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import type { ActiveTarget } from '../../core/hittest/types';
 import { ChartInteractionEvent } from '../../types';
 import { linearScale, generateNiceTicks, type Scale } from '../../utils/scales';
 import { createSmoothPath } from '../../utils';
@@ -206,6 +207,7 @@ const ComboBarSeries: React.FC<{
         return (
           <AnimatedRect
             key={bar.id}
+            testID={`combo-bar-${bar.id}`}
             animatedProps={animatedProps}
             fill={bar.color}
             rx={3}
@@ -369,12 +371,12 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
 
-  const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
   const wantsCrosshairUpdates = (enableCrosshair !== false) || Boolean(multiTooltip);
-  const pointerStateAvailable = Boolean(setPointer || (wantsCrosshairUpdates && setCrosshair));
+  const pointerStateAvailable = Boolean(setPointer || (wantsCrosshairUpdates && setActiveSlice));
   const isWeb = Platform.OS === 'web';
 
   const normalizedLayers = useMemo<NormalizedLayer[]>(() => {
@@ -489,6 +491,11 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   const scaleYLeft = useMemo(() => linearScale(yDomainLeft, [plotHeight, 0]), [yDomainLeft, plotHeight]);
   const scaleYRight = useMemo(() => linearScale(yDomainRight, [plotHeight, 0]), [yDomainRight, plotHeight]);
 
+  // Dedupe key of the last-published slice. The tooltip content only changes when the
+  // pointer crosses into a new x-category, so we skip the (unthrottled) setActiveSlice/
+  // setActiveTarget churn — and the slice rebuild — while the pointer stays in one category.
+  const lastSliceKeyRef = useRef<string | null>(null);
+
   const updatePointerFromPlotCoords = useCallback((plotX: number, plotY: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
     if (!pointerStateAvailable) return;
     const chartX = padding.left + plotX;
@@ -507,12 +514,56 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
         data: meta?.data ?? null,
       });
     }
-    if (wantsCrosshairUpdates && setCrosshair) {
-      const clampedX = Math.max(0, Math.min(plotWidth, plotX));
-      const dataX = scaleX.invert ? scaleX.invert(clampedX) : xDomain[0];
-      setCrosshair({ dataX, pixelX: padding.left + clampedX });
+    if (wantsCrosshairUpdates && setActiveSlice) {
+      // Engine-swap: build a multi-layer ActiveTarget slice at the pointer x (one mark per
+      // visible layer, snapped to its nearest data point) instead of feeding a legacy crosshair.
+      const slice: ActiveTarget[] = [];
+      for (const layer of resolvedLayers) {
+        if (!layer.visible || layer.points.length === 0) continue;
+        const axisScale = layer.targetAxis === 'right' ? scaleYRight : scaleYLeft;
+        let nearest = layer.points[0];
+        let nearestDist = Infinity;
+        for (const point of layer.points) {
+          const dist = Math.abs(scaleX(point.x) - plotX);
+          if (dist < nearestDist) { nearestDist = dist; nearest = point; }
+        }
+        const formatter = layer.targetAxis === 'right' ? yAxisRight?.labelFormatter : yAxis?.labelFormatter;
+        const px = padding.left + scaleX(nearest.x);
+        const py = padding.top + axisScale(nearest.y);
+        slice.push({
+          seriesId: layer.id,
+          markId: nearest.x,
+          kind: 'point',
+          datum: nearest,
+          pixel: { x: px, y: py },
+          value: nearest.y,
+          distance: nearestDist,
+          label: layer.name,
+          color: (nearest.meta?.color as string | undefined) ?? layer.color,
+          formattedValue: formatter ? formatter(nearest.y) : String(nearest.y),
+          dataX: nearest.x,
+          dataY: nearest.y,
+        });
+      }
+      if (slice.length > 0) {
+        // Only re-publish when the resolved category changes (markIds identify the x). While
+        // the pointer stays in one category the content is identical — skip the re-render;
+        // setPointer (rAF-throttled, above) keeps the tooltip following the cursor.
+        const key = slice.map((s) => s.markId).join('|');
+        if (key !== lastSliceKeyRef.current) {
+          lastSliceKeyRef.current = key;
+          setActiveSlice(slice);
+          // Anchor the primary target to the layer whose point is closest to the pointer x.
+          const primary = slice.reduce((a, b) => (b.distance < a.distance ? b : a), slice[0]);
+          setActiveTarget?.(primary);
+        }
+      } else if (lastSliceKeyRef.current !== null) {
+        lastSliceKeyRef.current = null;
+        setActiveSlice([]);
+        setActiveTarget?.(null);
+      }
     }
-  }, [pointerStateAvailable, padding.left, padding.top, plotWidth, plotHeight, setPointer, wantsCrosshairUpdates, setCrosshair, scaleX, xDomain]);
+  }, [pointerStateAvailable, padding.left, padding.top, plotWidth, plotHeight, setPointer, wantsCrosshairUpdates, setActiveSlice, setActiveTarget, resolvedLayers, scaleX, scaleYLeft, scaleYRight, yAxis, yAxisRight]);
 
   const clearPointerState = useCallback(() => {
     if (!pointerStateAvailable) return;
@@ -520,9 +571,11 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
       setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
     }
     if (wantsCrosshairUpdates) {
-      setCrosshair?.(null);
+      lastSliceKeyRef.current = null;
+      setActiveSlice?.([]);
+      setActiveTarget?.(null);
     }
-  }, [pointerStateAvailable, setPointer, wantsCrosshairUpdates, setCrosshair]);
+  }, [pointerStateAvailable, setPointer, wantsCrosshairUpdates, setActiveSlice, setActiveTarget]);
 
   useEffect(() => {
     if (!pointerTrackingEnabled) {
@@ -563,39 +616,6 @@ export const ComboChart: React.FC<ComboChartProps> = (props) => {
   }).join('||'), [resolvedLayers]);
 
   const animationProgress = useComboAnimation(disabled, 800, layerSignature);
-
-  const registerSignatureRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    if (registerSignatureRef.current === layerSignature) return;
-    registerSignatureRef.current = layerSignature;
-    resolvedLayers.forEach((layer) => {
-      registerSeries({
-        id: layer.id,
-        name: layer.name,
-        color: layer.color,
-        points: layer.points.map((point) => {
-          const axisScale = layer.targetAxis === 'right' ? scaleYRight : scaleYLeft;
-          const pixelX = padding.left + scaleX(point.x);
-          const pixelY = padding.top + axisScale(point.y);
-          return {
-            x: point.x,
-            y: point.y,
-            pixelX,
-            pixelY,
-            meta: {
-              axis: layer.targetAxis,
-              type: layer.type,
-              chartX: pixelX,
-              chartY: pixelY,
-              ...point.meta,
-            },
-          };
-        }),
-        visible: layer.visible,
-      });
-    });
-  }, [registerSeries, resolvedLayers, layerSignature, scaleX, scaleYLeft, scaleYRight, padding.left, padding.top]);
 
   const handleBarHover = useCallback((bar: ComputedBarRect) => {
     const centerPlotX = bar.x + bar.width / 2 - padding.left;

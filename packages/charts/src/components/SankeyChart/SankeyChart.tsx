@@ -13,6 +13,7 @@ import { SankeyChartProps, SankeyNode, SankeyLink, SankeyInconsistency } from '.
 import { ChartContainer, ChartTitle } from '../../ChartBase';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import type { ActiveTarget } from '../../core/hittest/types';
 import { getColorFromScheme, colorSchemes } from '../../utils';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -102,6 +103,7 @@ const AnimatedSankeyNode: React.FC<AnimatedSankeyNodeProps> = React.memo(({
   return (
     <G>
       <AnimatedRect
+        testID={`sankey-node-${node.id}`}
         animatedProps={animatedProps}
         x={node.x}
         width={nodeWidth}
@@ -307,8 +309,9 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
     // Interaction context is optional
   }
 
-  const registerSeries = interaction?.registerSeries;
   const setPointer = interaction?.setPointer;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
 
   const rawNodeMap = React.useMemo(() => {
     const map = new Map<string, SankeyNode>();
@@ -560,6 +563,12 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
     return map;
   }, [internalLinks]);
 
+  const nodeById = React.useMemo(() => {
+    const map = new Map<string, (typeof internalNodes)[number]>();
+    internalNodes.forEach(node => map.set(node.id, node));
+    return map;
+  }, [internalNodes]);
+
   const activeNodeIds = React.useMemo(() => {
     if (!highlightEnabled) return null;
     if (hoveredNodeId) {
@@ -612,6 +621,11 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
     [highlightEnabled, activeLinkKeys]
   );
 
+  const clearActive = React.useCallback(() => {
+    setActiveTarget?.(null);
+    setActiveSlice?.([]);
+  }, [setActiveTarget, setActiveSlice]);
+
   const handleNodeHover = React.useCallback(
     (id: string | null) => {
       if (highlightEnabled) {
@@ -621,8 +635,27 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
       if (onNodeHover) {
         onNodeHover(id ? rawNodeMap.get(id) ?? null : null);
       }
+      // Engine-swap: a hovered node is a single ActiveTarget (element-hover flow).
+      if (!id) { clearActive(); return; }
+      const node = nodeById.get(id);
+      if (!node) { clearActive(); return; }
+      const target: ActiveTarget = {
+        seriesId: 'sankey-nodes',
+        markId: node.id,
+        kind: 'cell',
+        datum: node.raw ?? node,
+        pixel: { x: node.x + resolvedNodeWidth / 2, y: node.y + node.height / 2 },
+        value: node.value,
+        distance: 0,
+        label: node.label,
+        color: node.color,
+        formattedValue: formatValueLabel(node.id, node.value),
+        customTooltip: `${node.label} · ${formatValueLabel(node.id, node.value)} (in ${formatValueLabel(node.id, node.in)} · out ${formatValueLabel(node.id, node.out)})`,
+      };
+      setActiveTarget?.(target);
+      setActiveSlice?.([target]);
     },
-    [highlightEnabled, onNodeHover, rawNodeMap]
+    [highlightEnabled, onNodeHover, rawNodeMap, nodeById, resolvedNodeWidth, formatValueLabel, setActiveTarget, setActiveSlice, clearActive]
   );
 
   const handleLinkHover = React.useCallback(
@@ -634,43 +667,35 @@ export const SankeyChart: React.FC<SankeyChartProps> = (props) => {
       if (onLinkHover) {
         onLinkHover(key ? linkByKey.get(key)?.raw ?? null : null);
       }
+      // Engine-swap: a hovered link is a single ActiveTarget anchored at its mid-span.
+      if (!key) { clearActive(); return; }
+      const link = linkByKey.get(key);
+      if (!link) { clearActive(); return; }
+      const src = nodeById.get(link.source);
+      const tgt = nodeById.get(link.target);
+      const px = src && tgt ? (src.x + resolvedNodeWidth + tgt.x) / 2 : (link.sy + link.ty) / 2;
+      const target: ActiveTarget = {
+        seriesId: 'sankey-links',
+        markId: link.key,
+        kind: 'cell',
+        datum: link.raw ?? link,
+        pixel: { x: px, y: (link.sy + link.ty) / 2 },
+        value: link.value,
+        distance: 0,
+        label: `${nodeById.get(link.source)?.label ?? link.source} → ${nodeById.get(link.target)?.label ?? link.target}`,
+        color: link.color,
+        formattedValue: formatValueLabel(link.source, link.value),
+      };
+      setActiveTarget?.(target);
+      setActiveSlice?.([target]);
     },
-    [highlightEnabled, onLinkHover, linkByKey]
+    [highlightEnabled, onLinkHover, linkByKey, nodeById, resolvedNodeWidth, formatValueLabel, setActiveTarget, setActiveSlice, clearActive]
   );
 
   const clearHover = React.useCallback(() => {
     handleNodeHover(null);
     handleLinkHover(null);
   }, [handleNodeHover, handleLinkHover]);
-
-  // Memoized series registration for node groups and tooltips
-  const seriesRegistration = React.useMemo(() => {
-    if (!registerSeries) return null;
-    return {
-      id:'sankey-nodes',
-      name:'Nodes',
-      color: theme.colors.accentPalette[0],
-      points: internalNodes.map(n=> ({
-        x: n.layer,
-        y: n.value,
-        meta: {
-          id: n.id,
-          label: n.label,
-          inbound: n.in,
-          outbound: n.out,
-          value: n.value,
-          rawNode: n.raw,
-        },
-      })),
-      visible:true,
-    };
-  }, [internalNodes, theme.colors.accentPalette, registerSeries]);
-
-  React.useEffect(()=>{
-    if (seriesRegistration && registerSeries) {
-      registerSeries(seriesRegistration);
-    }
-  }, [seriesRegistration, registerSeries]);
 
   return (
     <ChartContainer width={width} height={height} style={style} interactionConfig={{ multiTooltip:true }}>

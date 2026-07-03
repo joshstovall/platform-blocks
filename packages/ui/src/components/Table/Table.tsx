@@ -121,9 +121,12 @@ const getSpacingValue = (spacing: TableProps['horizontalSpacing'], theme: any): 
 };
 
 // Table Cell Components
-export const TableTh: React.FC<TableCellProps> = (allProps) => {
+export const TableTh = React.forwardRef<any, TableCellProps>((allProps, ref) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style } = otherProps;
+  // `rest` forwards passthrough props (role, aria-*, accessibility*, id, key
+  // handlers) onto the underlying View so consumers like DataTable can attach
+  // grid semantics. Known layout props are destructured out first.
+  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style, ...rest } = otherProps;
   const theme = useTheme();
   const { isRTL } = useDirection();
 
@@ -161,8 +164,8 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
   const cellStyle = [
     styles.th,
     {
-      backgroundColor: theme.colorScheme === 'dark' ? '#2d3748' : '#f7fafc',
-      borderColor: theme.colorScheme === 'dark' ? '#4a5568' : '#e2e8f0',
+      backgroundColor: theme.colors.gray[0],
+      borderColor: theme.colors.gray[2],
       ...getCellWidth()
     },
     effectiveAlign !== 'left' && { alignItems: effectiveAlign === 'center' ? 'center' : 'flex-end' },
@@ -171,7 +174,7 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
   ];
 
   return (
-    <View style={cellStyle}>
+    <View ref={ref} style={cellStyle} {...rest}>
       <Text
         variant="p"
         weight="semibold"
@@ -184,11 +187,12 @@ export const TableTh: React.FC<TableCellProps> = (allProps) => {
       </Text>
     </View>
   );
-};
+});
+TableTh.displayName = 'TableTh';
 
 export const TableTd: React.FC<TableCellProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style } = otherProps;
+  const { children, w, align = 'left', minW, maxW, flex, widthStrategy = 'auto', style, ...rest } = otherProps;
   const theme = useTheme();
   const { isRTL } = useDirection();
 
@@ -226,7 +230,7 @@ export const TableTd: React.FC<TableCellProps> = (allProps) => {
   const cellStyle = [
     styles.td,
     {
-      borderColor: theme.colorScheme === 'dark' ? '#4a5568' : '#e2e8f0',
+      borderColor: theme.colors.gray[2],
       ...getCellWidth()
     },
     effectiveAlign !== 'left' && { alignItems: effectiveAlign === 'center' ? 'center' : 'flex-end' },
@@ -235,7 +239,7 @@ export const TableTd: React.FC<TableCellProps> = (allProps) => {
   ];
 
   return (
-    <View style={cellStyle}>
+    <View style={cellStyle} {...rest}>
       {typeof children === 'string' || typeof children === 'number' ? (
         <Text
           variant="p"
@@ -256,14 +260,14 @@ export const TableTd: React.FC<TableCellProps> = (allProps) => {
 // Table Row Component
 export const TableTr: React.FC<TableRowProps> = (allProps) => {
   const { spacingProps, otherProps } = extractSpacingProps(allProps);
-  const { children, bg, selected, onPress, style, hoverable } = otherProps as any;
+  const { children, bg, selected, onPress, style, hoverable, ...rest } = otherProps as any;
   const theme = useTheme();
 
   const rowStyle = [
     styles.tr,
     bg && { backgroundColor: bg },
     selected && {
-      backgroundColor: theme.colorScheme === 'dark' ? '#4299e1' : '#bee3f8'
+      backgroundColor: theme.colors.primary[1]
     },
     hoverable && Platform.OS === 'web' && {
       cursor: 'pointer',
@@ -273,33 +277,25 @@ export const TableTr: React.FC<TableRowProps> = (allProps) => {
     style
   ];
 
-  if (onPress) {
-    // For interactive rows, we'd need TouchableOpacity
-    // For now, just render as View
-    return (
-      <View style={rowStyle}>
-        {children}
-      </View>
-    );
-  }
+  // For web, emulate hover by setting the background on mouse enter/leave.
+  const hoverHandlers =
+    Platform.OS === 'web' && hoverable
+      ? {
+          onMouseEnter: (e: any) => {
+            (e.currentTarget as any).style.backgroundColor = selected
+              ? theme.colors.primary[2]
+              : theme.colors.gray[1];
+          },
+          onMouseLeave: (e: any) => {
+            (e.currentTarget as any).style.backgroundColor = selected
+              ? theme.colors.primary[1]
+              : bg || 'transparent';
+          }
+        }
+      : {};
 
   return (
-    <View
-      style={rowStyle}
-      // For web, emulate hover by using onMouseEnter/Leave to set state background if not provided
-      {...(Platform.OS === 'web' && hoverable ? {
-        onMouseEnter: (e: any) => {
-          (e.currentTarget as any).style.backgroundColor = selected
-            ? (theme.colorScheme === 'dark' ? '#2b5d85' : '#a9d8f2')
-            : (theme.colorScheme === 'dark' ? '#2d3748' : '#f1f5f9');
-        },
-        onMouseLeave: (e: any) => {
-          (e.currentTarget as any).style.backgroundColor = selected
-            ? (theme.colorScheme === 'dark' ? '#4299e1' : '#bee3f8')
-            : (bg || 'transparent');
-        }
-      } : {})}
-    >
+    <View style={rowStyle} {...hoverHandlers} {...rest}>
       {children}
     </View>
   );
@@ -419,7 +415,8 @@ export const Table: React.FC<TableProps> & {
     tabularNums = false,
     fullWidth = false,
     columns = [],
-    style
+    style,
+    ...rest
   } = otherProps;
 
   const theme = useTheme();
@@ -429,7 +426,7 @@ export const Table: React.FC<TableProps> & {
   const tableStyle = [
     styles.table,
     {
-      borderColor: theme.colorScheme === 'dark' ? '#4a5568' : '#e2e8f0'
+      borderColor: theme.colors.gray[2]
     },
     fullWidth && { width: '100%' },
     withTableBorder && styles.withTableBorder,
@@ -445,7 +442,7 @@ export const Table: React.FC<TableProps> & {
     const { head, body, foot, caption } = data;
 
     return (
-      <View style={tableStyle}>
+      <View style={tableStyle} {...rest}>
         {caption && captionSide === 'top' && (
           <TableCaption>{caption}</TableCaption>
         )}
@@ -483,10 +480,10 @@ export const Table: React.FC<TableProps> & {
                 key={rowIndex}
                 style={{
                   backgroundColor: striped && rowIndex % 2 === 1
-                    ? (theme.colorScheme === 'dark' ? '#2d3748' : '#f7fafc')
+                    ? theme.colors.gray[1]
                     : 'transparent',
                   borderBottomWidth: withRowBorders ? 1 : 0,
-                  borderColor: theme.colorScheme === 'dark' ? '#4a5568' : '#e2e8f0'
+                  borderColor: theme.colors.gray[2]
                 }}
               >
                 {row.map((cell, cellIndex) => {
@@ -548,7 +545,7 @@ export const Table: React.FC<TableProps> & {
 
   // Render with children
   return (
-    <View style={tableStyle}>
+    <View style={tableStyle} {...rest}>
       {children}
     </View>
   );
@@ -584,8 +581,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     flex: 1,
     justifyContent: 'center',
-    // paddingHorizontal: 12,
-    // paddingVertical: 8
+    paddingHorizontal: 12,
   },
   tfoot: {
     // Footer section styles
@@ -594,8 +590,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flex: 1,
     justifyContent: 'center',
-    // paddingHorizontal: 12,
-    // paddingVertical: 8
+    paddingHorizontal: 12,
   },
   thead: {
     // Header section styles

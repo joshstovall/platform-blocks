@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Network Chart
 tags: [chart, network, graph]
 category: charts

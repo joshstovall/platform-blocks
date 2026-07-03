@@ -86,6 +86,21 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
   
   /** Selection handler */
   onSelect?: (item: AutoCompleteOption) => void;
+
+  /**
+   * Custom renderer for the selected option shown inside the single-select
+   * input. When provided and an option is selected, the returned node is
+   * overlaid on the text field while it is not focused (focusing the field
+   * reveals the editable text so the query can be changed). Ignored in
+   * multiSelect mode — use `renderSelectedValue` for chips there.
+   */
+  renderValue?: (
+    item: AutoCompleteOption,
+    context: {
+      focused: boolean;
+      clear: () => void;
+    }
+  ) => React.ReactNode;
   
   /** Whether to allow custom values */
   allowCustomValue?: boolean;
@@ -206,6 +221,9 @@ export interface AutoCompleteProps extends SpacingProps, LayoutProps {
 
   /** Whether the field is editable */
   editable?: boolean;
+
+  /** Hide the blinking text caret (useful for select-like, non-editable fields) */
+  caretHidden?: boolean;
 
   // Enhanced positioning options
   /** Placement preference for the suggestions dropdown (default: 'bottom-start') */

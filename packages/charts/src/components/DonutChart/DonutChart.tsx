@@ -6,6 +6,9 @@ import Animated, { Easing, useSharedValue, withDelay, withTiming } from 'react-n
 import { ChartContainer, ChartLegend, ChartTitle } from '../../ChartBase';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { AngularSliceHitTester } from '../../core/hittest/angular';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { ChartInteractionEvent } from '../../types';
 import { createColorAssigner } from '../../colors';
 import { formatPercentage } from '../../utils';
@@ -219,9 +222,8 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
 
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
   const interactionSeries = interaction?.series;
 
   const ringStates = useMemo<RingState[]>(() => {
@@ -478,39 +480,6 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
     );
   }, [animationDelay, animationProgress, resolvedAnimationDuration, disabled, dataSignature]);
 
-  const registerSignatureRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    if (!flatSlices.length) return;
-    if (registerSignatureRef.current === dataSignature) return;
-
-    registerSignatureRef.current = dataSignature;
-
-    flatSlices.forEach((slice) => {
-      registerSeries({
-        id: slice.id,
-        name: slice.label,
-        color: slice.color,
-        points: [
-          {
-            x: slice.globalIndex,
-            y: slice.value,
-            meta: {
-              label: slice.label,
-              value: slice.value,
-              percentage: slice.anglePercentage,
-              ringId: slice.ringId,
-              ringLabel: slice.ringLabel,
-              ringIndex: slice.ringIndex,
-              data: slice.data,
-            },
-          },
-        ],
-        visible: slice.visible,
-      });
-    });
-  }, [registerSeries, flatSlices, dataSignature]);
-
   const [focusedSliceId, setFocusedSliceId] = useState<string | null>(null);
   const focusedSlice = useMemo(
     () =>
@@ -531,6 +500,51 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
       return value.toString();
     }
   }, []);
+
+  // New interaction engine: every visible slice is an angular-sector mark (its real
+  // rendered sweep + radii). The angular tester resolves which slice the pointer is
+  // over. Container-origin center = plot center + padding offset (the SVG is offset
+  // by padding). Gaps between slices resolve to null (they're outside every sweep).
+  const hitCx = padding.left + centerX;
+  const hitCy = padding.top + centerY;
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const marks: Mark[] = flatSlices
+      .filter((slice) => slice.visible && slice.anglePercentage > 0)
+      .map((slice) => {
+        const midRadius = (slice.innerRadius + slice.outerRadius) / 2;
+        const rad = ((slice.centerAngle - 90) * Math.PI) / 180;
+        return {
+          id: slice.globalIndex,
+          pixel: { x: hitCx + midRadius * Math.cos(rad), y: hitCy + midRadius * Math.sin(rad) },
+          value: slice.value,
+          datum: slice,
+          label: slice.label,
+          color: slice.color,
+          extent: {
+            slice: {
+              // Slices are drawn via AnimatedPieSlice's raw math-convention polarToCartesian
+              // (0° = right), but the hit-tester's angleFromPoint is canonical (0° = top).
+              // Convert the sweep to canonical (canonical = mathAngle + 90) so hover/press
+              // line up with the drawn wedges instead of being rotated 90°.
+              startAngle: slice.startAngle + 90,
+              endAngle: slice.endAngle + 90,
+              innerRadius: slice.innerRadius,
+              outerRadius: slice.outerRadius,
+            },
+          },
+          formattedValue: defaultValueFormatter(slice.value),
+        };
+      });
+    return [{ id: 'donut', name: 'Donut', color: theme.colors.accentPalette[0], visible: true, marks }];
+  }, [flatSlices, hitCx, hitCy, defaultValueFormatter, theme.colors.accentPalette]);
+
+  const tester = useMemo(() => new AngularSliceHitTester(hitCx, hitCy, hitSeries), [hitCx, hitCy, hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register('donut', { frame: { kind: 'polar', cx: hitCx, cy: hitCy } as any, geometry: { kind: 'slice', cx: hitCx, cy: hitCy }, series: hitSeries });
+    return () => register('donut', null);
+  }, [register, hitSeries, hitCx, hitCy]);
 
   const labelAnnotations = useMemo<LabelAnnotation[]>(() => {
     const labelsConfig = labelsConfigProp;
@@ -813,14 +827,6 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
           updateSeriesVisibility(candidate.id, shouldShow);
         });
       }
-
-      setPointer?.({
-        x: absoluteX,
-        y: absoluteY,
-        inside: true,
-        pageX: nativeEvent?.pageX,
-        pageY: nativeEvent?.pageY,
-      });
     },
     [
       centerX,
@@ -832,12 +838,27 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
       onPress,
       padding.left,
       padding.top,
-      setPointer,
       updateSeriesVisibility,
       width,
       height,
     ]
   );
+
+  // Gesture surface: hover drives the tooltip + the center-label focus; press routes
+  // to handleSlicePress (isolate-on-click + onDataPointPress). Full-chart overlay so
+  // pointer coords are container-origin, matching the slice sectors.
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    plotWidth: width,
+    plotHeight: height,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: true,
+    tester,
+    onPointer: (_e, target) => setFocusedSliceId(target ? String((target.datum as SliceGeometry).id) : null),
+    onLeave: () => setFocusedSliceId(null),
+    onPress: (e, target) => { if (target) handleSlicePress(target.datum as SliceGeometry, (e.raw as any)?.nativeEvent ?? e.raw); },
+  });
 
   const resolvedLegendIndex = (() => {
     if (!ringStates.length) return 0;
@@ -1073,6 +1094,18 @@ export const DonutChart: React.FC<DonutChartProps> = (props) => {
                 }
               : undefined
           }
+        />
+      )}
+
+      {/* Gesture surface driven by useChartPointer + the angular hit-tester. Full-chart
+          overlay (donut geometry is centered on the whole container). */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="donut-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

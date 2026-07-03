@@ -1,5 +1,5 @@
 import { View, ScrollView } from 'react-native';
-import { Card, Text, DatePickerInput, TimePicker, Input, PasswordInput, NumberInput, PinInput, Checkbox, RadioGroup, Switch, Slider, RangeSlider, Select, AutoComplete, FileInput, PhoneInput, Divider, Icon, ColorPicker, Block } from '@platform-blocks/ui';
+import { Card, Text, DatePickerInput, TimePicker, Input, PasswordInput, NumberInput, PinInput, Checkbox, RadioGroup, Switch, Slider, RangeSlider, Select, AutoComplete, FileInput, PhoneInput, Divider, Icon, ColorInput, Block } from '@platform-blocks/ui';
 import React from 'react';
 
 interface FormState {
@@ -238,7 +238,7 @@ export function InputShowcase() {
                 onChange={(checked) => updateState('checkbox3', checked)}
                 // Custom color and icon example
                 color="#f59e0b" // amber-500
-                icon={<Icon name={state.checkbox3 ? 'star' : 'star-outline'} size={14} color="#fff" />}
+                icon={<Icon name="star" variant={state.checkbox3 ? 'filled' : 'outlined'} size={14} color="#fff" />}
               />
             </Block>
           </Card>
@@ -347,7 +347,7 @@ export function InputShowcase() {
                 showSuggestionsOnFocus={true}
                 clearable
               />
-              <ColorPicker
+              <ColorInput
                 label="Pick a Color"
                 // value="#10b981"
                 onChange={(color) => console.log('Selected color:', color)}

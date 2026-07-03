@@ -177,7 +177,9 @@ export function EcommerceExample() {
 
   if (showCart) return renderCartOverlay();
 
-  const FiltersContent = () => (
+  // Plain JSX value rather than a nested component so it isn't re-created as a
+  // new component type on every render (react-hooks/static-components).
+  const filtersContent = (
     <>
       <Text weight="bold" style={{ marginBottom: 12 }}>Filters</Text>
       <Text size="xs" color="muted" style={{ marginBottom: 4 }}>Stock</Text>
@@ -258,7 +260,7 @@ export function EcommerceExample() {
           <View style={[styles.mainContentRow, isMobile && styles.mainContentColumn]}>
             {!isMobile && (
               <View style={styles.filtersColumn}>
-                <FiltersContent />
+                {filtersContent}
               </View>
             )}
             <View style={{ flex: 1 }}>

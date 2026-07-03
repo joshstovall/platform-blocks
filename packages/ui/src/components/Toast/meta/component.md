@@ -19,6 +19,7 @@ props:
   bodyProps: Override props applied to the body `<Text>` (the children content)
 examples:
   - basic
+  - visual-variants
   - variants
   - interactive
   - positions

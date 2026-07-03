@@ -1,6 +1,5 @@
 import { useState } from 'react'
-
-import { AutoComplete, Column, Text } from '@platform-blocks/ui'
+import { AutoComplete } from '@platform-blocks/ui'
 import type { AutoCompleteOption } from '../../types'
 
 const countries: AutoCompleteOption[] = [
@@ -26,36 +25,31 @@ export default function Demo() {
   const [selectedCountry, setSelectedCountry] = useState<AutoCompleteOption | null>(null)
 
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Select-like behaviour</Text>
-      <Text size="sm" colorVariant="secondary">
-        Opens with the full country list, then filters results as you type.
-      </Text>
-      <AutoComplete
-        label="Country"
-        placeholder="Select or search for a country..."
-        data={countries}
-        value={inputValue}
-        onChangeText={(value) => {
-          setInputValue(value)
-          if (!value) setSelectedCountry(null)
-        }}
-        onSelect={(item) => {
-          setSelectedCountry(item)
-          setInputValue(item.label)
-        }}
-        minSearchLength={0}
-        maxSuggestions={8}
-        fullWidth
-      />
-      {selectedCountry && (
-        <Text size="xs" colorVariant="secondary">
-          Selected: {selectedCountry.label}
-        </Text>
-      )}
-      <Text size="xs" colorVariant="secondary">
-        Focus the field to reveal all options; use arrow keys or typing to refine.
-      </Text>
-    </Column>
+    <AutoComplete
+      label="Country"
+      placeholder="Select a country..."
+      data={countries}
+      value={inputValue}
+      onChangeText={(value) => {
+        setInputValue(value)
+        if (!value) setSelectedCountry(null)
+      }}
+      onSelect={(item) => {
+        setSelectedCountry(item)
+        setInputValue(item.label)
+      }}
+      minSearchLength={0}
+      maxSuggestions={countries.length}
+      // Select-like: the field is a picker, not a text box. It's non-editable so
+      // typing can't change or filter the value — tapping opens the list and the
+      // choice is made from it. `filter` still returns every option so reopening
+      // after a selection shows the full list again.
+      editable={false}
+      // No text entry in select-like mode, so suppress the blinking text caret.
+      caretHidden
+      filter={() => true}
+      highlightMatches={false}
+      fullWidth
+    />
   )
 }

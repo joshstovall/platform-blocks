@@ -10,8 +10,7 @@ import { scaleLinear, generateTicks, formatNumber, getColorFromScheme, colorSche
 import { linearScale as createLinearScale } from '../../utils/scales';
 import type { Scale } from '../../utils/scales';
 import { AnimatedBubble } from './AnimatedBubble';
-import { useBubbleSeriesRegistration } from './useBubbleSeriesRegistration';
-import type { BubbleChartSeriesRegistration } from './useBubbleSeriesRegistration';
+import type { ActiveTarget } from '../../core/hittest/types';
 
 // Backwards compatibility alias
 export type SimpleBubbleChartProps = BubbleChartProps;
@@ -635,42 +634,9 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
     }
   })();
 
-  const registerSeries = interactionContext?.registerSeries;
   const setPointer = interactionContext?.setPointer;
-  const setCrosshair = interactionContext?.setCrosshair;
-
-  // Register series for tooltip interaction
-  const bubbleSeriesData: BubbleChartSeriesRegistration[] = useMemo(() => {
-    if (!tooltipEnabled) return [];
-    return [{
-      id: 'bubble-series',
-      name: title || label || 'Bubble Series',
-      color: color || theme.colors.accentPalette?.[0] || '#3B82F6',
-      visible: true,
-      chartBubbles: bubbles.map(bubble => ({
-        ...bubble.record,
-        id: bubble.id,
-        x: bubble.dataX,
-        y: bubble.dataY,
-        chartX: bubble.plotX,
-        chartY: bubble.plotY,
-        radius: bubble.radius,
-        value: bubble.value,
-        label: bubble.label,
-        color: bubble.color,
-        formattedValue: bubble.formattedValue,
-        customTooltip: bubble.customTooltip,
-        rawX: bubble.rawX,
-        rawY: bubble.rawY,
-        tooltipPayload: bubble.tooltipPayload,
-      })),
-    }];
-  }, [bubbles, title, label, color, theme.colors.accentPalette, tooltipEnabled]);
-
-  useBubbleSeriesRegistration({
-    series: bubbleSeriesData,
-    registerSeries,
-  });
+  const setActiveTarget = interactionContext?.setActiveTarget;
+  const setActiveSlice = interactionContext?.setActiveSlice;
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -713,7 +679,25 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
             payload: closest.tooltipPayload,
           };
           setPointer({ x: closest.plotX, y: closest.plotY, inside: true, pageX, pageY, data: pointerData });
-          setCrosshair?.({ dataX: closest.dataX, pixelX: closest.plotX });
+          // New engine: publish the resolved bubble as the shared ActiveTarget (container
+          // -origin pixel) so ChartActiveTooltip renders it — replaces the legacy crosshair.
+          const target: ActiveTarget = {
+            seriesId: 'bubble-series',
+            markId: closest.id,
+            kind: 'point',
+            datum: closest.record ?? closest,
+            pixel: { x: closest.plotX + padding.left, y: closest.plotY + padding.top },
+            value: closest.value,
+            distance: closestDistance,
+            label: closest.label,
+            color: closest.color,
+            formattedValue: closest.formattedValue,
+            customTooltip: closest.customTooltip,
+            dataX: closest.dataX,
+            dataY: closest.dataY,
+          };
+          setActiveTarget?.(target);
+          setActiveSlice?.([target]);
         }
 
         if (firePress) {
@@ -742,20 +726,22 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
         setHoveredIndex(null);
         if (tooltipEnabled && setPointer) {
           setPointer({ x, y, inside: true, pageX, pageY, data: null });
-          setCrosshair?.(null);
+          setActiveTarget?.(null);
+          setActiveSlice?.([]);
         }
       }
     },
-    [bubbles, disabled, plotWidth, plotHeight, tooltipEnabled, setPointer, setCrosshair, onDataPointPress, onPress]
+    [bubbles, disabled, plotWidth, plotHeight, tooltipEnabled, setPointer, setActiveTarget, setActiveSlice, padding.left, padding.top, onDataPointPress, onPress]
   );
 
   const handlePointerEnd = useCallback(() => {
     setHoveredIndex(null);
     if (tooltipEnabled && setPointer) {
       setPointer({ x: 0, y: 0, inside: false, data: null });
-      setCrosshair?.(null);
+      setActiveTarget?.(null);
+      setActiveSlice?.([]);
     }
-  }, [tooltipEnabled, setPointer, setCrosshair]);
+  }, [tooltipEnabled, setPointer, setActiveTarget, setActiveSlice]);
 
   useEffect(() => {
     if (hoveredIndex == null) return;
@@ -764,10 +750,11 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
       setHoveredIndex(null);
       if (tooltipEnabled && setPointer) {
         setPointer({ x: 0, y: 0, inside: false, data: null });
-        setCrosshair?.(null);
+        setActiveTarget?.(null);
+        setActiveSlice?.([]);
       }
     }
-  }, [bubbles, hoveredIndex, tooltipEnabled, setPointer, setCrosshair]);
+  }, [bubbles, hoveredIndex, tooltipEnabled, setPointer, setActiveTarget, setActiveSlice]);
 
   const isWeb = Platform.OS === 'web';
 
@@ -963,6 +950,7 @@ export const BubbleChart: React.FC<BubbleChartProps> = (props) => {
       </View>
 
       <View
+        testID="bubble-gesture-surface"
         style={{
           position: 'absolute',
           left: padding.left,

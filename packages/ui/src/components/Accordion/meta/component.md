@@ -26,6 +26,7 @@ examples:
   - basic
   - multiple
   - variants
+  - colors
   - title-customization
 ---
 

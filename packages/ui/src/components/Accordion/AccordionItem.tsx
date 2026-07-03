@@ -5,6 +5,7 @@ import { Icon } from '../Icon';
 import type { AccordionItem, AccordionProps } from './types';
 import { useAccordionItemAnimation } from './hooks/useAccordionItemAnimation';
 import type { AccordionAnimationProp } from './types';
+import type { AccordionAccentStyles } from './styles';
 import { Collapse } from '../Collapse';
 import { mergeSlotProps } from '../../core/utils';
 export interface AccordionItemComponentProps {
@@ -16,6 +17,8 @@ export interface AccordionItemComponentProps {
   onPress: () => void;
   showChevron: boolean;
   styles: any;
+  /** Resolved expanded-item emphasis (accordion-level or per-item `color`). */
+  accent: AccordionAccentStyles;
   chevronColor: string;
   disabledChevronColor: string;
   headerStyle?: any;
@@ -36,6 +39,7 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
   onPress,
   showChevron,
   styles,
+  accent,
   chevronColor,
   disabledChevronColor,
   headerStyle,
@@ -51,11 +55,18 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
   const { CollapseConfig, animatedChevronStyle } = useAccordionItemAnimation({ expanded: isExpanded, animated });
   const { shouldAnimate, duration, easing } = CollapseConfig;
 
+  // Chevron follows the accent color while expanded (from the `color` prop).
+  const resolvedChevronColor = isDisabled
+    ? disabledChevronColor
+    : isExpanded && accent.activeChevronColor
+      ? accent.activeChevronColor
+      : chevronColor;
+
   return (
     <View style={[
       styles.item,
       isLast && variant === 'default' && { borderBottomWidth: 0 },
-      !isExpanded && { backgroundColor: '#f3f4f630' }
+      isExpanded && !isDisabled && accent.activeItem
     ]}>
       <Pressable
         style={[styles.header, headerStyle]}
@@ -72,7 +83,7 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           {chevronPosition === 'start' && showChevron && (
             <View style={[styles.chevron, animatedChevronStyle]}>
-              <Icon name="chevron-right" size="md" color={isDisabled ? disabledChevronColor : chevronColor} />
+              <Icon name="chevron-right" size="md" color={resolvedChevronColor} />
             </View>
           )}
           {item.icon && <View style={{ marginRight: 12 }}>{item.icon}</View>}
@@ -83,7 +94,7 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
                 selectable: false,
                 style: [
                   styles.headerText,
-                  isExpanded && styles.activeHeaderText,
+                  isExpanded && accent.activeHeaderText,
                   isDisabled && styles.disabledHeaderText,
                   headerTextStyle,
                 ],
@@ -99,7 +110,7 @@ export const AccordionItemComponent: React.FC<AccordionItemComponentProps> = ({
               animatedChevronStyle,
               { marginLeft: 'auto' }
             ]}>
-              <Icon name="chevron-right" size="md" color={isDisabled ? disabledChevronColor : chevronColor} />
+              <Icon name="chevron-right" size="md" color={resolvedChevronColor} />
             </View>
           )}
         </View>

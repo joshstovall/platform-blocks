@@ -25,6 +25,9 @@ export interface AxisProps {
   tickLabelColor?: string;
   tickLabelFontSize?: number;
   tickLabelStyle?: TextStyle;
+  /** Width of the (centered) tick-label box. Wider values prevent long labels from
+   *  wrapping/clipping. Defaults to 72 for horizontal axes, 30 for vertical. */
+  tickLabelWidth?: number;
   labelColor?: string;
   labelFontSize?: number;
   labelStyle?: TextStyle;
@@ -52,6 +55,7 @@ export const Axis: React.FC<AxisProps> = ({
   tickLabelColor,
   tickLabelFontSize,
   tickLabelStyle,
+  tickLabelWidth,
   labelColor,
   labelFontSize,
   labelStyle,
@@ -92,6 +96,17 @@ export const Axis: React.FC<AxisProps> = ({
   const resolvedLabelColor = labelColor ?? theme.colors.textPrimary;
   const resolvedLabelFontSize = labelFontSize ?? 12;
 
+  // Tick-label box widths. Horizontal labels are centered under the tick; vertical
+  // labels are right-aligned against the axis line. The vertical default is wide
+  // enough that numeric labels (e.g. "$500k", "5,000") don't wrap to two lines.
+  const hLabelWidth = tickLabelWidth ?? 72;
+  const vLabelWidth = tickLabelWidth ?? 44;
+  // How far the vertical tick labels reach to the left of the axis line, and where
+  // the (rotated) axis title should sit so it always clears those labels.
+  const vTickExtent = tickSize + tickPadding + vLabelWidth;
+  const vTitleGap = 8;
+  const vTitleCenter = vTickExtent + vTitleGap + resolvedLabelFontSize / 2;
+
   return (
     <View style={[rootStyle, style]} pointerEvents="none">
       {showLine && (
@@ -120,17 +135,17 @@ export const Axis: React.FC<AxisProps> = ({
           ? {
               position: 'absolute',
               top: tickSize + tickPadding,
-              left: -20,
-              width: 40,
+              left: -hLabelWidth / 2,
+              width: hLabelWidth,
               textAlign: 'center',
               color: resolvedTickColor,
               fontSize: resolvedTickFontSize,
             }
           : {
               position: 'absolute',
-              left: -(tickSize + tickPadding + 30),
+              left: -(tickSize + tickPadding + vLabelWidth),
               top: -8,
-              width: 30,
+              width: vLabelWidth,
               textAlign: 'right',
               color: resolvedTickColor,
               fontSize: resolvedTickFontSize,
@@ -154,8 +169,11 @@ export const Axis: React.FC<AxisProps> = ({
             fontWeight: '600',
             ...(orientation === 'bottom' && { top: labelOffset, left: length / 2 - 50, width: 100, textAlign: 'center' }),
             ...(orientation === 'top' && { top: -labelOffset, left: length / 2 - 50, width: 100, textAlign: 'center' }),
-            ...(orientation === 'left' && { top: length / 2 - 50, left: -labelOffset - 20, width: 100, textAlign: 'center', transform: [{ rotate: '-90deg' }] }),
-            ...(orientation === 'right' && { top: length / 2 - 50, left: labelOffset - 50, width: 100, textAlign: 'center', transform: [{ rotate: '90deg' }] }),
+            // Rotated titles are laid out as a 100px-wide box, then rotated about their
+            // center, so the visible centerline sits at (left + 50). Place that center a
+            // fixed distance beyond the tick labels so the title never overlaps them.
+            ...(orientation === 'left' && { top: length / 2 - 50, left: -vTitleCenter - 50, width: 100, textAlign: 'center', transform: [{ rotate: '-90deg' }] }),
+            ...(orientation === 'right' && { top: length / 2 - 50, left: vTitleCenter - 50, width: 100, textAlign: 'center', transform: [{ rotate: '90deg' }] }),
             ...labelStyle,
           }}
         >

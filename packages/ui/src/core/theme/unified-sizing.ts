@@ -70,7 +70,10 @@ export const COMPONENT_SIZES: Record<SizeValue, ComponentSizeConfig> = {
  * Get unified size configuration for any component
  */
 export function getComponentSize(size: SizeValue = 'md'): ComponentSizeConfig {
-  return COMPONENT_SIZES[size];
+  // `SizeValue` allows numbers and arbitrary tokens, so a direct lookup can miss.
+  // Fall back to the default config rather than returning `undefined` (which would
+  // crash callers that read e.g. `.iconSize`).
+  return (typeof size === 'string' && COMPONENT_SIZES[size as keyof typeof COMPONENT_SIZES]) || COMPONENT_SIZES.md;
 }
 
 /**

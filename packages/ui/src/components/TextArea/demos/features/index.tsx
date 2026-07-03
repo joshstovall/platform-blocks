@@ -11,18 +11,9 @@ export default function Demo() {
 
   return (
     <Column gap="lg" fullWidth>
-      <Text weight="semibold">Text area feature showcase</Text>
-
-      <Column gap="sm">
-        <Text size="sm" weight="semibold">
-          Auto-resizing field
-        </Text>
-        <Text size="sm" colorVariant="secondary">
-          Adjusts height between two and six rows based on content.
-        </Text>
         <TextArea
           label="Auto-resize message"
-          placeholder="Start typing to watch the height adjust"
+          placeholder="Adjusts height between two and six rows based on content."
           value={autoResizeValue}
           onChangeText={setAutoResizeValue}
           autoResize
@@ -30,7 +21,6 @@ export default function Demo() {
           maxRows={6}
           fullWidth
         />
-      </Column>
 
       <Column gap="sm">
         <Text size="sm" weight="semibold">

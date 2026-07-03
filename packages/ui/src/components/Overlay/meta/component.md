@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Overlay
 description: Dim or highlight areas of the interface with configurable color, opacity, gradients, and blur.
 source: "@platform-blocks/ui"

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, forwardRef } from 'react';
-import { View, Pressable, Keyboard } from 'react-native';
+import { View, Pressable, Keyboard, Platform } from 'react-native';
 import { Text } from '../Text';
 import { Input } from '../Input';
 import { Flex } from '../Flex';
@@ -226,7 +226,12 @@ export const DatePickerInput = forwardRef(function DatePickerInputInner(
       onPress={handleInputPress}
       disabled={disabled}
       accessible={true}
-      accessibilityRole="button"
+      // On web, `accessibilityRole="button"` makes react-native-web render a
+      // native <button>, which then illegally nests the Input's clear <button>.
+      // Use the combobox role on web (matches Select) to render a <div> instead.
+      {...(Platform.OS === 'web'
+        ? { role: 'combobox' as const }
+        : { accessibilityRole: 'button' as const })}
       accessibilityLabel={`Date picker. ${inputValue || placeholder}`}
       accessibilityHint="Tap to open calendar"
       accessibilityState={{ disabled }}

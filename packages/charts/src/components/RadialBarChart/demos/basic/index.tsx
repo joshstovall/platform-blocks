@@ -7,18 +7,22 @@ const METRICS = [
 	{ id: 'sla', label: 'SLA', value: 94, max: 100, color: '#845EF7', trackColor: '#EFE6FF' },
 ];
 
+const AVG = Math.round(METRICS.reduce((sum, m) => sum + m.value, 0) / METRICS.length);
+
 export default function Demo() {
 	return (
 		<RadialBarChart
 			title="Quarterly KPIs"
 			subtitle="Progress toward goals"
-			width={360}
-			height={360}
+			width={400}
+			height={400}
 			data={METRICS}
-			barThickness={16}
+			barThickness={18}
 			gap={12}
 			showValueLabels
-			valueFormatter={(value, datum) => `${value}% ${datum.label}`}
+			valueFormatter={(value) => `${value}%`}
+			centerLabel={`${AVG}%`}
+			centerSubLabel="Avg score"
 			multiTooltip
 			liveTooltip
 			legend={{ show: true, position: 'bottom' }}

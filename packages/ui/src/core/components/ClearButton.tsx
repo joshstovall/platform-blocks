@@ -12,6 +12,10 @@ export interface ClearButtonProps {
   accessibilityLabel?: string;
   hasRightSection?: boolean;
   style?: any;
+  /** Override the computed icon size (defaults to the small-context size). */
+  iconSize?: number;
+  /** Stroke width of the "close" glyph (defaults to the Icon default). */
+  stroke?: number;
 }
 
 /**
@@ -25,9 +29,11 @@ export function ClearButton({
   accessibilityLabel = 'Clear',
   hasRightSection = false,
   style,
+  iconSize: iconSizeOverride,
+  stroke,
 }: ClearButtonProps) {
   const theme = useTheme();
-  const iconSize = getIconSize(size, 'small');
+  const iconSize = iconSizeOverride ?? getIconSize(size, 'small');
   const spacing = getSectionSpacing(size);
 
   return (
@@ -52,7 +58,7 @@ export function ClearButton({
         style,
       ])}
     >
-      <Icon name="close" size={iconSize} color={theme.text.muted} />
+      <Icon name="close" size={iconSize} stroke={stroke} color={theme.text.muted} />
     </Pressable>
   );
 }

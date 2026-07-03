@@ -1,7 +1,7 @@
 import type { LoaderProps } from '@platform-blocks/ui';
 import { Block, Column, Loader, Row, Text } from '@platform-blocks/ui';
 
-const LOADER_SIZES: Required<LoaderProps>['size'][] = ['xs', 'sm', 'md', 'lg', 'xl'];
+const LOADER_SIZES: Required<LoaderProps>['size'][] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
 
 export default function Demo() {
   return (

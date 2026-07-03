@@ -28,9 +28,10 @@ export default function ControlledDemo() {
         <Slider
           value={position}
           onChange={setPosition}
-          min={0}
-          max={1}
+          min={0.0}
+          max={1.0}
           step={0.01}
+          
         />
       </View>
     </View>

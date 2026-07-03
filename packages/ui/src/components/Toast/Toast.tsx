@@ -25,6 +25,7 @@ import { factory } from '../../core/factory';
 import { getSpacing } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import { useTheme } from '../../core/theme/ThemeProvider';
+import { readableTextOn } from '../../core/theme/colorUtils';
 import { getSpacingStyles, extractSpacingProps, mergeSlotProps } from '../../core/utils';
 import { ToastProps, ToastColor, ToastSeverity, ToastAction, ToastAnimationConfig, ToastSwipeConfig } from './types';
 import { useHaptics } from '../../hooks/useHaptics';
@@ -457,49 +458,30 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
     }
   };
 
+  // Background fill for the 'filled' variant, used to pick legible foreground
+  // colors. Bright fills (e.g. success green, warning yellow) fail with white
+  // text, so readableTextOn flips to near-black when white is unreadable.
+  const filledFill = colorConfig ? colorConfig[5] : (finalColor as string);
+
   const getTextColor = () => {
-    if (colorConfig) {
-      switch (variant) {
-        case 'filled':
-          return 'white';
-        case 'outline':
-        case 'light':
-        default:
-          return theme.text.primary;
-      }
-    } else {
-      switch (variant) {
-        case 'filled':
-          return 'white';
-        case 'outline':
-        case 'light':
-        default:
-          return theme.text.primary;
-      }
+    switch (variant) {
+      case 'filled':
+        return readableTextOn(filledFill);
+      case 'outline':
+      case 'light':
+      default:
+        return theme.text.primary;
     }
   };
 
   const getIconColor = () => {
-    if (colorConfig) {
-      switch (variant) {
-        case 'filled':
-          return 'white';
-        case 'outline':
-        case 'light':
-        default:
-          return colorConfig[5];
-      }
-    } else {
-      // Custom color
-      const customColor = finalColor as string;
-      switch (variant) {
-        case 'filled':
-          return 'white';
-        case 'outline':
-        case 'light':
-        default:
-          return customColor;
-      }
+    switch (variant) {
+      case 'filled':
+        return readableTextOn(filledFill);
+      case 'outline':
+      case 'light':
+      default:
+        return colorConfig ? colorConfig[5] : (finalColor as string);
     }
   };
 
@@ -667,7 +649,7 @@ function ToastBase(props: ToastProps, ref: React.Ref<View>) {
           accessibilityLabel={closeButtonLabel || 'Close notification'}
           accessibilityRole="button"
         >
-          <Icon name="close" size="sm" color={iconColor} />
+          <Icon name="close" size="sm" color={iconColor} stroke={2.5} />
         </TouchableOpacity>
       )}
       </Animated.View>

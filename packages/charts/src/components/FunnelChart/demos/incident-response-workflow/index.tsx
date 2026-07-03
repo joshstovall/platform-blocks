@@ -5,6 +5,13 @@ type IncidentMeta = {
   automationWin?: string;
 };
 
+const compact = (value: number) => {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `${value}`;
+};
+
 const INCIDENT_RESPONSE = {
   id: 'incident-response',
   name: 'Incident response workflow',
@@ -14,7 +21,7 @@ const INCIDENT_RESPONSE = {
     { label: 'Containment', value: 182, color: '#dc2626', meta: { medianDuration: '38 min to contain', automationWin: 'Runbooks auto-isolate hosts for 41% of cases' } as IncidentMeta },
     { label: 'Eradication', value: 164, color: '#ef4444', meta: { medianDuration: '1.4 hr to resolve root cause' } as IncidentMeta },
     { label: 'Recovery', value: 158, color: '#f87171', meta: { medianDuration: '2.3 hr to restore services' } as IncidentMeta },
-    { label: 'Post-incident review', value: 151, color: '#fca5a5', meta: { medianDuration: 'Completed within 48 hr SLA' } as IncidentMeta },
+    { label: 'Review', value: 151, color: '#fca5a5', meta: { medianDuration: 'Completed within 48 hr SLA' } as IncidentMeta },
   ],
 };
 
@@ -22,34 +29,18 @@ export default function Demo() {
   return (
     <FunnelChart
       title="Incident response workflow"
-      subtitle="Volume flowing through each stage with time-to-complete context"
-      width={640}
-      height={520}
+      subtitle="Volume flowing through each stage"
+      width={520}
+      height={460}
       series={INCIDENT_RESPONSE}
       layout={{
         shape: 'trapezoid',
-        gap: 14,
+        gap: 8,
         align: 'center',
-        minSegmentHeight: 58,
         showConversion: false,
+        connectors: { show: false },
       }}
-      valueFormatter={(value, index, context) => {
-        const step = INCIDENT_RESPONSE.steps[index];
-        const meta = step.meta as IncidentMeta | undefined;
-        const lines: string[] = [`${value.toLocaleString()} incidents`];
-        if (meta?.medianDuration) {
-          lines.push(meta.medianDuration);
-        }
-        if (context?.previousValue) {
-          const dropPct = (context.dropRate * 100).toFixed(1);
-          lines.push(`Progressed: ${(context.conversion * 100).toFixed(1)}% overall`);
-          lines.push(`Drop since prior: ${context.dropValue.toLocaleString()} (${dropPct}%)`);
-        }
-        if (meta?.automationWin && context?.previousValue) {
-          lines.push(`Automation impact: ${meta.automationWin}`);
-        }
-        return lines;
-      }}
+      valueFormatter={(value) => compact(value)}
       legend={{ show: false }}
       tooltip={{
         show: true,

@@ -1,22 +1,29 @@
 import { useState } from 'react';
-import { ColorPicker, Column, Text } from '@platform-blocks/ui';
+import { Column, Row, Text, ColorPicker } from '@platform-blocks/ui';
 
 export default function Demo() {
-  const [color, setColor] = useState('#FF6B6B');
+  const [color, setColor] = useState('#4ECDC4');
 
   return (
-    <Column gap="xs" fullWidth>
-      <ColorPicker
-        value={color}
-        onChange={setColor}
-        label="Favorite color"
-        placeholder="Select a color"
-        clearable
-        fullWidth
-      />
-      <Text size="sm" colorVariant="secondary">
-        Selected: {color || 'none'}
-      </Text>
+    <Column gap="md">
+      <Row gap="sm" align="center">
+        <ColorPicker value={color} onChange={setColor} />
+        <Text size="sm" colorVariant="secondary">
+          Selected: {color}
+        </Text>
+      </Row>
+
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Larger, custom swatches
+        </Text>
+        <ColorPicker
+          defaultValue="#5F27CD"
+          size={36}
+          columns={4}
+          swatches={['#0F172A', '#5F27CD', '#54A0FF', '#4ECDC4', '#96CEB4', '#FECA57', '#F8B500', '#FF6B6B']}
+        />
+      </Column>
     </Column>
   );
 }

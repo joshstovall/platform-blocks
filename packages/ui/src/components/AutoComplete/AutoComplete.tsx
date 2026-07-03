@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { View, TextInput, Modal, Pressable, ScrollView, Platform, DimensionValue, Keyboard, InteractionManager, StyleSheet } from 'react-native';
+import { View, TextInput, Modal, Pressable, ScrollView, FlatList, Platform, DimensionValue, Keyboard, InteractionManager, StyleSheet, Animated } from 'react-native';
 import { Text } from '../Text';
 import { Loader } from '../Loader';
 import { ListGroup, ListGroupDivider } from '../ListGroup';
@@ -12,7 +12,7 @@ import type { SizeValue } from '../../core/theme/types';
 import { extractSpacingProps, getSpacingStyles } from '../../core/utils/spacing';
 import { extractLayoutProps, getLayoutStyles } from '../../core/utils/layout';
 import { mergeSlotProps } from '../../core/utils';
-import { useOverlay } from '../../core/providers/OverlayProvider';
+import { useOverlayApi } from '../../core/providers/OverlayProvider';
 import { usePopoverPositioning } from '../../core/hooks/usePopoverPositioning';
 import type { PlacementType } from '../../core/utils/positioning-enhanced';
 import type { AutoCompleteProps, AutoCompleteOption } from './types';
@@ -20,8 +20,8 @@ import { MenuItemButton } from '../MenuItemButton';
 import { Icon } from '../Icon';
 import { Chip } from '../Chip';
 import type { ChipProps } from '../Chip/types';
-import { FlashList } from '@shopify/flash-list';
 import { ClearButton } from '../../core/components/ClearButton';
+import { getIconSize } from '../../core/theme/unified-sizing';
 import { Highlight } from '../Highlight';
 import { useKeyboardManagerOptional } from '../../core/providers/KeyboardManagerProvider';
 import { handleSelectionComplete } from '../../core/keyboard/selection';
@@ -87,6 +87,128 @@ const debounce = resolveOptionalModule<DebounceFn>('lodash.debounce', {
 
 const DEFAULT_FALLBACK_PLACEMENTS: PlacementType[] = ['top-start', 'top-end', 'top', 'bottom-start', 'bottom-end', 'bottom'];
 
+type SuggestionRow =
+  | { type: 'header'; key: string; label: string }
+  | { type: 'item'; key: string; option: AutoCompleteOption; index: number };
+
+// Selected-option checkmark that springs in / eases out, matching the Checkbox
+// mark motion. The 16px slot is always reserved so toggling never shifts the
+// row layout. The glyph stays mounted while animating out so "deselect"
+// reverses the "select" motion instead of just vanishing.
+const AnimatedCheck = React.memo(({ selected, color }: { selected: boolean; color: string }) => {
+  const mark = useRef(new Animated.Value(selected ? 1 : 0)).current;
+  const [mounted, setMounted] = useState(selected);
+
+  useEffect(() => {
+    const native = Platform.OS !== 'web';
+    if (selected) {
+      setMounted(true);
+      Animated.spring(mark, { toValue: 1, friction: 5, tension: 200, useNativeDriver: native }).start();
+    } else {
+      Animated.timing(mark, { toValue: 0, duration: 100, useNativeDriver: native }).start(({ finished }) => {
+        if (finished) setMounted(false);
+      });
+    }
+  }, [selected, mark]);
+
+  return (
+    <View style={{ width: 16, height: 16, alignItems: 'center', justifyContent: 'center' }}>
+      {mounted && (
+        <Animated.View
+          style={{
+            transform: [{ scale: mark.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.15] }) }],
+            opacity: mark,
+          }}
+        >
+          <Icon name="check" size={16} stroke={3} color={color} />
+        </Animated.View>
+      )}
+    </View>
+  );
+});
+AnimatedCheck.displayName = 'AutoCompleteAnimatedCheck';
+
+// A single suggestion row. Keeps its own hover state so pointer hover paints the
+// same `menuActiveBg` highlight the keyboard (arrow-key) navigation uses — the
+// two are visually indistinguishable. Local state also keeps hover re-renders
+// scoped to the row, avoiding churn on the portal/overlay content.
+const SuggestionItem = React.memo(({
+  item,
+  isActive,
+  isSelected,
+  highlightQuery,
+  menuHighlightColor,
+  menuActiveBg,
+  baseTextColor,
+  menuItemButtonStyle,
+  suggestionItemStyle,
+  onSelect,
+}: {
+  item: AutoCompleteOption;
+  isActive: boolean;
+  isSelected: boolean;
+  highlightQuery?: string;
+  menuHighlightColor: string;
+  menuActiveBg: string;
+  baseTextColor: string;
+  menuItemButtonStyle: any;
+  suggestionItemStyle: any;
+  onSelect: (item: AutoCompleteOption) => void;
+}) => {
+  const [hovered, setHovered] = useState(false);
+  // Keyboard highlight or pointer hover both paint the active background.
+  const highlighted = isActive || (hovered && !item.disabled);
+
+  return (
+    <MenuItemButton
+      onPress={() => onSelect(item)}
+      disabled={item.disabled}
+      // `active` renders the keyboard-highlighted ("virtual focus") row. Its
+      // background is overridden below to the neutral `secondary` tint rather
+      // than the tone's default primary active color.
+      active={isActive}
+      tone="default"
+      hoverTone="default"
+      activeTone="default"
+      textColor={baseTextColor}
+      hoverTextColor={baseTextColor}
+      activeTextColor={baseTextColor}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      startIcon={<AnimatedCheck selected={isSelected} color={menuHighlightColor} />}
+      compact
+      rounded={false}
+      style={[menuItemButtonStyle, highlighted && { backgroundColor: menuActiveBg }, suggestionItemStyle]}
+      {...(Platform.OS === 'web' ? {
+        onMouseDown: (event: any) => {
+          if (event?.preventDefault) {
+            event.preventDefault();
+          }
+          if (event?.stopPropagation) {
+            event.stopPropagation();
+          }
+        },
+      } : {})}
+    >
+      <Highlight
+        highlight={highlightQuery}
+        highlightProps={{
+          color: item.disabled ? baseTextColor : menuHighlightColor,
+          style: {
+            backgroundColor: 'transparent',
+            fontWeight: '700',
+            paddingHorizontal: 0,
+            paddingVertical: 0,
+          },
+        }}
+      >
+        {item.label}
+      </Highlight>
+    </MenuItemButton>
+  );
+});
+SuggestionItem.displayName = 'AutoCompleteSuggestionItem';
+
 const defaultFilter = (item: AutoCompleteOption, query: string): boolean => {
   return item.label.toLowerCase().includes(query.toLowerCase()) ||
     item.value.toLowerCase().includes(query.toLowerCase());
@@ -111,6 +233,7 @@ export const AutoComplete = factory<{
     minSearchLength = 2,
     searchDelay = 300,
     renderItem,
+    renderValue,
     onSelect,
     allowCustomValue = false,
     maxSuggestions = 10,
@@ -203,16 +326,30 @@ export const AutoComplete = factory<{
   const theme = useTheme();
   const radiusStyles = useMemo(() => createRadiusStyles(radius, undefined, 'input'), [radius]);
   const inputStyleFactory = useMemo(() => createInputStyles(theme), [theme]);
-  const { openOverlay, closeOverlay, updateOverlay } = useOverlay();
+  const { openOverlay, closeOverlay, updateOverlay } = useOverlayApi();
   const keyboardManager = useKeyboardManagerOptional();
   const [suggestions, setSuggestions] = useState<AutoCompleteOption[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(value || '');
   const [focused, setFocused] = useState(false);
+  // The option chosen in single-select mode, kept so `renderValue` can paint a
+  // rich representation of it inside the input. Cleared once the query text no
+  // longer matches the option's display value (i.e. the user edited it).
+  const [selectedOption, setSelectedOption] = useState<AutoCompleteOption | null>(null);
+  // Index into `suggestionRows` of the keyboard-highlighted option (-1 = none).
+  const [highlightedRow, setHighlightedRow] = useState(-1);
   const inputRef = useRef<TextInput>(null);
   const modalInputRef = useRef<TextInput>(null);
   const suggestionsRef = useRef<ScrollView>(null);
+  // Shared across the portal/modal/inline lists — only one is mounted at a time.
+  const listRef = useRef<FlatList<SuggestionRow>>(null);
+  // Bridges for values used by `handleKeyPress` (declared above the list/nav
+  // helpers) — kept current each render so the key handler stays stable.
+  const suggestionRowsRef = useRef<SuggestionRow[]>([]);
+  const highlightedRowRef = useRef(-1);
+  const handleSelectSuggestionRef = useRef<((item: AutoCompleteOption) => void) | null>(null);
+  const moveHighlightRef = useRef<((direction: 1 | -1) => void) | null>(null);
   const overlayIdRef = useRef<string | null>(null);
   const containerRef = useRef<View>(null);
   const prevPushedPositionRef = useRef<null | { x: number; y: number; w: number; h: number; mw?: number; mh?: number }>(null);
@@ -256,8 +393,15 @@ export const AutoComplete = factory<{
   );
   const showClearButton = useMemo(() => {
     if (!clearable || disabled) return false;
+    // In multi-select the field can be "dirty" via chips even with an empty
+    // query, so allow clearing when either the text or a selection is present.
+    if (multiSelect) return query.length > 0 || (selectedValues?.length ?? 0) > 0;
     return query.length > 0;
-  }, [clearable, disabled, query]);
+  }, [clearable, disabled, query, multiSelect, selectedValues]);
+
+  // The right section always carries the dropdown chevron (and, while an async
+  // search runs, a spinner), so the text should always reserve room for it.
+  const hasRightSection = true;
 
   const inputStyles = useMemo(() => inputStyleFactory.getInputStyles({
     size: size as SizeValue,
@@ -265,8 +409,23 @@ export const AutoComplete = factory<{
     error: !!error,
     disabled: !!disabled,
     hasLeftSection: false,
-    hasRightSection: showClearButton,
-  }, radiusStyles), [inputStyleFactory, size, focused, error, disabled, showClearButton, radiusStyles]);
+    hasRightSection,
+  }, radiusStyles), [inputStyleFactory, size, focused, error, disabled, hasRightSection, radiusStyles]);
+
+  // While the center-screen picker (modal) is open it owns focus, so the base
+  // input behind the dimmed overlay should not render its focus ring.
+  const modalPickerOpen = useModal && showSuggestions;
+  const baseInputContainerStyle = useMemo(() => {
+    if (!modalPickerOpen) return inputStyles.inputContainer;
+    return inputStyleFactory.getInputStyles({
+      size: size as SizeValue,
+      focused: false,
+      error: !!error,
+      disabled: !!disabled,
+      hasLeftSection: false,
+      hasRightSection,
+    }, radiusStyles).inputContainer;
+  }, [modalPickerOpen, inputStyles.inputContainer, inputStyleFactory, size, error, disabled, hasRightSection, radiusStyles]);
 
   const clearLabel = clearButtonLabel || 'Clear input';
 
@@ -278,8 +437,23 @@ export const AutoComplete = factory<{
     return primaryPalette[6] || primaryPalette[5] || '#3B82F6';
   }, [theme.colors.primary, theme.colorScheme]);
 
+  // Background for the keyboard-highlighted row — a neutral `secondary` tint
+  // (not the primary active color), mirroring the default tone's active shade
+  // indices but on the secondary ramp.
+  const menuActiveBg = useMemo(() => {
+    const secondaryPalette = (theme.colors as any).secondary || [];
+    if (theme.colorScheme === 'dark') {
+      return secondaryPalette[3] || secondaryPalette[4] || 'rgba(255,255,255,0.08)';
+    }
+    return secondaryPalette[1] || secondaryPalette[0] || 'rgba(0,0,0,0.06)';
+  }, [theme.colors, theme.colorScheme]);
+
   const selectedCount = selectedValues?.length ?? 0;
   const hasSelectedValues = multiSelect && selectedCount > 0;
+
+  // Single-select rich value: paint `renderValue` over the text field while it
+  // is unfocused. Focusing reveals the editable text so the query can change.
+  const showValueOverlay = !multiSelect && !!renderValue && !!selectedOption && !focused;
 
   const currentQueryRef = useRef(query);
   const currentSelectedValuesRef = useRef(selectedValues);
@@ -409,6 +583,7 @@ export const AutoComplete = factory<{
     if (disabled) return;
 
     setQuery('');
+    setSelectedOption(null);
     onChangeText?.('');
     onClear?.();
 
@@ -444,9 +619,17 @@ export const AutoComplete = factory<{
 
   // Handle text input changes
   const handleChangeText = useCallback((text: string) => {
-    console.log('handleChangeText', text);
     setQuery(text);
     onChangeText?.(text);
+
+    // A single-select value overlay is only valid while the text still matches
+    // the chosen option; once the user edits it, drop the stored option so the
+    // rich overlay stops rendering.
+    setSelectedOption((prev) => {
+      if (!prev) return prev;
+      const displayValue = displayProperty === 'label' ? prev.label : prev.value;
+      return text === displayValue ? prev : null;
+    });
 
     if (text.length >= minSearchLength) {
       debouncedSearch(text);
@@ -461,11 +644,19 @@ export const AutoComplete = factory<{
       if (showSuggestionsOnFocus && data.length > 0) {
         setSuggestions(data.slice(0, maxSuggestions));
         setShowSuggestions(true);
+      } else if (useModal) {
+        // The modal picker opens on focus and shows its own "type N or more
+        // characters" hint. Don't close it here on a sub-threshold keystroke —
+        // doing so slams the just-opened modal shut on the first letter and
+        // fires a blur/keyboard-dismiss that jumps the page scroll. Keep it open
+        // so the hint stays visible. (In anchored/portal mode no menu is open at
+        // this point, so closing below is a harmless no-op.)
+        setShowSuggestions(true);
       } else {
         setShowSuggestions(false);
       }
     }
-  }, [onChangeText, debouncedSearch, minSearchLength, showSuggestionsOnFocus, data, maxSuggestions]);
+  }, [onChangeText, debouncedSearch, minSearchLength, showSuggestionsOnFocus, data, maxSuggestions, useModal, displayProperty]);
 
   const handleRemoveSelectedValue = useCallback((item: AutoCompleteOption) => {
     if (disabled) return;
@@ -483,9 +674,41 @@ export const AutoComplete = factory<{
     });
   }, [disabled, onSelect, useModal, showSuggestions]);
 
-  // Handle key press for freeSolo mode
+  // Handle key press: list navigation, freeSolo commit, multi-select backspace.
   const handleKeyPress = useCallback((e: any) => {
-    if (multiSelect && query.length === 0 && e?.nativeEvent?.key === 'Backspace') {
+    const key = e?.nativeEvent?.key;
+
+    // Arrow-key navigation / Enter / Escape while the suggestion list is open.
+    if (showSuggestions && suggestionRowsRef.current.length > 0) {
+      if (key === 'ArrowDown') {
+        e.preventDefault?.();
+        moveHighlightRef.current?.(1);
+        return;
+      }
+      if (key === 'ArrowUp') {
+        e.preventDefault?.();
+        moveHighlightRef.current?.(-1);
+        return;
+      }
+      if (key === 'Escape') {
+        e.preventDefault?.();
+        setShowSuggestions(false);
+        setHighlightedRow(-1);
+        return;
+      }
+      if (key === 'Enter') {
+        const idx = highlightedRowRef.current;
+        const row = idx >= 0 ? suggestionRowsRef.current[idx] : undefined;
+        if (row && row.type === 'item') {
+          // A highlighted option takes precedence over freeSolo commit.
+          e.preventDefault?.();
+          handleSelectSuggestionRef.current?.(row.option);
+          return;
+        }
+      }
+    }
+
+    if (multiSelect && query.length === 0 && key === 'Backspace') {
       const selectedItems = currentSelectedValuesRef.current;
       if (selectedItems && selectedItems.length > 0) {
         const lastItem = selectedItems[selectedItems.length - 1];
@@ -496,6 +719,12 @@ export const AutoComplete = factory<{
     }
 
     if (freeSolo && e.nativeEvent.key === 'Enter' && query.trim()) {
+      // Prevent the default submit behavior. On RN Web a single-line input blurs
+      // itself on Enter (and may submit a surrounding form) unless the event's
+      // default is prevented — we want to keep focus so the user can immediately
+      // type the next tag.
+      e.preventDefault?.();
+
       // Create custom option from user input
       const customOption: AutoCompleteOption = {
         label: query.trim(),
@@ -509,15 +738,48 @@ export const AutoComplete = factory<{
 
       if (!existsInData) {
         onSelect?.(customOption);
+      }
 
-        if (!multiSelect) {
-          setQuery('');
-          onChangeText?.('');
-          setShowSuggestions(false);
+      if (multiSelect) {
+        // Commit the tag and clear the input so the user can type the next one.
+        // Keep the picker/suggestions open so multiple tags can be added — the
+        // user dismisses it by pressing outside (or the clear button).
+        setQuery('');
+        onChangeText?.('');
+        setShowSuggestions(true);
+        if (useModal) {
+          requestAnimationFrame(() => {
+            inputRef.current?.blur?.();
+            modalInputRef.current?.focus?.();
+          });
+        } else {
+          // Non-modal: keep the base input focused so the next tag can be typed
+          // right away (guards against any focus loss from the re-render).
+          requestAnimationFrame(() => inputRef.current?.focus?.());
         }
+      } else {
+        // Single-select: keep the submitted text in the field (clearing it here
+        // would blank the value) and close the suggestions.
+        setShowSuggestions(false);
       }
     }
-  }, [freeSolo, query, data, onSelect, multiSelect, onChangeText, handleRemoveSelectedValue]);
+  }, [freeSolo, query, data, onSelect, multiSelect, onChangeText, useModal, handleRemoveSelectedValue, showSuggestions]);
+
+  // Populate + reveal the suggestion list (non-modal). Shared by focus and by
+  // the tap-to-reopen handler so both behave identically.
+  const openSuggestions = useCallback(() => {
+    if (showSuggestionsOnFocus && data.length > 0 && (!query || query.length < minSearchLength)) {
+      // Empty/short query → show all options (like a select dropdown). The list
+      // renders the current selection(s) as checked automatically.
+      setSuggestions(data.slice(0, maxSuggestions));
+      setShowSuggestions(true);
+      return;
+    }
+    if (query.length >= minSearchLength) {
+      setShowSuggestions(true);
+      debouncedSearch(query);
+    }
+  }, [showSuggestionsOnFocus, data, query, maxSuggestions, minSearchLength, debouncedSearch]);
 
   // Handle input focus
   const handleFocus = useCallback(() => {
@@ -537,18 +799,28 @@ export const AutoComplete = factory<{
       return;
     }
 
-    if (showSuggestionsOnFocus && data.length > 0) {
-      // If query is empty, show all options (like a select dropdown)
-      if (!query || query.length < minSearchLength) {
-        setSuggestions(data.slice(0, maxSuggestions));
-      }
+    openSuggestions();
+  }, [openSuggestions, useModal, suppressNextFocusOpenRef]);
+
+  // Tapping the input while the list is closed re-opens it (focus alone won't
+  // fire again when the input already holds focus, e.g. after Escape or select).
+  const handleInputPress = useCallback(() => {
+    if (disabled || showSuggestions) return;
+    // An explicit tap should open even if a prior selection armed the suppress.
+    suppressNextFocusOpenRef.current = false;
+    setFocused(true);
+
+    if (useModal) {
       setShowSuggestions(true);
-    } else if (query.length >= minSearchLength) {
-      setShowSuggestions(true);
-      debouncedSearch(query);
+      requestAnimationFrame(() => {
+        inputRef.current?.blur?.();
+        modalInputRef.current?.focus?.();
+      });
+      return;
     }
 
-  }, [showSuggestionsOnFocus, data, query, maxSuggestions, minSearchLength, debouncedSearch, useModal, suppressNextFocusOpenRef]);
+    openSuggestions();
+  }, [disabled, showSuggestions, useModal, openSuggestions, suppressNextFocusOpenRef]);
 
   // Handle input blur
   const handleBlur = useCallback(() => {
@@ -566,10 +838,47 @@ export const AutoComplete = factory<{
     }
   }, [closeOverlay, dismissKeyboard, useModal]);
 
+  // Toggle the suggestions dropdown from the chevron affordance. Opening focuses
+  // the input (which loads suggestions via handleFocus); closing blurs it.
+  const handleToggleDropdown = useCallback(() => {
+    if (disabled) return;
+    if (showSuggestions) {
+      setShowSuggestions(false);
+      inputRef.current?.blur?.();
+      modalInputRef.current?.blur?.();
+      return;
+    }
+    if (useModal) {
+      setShowSuggestions(true);
+      requestAnimationFrame(() => modalInputRef.current?.focus?.());
+      return;
+    }
+    // Open the list directly rather than relying on focus → handleFocus. A
+    // non-editable (select-like) input won't fire focus on native, so opening
+    // here keeps the chevron working; focusing an editable input is still a
+    // useful no-op-if-already-open.
+    setFocused(true);
+    openSuggestions();
+    inputRef.current?.focus?.();
+  }, [disabled, showSuggestions, useModal, openSuggestions]);
+
   // Handle suggestion selection
   const handleSelectSuggestion = useCallback((item: AutoCompleteOption) => {
     if (multiSelect) {
       onSelect?.(item);
+
+      // In modal (center-screen picker) mode, keep the picker open after a
+      // selection so the user can add multiple tags. It stays open until they
+      // press outside (which triggers the Modal's onPress/onRequestClose).
+      if (useModal) {
+        setShowSuggestions(true);
+        setFocused(true);
+        requestAnimationFrame(() => {
+          inputRef.current?.blur?.();
+          modalInputRef.current?.focus?.();
+        });
+        return;
+      }
 
       const result = handleSelectionComplete({
         mode: 'multiple',
@@ -587,18 +896,12 @@ export const AutoComplete = factory<{
       });
 
       setShowSuggestions(result.refocused);
-
-      if (useModal) {
-        setFocused(false);
-        modalInputRef.current?.blur?.();
-        inputRef.current?.blur?.();
-        dismissKeyboard();
-      }
       return;
     }
 
     const displayValue = displayProperty === 'label' ? item.label : item.value;
     setQuery(displayValue);
+    setSelectedOption(item);
     onChangeText?.(displayValue);
     onSelect?.(item);
     suppressNextFocusOpenRef.current = true;
@@ -632,60 +935,49 @@ export const AutoComplete = factory<{
     }
   }, [multiSelect, onSelect, resolvedRefocusAfterSelect, useModal, keyboardManager, displayProperty, onChangeText, dismissKeyboard, suppressNextFocusOpenRef]);
 
-  // Default item renderer - use stable reference to prevent loops
-  const defaultRenderItem = useCallback((item: AutoCompleteOption, index: number, isSelected = false) => {
+  // Default item renderer - use stable reference to prevent loops. Delegates to
+  // `SuggestionItem`, which owns per-row hover state so pointer hover highlights
+  // exactly like arrow-key navigation.
+  const defaultRenderItem = useCallback((item: AutoCompleteOption, index: number, isSelected = false, isActive = false) => {
     const highlightQuery = highlightMatches ? currentQueryRef.current : undefined;
     const baseTextColor = item.disabled ? theme.text.disabled : theme.text.primary;
-    const accentTextColor = item.disabled ? theme.text.disabled : menuHighlightColor;
 
     return (
-      <MenuItemButton
-        onPress={() => handleSelectSuggestion(item)}
-        disabled={item.disabled}
-        active={false}
-        tone="default"
-        hoverTone="default"
-        activeTone="default"
-        textColor={baseTextColor}
-        hoverTextColor={baseTextColor}
-        activeTextColor={baseTextColor}
-        startIcon={isSelected ? <Icon name="check" size={16} color={menuHighlightColor} /> : <View style={{ width: 16 }} />}
-        compact
-        rounded={false}
-        style={[styles.menuItemButton, suggestionItemStyle]}
-        {...(Platform.OS === 'web' ? {
-          onMouseDown: (event: any) => {
-            if (event?.preventDefault) {
-              event.preventDefault();
-            }
-            if (event?.stopPropagation) {
-              event.stopPropagation();
-            }
-          },
-        } : {})}
-      >
-        <Highlight highlight={highlightQuery}>
-          {item.label}
-        </Highlight>
-      </MenuItemButton>
+      <SuggestionItem
+        item={item}
+        isActive={isActive}
+        isSelected={isSelected}
+        highlightQuery={highlightQuery}
+        menuHighlightColor={menuHighlightColor}
+        menuActiveBg={menuActiveBg}
+        baseTextColor={baseTextColor}
+        menuItemButtonStyle={styles.menuItemButton}
+        suggestionItemStyle={suggestionItemStyle}
+        onSelect={handleSelectSuggestion}
+      />
     );
-  }, [handleSelectSuggestion, highlightMatches, suggestionItemStyle, theme.text.disabled, theme.text.primary, menuHighlightColor]);
+  }, [handleSelectSuggestion, highlightMatches, suggestionItemStyle, theme.text.disabled, theme.text.primary, menuHighlightColor, menuActiveBg]);
 
   // Render item with enhanced parameters - use refs to prevent infinite loops
-  const renderSuggestionItem = useCallback((item: AutoCompleteOption, index: number) => {
-    const isSelected = multiSelect && currentSelectedValuesRef.current.some((selected: AutoCompleteOption) => selected.value === item.value);
+  const renderSuggestionItem = useCallback((item: AutoCompleteOption, index: number, isActive = false) => {
+    // In multi-select the chosen options are tracked explicitly. In single-select
+    // there's no stored option, so an item counts as selected when the current
+    // input text equals its display value (value or label) — this marks the
+    // active choice with a check, matching Select behavior.
+    const currentText = currentQueryRef.current;
+    const isSelected = multiSelect
+      ? currentSelectedValuesRef.current.some((selected: AutoCompleteOption) => selected.value === item.value)
+      : currentText.length > 0 && (currentText === item.value || currentText === item.label);
 
     if (renderItem) {
-      console.log('renderSuggestionItem with custom renderItem', item, index, isSelected);
       return renderItem(item, index, {
         query: currentQueryRef.current,
         onSelect: handleSelectSuggestion,
-        isHighlighted: false, // Could be enhanced later for keyboard navigation
+        isHighlighted: isActive,
         isSelected,
       });
     }
-    // console.log('renderSuggestionItem with defaultRenderItem', item, index, isSelected);
-    return defaultRenderItem(item, index, isSelected);
+    return defaultRenderItem(item, index, isSelected, isActive);
   }, [renderItem, handleSelectSuggestion, multiSelect, defaultRenderItem]);
 
   const styles = useMemo(() => {
@@ -699,7 +991,9 @@ export const AutoComplete = factory<{
       },
       inputContainer: {
         alignItems: multiSelect ? 'flex-start' as const : 'center' as const,
-        paddingVertical: hasSelectedValues ? 10 : undefined,
+        // Reserve the vertical padding up-front in multiSelect so adding the
+        // first chip doesn't grow the input / shift the layout.
+        paddingVertical: multiSelect ? 10 : undefined,
         ...(Platform.OS === 'web' && {
           transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
         }),
@@ -720,8 +1014,8 @@ export const AutoComplete = factory<{
         flexShrink: 1,
         paddingRight: showClearButton ? 12 : 0,
         minWidth: multiSelect ? 80 : undefined,
-        marginTop: hasSelectedValues ? 2 : 0,
-        marginBottom: hasSelectedValues ? 2 : 0,
+        marginTop: multiSelect ? 2 : 0,
+        marginBottom: multiSelect ? 2 : 0,
       },
       suggestions: {
         position: 'absolute' as const,
@@ -762,6 +1056,17 @@ export const AutoComplete = factory<{
         borderRadius: 0,
         paddingHorizontal: 12,
       },
+      groupHeader: {
+        paddingHorizontal: 12,
+        paddingTop: 10,
+        paddingBottom: 4,
+        backgroundColor: surfaceColor,
+      },
+      groupHeaderText: {
+        textTransform: 'uppercase' as const,
+        fontWeight: '600' as const,
+        letterSpacing: 0.5,
+      },
       suggestionContent: {
         flex: 1,
       },
@@ -775,6 +1080,122 @@ export const AutoComplete = factory<{
       },
     };
   }, [theme, inputWidth, minWidth, multiSelect, hasSelectedValues, showClearButton, inputHeight, measuredWidth, suggestionsStyle, radiusStyles]);
+
+  // Flatten suggestions into rows, inserting a group header before each group
+  // when any option carries a `group`. Groups preserve first-appearance order,
+  // and items keep their order within each group.
+  const suggestionRows = useMemo<SuggestionRow[]>(() => {
+    const hasGroups = suggestions.some((option) => !!option.group);
+    if (!hasGroups) {
+      return suggestions.map((option, index) => ({
+        type: 'item' as const,
+        key: `${option.value}-${index}`,
+        option,
+        index,
+      }));
+    }
+
+    const order: string[] = [];
+    const byGroup = new Map<string, AutoCompleteOption[]>();
+    suggestions.forEach((option) => {
+      const group = option.group ?? '';
+      if (!byGroup.has(group)) {
+        byGroup.set(group, []);
+        order.push(group);
+      }
+      byGroup.get(group)!.push(option);
+    });
+
+    const rows: SuggestionRow[] = [];
+    let itemIndex = 0;
+    order.forEach((group) => {
+      if (group) {
+        rows.push({ type: 'header', key: `group-${group}`, label: group });
+      }
+      byGroup.get(group)!.forEach((option) => {
+        rows.push({
+          type: 'item',
+          key: `${option.value}-${itemIndex}`,
+          option,
+          index: itemIndex,
+        });
+        itemIndex += 1;
+      });
+    });
+    return rows;
+  }, [suggestions]);
+
+  const renderSuggestionRow = useCallback((row: SuggestionRow, rowIndex: number) => {
+    if (row.type === 'header') {
+      return (
+        <View style={styles.groupHeader}>
+          <Text size="xs" colorVariant="secondary" style={styles.groupHeaderText}>
+            {row.label}
+          </Text>
+        </View>
+      );
+    }
+    return renderSuggestionItem(row.option, row.index, rowIndex === highlightedRow);
+  }, [renderSuggestionItem, styles.groupHeader, styles.groupHeaderText, highlightedRow]);
+
+  const suggestionRowKeyExtractor = useCallback((row: SuggestionRow) => row.key, []);
+
+  // Re-render rows when either the keyboard highlight or the input text changes.
+  // The text is included because single-select "selected" state (the check mark)
+  // is derived from it, so rows must refresh even when the suggestion array
+  // reference is unchanged.
+  const listExtraData = useMemo(() => `${highlightedRow}|${query}`, [highlightedRow, query]);
+
+  // Row indices that keyboard navigation can land on — items only, skipping
+  // group headers and disabled options.
+  const navigableRowIndices = useMemo(
+    () => suggestionRows.reduce<number[]>((acc, row, i) => {
+      if (row.type === 'item' && !row.option.disabled) acc.push(i);
+      return acc;
+    }, []),
+    [suggestionRows]
+  );
+
+  const moveHighlight = useCallback((direction: 1 | -1) => {
+    setHighlightedRow((prev) => {
+      const indices = navigableRowIndices;
+      if (indices.length === 0) return -1;
+      const pos = indices.indexOf(prev);
+      if (pos === -1) {
+        return direction === 1 ? indices[0] : indices[indices.length - 1];
+      }
+      const nextPos = (pos + direction + indices.length) % indices.length;
+      return indices[nextPos];
+    });
+  }, [navigableRowIndices]);
+
+  // Reset the highlight whenever the list content or open state changes so a
+  // stale index can't point at the wrong (or a now-missing) row.
+  useEffect(() => {
+    setHighlightedRow(-1);
+  }, [suggestions, showSuggestions]);
+
+  // Keep the highlighted row scrolled into view.
+  useEffect(() => {
+    if (highlightedRow < 0) return;
+    try {
+      listRef.current?.scrollToIndex({ index: highlightedRow, viewPosition: 0.5, animated: true });
+    } catch {
+      // scrollToIndex can throw before the list has measured; ignore.
+    }
+  }, [highlightedRow]);
+
+  // Keep the key-handler bridges pointing at the latest values.
+  suggestionRowsRef.current = suggestionRows;
+  highlightedRowRef.current = highlightedRow;
+  handleSelectSuggestionRef.current = handleSelectSuggestion;
+  moveHighlightRef.current = moveHighlight;
+
+  // Divider between rows, except adjacent to a group header.
+  const SuggestionSeparator = useCallback((separatorProps: any) => {
+    if (separatorProps?.leadingItem?.type === 'header') return null;
+    return <ListGroupDivider />;
+  }, []);
 
   const renderSelectedValueItem = useCallback((item: AutoCompleteOption, index: number, source: 'input' | 'modal') => {
     const onRemove = () => handleRemoveSelectedValue(item);
@@ -848,7 +1269,29 @@ export const AutoComplete = factory<{
   const suggestionContent = useMemo(() => (
     <View style={stableSuggestionStyles.suggestions}>
 
-      {loading ? (
+      {/* Keep the existing results visible while a new query loads (the input's
+          spinner signals the refetch); only fall back to the in-popover spinner
+          on the very first load when there's nothing to show yet. */}
+      {suggestions.length > 0 ? (
+        <ListGroup variant="default" size="sm"
+          style={{ maxHeight: 250 }}
+        >
+          {/* FlatList self-sizes to its content up to `maxHeight`, so the popover
+              grows and shrinks with the number of matching results instead of
+              always filling a fixed height. */}
+          <FlatList
+            ref={listRef}
+            data={suggestionRows}
+            extraData={listExtraData}
+            keyboardShouldPersistTaps="always"
+            renderItem={({ item, index }: { item: SuggestionRow; index: number }) => renderSuggestionRow(item, index)}
+            keyExtractor={suggestionRowKeyExtractor}
+            ItemSeparatorComponent={renderItem ? undefined : SuggestionSeparator}
+            showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 250 }}
+          />
+        </ListGroup>
+      ) : loading ? (
         <View style={stableSuggestionStyles.loadingContainer}>
           {renderLoadingState ? renderLoadingState() : (
             <>
@@ -859,20 +1302,6 @@ export const AutoComplete = factory<{
             </>
           )}
         </View>
-      ) : suggestions.length > 0 ? (
-        <ListGroup variant="default" size="sm"
-          style={{ maxHeight: 250 }}
-        >
-          <FlashList
-            data={suggestions}
-            keyboardShouldPersistTaps="always"
-            renderItem={({ item, index }: { item: AutoCompleteOption; index: number }) => renderSuggestionItem(item, index)}
-            keyExtractor={(item: AutoCompleteOption, index: number) => `${item.value}-${index}`}
-            ItemSeparatorComponent={renderItem ? undefined : ListGroupDivider}
-            showsVerticalScrollIndicator={false}
-            style={stableSuggestionStyles.suggestionsList}
-          />
-        </ListGroup>
       ) : query.length >= minSearchLength ? (
         <View style={stableSuggestionStyles.emptyContainer}>
           {renderEmptyState ? renderEmptyState() : (
@@ -883,7 +1312,7 @@ export const AutoComplete = factory<{
         </View>
       ) : null}
     </View>
-  ), [loading, suggestions, query.length, minSearchLength, renderLoadingState, renderEmptyState, renderSuggestionItem, stableSuggestionStyles]);
+  ), [loading, suggestions, query, minSearchLength, renderLoadingState, renderEmptyState, renderItem, suggestionRows, highlightedRow, listExtraData, renderSuggestionRow, suggestionRowKeyExtractor, SuggestionSeparator, stableSuggestionStyles]);
 
   // Keep overlay content in sync with latest suggestions/loading states when using portal strategy
   // Use a ref to prevent infinite loops from content updates
@@ -1161,11 +1590,10 @@ export const AutoComplete = factory<{
         onLayout={(e) => {
 
           const { height, width } = e.nativeEvent.layout;
-          console.log('Input layout:', { width, height }); // Debug logging
           if (height && height !== inputHeight) setInputHeight(height);
           if (width && width !== measuredWidth) setMeasuredWidth(width);
         }}
-        style={[inputStyles.inputContainer, styles.inputContainer]}
+        style={[baseInputContainerStyle, styles.inputContainer]}
       >
         <View
           {...mergeSlotProps(
@@ -1183,22 +1611,82 @@ export const AutoComplete = factory<{
             onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyPress={handleKeyPress}
-            placeholder={hasSelectedValues ? '' : placeholder}
+            // Reopen on tap when already focused. RN Web forwards `onClick` on
+            // TextInput (but not `onPressIn`); native uses `onPressIn`.
+            {...(Platform.OS === 'web' ? { onClick: handleInputPress } : { onPressIn: handleInputPress })}
+            // freeSolo keeps the placeholder as a live "type to add another" hint
+            // even after chips exist; fixed-list multi-select hides it as clutter.
+            placeholder={hasSelectedValues && !freeSolo ? '' : placeholder}
             placeholderTextColor={placeholderTextColor ?? theme.text.muted}
-            style={[inputStyles.input, styles.input]}
+            // Hide the underlying text (but keep the field focusable) while the
+            // rich value overlay covers it.
+            style={[inputStyles.input, styles.input, showValueOverlay && { color: 'transparent' }]}
             editable={!disabled}
+            // freeSolo commits on Enter and must retain focus for the next tag,
+            // so opt out of the default blur-on-submit for that mode.
+            blurOnSubmit={freeSolo ? false : undefined}
             {...baseTextInputProps}
           />
+          {showValueOverlay && selectedOption && (
+            <Pressable
+              // Tap the overlay to edit: focus the field, which unmounts the
+              // overlay and shows the underlying text.
+              onPress={() => {
+                if (disabled) return;
+                setFocused(true);
+                inputRef.current?.focus?.();
+              }}
+              style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}
+              {...(Platform.OS === 'web' ? { onMouseDown: (e: any) => e?.preventDefault?.() } : {})}
+            >
+              {renderValue!(selectedOption, { focused, clear: handleClearInput })}
+            </Pressable>
+          )}
         </View>
-        {showClearButton && (
-          <View {...mergeSlotProps({}, endSectionProps)}>
+        <View
+          {...mergeSlotProps(
+            { style: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 2 } },
+            endSectionProps
+          )}
+        >
+          {/* Optional clear button — only when `clearable` and the field is dirty. */}
+          {showClearButton && (
             <ClearButton
               onPress={handleClearInput}
               size={size}
               accessibilityLabel={clearLabel}
+              iconSize={getIconSize(size, 'large')}
+              stroke={2.5}
             />
-          </View>
-        )}
+          )}
+          {/* Dropdown indicator: spinner while an async search runs, otherwise a
+              stacked up/down chevron (selector) that toggles the open state. */}
+          {loading ? (
+            <Loader size="sm" />
+          ) : (
+            <Pressable
+              onPress={handleToggleDropdown}
+              disabled={disabled}
+              accessibilityRole="button"
+              accessibilityLabel={showSuggestions ? 'Collapse suggestions' : 'Expand suggestions'}
+              hitSlop={6}
+              {...(Platform.OS === 'web' ? { onMouseDown: (e: any) => e?.preventDefault?.() } : {})}
+              style={{
+                paddingHorizontal: 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...(Platform.OS === 'web' ? { cursor: disabled ? 'not-allowed' : 'pointer' } as any : {}),
+              }}
+            >
+              <Icon
+                name="selector-vertical"
+                size={24}
+                stroke={2}
+                color={disabled ? theme.text.disabled : theme.text.muted}
+              />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Error & Helper Text */}
@@ -1279,25 +1767,42 @@ export const AutoComplete = factory<{
                     value={query}
                     onChangeText={handleChangeText}
                     onKeyPress={handleKeyPress}
-                    placeholder={hasSelectedValues ? '' : placeholder}
+                    placeholder={hasSelectedValues && !freeSolo ? '' : placeholder}
                     placeholderTextColor={placeholderTextColor ?? theme.text.muted}
                     style={[inputStyles.input, styles.input]}
                     editable={!disabled}
                     {...modalTextInputProps}
                   />
                 </View>
-                {showClearButton && (
+                {loading ? (
+                  <Loader size="sm" />
+                ) : showClearButton ? (
                   <ClearButton
                     onPress={handleClearInput}
                     size={size}
                     accessibilityLabel={clearLabel}
+                    iconSize={getIconSize(size, 'large')}
+                    stroke={2.5}
                   />
-                )}
+                ) : null}
               </View>
 
-              {/* Suggestions content */}
+              {/* Suggestions content — keep the existing results visible while a
+                  new query loads; the input's spinner signals the refetch. */}
               <View style={{ flex: 1 }}>
-                {loading ? (
+                {suggestions.length > 0 ? (
+                  <FlatList
+                    ref={listRef}
+                    data={suggestionRows}
+                    extraData={listExtraData}
+                    keyboardShouldPersistTaps="always"
+                    renderItem={({ item, index }: { item: SuggestionRow; index: number }) => renderSuggestionRow(item, index)}
+                    keyExtractor={suggestionRowKeyExtractor}
+                    ItemSeparatorComponent={renderItem ? undefined : SuggestionSeparator}
+                    showsVerticalScrollIndicator={false}
+                    style={{ flex: 1 }}
+                  />
+                ) : loading ? (
                   <View style={styles.loadingContainer}>
                     {renderLoadingState ? renderLoadingState() : (
                       <>
@@ -1308,17 +1813,6 @@ export const AutoComplete = factory<{
                       </>
                     )}
                   </View>
-                ) : suggestions.length > 0 ? (
-                  <FlashList
-                    data={suggestions}
-                    keyboardShouldPersistTaps="always"
-                    renderItem={({ item, index }: { item: AutoCompleteOption; index: number }) => renderSuggestionItem(item, index)}
-                    keyExtractor={(item: AutoCompleteOption, index: number) => `${item.value}-${index}`}
-                    showsVerticalScrollIndicator={false}
-                    // @ts-expect-error FlashList typings in current version omit estimatedItemSize
-                    estimatedItemSize={48}
-                    style={{ flex: 1 }}
-                  />
                 ) : query.length >= minSearchLength ? (
                   <View style={styles.emptyContainer}>
                     {renderEmptyState ? renderEmptyState() : (
@@ -1344,7 +1838,25 @@ export const AutoComplete = factory<{
           onStartShouldSetResponder={() => true}
         >
           <View style={styles.suggestionContent}>
-            {loading ? (
+            {/* Keep existing results visible while a new query loads; the input's
+                spinner signals the refetch. Fall back to the in-popover spinner
+                only on the first load when there's nothing to show yet. */}
+            {suggestions.length > 0 ? (
+              <>
+                <FlatList
+                  ref={listRef}
+                  data={suggestionRows}
+                  extraData={listExtraData}
+                  keyboardShouldPersistTaps="handled"
+                  renderItem={({ item, index }: { item: SuggestionRow; index: number }) => renderSuggestionRow(item, index)}
+                  keyExtractor={suggestionRowKeyExtractor}
+                  ItemSeparatorComponent={renderItem ? undefined : SuggestionSeparator}
+                  showsVerticalScrollIndicator={false}
+                  style={{ maxHeight: 300 }}
+                  contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 0 }} // Add safe area padding
+                />
+              </>
+            ) : loading ? (
               <View style={styles.loadingContainer}>
                 {renderLoadingState ? renderLoadingState() : (
                   <>
@@ -1355,18 +1867,6 @@ export const AutoComplete = factory<{
                   </>
                 )}
               </View>
-            ) : suggestions.length > 0 ? (
-              <>
-                <FlashList
-                  data={suggestions}
-                  keyboardShouldPersistTaps="handled"
-                  renderItem={({ item, index }: { item: AutoCompleteOption; index: number }) => renderSuggestionItem(item, index)}
-                  keyExtractor={(item: AutoCompleteOption, index: number) => `${item.value}-${index}`}
-                  showsVerticalScrollIndicator={false}
-                  style={styles.suggestionsList}
-                  contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 0 }} // Add safe area padding
-                />
-              </>
             ) : query.length >= minSearchLength ? (
               <View style={styles.emptyContainer}>
                 {renderEmptyState ? renderEmptyState() : (

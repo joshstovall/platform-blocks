@@ -3,7 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface CollapseProps {
   /**
-   * Whether the content is revealed/expanded
+   * Whether the content is collapsed (hidden). `false` reveals/expands it.
    */
   isCollapsed: boolean;
   

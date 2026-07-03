@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Funnel Chart
 tags: [chart, funnel, conversion]
 category: charts

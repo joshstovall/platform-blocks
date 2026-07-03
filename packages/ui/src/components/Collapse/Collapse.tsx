@@ -16,11 +16,12 @@ const Collapse: React.FC<CollapseProps> = ({
   collapsedHeight = 0,
   fadeContent = true,
 }) => {
-  const heightAnimation = useRef(new Animated.Value(animateOnMount ? collapsedHeight : (isCollapsed ? 1 : collapsedHeight))).current;
-  const opacityAnimation = useRef(new Animated.Value(animateOnMount ? 0 : (isCollapsed ? 1 : 0))).current;
+  const heightAnimation = useRef(new Animated.Value(collapsedHeight)).current;
+  const opacityAnimation = useRef(new Animated.Value(isCollapsed ? 0 : 1)).current;
   const [contentHeight, setContentHeight] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const hasMeasuredRef = useRef(false);
+  const didInitRef = useRef(false);
 
   const resolvedEasing = useMemo(() => {
     if (easing) return easing;
@@ -42,11 +43,18 @@ const Collapse: React.FC<CollapseProps> = ({
   useEffect(() => {
     if (contentHeight === 0) return; // Wait for content to be measured
 
+    // On the first pass after measuring, jump straight to the correct
+    // position without animating (unless animateOnMount is requested).
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      if (!animateOnMount) return;
+    }
+
     setIsAnimating(true);
     onAnimationStart?.();
 
-    const targetHeight = isCollapsed ? contentHeight : collapsedHeight;
-    const targetOpacity = isCollapsed ? 1 : 0;
+    const targetHeight = isCollapsed ? collapsedHeight : contentHeight;
+    const targetOpacity = isCollapsed ? 0 : 1;
 
     const baseTimingConfig = {
       duration,
@@ -76,7 +84,7 @@ const Collapse: React.FC<CollapseProps> = ({
       setIsAnimating(false);
       onAnimationEnd?.();
     });
-  }, [isCollapsed, contentHeight, duration, collapsedHeight, fadeContent, resolvedEasing, opacityAnimation, heightAnimation, onAnimationEnd, onAnimationStart]);
+  }, [isCollapsed, contentHeight, duration, collapsedHeight, fadeContent, animateOnMount, resolvedEasing, opacityAnimation, heightAnimation, onAnimationEnd, onAnimationStart]);
 
   const handleContentLayout = (event: any) => {
     const { height } = event.nativeEvent.layout;
@@ -84,9 +92,11 @@ const Collapse: React.FC<CollapseProps> = ({
     if (!hasMeasuredRef.current) {
       hasMeasuredRef.current = true;
       setContentHeight(height);
-      heightAnimation.setValue(isCollapsed ? height : Math.min(height, collapsedHeight));
-      if (fadeContent) {
-        opacityAnimation.setValue(isCollapsed ? 1 : 0);
+      if (!animateOnMount) {
+        heightAnimation.setValue(isCollapsed ? collapsedHeight : height);
+        if (fadeContent) {
+          opacityAnimation.setValue(isCollapsed ? 0 : 1);
+        }
       }
       return;
     }
@@ -99,18 +109,12 @@ const Collapse: React.FC<CollapseProps> = ({
     });
   };
 
-  // Sync animated value when contentHeight changes outside of initial measurement
-  useEffect(() => {
-    if (!hasMeasuredRef.current || contentHeight === 0) return;
-    heightAnimation.setValue(isCollapsed ? contentHeight : Math.min(contentHeight, collapsedHeight));
-  }, [contentHeight, isCollapsed, collapsedHeight, heightAnimation]);
-
   return (
     <Animated.View
       style={[
         {
           overflow: 'hidden',
-          height: contentHeight > 0 ? heightAnimation : undefined,
+          height: contentHeight > 0 ? heightAnimation : (isCollapsed ? collapsedHeight : undefined),
         },
         style,
       ]}

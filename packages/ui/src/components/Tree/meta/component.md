@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Tree
 category: Navigation
 description: A hierarchical tree component for displaying nested data structures with expand/collapse functionality, selection, and filtering capabilities.

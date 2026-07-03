@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, Platform, TextProps as RNTextProps } from 'react-native';
+import { Text as RNText, Platform, StyleSheet, TextProps as RNTextProps } from 'react-native';
 
 import { useTheme } from '../../core/theme/ThemeProvider';
 import { SizeValue, getFontSize, getLineHeight } from '../../core/theme/sizes';
@@ -226,8 +226,14 @@ const getTextStyles = (
 const convertToWebStyles = (rnStyles: any): React.CSSProperties => {
   if (!rnStyles) return {};
 
-  // Flatten the styles if it's an array
-  const flatStyles = Array.isArray(rnStyles) ? Object.assign({}, ...rnStyles) : rnStyles;
+  // Flatten the styles. Use StyleSheet.flatten (not Object.assign) so that
+  // NESTED style arrays are merged recursively — callers routinely pass
+  // `style={[a, [b, c]]}` (e.g. Chip/Badge wrap their label as
+  // `[textStyles, textStyle]` and pass it as one element of the outer array).
+  // A shallow Object.assign would spread such a nested array by numeric index
+  // and silently drop its `color`/`fontSize`/etc., causing bugs like
+  // white-on-white text on web. StyleSheet.flatten handles arbitrary nesting.
+  const flatStyles = StyleSheet.flatten(rnStyles) || {};
 
   // Convert React Native style properties to web CSS properties
   const webStyles: React.CSSProperties = {};
@@ -297,31 +303,44 @@ const containsPlatformText = (node: React.ReactNode): boolean => {
   });
 };
 
+// HTML host tags that are valid *inline* children of a <p>. Anything else
+// (div, section, RN/platform-blocks components that render a View, …) forces
+// the enclosing Text to render as a <div> instead of a <p>.
+const INLINE_HOST_TAGS = new Set([
+  'span', 'b', 'i', 'em', 'strong', 'code', 'a', 'img', 'br', 'sub', 'sup',
+  'mark', 'u', 'cite', 'kbd', 'small', 'label', 'abbr', 'q', 's', 'del',
+  'ins', 'time', 'var', 'samp', 'wbr', 'bdi', 'bdo',
+]);
+
 /**
- * Check if children contain block-level elements (View, Pressable, etc.)
- * that would render as <div> on web, causing invalid nesting inside <p>.
+ * Check if children contain block-level elements that would render as <div>
+ * (or otherwise be invalid) inside a <p> on web. We can't reliably reach the
+ * <View> a component renders internally (it isn't exposed via props.children)
+ * and component displayNames aren't stable, so we treat *any* component child
+ * as potentially block-level. This is safe: a downgraded <div> is still forced
+ * to `display: inline` below, so inline flow is preserved either way.
  */
 const containsBlockElement = (node: React.ReactNode): boolean => {
   return React.Children.toArray(node).some(child => {
-    if (React.isValidElement(child)) {
-      const childType: any = child.type;
-      // Check for native RN components that render as div on web
-      const displayName = childType?.displayName || childType?.name || '';
-      const blockNames = new Set([
-        'View', 'Pressable', 'TouchableOpacity', 'TouchableHighlight',
-        'TouchableWithoutFeedback', 'ScrollView', 'FlatList', 'SectionList',
-        'SafeAreaView', 'KeyboardAvoidingView', 'Modal',
-      ]);
-      if (blockNames.has(displayName)) return true;
-      // Also check if it's a native 'div' element
-      if (childType === 'div') return true;
-      // Recurse into children
-      const childProps: any = child.props;
-      if (childProps?.children) {
-        return containsBlockElement(childProps.children);
-      }
+    if (!React.isValidElement(child)) return false; // strings / numbers are inline
+    const childType: any = child.type;
+    const childProps: any = child.props;
+
+    // Host element (string tag): inline tags are fine but still recurse into
+    // their children; every other tag (div, p, section, …) is block-level.
+    if (typeof childType === 'string') {
+      if (!INLINE_HOST_TAGS.has(childType)) return true;
+      return childProps?.children ? containsBlockElement(childProps.children) : false;
     }
-    return false;
+
+    // Fragments carry no element of their own — inspect their children.
+    if (childType === React.Fragment) {
+      return childProps?.children ? containsBlockElement(childProps.children) : false;
+    }
+
+    // Any component (RN View/Pressable, platform-blocks Flex/Card/Icon/Image/
+    // Loader/Text, custom demo components, …) may render a block-level box.
+    return true;
   });
 };
 

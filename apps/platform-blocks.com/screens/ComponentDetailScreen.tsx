@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Linking, Dimensions, Platform } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Text, Button, Card, Chip, Flex, Loader, Tabs, Markdown, useI18n, Title, Breadcrumbs, Divider, BrandButton, TableOfContents, Switch, Link } from '@platform-blocks/ui';
+import { Text, Button, Card, Flex, Loader, Tabs, Markdown, useI18n, Title, TableOfContents, Switch, Link } from '@platform-blocks/ui';
 import { BREAKPOINTS } from '@platform-blocks/ui/core/responsive';
 import { GlobalChartsRoot } from '@platform-blocks/charts';
 import { useBrowserTitle, formatPageTitle } from '../hooks/useBrowserTitle';
@@ -20,7 +20,6 @@ import {
   type ComponentMeta,
   type PlaygroundMeta
 } from '../utils/demosLoader';
-import { GITHUB_REPO } from 'config/urls';
 import { ComponentPlayground } from '../components/playground/ComponentPlayground';
 import { getPlaygroundConfig, type ComponentPlaygroundConfig } from '../components/playground/registry';
 
@@ -30,9 +29,10 @@ interface DemoSectionProps {
   demo: any;
   preview: React.ReactNode;
   description?: string;
+  hideTitle?: boolean;
 }
 
-function DemoSection({ demo, preview, description }: DemoSectionProps) {
+function DemoSection({ demo, preview, description, hideTitle }: DemoSectionProps) {
   const codeAvailable = Boolean((demo as any).code);
   const codeEnabled = codeAvailable && demo.showCode !== false;
   const toggleEnabled = codeEnabled && demo.showCodeToggle !== false;
@@ -48,38 +48,51 @@ function DemoSection({ demo, preview, description }: DemoSectionProps) {
 
   const effectiveMode: 'preview' | 'code' = toggleEnabled ? mode : (prefersCode ? 'code' : 'preview');
 
-  const sectionChildren: React.ReactNode[] = [
-    (
+  const toggle = toggleEnabled ? (
+    <Switch
+      checked={mode === 'code'}
+      onChange={(value: boolean) => setMode(value ? 'code' : 'preview')}
+      size="sm"
+      label={<Text variant="small">View code</Text>}
+      labelPosition="left"
+    />
+  ) : undefined;
+
+  const sectionChildren: React.ReactNode[] = [];
+
+  if (hideTitle) {
+    // Chart components hide the per-demo title; keep the code toggle if present.
+    if (toggle) {
+      sectionChildren.push(
+        <Flex key="title" direction="row" justify="flex-end" style={{ marginBottom: 8 }}>
+          {toggle}
+        </Flex>
+      );
+    }
+  } else {
+    sectionChildren.push(
       <Title
         key="title"
         order={3}
         size={18}
         weight="semibold"
         style={{ marginBottom: 8 }}
-        action={toggleEnabled ? (
-          <Switch
-            checked={mode === 'code'}
-            onChange={(value: boolean) => setMode(value ? 'code' : 'preview')}
-            size="sm"
-            label={<Text variant="small">View code</Text>}
-            labelPosition="left"
-          />
-        ) : undefined}
+        action={toggle}
       >
         {demo.title}
       </Title>
-    )
-  ];
-
-  if (demo.tags && demo.tags.length > 0) {
-    sectionChildren.push(
-      <Flex key="tags" direction="row" align="center" gap={4} wrap="wrap" style={{ marginBottom: 8 }}>
-        {demo.tags.map((tag: string) => (
-          <Chip key={tag} size="sm" variant="outline">{tag}</Chip>
-        ))}
-      </Flex>
     );
   }
+
+  // if (demo.tags && demo.tags.length > 0) {
+  //   sectionChildren.push(
+  //     <Flex key="tags" direction="row" align="center" gap={4} wrap="wrap" style={{ marginBottom: 8 }}>
+  //       {demo.tags.map((tag: string) => (
+  //         <Chip key={tag} size="sm" variant="subtle" color="secondary">{tag}</Chip>
+  //       ))}
+  //     </Flex>
+  //   );
+  // }
 
   if (description) {
     sectionChildren.push(
@@ -104,33 +117,14 @@ const DOCS_CHART_INTERACTION_CONFIG = {
   enableCrosshair: true,
   multiTooltip: true,
   liveTooltip: true,
-  popoverFollowMode: 'crosshair' as const,
   popoverPortal: true,
-  stickyCrosshair: true,
   pointerPixelThreshold: 3,
-  crosshairPixelThreshold: 2,
   aggregatorMaxSeries: 8,
 };
 
-function ComponentContent({
-  component,
-  newMeta,
-  breadcrumbItems,
-  handleGitHubPress,
-  effectiveDemos,
-  hasDemos,
-  hasProps,
-  componentProps,
-  loadedDemoComponents,
-  getLocalizedDescription,
-  playgroundMeta,
-  playgroundConfig,
-  componentMarkdown,
-}: {
+interface ComponentContentProps {
   component: string;
   newMeta: ComponentMeta | null;
-  breadcrumbItems: Array<{ label: string; href?: string }>;
-  handleGitHubPress: () => void;
   effectiveDemos: any[];
   hasDemos: boolean;
   hasProps: boolean;
@@ -140,7 +134,23 @@ function ComponentContent({
   playgroundMeta: PlaygroundMeta | null;
   playgroundConfig: ComponentPlaygroundConfig | null;
   componentMarkdown: string | null;
-}) {
+  onTabChange?: (tabKey: string) => void;
+}
+
+const ComponentContent = React.memo(function ComponentContent({
+  component,
+  newMeta,
+  effectiveDemos,
+  hasDemos,
+  hasProps,
+  componentProps,
+  loadedDemoComponents,
+  getLocalizedDescription,
+  playgroundMeta,
+  playgroundConfig,
+  componentMarkdown,
+  onTabChange,
+}: ComponentContentProps) {
   const tabItems: Array<{ key: string; label: string; content: React.ReactNode; subLabel?: string }> = [];
   const resourceLinks = Array.isArray(newMeta?.resources)
     ? (newMeta?.resources as Array<{ label?: string; href?: string }>).filter((entry) => typeof entry?.href === 'string')
@@ -159,12 +169,15 @@ function ComponentContent({
             let preview: React.ReactNode;
             if (DemoComp) {
               const isCallable = typeof DemoComp === 'function';
-              const looksComponent = isCallable && /function|=>/.test(String(DemoComp));
               if (!isCallable) {
-                // Log once per demo id if invalid
+                // Dev-only diagnostic: log once per invalid demo id. Deliberately
+                // mutates a global dedup set during render — acceptable for a
+                // dev warning that must not spam on every re-render.
+                // eslint-disable-next-line react-hooks/immutability -- dev-only log-once diagnostic
                 if (!(globalThis as any).__demoInvalidLogged) (globalThis as any).__demoInvalidLogged = new Set();
                 const set = (globalThis as any).__demoInvalidLogged as Set<string>;
                 if (!set.has(demo.id)) {
+                  // eslint-disable-next-line react-hooks/immutability -- dev-only log-once diagnostic
                   set.add(demo.id);
                   // eslint-disable-next-line no-console
                   console.error('[DemoLoader] Loaded demo is not a function component', {
@@ -183,13 +196,12 @@ function ComponentContent({
                   const rendered = <DemoComp />;
                   preview = newMeta?.category === 'charts'
                     ? (
-                      // <GlobalChartsRoot
-                      //   style={{ width: '100%' }}
-                      //   config={DOCS_CHART_INTERACTION_CONFIG}
-                      // >
-                      <>
-                        {rendered}</>
-                      // </GlobalChartsRoot>
+                      <GlobalChartsRoot
+                        style={{ width: '100%' }}
+                        config={DOCS_CHART_INTERACTION_CONFIG}
+                      >
+                        {rendered}
+                      </GlobalChartsRoot>
                     )
                     : rendered;
                 } catch (err) {
@@ -216,6 +228,7 @@ function ComponentContent({
                 demo={demo}
                 preview={preview}
                 description={getLocalizedDescription(demo)}
+                hideTitle={newMeta?.category === 'charts'}
               />
             );
           })}
@@ -270,12 +283,6 @@ function ComponentContent({
 
   return (
     <>
-      {/* <Breadcrumbs
-        items={breadcrumbItems}
-        style={{ marginBottom: 16 }}
-        size="sm"
-      /> */}
-
       <Title
         variant="h1"
         size={48}
@@ -302,8 +309,10 @@ function ComponentContent({
       </View>
 
       <Tabs
-        variant="chip"
+        key={`tabs-${component}`}
+        variant="folder"
         items={tabItems}
+        onTabChange={onTabChange}
         style={{ flex: 1 }}
       />
 
@@ -328,7 +337,7 @@ function ComponentContent({
       )}
     </>
   );
-}
+});
 
 export default function ComponentDetailScreen({ component = 'Unknown' }: ComponentDetailScreenProps) {
   const router = useRouter();
@@ -336,21 +345,25 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
   const [loadedDemoComponents, setLoadedDemoComponents] = useState<Record<string, React.ComponentType>>({});
   const [newDemos, setNewDemos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [screenData, setScreenData] = useState(Dimensions.get('window'));
-
-  // Track screen size changes for responsive layout
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setScreenData(window);
-    });
-    return () => subscription?.remove();
-  }, []);
+  // Track the active tab so the Playground tab can drop the TOC and use the full width.
+  const [activeTab, setActiveTab] = useState('demos');
+  const handleTabChange = useCallback((tabKey: string) => setActiveTab(tabKey), []);
+  // Reset to the first tab whenever the viewed component changes (Tabs is re-keyed
+  // too). Adjusting state during render (React's recommended pattern) avoids a
+  // setState-in-effect.
+  const [prevComponent, setPrevComponent] = useState(component);
+  if (component !== prevComponent) {
+    setPrevComponent(component);
+    setActiveTab('demos');
+  }
+  const isPlaygroundTab = activeTab === 'playground';
 
   // Determine if we should show side-by-side layout (desktop)
-  const isDesktop = screenData.width >= BREAKPOINTS.lg;
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= BREAKPOINTS.lg;
 
-  // Helper function to get localized description
-  const getLocalizedDescription = (demo: any) => {
+  // Helper function to get localized description (stable so ComponentContent memo holds)
+  const getLocalizedDescription = useCallback((demo: any) => {
     if (demo.localizedDescriptions && demo.localizedDescriptions[locale]) {
       return demo.localizedDescriptions[locale];
     }
@@ -360,13 +373,16 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
     }
     // Final fallback to the default description
     return demo.description;
-  };
+  }, [locale]);
 
   useBrowserTitle(formatPageTitle(component));
 
+  // Genuine demo-loading effect: clears the loading flag then attaches demo code
+  // for the current component.
   useEffect(() => {
-    if (!component) { setLoading(false); return; }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- demo-loading orchestration
     setLoading(false);
+    if (!component) return;
 
     // Authoritative demos system
     if (hasNewDemosArtifacts()) {
@@ -389,12 +405,22 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
   // Only use new demos; legacy unified docs demo list suppressed
   const effectiveDemos = newDemos;
   const hasDemos = effectiveDemos.length > 0;
-  const componentProps = getComponentProps(component);
+  // These lookups depend only on `component`; memoize so resize/locale renders don't re-run them.
+  const componentProps = useMemo(() => getComponentProps(component), [component]);
   const hasProps = componentProps.length > 0;
-  const newMeta = hasNewDemosArtifacts() ? getNewComponentMeta(component) : null;
-  const componentMarkdown = hasNewDemosArtifacts() ? getComponentMarkdown(component) : null;
+  const newMeta = useMemo(
+    () => (hasNewDemosArtifacts() ? getNewComponentMeta(component) : null),
+    [component]
+  );
+  const componentMarkdown = useMemo(
+    () => (hasNewDemosArtifacts() ? getComponentMarkdown(component) : null),
+    [component]
+  );
   const playgroundMeta = newMeta?.playground || null;
-  const playgroundConfig = playgroundMeta ? getPlaygroundConfig(playgroundMeta.id) : null;
+  const playgroundConfig = useMemo(
+    () => (playgroundMeta ? getPlaygroundConfig(playgroundMeta.id) : null),
+    [playgroundMeta]
+  );
 
   if (loading) {
     return (
@@ -423,83 +449,49 @@ export default function ComponentDetailScreen({ component = 'Unknown' }: Compone
     );
   }
 
-  const handleGitHubPress = () => {
-    const githubUrl = GITHUB_REPO + `/tree/main/ui/src/components/${component}`;
-    if (typeof window !== 'undefined') {
-      window.open(githubUrl, '_blank');
-    } else {
-      Linking.openURL(githubUrl);
-    }
+  // Shared props for both layout branches (#7 — single source of truth)
+  const contentProps: ComponentContentProps = {
+    component,
+    newMeta,
+    effectiveDemos,
+    hasDemos,
+    hasProps,
+    componentProps,
+    loadedDemoComponents,
+    getLocalizedDescription,
+    playgroundMeta,
+    playgroundConfig,
+    componentMarkdown,
+    onTabChange: handleTabChange,
   };
-
-  const breadcrumbItems = [
-    { label: 'Home', href: '/' },
-    { label: 'Components', href: '/components' },
-    { label: newMeta?.title || component }
-  ];
 
   return (
     <PageLayout>
       {isDesktop ? (
-        // Desktop layout: Two columns with sticky TOC on the right
-        <View style={styles.desktopContainer}>
+        // Desktop layout: Two columns with sticky TOC on the right.
+        // The Playground tab hides the TOC and widens the content area.
+        <View style={[styles.desktopContainer, isPlaygroundTab && styles.desktopContainerWide]}>
           <View style={styles.mainContent} id={`main-content-${component}`}>
-            <ComponentContent
-              component={component}
-              newMeta={newMeta}
-              breadcrumbItems={breadcrumbItems}
-              handleGitHubPress={handleGitHubPress}
-              effectiveDemos={effectiveDemos}
-              hasDemos={hasDemos}
-              hasProps={hasProps}
-              componentProps={componentProps}
-              loadedDemoComponents={loadedDemoComponents}
-              getLocalizedDescription={getLocalizedDescription}
-              playgroundMeta={playgroundMeta}
-              playgroundConfig={playgroundConfig}
-              componentMarkdown={componentMarkdown}
-            />
+            <ComponentContent {...contentProps} />
           </View>
-          <View style={styles.sidebarContainer}>
-            <View style={styles.stickyToc}>
-              <TableOfContents
-                key={`desktop-toc-${component}`}
-                container={`#main-content-${component}`}
-                variant="ghost"
-                size="sm"
-              />
+          {!isPlaygroundTab && (
+            <View style={styles.sidebarContainer}>
+              <View style={styles.stickyToc}>
+                <TableOfContents
+                  key={`desktop-toc-${component}`}
+                  container={`#main-content-${component}`}
+                  variant="ghost"
+                  size="sm"
+                />
+              </View>
             </View>
-          </View>
+          )}
         </View>
       ) : (
-        // Mobile layout: Full width with optional floating TOC for medium screens
-        <>
-          {isDesktop && (
-            <TableOfContents
-              key={`mobile-toc-${component}`}
-              container={`#main-content-${component}`}
-              variant="outline"
-              size="sm"
-            />
-          )}
-          <View style={styles.container} id={`main-content-${component}`}>
-            <ComponentContent
-              component={component}
-              newMeta={newMeta}
-              breadcrumbItems={breadcrumbItems}
-              handleGitHubPress={handleGitHubPress}
-              effectiveDemos={effectiveDemos}
-              hasDemos={hasDemos}
-              hasProps={hasProps}
-              componentProps={componentProps}
-              loadedDemoComponents={loadedDemoComponents}
-              getLocalizedDescription={getLocalizedDescription}
-              playgroundMeta={playgroundMeta}
-              playgroundConfig={playgroundConfig}
-              componentMarkdown={componentMarkdown}
-            />
-          </View>
-        </>
+        // Mobile layout: Full width
+        <View style={styles.container} id={`main-content-${component}`}>
+          <ComponentContent {...contentProps} />
+        </View>
       )}
     </PageLayout>
   );
@@ -524,6 +516,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
   },
+  // Playground tab: no TOC column, so allow the content to span a wider canvas.
+  desktopContainerWide: {
+    maxWidth: 1800,
+  },
   mainContent: {
     flex: 1,
     minWidth: 0, // Prevents flex item from overflowing
@@ -535,7 +531,6 @@ const styles = StyleSheet.create({
   stickyToc: {
     position: 'sticky' as any,
     top: 20,
-    // maxHeight: 'calc(100vh - 40px)' as any,
     overflow: 'auto' as any,
   },
 });

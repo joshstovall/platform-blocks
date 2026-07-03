@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { Path as SvgPath } from 'react-native-svg';
 
@@ -111,13 +112,18 @@ export const AnimatedViolinShape: React.FC<AnimatedViolinShapeProps> = React.mem
       strokeWidth={strokeWidth}
       pointerEvents="auto"
       onPress={onPress ? handlePress : undefined}
-      onPressIn={onFocus ? handleFocus : undefined}
-      onPressOut={onBlur ? handleBlur : undefined}
-      // @ts-expect-error web hover events
-      onMouseEnter={onFocus ? handleFocus : undefined}
-      onMouseLeave={onBlur ? handleBlur : undefined}
-      onHoverIn={onFocus ? handleFocus : undefined}
-      onHoverOut={onBlur ? handleBlur : undefined}
+      // Web hover maps to focus/blur; native touch uses press-in/out. Passing
+      // onPressIn/onPressOut on web leaks them to the DOM node (react-native-svg
+      // only maps onPress), which React warns about as unknown event handlers.
+      {...((Platform.OS === 'web'
+        ? {
+            onMouseEnter: onFocus ? handleFocus : undefined,
+            onMouseLeave: onBlur ? handleBlur : undefined,
+          }
+        : {
+            onPressIn: onFocus ? handleFocus : undefined,
+            onPressOut: onBlur ? handleBlur : undefined,
+          }) as Record<string, any>)}
     />
   );
 });

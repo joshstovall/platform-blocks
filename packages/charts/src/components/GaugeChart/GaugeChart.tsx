@@ -15,6 +15,7 @@ import {
   generateTickPositions,
   generateLabelPositions,
   angleDifference,
+  arcBoundingBox,
 } from './utils';
 
 const AnimatedLine = Animated.createAnimatedComponent(Line);
@@ -51,6 +52,7 @@ type RangeSegment = {
   path: string;
   stroke: string;
   thickness: number;
+  cap: 'round' | 'butt';
 };
 
 type RangeGradient = {
@@ -101,8 +103,10 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
     height = 240,
     title,
     subtitle,
-    startAngle = 135,
-    endAngle = 45,
+    // Bottom-opening 270° dial by default (gap centred at the bottom), which
+    // reads as a conventional gauge rather than a sideways "C".
+    startAngle = 225,
+    endAngle = 135,
     rotationOffset = 0,
     thickness = 12,
     track,
@@ -133,25 +137,59 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
 
   const theme = useChartTheme();
 
-  const baseTrackThickness = track?.thickness ?? thickness;
-  const trackMargin = Math.max(16, labels?.offset ?? 24);
-  const outerRadius = Math.max(1, Math.min(width, height) / 2 - trackMargin / 2);
-  const resolvedInnerRatio = innerRadiusRatio != null ? clamp(innerRadiusRatio, 0, 0.98) : null;
-  const derivedTrackThickness = resolvedInnerRatio != null
-    ? Math.max(1, outerRadius - outerRadius * resolvedInnerRatio)
-    : baseTrackThickness;
-  const radius = Math.max(1, outerRadius - derivedTrackThickness / 2);
-  const innerRadius = Math.max(0, radius - derivedTrackThickness / 2);
-  const outerRadiusActual = radius + derivedTrackThickness / 2;
-  const centerX = width / 2;
-  const centerY = height / 2;
-
+  // --- Angular span -------------------------------------------------------
   const baseStartAngle = startAngle + rotationOffset;
   let span = endAngle + rotationOffset - baseStartAngle;
   if (span <= 0) {
     span += 360;
   }
   const baseEndAngle = baseStartAngle + span;
+
+  // --- Layout: reserve space for the title (top) and legend so the gauge
+  // never collides with them, then fit the arc into what remains -----------
+  const hasTitle = Boolean(title || subtitle);
+  const titleReserve = hasTitle ? (subtitle ? 46 : 28) : 6;
+  const legendAtSide = legend?.show && (legend.position === 'left' || legend.position === 'right');
+  const bottomReserve = legend?.show && !legendAtSide ? 40 : 8;
+  const sideReserve = legendAtSide ? 96 : 0;
+
+  const labelCfg = labels ?? {};
+  const willShowLabels = labelCfg.show !== false && (labelCfg.positions?.length || ticks?.show !== false);
+  const resolvedLabelFont = labelCfg.fontSize ?? theme.fontSize.sm;
+  // Labels sit just outside the ring; keep the offset compact so a large
+  // configured value can't shrink the dial away.
+  const resolvedLabelOffset = clamp(labelCfg.offset ?? 12, 6, 16);
+  // Radial room the labels/ticks need beyond the outer edge of the ring.
+  const labelMargin = willShowLabels ? resolvedLabelOffset + resolvedLabelFont * 0.9 : 6;
+
+  const availLeft = sideReserve;
+  const availTop = titleReserve;
+  const availW = Math.max(1, width - sideReserve);
+  const availH = Math.max(1, height - titleReserve - bottomReserve);
+
+  // Bounding box of the arc (fractions of the outer radius) so any span — a
+  // 180° semicircle, a 270° dial, or a narrow 120° tuner — is centred and
+  // sized to fill the region rather than being pinned to height/2.
+  const bbox = arcBoundingBox(baseStartAngle, baseEndAngle);
+  const spanX = Math.max(1e-3, bbox.maxX - bbox.minX);
+  const spanY = Math.max(1e-3, bbox.maxY - bbox.minY);
+  // `ringOuter` = outer radius + label margin (the true drawn extent). The
+  // bbox spans are already in radius units (−1..+1), so this is the radius that
+  // makes the drawn box exactly fill the smaller of the two available axes.
+  const ringOuter = Math.max(6, Math.min(availW / spanX, availH / spanY));
+  const outerRadiusActual = Math.max(2, ringOuter - labelMargin);
+
+  const resolvedInnerRatio = innerRadiusRatio != null ? clamp(innerRadiusRatio, 0, 0.98) : null;
+  const baseTrackThickness = track?.thickness ?? thickness;
+  const derivedTrackThickness = resolvedInnerRatio != null
+    ? Math.max(1, outerRadiusActual - outerRadiusActual * resolvedInnerRatio)
+    : Math.min(baseTrackThickness, outerRadiusActual * 0.9);
+  const radius = Math.max(1, outerRadiusActual - derivedTrackThickness / 2);
+  const innerRadius = Math.max(0, outerRadiusActual - derivedTrackThickness);
+
+  // Centre the arc's drawn bounding box within the available region.
+  const centerX = availLeft + availW / 2 - ringOuter * (bbox.minX + bbox.maxX) / 2;
+  const centerY = availTop + availH / 2 - ringOuter * (bbox.minY + bbox.maxY) / 2;
 
   const clampedValue = clamp(value, min, max);
   const percentage = max === min ? 0 : (clampedValue - min) / (max - min);
@@ -295,7 +333,9 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
   const labelFormatter = labelConfig.formatter ?? ((val: number) => `${Math.round(val)}`);
   const labelColor = labelConfig.color ?? theme.colors.textSecondary;
   const labelFontSize = labelConfig.fontSize ?? theme.fontSize.sm;
-  const labelOffset = labelConfig.offset ?? 28;
+  // Labels now sit just outside the ring's outer edge, so a small offset is
+  // enough — cap it so a generously-configured value can't starve the gauge.
+  const labelOffset = resolvedLabelOffset;
   const labelFontWeight = labelConfig.fontWeight ?? 'normal';
 
   const { rangeSegments, rangeGradients } = useMemo(() => {
@@ -306,14 +346,29 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
     const segments: RangeSegment[] = [];
     const gradients: RangeGradient[] = [];
 
-    ranges.forEach((range, index) => {
-      const from = clamp(range.from, min, max);
-      const to = clamp(range.to, min, max);
-      if (to <= from) {
-        return;
+    // Small angular gap between neighbouring segments so thick bands read as
+    // distinct arcs instead of blurring into one blob. Kept small (a few px at
+    // this radius) and skipped for the arc's true extremes so the ends stay
+    // rounded and the gauge looks continuous.
+    const gapDeg = clamp((4 / Math.max(1, radius)) * (180 / Math.PI), 1.2, 5);
+
+    const usable = ranges
+      .map((range, index) => ({ range, index, from: clamp(range.from, min, max), to: clamp(range.to, min, max) }))
+      .filter((r) => r.to > r.from);
+
+    usable.forEach((entry, position) => {
+      const { range, index, from, to } = entry;
+      const atStart = position === 0;
+      const atEnd = position === usable.length - 1;
+
+      let start = valueToAngle(from, min, max, baseStartAngle, baseEndAngle);
+      let end = valueToAngle(to, min, max, baseStartAngle, baseEndAngle);
+      // Inset interior boundaries to open the gap; leave the outer extremes.
+      if (end - start > gapDeg * 1.5) {
+        if (!atStart) start += gapDeg / 2;
+        if (!atEnd) end -= gapDeg / 2;
       }
-      const start = valueToAngle(from, min, max, baseStartAngle, baseEndAngle);
-      const end = valueToAngle(to, min, max, baseStartAngle, baseEndAngle);
+
       const defaultColor = range.color ?? getColorFromScheme(index, colorSchemes.default);
       const thicknessOverride = range.thickness ?? derivedTrackThickness;
       let stroke = defaultColor;
@@ -335,6 +390,8 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
         path: createArcPath(centerX, centerY, radius, start, end),
         stroke,
         thickness: thicknessOverride,
+        // Round only the two ends of the whole gauge; interior caps are square.
+        cap: atStart || atEnd ? 'round' : 'butt',
       });
     });
 
@@ -497,6 +554,11 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
             height,
             alignItems: 'center',
             justifyContent: 'center',
+            // Align with the gauge's computed centre, not the container middle.
+            transform: [
+              { translateX: centerX - width / 2 },
+              { translateY: centerY - height / 2 },
+            ],
           }}
         >
           {centerPrimaryText && (
@@ -568,7 +630,7 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
               d={segment.path}
               stroke={segment.stroke}
               strokeWidth={segment.thickness}
-              strokeLinecap="round"
+              strokeLinecap={segment.cap}
               fill="none"
             />
           ))}
@@ -638,8 +700,9 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
             <G>
               {tickDerived.majors.map((tickValue, index) => {
                 const angle = valueToAngle(tickValue, min, max, baseStartAngle, baseEndAngle);
-                const outer = getPointOnCircle(centerX, centerY, radius, angle);
-                const inner = getPointOnCircle(centerX, centerY, radius - tickDerived.majorLength, angle);
+                const len = Math.min(tickDerived.majorLength, derivedTrackThickness);
+                const outer = getPointOnCircle(centerX, centerY, outerRadiusActual, angle);
+                const inner = getPointOnCircle(centerX, centerY, outerRadiusActual - len, angle);
                 return (
                   <Line
                     key={`major-${index}`}
@@ -655,8 +718,9 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
               })}
               {tickDerived.minors.map((tickValue, index) => {
                 const angle = valueToAngle(tickValue, min, max, baseStartAngle, baseEndAngle);
-                const outer = getPointOnCircle(centerX, centerY, radius, angle);
-                const inner = getPointOnCircle(centerX, centerY, radius - tickDerived.minorLength, angle);
+                const len = Math.min(tickDerived.minorLength, derivedTrackThickness * 0.7);
+                const outer = getPointOnCircle(centerX, centerY, outerRadiusActual, angle);
+                const inner = getPointOnCircle(centerX, centerY, outerRadiusActual - len, angle);
                 return (
                   <Line
                     key={`minor-${index}`}
@@ -675,7 +739,7 @@ export const GaugeChart: React.FC<GaugeChartProps> = (props) => {
 
           {showLabels && labelPositions.map((position, index) => {
             const angle = valueToAngle(position, min, max, baseStartAngle, baseEndAngle);
-            const point = getPointOnCircle(centerX, centerY, radius + labelOffset, angle);
+            const point = getPointOnCircle(centerX, centerY, outerRadiusActual + labelOffset, angle);
             const label = labelFormatter(position);
             return (
               <SvgText

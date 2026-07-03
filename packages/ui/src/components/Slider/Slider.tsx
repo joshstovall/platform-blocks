@@ -19,6 +19,24 @@ import {
   SliderValueLabel,
 } from './SliderCore';
 
+// Number of decimal places implied by a step (e.g. 0.01 -> 2, 1 -> 0). Used so the
+// default value-label reflects fractional steps instead of rounding to an integer.
+const decimalsFromStep = (step: number): number => {
+  if (!Number.isFinite(step)) return 0;
+  const str = String(step);
+  if (str.includes('e-')) return Math.min(6, parseInt(str.split('e-')[1], 10) || 0);
+  const frac = str.split('.')[1];
+  return frac ? Math.min(6, frac.length) : 0;
+};
+
+// Formats a slider value for its label: honours an explicit `precision`, otherwise
+// derives the precision from `step`. Trailing zeros are trimmed (0.10 -> "0.1").
+const formatSliderValue = (val: number, step: number, precision?: number): string => {
+  const decimals = precision != null ? precision : decimalsFromStep(step);
+  if (decimals <= 0) return Math.round(val).toString();
+  return Number(val.toFixed(decimals)).toString();
+};
+
 const SLIDER_SIZE_SCALE: Partial<Record<ComponentSize, 'sm' | 'md' | 'lg'>> = {
   xs: 'sm',
   sm: 'sm',
@@ -96,6 +114,7 @@ export const Slider = factory<{
     valueLabelStyle,
     valueLabelProps,
     valueLabelAsCard = true,
+    precision,
     ticks,
     showTicks = false,
     restrictToTicks = false,
@@ -157,7 +176,7 @@ export const Slider = factory<{
   const clampedValue = useSliderValue(isControlled ? (value as number) : internal, min, max, step, restrictToTicks, ticks, false) as number;
 
   // Memoized value label handling
-  const defaultValueFormatter = useCallback((val: number) => Math.round(val).toString(), []);
+  const defaultValueFormatter = useCallback((val: number) => formatSliderValue(val, step, precision), [step, precision]);
 
   const resolvedValueLabel = useMemo<((value: number) => string) | null>(() => {
     if (valueLabel === null) return null;
@@ -216,10 +235,12 @@ export const Slider = factory<{
   // Gesture handling
   const { calculateNewValue } = useSliderGesture(min, max, step, restrictToTicks, ticks, disabled);
 
-  const handlePress = useCallback((evt: any) => {
+  // Jump to the value under a touch relative to the container (locationX/locationY
+  // are already container-relative). Shared by the tap-to-jump grant and the
+  // fallback press handler so pressing anywhere on the rail moves the thumb.
+  const commitFromLocation = useCallback((locationX: number, locationY: number) => {
     if (disabled) return;
 
-    const { locationX, locationY } = evt.nativeEvent;
     const location = orientationProps.isVertical ? locationY : locationX;
     let relativePosition = location - (thumbSize / 2);
 
@@ -241,7 +262,12 @@ export const Slider = factory<{
       if (!isControlled) setInternal(newValue);
       onChange?.(newValue);
     }
-  }, [disabled, positions.trackLength, calculateNewValue, onChange, thumbSize, orientationProps.isVertical, min, max]);
+  }, [disabled, positions.trackLength, calculateNewValue, onChange, thumbSize, orientationProps.isVertical, min, max, isControlled]);
+
+  const handlePress = useCallback((evt: any) => {
+    const { locationX, locationY } = evt.nativeEvent;
+    commitFromLocation(locationX, locationY);
+  }, [commitFromLocation]);
 
   // Memoized pan responder
   const panResponder = useMemo(() => PanResponder.create({
@@ -251,16 +277,15 @@ export const Slider = factory<{
     onPanResponderGrant: (evt) => {
       setIsDragging(true);
       if (Platform.OS === 'web') {
-        return document.body.style.userSelect = 'none';
+        document.body.style.userSelect = 'none';
       }
 
-      // Store initial touch position for more reliable tracking
-      const { locationX } = evt.nativeEvent;
-      if (containerRef.current) {
-        containerRef.current.setNativeProps({
-          initialTouchX: locationX
-        });
-      }
+      // Tap-to-jump: move the thumb to wherever the rail was pressed. The pan
+      // responder claims the responder on start (overriding the container's own
+      // onResponderGrant), so the jump has to happen here for a plain tap to
+      // register before any drag movement.
+      const { locationX, locationY } = evt.nativeEvent;
+      commitFromLocation(locationX, locationY);
     },
 
     onPanResponderMove: (evt, gestureState) => {
@@ -338,7 +363,7 @@ export const Slider = factory<{
         document.body.style.userSelect = '';
       }
     },
-  }), [disabled, positions.trackLength, calculateNewValue, onChange, thumbSize, orientationProps.isVertical, min, max]);
+  }), [disabled, positions.trackLength, calculateNewValue, onChange, thumbSize, orientationProps.isVertical, min, max, commitFromLocation, isControlled]);
 
   return (
     <View style={[{ flex: 1 }, style, spacingProps]}>
@@ -462,6 +487,7 @@ export const RangeSlider = factory<{
     valueLabelStyle,
     valueLabelProps,
     valueLabelAsCard = true,
+    precision,
     ticks,
     showTicks = false,
     restrictToTicks = false,
@@ -524,7 +550,7 @@ export const RangeSlider = factory<{
   const [minValue, maxValue] = useSliderValue(value, min, max, step, restrictToTicks, ticks, true) as [number, number];
 
   // Memoized backward compatibility handling
-  const defaultRangeFormatter = useCallback((val: number, _index?: number) => Math.round(val).toString(), []);
+  const defaultRangeFormatter = useCallback((val: number, _index?: number) => formatSliderValue(val, step, precision), [step, precision]);
 
   const resolvedValueLabel = useMemo<((value: number, index: number) => string) | null>(() => {
     if (valueLabel === null) return null;

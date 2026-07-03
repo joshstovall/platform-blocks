@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Radar Chart
 tags: [chart, radar, polar]
 category: charts

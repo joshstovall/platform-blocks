@@ -451,36 +451,47 @@ export function ShimmerText(props: ShimmerTextProps) {
 
   const renderWeb = () => {
     const gradientColors = resolvedLinearColors;
-    const overlayStyle = [
-      overlayBaseStyle,
-      {
-        position: 'absolute' as const,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100%',
-        // pointerEvents: 'none' as const,
-        zIndex: 1,
-        display: 'inline-block',
-      } as const,
-    ];
 
     return (
       <>
-        <GradientText
+        <Text
           {...textProps as any}
-          as={(textProps as any)?.as ?? 'span'}
-          colors={gradientColors}
-          locations={gradientLocations}
-          angle={direction === 'rtl' ? 180 : 0}
-          position={webPosition}
-          animate={false}
-          selectable={false}
-          style={overlayStyle}
+          color={baseColor}
+          style={style}
         >
           {content}
-        </GradientText>
+        </Text>
+        {/*
+          The highlight sits in its own absolutely-positioned wrapper that sizes to
+          its content and is pinned to the base text's top-left. GradientText then
+          renders in normal flow inside it, so the gradient overlay lines up glyph
+          for glyph over the base text. (Positioning GradientText itself as absolute
+          collapses its inline-block container to 0x0 and the shimmer disappears.)
+        */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            alignItems: 'flex-start',
+            zIndex: 1,
+          } as any}
+        >
+          <GradientText
+            {...textProps as any}
+            as={(textProps as any)?.as ?? 'span'}
+            colors={gradientColors}
+            locations={gradientLocations}
+            angle={direction === 'rtl' ? 180 : 0}
+            position={webPosition}
+            animate={false}
+            selectable={false}
+            style={overlayBaseStyle}
+          >
+            {content}
+          </GradientText>
+        </View>
       </>
     );
   };

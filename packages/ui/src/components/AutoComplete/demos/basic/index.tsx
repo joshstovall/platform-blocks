@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-
-import { AutoComplete, Column, Text } from '@platform-blocks/ui';
+import { AutoComplete } from '@platform-blocks/ui';
 import type { AutoCompleteOption } from '../../types';
 
 const sports: AutoCompleteOption[] = [
@@ -25,33 +24,22 @@ export default function Demo() {
   const displayValue = useMemo(() => selectedSport?.label ?? inputValue, [selectedSport, inputValue]);
 
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Basic auto-complete</Text>
-      <Text size="sm" colorVariant="secondary">
-        Start typing to filter the list of sports. Selecting an option fills the input.
-      </Text>
-      <AutoComplete
-        label="Choose a sport"
-        placeholder="Search for a sport..."
-        data={sports}
-        value={displayValue}
-        onChangeText={(value) => {
-          setInputValue(value);
-          if (!value) setSelectedSport(null);
-        }}
-        onSelect={(item) => {
-          setSelectedSport(item);
-          setInputValue(item.label);
-        }}
-        displayProperty="label"
-        minSearchLength={1}
-        fullWidth
-      />
-      {selectedSport && (
-        <Text size="xs" colorVariant="secondary">
-          Selected: {selectedSport.label}
-        </Text>
-      )}
-    </Column>
+    <AutoComplete
+      label="Choose a sport"
+      placeholder="Search for a sport..."
+      data={sports}
+      value={displayValue}
+      onChangeText={(value) => {
+        setInputValue(value);
+        if (!value) setSelectedSport(null);
+      }}
+      onSelect={(item) => {
+        setSelectedSport(item);
+        setInputValue(item.label);
+      }}
+      displayProperty="label"
+      minSearchLength={1}
+      fullWidth
+    />
   );
 }

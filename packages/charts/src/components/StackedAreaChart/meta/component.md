@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Stacked Area Chart
 tags: [chart, area, stacked]
 category: charts

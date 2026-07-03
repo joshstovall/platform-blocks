@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Sparkline Chart
 tags: [chart, sparkline, trend]
 category: charts

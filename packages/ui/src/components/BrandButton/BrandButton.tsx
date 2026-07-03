@@ -19,13 +19,16 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
     variant = 'plain',
     size = 'md',
     color,
-    iconVariant = 'full',
+    iconVariant,
     style,
     ...buttonProps
   } = componentProps;
 
   const brandConfig = brandConfigs[brand];
   const iconColor: string | undefined = color || undefined;
+  // A color override only takes effect on the mono variant, so switch to mono
+  // when a color is provided and the caller hasn't forced a variant.
+  const resolvedIconVariant = iconVariant ?? (color ? 'mono' : 'full');
 
   const brandIcon = (() => {
     // TODO: pull this list from BrandIcon directly
@@ -43,7 +46,7 @@ export const BrandButton: React.FC<BrandButtonProps> = (props) => {
       return <BrandIcon brand={brand as any} size={iconSize}
         color={iconColor}
 
-        variant={iconVariant} />;
+        variant={resolvedIconVariant} />;
     } else {
       return <>error loading icon</>
     }

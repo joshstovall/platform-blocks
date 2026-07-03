@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useRef, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useRef, useState, useCallback, useEffect, useMemo } from 'react';
+import type { ActiveTarget, HitTester, HitQuery } from '../core/hittest/types';
+import type { ChartRegistration } from '../core/hittest/registration';
+import { createHitTester } from '../core/hittest/registration';
 
 /**
  * Pair of numeric domains for x and y axes
@@ -32,32 +35,24 @@ export interface InteractionConfig {
   wheelMinZoom?: number;
   /** Clamp panning to initial domains (no blank space). Default false. */
   clampToInitialDomain?: boolean;
-  /** Show a crosshair line and highlight nearest points. Default false. */
+  /** Show a vertical guide line tracking the active point. Default false. */
   enableCrosshair?: boolean;
-  /** Show a tooltip for the nearest point(s) to the crosshair. Default false. */
+  /** Show a tooltip for the nearest point(s) to the pointer. Default false. */
   liveTooltip?: boolean;
-  /** Show a tooltip for all series at the crosshair (vertical slice). Default false. */
+  /** Show a tooltip for all series at the pointer x (vertical slice). Default false. */
   multiTooltip?: boolean;
   /** Invert the direction of pinch zooming. Default false. */
   invertPinchZoom?: boolean;
   /** Invert the direction of wheel zooming. Default false. */
   invertWheelZoom?: boolean;
-  /** Render the shared ChartPopover in a portal attached to document.body (web only) using page coordinates. Default true. */
+  /** Render the shared tooltip in a portal attached to document.body (web only) using page coordinates. Default true. */
   popoverPortal?: boolean;
   /** Throttle high-frequency pointer updates to animation frames (reduces rerenders). Default true. */
   pointerRAF?: boolean;
   /** Minimum pixel delta before pointer state update (noise filter). Default 0 (disabled). */
   pointerPixelThreshold?: number;
-  /** Throttle crosshair updates to rAF. Default true. */
-  crosshairRAF?: boolean;
-  /** Limit number of series processed by tooltip aggregator (slice). */
+  /** Max rows shown in a multi-series slice tooltip. Default 8. */
   aggregatorMaxSeries?: number;
-  /** Control how the popover chooses its anchor: pointer (default), crosshair, or snap (future hysteresis). */
-  popoverFollowMode?: 'pointer' | 'crosshair' | 'snap';
-  /** Minimum pixel delta before crosshair update (after threshold). */
-  crosshairPixelThreshold?: number;
-  /** Keep the last crosshair visible while the pointer remains inside the chart even if no point is targeted. Default true. */
-  stickyCrosshair?: boolean;
 }
 
 /**
@@ -92,17 +87,62 @@ export interface RegisteredSeries {
   visible: boolean;
 }
 
+// Content-equality for active targets/slices. The hit-test engine hands the store a fresh
+// object/array on every pointer move, so reference checks always mutate → every chart that
+// consumes the context re-renders each frame. Deduping by the resolved mark's identity
+// (series + mark + kind + anchor) collapses "moving within the same slice/point/category"
+// to a no-op, while still updating when the resolved target actually changes. Position
+// follow-the-cursor is driven by `pointer`, not the anchor, so this changes no behavior.
+const sameTarget = (a: ActiveTarget | null, b: ActiveTarget | null): boolean => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.seriesId === b.seriesId &&
+    a.markId === b.markId &&
+    a.kind === b.kind &&
+    a.pixel?.x === b.pixel?.x &&
+    a.pixel?.y === b.pixel?.y
+  );
+};
+
+const sameSlice = (a: ActiveTarget[], b: ActiveTarget[]): boolean => {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!sameTarget(a[i], b[i])) return false;
+  }
+  return true;
+};
+
 /**
- * Internal interaction state
+ * High-frequency ("volatile") state — changes on every pointer move. Lives in its own
+ * context so only the components that actually render pointer-driven visuals (the tooltip
+ * + the crosshair charts) re-render each frame. Chart bodies read the stable context and
+ * never see these, so a hover sweep doesn't re-render the whole chart.
  */
-interface InteractionState {
+export interface ChartVolatileState {
   /** Current pointer/mouse position */
   pointer: { x: number; y: number; inside: boolean; insideX?: boolean; insideY?: boolean; pageX?: number; pageY?: number; data?: any } | null;
-  /** Current crosshair position */
-  crosshair: { dataX: number; pixelX: number } | null;
-  /** Points selected by the crosshair */
-  selectedPoints: RegisteredSeriesPoint[];
-  /** All registered series */
+  /**
+   * Normalized active target from the hit-test engine. Carries geometry-specific
+   * fields (categoryIndex / cell / angleDeg / axisIndex) and a canonical pixel anchor.
+   */
+  activeTarget: ActiveTarget | null;
+  /**
+   * All series' targets at the current pointer x/angle (a "slice"), for
+   * multi-series tooltips. Empty unless a tester with slice() is active and
+   * multiTooltip is on.
+   */
+  activeSlice: ActiveTarget[];
+}
+
+/** Low-frequency ("stable") state — changes rarely (legend toggle, zoom, layout). */
+interface StableState {
+  /**
+   * Series registry — now used purely for legend visibility (upserted by
+   * `updateSeriesVisibility`). `points` is vestigial (always `[]`); the legacy
+   * tooltip that consumed it was retired.
+   */
   series: RegisteredSeries[];
   /** Initial and current domains */
   domains: { initial: DomainPair; current: DomainPair } | null;
@@ -111,19 +151,29 @@ interface InteractionState {
 }
 
 /**
- * Context value provided to child components
+ * Stable context value provided to chart bodies — everything EXCEPT the per-frame
+ * volatile fields (pointer/activeTarget/activeSlice), which live in the volatile context.
+ * Setters live here so charts can feed the store without subscribing to volatile state.
  */
-interface InteractionContextValue extends InteractionState {
+interface InteractionContextValue extends StableState {
   /** Interaction configuration */
   config: InteractionConfig;
-  /** Register a new data series */
-  registerSeries: (s: Omit<RegisteredSeries, 'visible'> & { visible?: boolean }) => void;
-  /** Update visibility of a series */
+  /** Update visibility of a series (upserts a visibility-only entry for legend toggles). */
   updateSeriesVisibility: (id: string | number, visible: boolean) => void;
   /** Update pointer position */
-  setPointer: (p: InteractionState['pointer']) => void;
-  /** Update crosshair position */
-  setCrosshair: (c: InteractionState['crosshair']) => void;
+  setPointer: (p: ChartVolatileState['pointer']) => void;
+  /** Update the normalized active target (new hit-test engine). */
+  setActiveTarget: (t: ActiveTarget | null) => void;
+  /** Update the multi-series slice (new hit-test engine). */
+  setActiveSlice: (s: ActiveTarget[]) => void;
+  /**
+   * Register (or replace) a chart's hit-test geometry under a stable key. The
+   * store derives a HitTester from the registration. Call with `null` to
+   * unregister on unmount.
+   */
+  register: (key: string | number, reg: ChartRegistration | null) => void;
+  /** Run the registered hit-testers and return the closest target (best distance). */
+  hitTest: (q: HitQuery) => ActiveTarget | null;
   /** Update domains (flexible signature) */
   setDomains: (d: DomainPair['x'] | DomainPair['y'] | Partial<DomainPair>) => void;
   /** Initialize domains with initial values */
@@ -134,66 +184,131 @@ interface InteractionContextValue extends InteractionState {
   setRootOffset: (o: { left: number; top: number }) => void;
 }
 
-const InteractionContext = createContext<InteractionContextValue | null>(null);
+/** Pointer position — changes on every pointer move (per-frame during hover). */
+export type PointerState = ChartVolatileState['pointer'];
+
+/** Resolved hit-test target(s) — changes only when the active mark changes (deduped). */
+export interface TargetState {
+  activeTarget: ActiveTarget | null;
+  activeSlice: ActiveTarget[];
+}
+
+const StableContext = createContext<InteractionContextValue | null>(null);
+// The old single volatile context is split in two so a consumer subscribes only to the
+// slice it actually renders. `pointer` churns every frame; `target` changes only when the
+// resolved mark changes. A chart that highlights the active mark (e.g. GroupedBar) reads
+// TargetContext and no longer re-renders on cursor motion — only the crosshair/tooltip
+// components that read the raw pointer re-render each frame.
+const PointerContext = createContext<PointerState>(null);
+const TargetContext = createContext<TargetState | null>(null);
+
+const EMPTY_TARGET: TargetState = { activeTarget: null, activeSlice: [] };
+const EMPTY_VOLATILE: ChartVolatileState = { pointer: null, activeTarget: null, activeSlice: [] };
 
 /**
- * Hook to access the chart interaction context
+ * Hook to access the (stable) chart interaction context — config, series, setters,
+ * register/hitTest, domains. Does NOT subscribe to per-frame pointer/target/slice, so a
+ * component reading this does not re-render on pointer moves.
  * @throws Error if used outside of ChartInteractionProvider
  */
 export const useChartInteractionContext = () => {
-  const ctx = useContext(InteractionContext);
+  const ctx = useContext(StableContext);
   if (!ctx) throw new Error('useChartInteractionContext must be used within <ChartInteractionProvider>');
   return ctx;
+};
+
+/**
+ * Non-throwing variant. Returns null when there is no provider, replacing the
+ * copy-pasted `try { useChartInteractionContext() } catch {}` blocks.
+ */
+export const useOptionalChartInteraction = (): InteractionContextValue | null =>
+  useContext(StableContext);
+
+/**
+ * Subscribe to the raw pointer position ONLY. Re-renders every frame during hover, so use
+ * it only for cursor-following visuals (crosshair line, hover readout). Returns null when
+ * there is no provider.
+ */
+export const usePointer = (): PointerState => useContext(PointerContext);
+
+/**
+ * Subscribe to the resolved hit-test target/slice ONLY. Re-renders when the active mark
+ * changes, NOT on every pointer move — the right hook for "highlight the active mark".
+ * Returns EMPTY_TARGET when there is no provider.
+ */
+export const useActiveTarget = (): TargetState => useContext(TargetContext) ?? EMPTY_TARGET;
+
+/**
+ * Combined convenience: pointer + target. Re-renders every frame (it reads the pointer),
+ * so prefer usePointer()/useActiveTarget() when a component needs only one. Returns
+ * EMPTY_VOLATILE when there is no provider.
+ */
+export const useChartInteractionVolatile = (): ChartVolatileState => {
+  const pointer = useContext(PointerContext);
+  const target = useContext(TargetContext);
+  return target ? { pointer, ...target } : EMPTY_VOLATILE;
 };
 
 /**
  * Provider component for chart interaction state and behaviors
  */
 export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; children: React.ReactNode; }> = ({ config = {}, children }) => {
-  const [state, setState] = useState<InteractionState>({
-    pointer: null,
-    crosshair: null,
-    selectedPoints: [],
+  // Three separate states so an update to one never changes another context value's
+  // identity. `pointer` churns every frame; `target` changes only on hit-change; `stable`
+  // is rare. Chart bodies read `stable` and never re-render on hover; target-only consumers
+  // read `target` and re-render only when the active mark changes.
+  const [pointer, setPointerState] = useState<PointerState>(null);
+  const [target, setTarget] = useState<TargetState>({
+    activeTarget: null,
+    activeSlice: [],
+  });
+  const [stable, setStable] = useState<StableState>({
     series: [],
     domains: null,
     rootOffset: null,
   });
 
-  const registerSeries = useCallback((s: Omit<RegisteredSeries, 'visible'> & { visible?: boolean }) => {
-    setState(prev => {
-      const idx = prev.series.findIndex(sr => sr.id === s.id);
-      // Ensure points sorted by x
-      let pts = s.points;
-      if (pts.length > 1) {
-        let sorted = true;
-        for (let i = 1; i < pts.length; i++) { if (pts[i].x < pts[i - 1].x) { sorted = false; break; } }
-        if (!sorted) pts = [...pts].sort((a, b) => a.x - b.x);
-      }
-      if (idx >= 0) {
-        const existing = prev.series[idx];
-        const pointsChanged = existing.points.length !== pts.length || (existing.points.length && (() => {
-          const a = existing.points[existing.points.length - 1];
-          const b = pts[pts.length - 1];
-          return a.x !== b.x || a.y !== b.y;
-        })());
-        const metaChanged = existing.name !== s.name || existing.color !== s.color;
-        if (!pointsChanged && !metaChanged) return prev;
-        const nextSeries = [...prev.series];
-        nextSeries[idx] = { ...existing, ...s, points: pts, visible: existing.visible };
-        return { ...prev, series: nextSeries };
-      }
-      return { ...prev, series: [...prev.series, { ...s, points: pts, visible: s.visible ?? true }] };
+  // Hit-test registry (refs — testers are heavy and must not trigger rerenders).
+  const testers = useRef<Map<string | number, HitTester>>(new Map());
+  const register = useCallback((key: string | number, reg: ChartRegistration | null) => {
+    if (reg == null) {
+      testers.current.delete(key);
+      return;
+    }
+    testers.current.set(key, createHitTester(reg));
+  }, []);
+  const hitTest = useCallback((q: HitQuery): ActiveTarget | null => {
+    let best: ActiveTarget | null = null;
+    testers.current.forEach((tester) => {
+      const cand = tester.hit(q);
+      if (cand && (!best || cand.distance < best.distance)) best = cand;
     });
+    return best;
+  }, []);
+  const setActiveTarget = useCallback((t: ActiveTarget | null) => {
+    setTarget(prev => (sameTarget(prev.activeTarget, t) ? prev : { ...prev, activeTarget: t }));
+  }, []);
+  const setActiveSlice = useCallback((s: ActiveTarget[]) => {
+    setTarget(prev => (sameSlice(prev.activeSlice, s) ? prev : { ...prev, activeSlice: s }));
   }, []);
 
   const updateSeriesVisibility = useCallback((id: string | number, visible: boolean) => {
-    setState(prev => ({ ...prev, series: prev.series.map(s => s.id === id ? { ...s, visible } : s) }));
+    setStable(prev => {
+      const idx = prev.series.findIndex(s => s.id === id);
+      if (idx === -1) {
+        // Upsert a visibility-only entry so charts can drive legend toggles. Charts read
+        // this back via `interaction.series`; `points` is unused (vestigial).
+        return { ...prev, series: [...prev.series, { id, visible, points: [] }] };
+      }
+      if (prev.series[idx].visible === visible) return prev;
+      return { ...prev, series: prev.series.map(s => s.id === id ? { ...s, visible } : s) };
+    });
   }, []);
 
   // rAF coalesced pointer setter
   const rafRef = useRef<number | null>(null);
-  const pendingPointer = useRef<InteractionState['pointer'] | null>(null);
-  const lastPointer = useRef<InteractionState['pointer'] | null>(null);
+  const pendingPointer = useRef<ChartVolatileState['pointer'] | null>(null);
+  const lastPointer = useRef<ChartVolatileState['pointer'] | null>(null);
   const pointerThreshold = config.pointerPixelThreshold ?? 0;
   const flushPointer = () => {
     rafRef.current = null;
@@ -201,12 +316,12 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
       const next = pendingPointer.current;
       pendingPointer.current = null;
       lastPointer.current = next;
-      setState(prev => ({ ...prev, pointer: next }));
+      setPointerState(next);
     }
   };
-  const setPointer = useCallback((p: InteractionState['pointer']) => {
+  const setPointer = useCallback((p: ChartVolatileState['pointer']) => {
     if (!config.pointerRAF && pointerThreshold === 0) {
-      setState(prev => ({ ...prev, pointer: p }));
+      setPointerState(p);
       return;
     }
     if (lastPointer.current && p && pointerThreshold > 0) {
@@ -225,49 +340,9 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
       flushPointer();
     }
   }, [config.pointerRAF, pointerThreshold]);
-  const setRootOffset = useCallback((o: { left: number; top: number }) => setState(prev => prev.rootOffset ? prev : ({ ...prev, rootOffset: o })), []);
-  // rAF crosshair throttling
-  const crosshairRAFRef = useRef<number | null>(null);
-  const pendingCrosshair = useRef<InteractionState['crosshair'] | null>(null);
-  const hasPendingCrosshair = useRef(false);
-
-  const resolveCrosshairValue = useCallback((prev: InteractionState, next: InteractionState['crosshair']) => {
-    if (next !== null) return next;
-    if (config.stickyCrosshair === false) return null;
-    const pointerActive = prev.pointer?.inside || prev.pointer?.insideX;
-    if (pointerActive) return prev.crosshair;
-    return null;
-  }, [config.stickyCrosshair]);
-
-  const applyCrosshairUpdate = useCallback((next: InteractionState['crosshair']) => {
-    setState(prev => {
-      const resolved = resolveCrosshairValue(prev, next);
-      if (resolved === prev.crosshair) return prev;
-      return { ...prev, crosshair: resolved };
-    });
-  }, [resolveCrosshairValue]);
-
-  const flushCrosshair = () => {
-    crosshairRAFRef.current = null;
-    if (!hasPendingCrosshair.current) return;
-    hasPendingCrosshair.current = false;
-    const next = pendingCrosshair.current;
-    pendingCrosshair.current = null;
-    applyCrosshairUpdate(next);
-  };
-  const setCrosshair = useCallback((c: InteractionState['crosshair']) => {
-    if (!config.crosshairRAF) {
-      applyCrosshairUpdate(c);
-      return;
-    }
-    pendingCrosshair.current = c;
-    hasPendingCrosshair.current = true;
-    if (crosshairRAFRef.current == null && typeof window !== 'undefined') {
-      crosshairRAFRef.current = window.requestAnimationFrame(flushCrosshair);
-    }
-  }, [config.crosshairRAF, applyCrosshairUpdate]);
-  const initializeDomains = useCallback((initial: DomainPair) => setState(prev => ({ ...prev, domains: { initial, current: initial } })), []);
-  const setDomains = useCallback((d: any) => setState(prev => {
+  const setRootOffset = useCallback((o: { left: number; top: number }) => setStable(prev => prev.rootOffset ? prev : ({ ...prev, rootOffset: o })), []);
+  const initializeDomains = useCallback((initial: DomainPair) => setStable(prev => ({ ...prev, domains: { initial, current: initial } })), []);
+  const setDomains = useCallback((d: any) => setStable(prev => {
     if (!prev.domains) return prev;
     const current = prev.domains.current;
     let next = { ...current } as DomainPair;
@@ -276,7 +351,7 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
     if (d.x && d.y == null && Array.isArray(d)) next.x = d as [number, number];
     return { ...prev, domains: { ...prev.domains, current: next } };
   }), []);
-  const resetZoom = useCallback(() => setState(prev => prev.domains ? { ...prev, domains: { ...prev.domains, current: prev.domains.initial } } : prev), []);
+  const resetZoom = useCallback(() => setStable(prev => prev.domains ? { ...prev, domains: { ...prev.domains, current: prev.domains.initial } } : prev), []);
 
   // Cancel any pending rAFs on unmount to prevent setState on unmounted component
   useEffect(() => {
@@ -285,27 +360,35 @@ export const ChartInteractionProvider: React.FC<{ config?: InteractionConfig; ch
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      if (crosshairRAFRef.current != null) {
-        cancelAnimationFrame(crosshairRAFRef.current);
-        crosshairRAFRef.current = null;
-      }
     };
   }, []);
 
+  // Memoized so its identity only changes when `stable`/`config` change — NOT on volatile
+  // updates. This is what keeps chart bodies from re-rendering on every pointer move.
+  const stableValue = useMemo<InteractionContextValue>(() => ({
+    ...stable,
+    config,
+    updateSeriesVisibility,
+    setPointer,
+    setRootOffset,
+    setActiveTarget,
+    setActiveSlice,
+    register,
+    hitTest,
+    initializeDomains,
+    setDomains,
+    resetZoom,
+  }), [stable, config, updateSeriesVisibility, setPointer, setRootOffset, setActiveTarget, setActiveSlice, register, hitTest, initializeDomains, setDomains, resetZoom]);
+
   return (
-    <InteractionContext.Provider value={{
-      ...state,
-      config,
-      registerSeries,
-      updateSeriesVisibility,
-      setPointer,
-      setRootOffset,
-      setCrosshair,
-      initializeDomains,
-      setDomains,
-      resetZoom,
-    }}>
-      {children}
-    </InteractionContext.Provider>
+    <StableContext.Provider value={stableValue}>
+      <TargetContext.Provider value={target}>
+        {/* Pointer innermost: it changes most often, and `stableValue`/`target` keep a
+            stable identity across a pointer-only update, so their consumers skip re-render. */}
+        <PointerContext.Provider value={pointer}>
+          {children}
+        </PointerContext.Provider>
+      </TargetContext.Provider>
+    </StableContext.Provider>
   );
 };

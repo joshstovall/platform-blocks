@@ -3,22 +3,26 @@ import { Pressable, useWindowDimensions } from 'react-native';
 import { Block, Title } from 'platform-blocks/components';
 import { Waveform, Card, Text, useTheme, Video, Gallery, Slider, Button, Image } from '@platform-blocks/ui';
 
+// Stable mock waveform peaks — generated once at module load so the Math.random
+// call stays out of the render path (react-hooks/purity forbids it there, even
+// inside useMemo).
+const WAVEFORM_PEAKS = (() => {
+  const len = 220;
+  const arr: number[] = [];
+  for (let i = 0; i < len; i++) {
+    const sine = Math.sin(i / 18);
+    const noise = (Math.random() - 0.5) * 0.6;
+    arr.push(Math.max(-1, Math.min(1, sine * 0.8 + noise)));
+  }
+  return arr;
+})();
+
 export function MediaShowcase() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const isSmall = width < 768;
 
-  // Generate stable mock peaks once
-  const peaks = React.useMemo(() => {
-    const len = 220;
-    const arr: number[] = [];
-    for (let i = 0; i < len; i++) {
-      const sine = Math.sin(i / 18);
-      const noise = (Math.random() - 0.5) * 0.6;
-      arr.push(Math.max(-1, Math.min(1, sine * 0.8 + noise)));
-    }
-    return arr;
-  }, []);
+  const peaks = WAVEFORM_PEAKS;
 
   const [progress, setProgress] = React.useState(0);
   React.useEffect(() => {

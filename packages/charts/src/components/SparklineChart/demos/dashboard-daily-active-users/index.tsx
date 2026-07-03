@@ -1,5 +1,5 @@
-import { View, Text } from 'react-native';
-import { SparklineChart } from '../../';
+import { Card, Column, Flex, Text, Title } from '@platform-blocks/ui';
+import { SparklineChart } from '@platform-blocks/charts';
 
 const SURFACE_SERIES = [
   {
@@ -36,22 +36,19 @@ const getDeltaLabel = (series: number[]) => {
 
 export default function Demo() {
   return (
-    <View style={{ padding: 16, backgroundColor: '#fff', borderRadius: 12 }}>
-      <View style={{ marginBottom: 12 }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>Daily Active Users</Text>
-        <Text style={{ fontSize: 12, color: '#666' }}>Trailing two weeks, by platform</Text>
-      </View>
+    <Card padding="lg" radius="lg">
+      <Column gap={4} mb="md">
+        <Title order={5} text="Daily Active Users" />
+        <Text size="sm" c="dimmed">Trailing two weeks, by platform</Text>
+      </Column>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      <Flex direction="row" wrap="wrap" gap="md">
         {SURFACE_SERIES.map((series) => {
           const latest = series.data[series.data.length - 1];
           return (
-            <View
-              key={series.id}
-              style={{ width: 200, marginRight: 16, marginBottom: 16 }}
-            >
-              <Text style={{ fontSize: 13, fontWeight: '600' }}>{series.title}</Text>
-              <Text style={{ fontSize: 12, color: '#555', marginBottom: 6 }}>
+            <Column key={series.id} gap={6} style={{ width: 200 }}>
+              <Text size="sm" weight="semibold">{series.title}</Text>
+              <Text size="xs" c="dimmed">
                 {latest.toLocaleString()} · {getDeltaLabel(series.data)}
               </Text>
               <SparklineChart
@@ -67,10 +64,10 @@ export default function Demo() {
                 domain={{ y: [900, 2300] }}
                 thresholds={[{ value: 2100, label: 'Target', dashed: true, color: '#94A3B8', opacity: 0.7, labelPosition: 'right' }]}
               />
-            </View>
+            </Column>
           );
         })}
-      </View>
-    </View>
+      </Flex>
+    </Card>
   );
 }

@@ -55,6 +55,17 @@ export const Calendar: React.FC<CalendarProps> = (incomingProps) => {
     static: isStatic = false,
   } = props;
   const theme = useTheme();
+  const headerTextSize = typeof size === 'number'
+    ? size
+    : ({
+        xs: 'sm',
+        sm: 'md',
+        md: 'lg',
+        lg: 'xl',
+        xl: '2xl',
+        '2xl': '3xl',
+        '3xl': '3xl',
+      } as const)[size] ?? 'lg';
   const { isRTL } = useDirection();
   const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
   
@@ -322,8 +333,8 @@ export const Calendar: React.FC<CalendarProps> = (incomingProps) => {
               },
             ]}
           >
-            <Text 
-              size="lg" 
+            <Text
+              size={headerTextSize}
               weight="semibold"
               style={{ 
                 color: theme.colors.gray[9],

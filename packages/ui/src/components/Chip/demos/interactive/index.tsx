@@ -21,7 +21,7 @@ export default function Demo() {
           key={chip.label}
           onRemove={() => handleRemove(chip.label)}
         >
-          {`${chip.emoji} ${chip.label}`}
+          {chip.label}
         </Chip>
       ))}
     </Column>

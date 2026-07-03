@@ -191,11 +191,6 @@ describe('Rating - Type Safety and Prop Validation', () => {
       expect(getByTestId('rating')).toBeTruthy();
     });
 
-    it('should accept allowHalf prop', () => {
-      const { getByTestId } = render(<Rating allowHalf testID="rating" />);
-      expect(getByTestId('rating')).toBeTruthy();
-    });
-
     it('should accept precision prop', () => {
       const { getByTestId } = render(<Rating precision={0.5} testID="rating" />);
       expect(getByTestId('rating')).toBeTruthy();

@@ -22,6 +22,7 @@ examples:
   - basic
   - sizes
   - colors
+  - icon
   - group
   - status
   - text-customization

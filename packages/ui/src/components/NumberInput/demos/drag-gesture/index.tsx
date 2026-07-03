@@ -39,8 +39,8 @@ export default function Demo() {
             dragAxis="horizontal"
             dragStepDistance={14}
             dragStepMultiplier={2}
-            step={0.5}
-            allowDecimal
+            step={1}
+            allowDecimal={false}
             min={0}
             suffix=" °C"
             onDragStateChange={handleDragStateChange}
@@ -62,6 +62,7 @@ export default function Demo() {
             dragAxis="vertical"
             dragStepDistance={18}
             step={5}
+            allowDecimal={false}
             min={0}
             max={200}
             withControls

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Column, DataTable, Icon, Row, Text } from '@platform-blocks/ui';
+import { Button, Column, DataTable, Icon, Input, Row, Text, useDialog } from '@platform-blocks/ui';
 import type { DataTableColumn, DataTablePagination, DataTableSort } from '@platform-blocks/ui';
 
 type User = {
@@ -25,6 +25,43 @@ const rows: User[] = [
   { id: 10, name: 'Riya Patel', email: 'riya@example.com', role: 'Viewer', status: 'inactive', department: 'Operations', lastLogin: '2025-01-19' },
 ];
 
+function EditUserForm({ user, onSubmit, onCancel }: { user: User; onSubmit: () => void; onCancel: () => void }) {
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [department, setDepartment] = useState(user.department);
+
+  return (
+    <Column gap="md" p="md">
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Name
+        </Text>
+        <Input value={name} onChangeText={setName} placeholder="Full name" />
+      </Column>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Email
+        </Text>
+        <Input value={email} onChangeText={setEmail} placeholder="Email address" />
+      </Column>
+      <Column gap="xs">
+        <Text size="sm" weight="semibold">
+          Department
+        </Text>
+        <Input value={department} onChangeText={setDepartment} placeholder="Department" />
+      </Column>
+      <Row gap="sm" justify="flex-end">
+        <Button variant="outline" onPress={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="filled" onPress={onSubmit}>
+          Save changes
+        </Button>
+      </Row>
+    </Column>
+  );
+}
+
 const columns: DataTableColumn<User>[] = [
   {
     key: 'name',
@@ -38,6 +75,7 @@ const columns: DataTableColumn<User>[] = [
     header: 'Email',
     accessor: 'email',
     sortable: true,
+    minWidth: 200,
   },
   {
     key: 'role',
@@ -83,25 +121,40 @@ const columns: DataTableColumn<User>[] = [
   },
 ];
 
-const rowActions = (row: User) => [
-  {
-    key: 'edit',
-    icon: <Icon name="edit" size={14} />,
-    onPress: () => console.log('Edit', row.id),
-  },
-  {
-    key: 'remove',
-    icon: <Icon name="trash" size={14} />,
-    onPress: () => console.log('Archive', row.id),
-  },
-];
-
 export default function Demo() {
+  const { openDialog, closeDialog } = useDialog();
   const [sortBy, setSortBy] = useState<DataTableSort[]>([]);
   const [pagination, setPagination] = useState<DataTablePagination>({ page: 1, pageSize: 5, total: rows.length });
   const [selection, setSelection] = useState<(string | number)[]>([]);
 
   const currentPageLabel = useMemo(() => `Page ${pagination.page} of ${Math.ceil(pagination.total / pagination.pageSize)}`, [pagination]);
+
+  const openEditSheet = (row: User) => {
+    const dialogId = openDialog({
+      variant: 'bottomsheet',
+      title: `Edit ${row.name}`,
+      content: (
+        <EditUserForm
+          user={row}
+          onSubmit={() => closeDialog(dialogId)}
+          onCancel={() => closeDialog(dialogId)}
+        />
+      ),
+    });
+  };
+
+  const rowActions = (row: User) => [
+    {
+      key: 'edit',
+      icon: <Icon name="edit" size={14} />,
+      onPress: () => openEditSheet(row),
+    },
+    {
+      key: 'remove',
+      icon: <Icon name="trash" size={14} />,
+      onPress: () => console.log('Archive', row.id),
+    },
+  ];
 
   return (
     <Column gap="sm" fullWidth>

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Histogram Chart
 tags: [chart, histogram, distribution]
 category: charts

@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { View, Text, Pressable, I18nManager } from 'react-native';
 import { useChartTheme } from './theme/ChartThemeContext';
 import { BaseChartProps } from './types';
-import { ChartInteractionProvider, useChartInteractionContext } from './interaction/ChartInteractionContext';
-import { ChartPopover } from './interaction/ChartPopover';
+import { ChartInteractionProvider, useOptionalChartInteraction } from './interaction/ChartInteractionContext';
+import { ChartActiveTooltip } from './interaction/ChartActiveTooltip';
+import { useElementOffset } from './interaction/useElementOffset';
 import { calculateChartDimensions } from './utils';
 import { isWeb } from './utils/platform';
 
@@ -70,9 +71,8 @@ export const ChartContainer: React.FC<BaseChartProps & {
   interactionConfig?: any;
   /** If false, assumes parent has provided a ChartInteractionProvider. */
   useOwnInteractionProvider?: boolean;
-  /** Suppress internal ChartPopover (useful when sharing one globally). */
+  /** Suppress the internal shared tooltip (useful when sharing one globally). */
   suppressPopover?: boolean;
-  popoverProps?: import('./interaction/ChartPopover').ChartPopoverProps;
 }> = (props) => {
   const {
     width = 400,
@@ -87,7 +87,6 @@ export const ChartContainer: React.FC<BaseChartProps & {
     interactionConfig,
     useOwnInteractionProvider = true,
     suppressPopover,
-    popoverProps,
     ...rest
   } = props;
 
@@ -126,7 +125,7 @@ export const ChartContainer: React.FC<BaseChartProps & {
       {...otherProps}
     >
       {children}
-      {!effectiveSuppressPopover && <ChartPopover {...popoverProps} />}
+      {!effectiveSuppressPopover && <ChartActiveTooltip />}
     </View>
   );
 
@@ -147,49 +146,22 @@ export const ChartContainer: React.FC<BaseChartProps & {
   );
 };
 
-// Internal component to capture root offset once.
+// Internal component to capture the container's page offset cross-platform
+// (web: getBoundingClientRect + scroll; native: measureInWindow). Feeds the
+// interaction store so the popover can position correctly on both platforms.
 const RootOffsetCapture: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const ref = useRef<View>(null);
-  let ctx: any = null;
-  try {
-    ctx = useChartInteractionContext();
-  } catch {
-    // Provider not mounted yet; ctx stays null
-  }
+  const ctx = useOptionalChartInteraction();
+  const { offset, onLayout, ref } = useElementOffset();
 
-  const measure = React.useCallback(() => {
-    if (!ref.current || !ctx?.setRootOffset) return;
-    try {
-      const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
-      if (el && el.getBoundingClientRect) {
-        const r = el.getBoundingClientRect();
-        ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
-      }
-    } catch { /* noop */ }
-  }, [ctx?.setRootOffset]);
-
-  // Synchronous initial measurement so offset is available before first paint
-  React.useLayoutEffect(() => {
-    if (!ref.current || !ctx?.setRootOffset) return;
-    if (!isWeb()) {
-      try { ctx.setRootOffset({ left: 0, top: 0 }); } catch { /* noop */ }
-      return;
-    }
-    measure();
-  }, [ctx?.setRootOffset, measure]);
-
-  // Async listener setup for scroll/resize updates
   useEffect(() => {
-    if (!ref.current || !ctx?.setRootOffset) return;
-    if (!isWeb()) return;
-    window.addEventListener?.('scroll', measure, { passive: true } as any);
-    window.addEventListener?.('resize', measure as any);
-    return () => {
-      window.removeEventListener?.('scroll', measure as any);
-      window.removeEventListener?.('resize', measure as any);
-    };
-  }, [ctx?.setRootOffset, measure]);
-  return <View ref={ref} style={{ position: 'relative', display: 'contents' as any }}>{children}</View>;
+    ctx?.setRootOffset?.({ left: offset.left, top: offset.top });
+  }, [ctx, offset.left, offset.top]);
+
+  return (
+    <View ref={ref} onLayout={onLayout} style={{ position: 'relative' }}>
+      {children}
+    </View>
+  );
 };
 
 // Chart Title Component

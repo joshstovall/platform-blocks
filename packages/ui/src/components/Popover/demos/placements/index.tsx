@@ -1,4 +1,4 @@
-import { Button, Card, Column, Popover, Row, Text } from '@platform-blocks/ui';
+import { Button, Block, Popover, Text } from '@platform-blocks/ui';
 
 const OPTIONS = [
   { label: 'Top', position: 'top', description: 'Appears above the trigger.' },
@@ -9,30 +9,24 @@ const OPTIONS = [
 
 export default function Demo() {
   return (
-    <Column gap="lg">
-      <Card p="md">
-        <Column gap="sm">
-          <Row gap="md" justify="center" wrap="wrap">
-            {OPTIONS.map(({ label, position, description }) => (
-              <Popover key={position} position={position} withArrow>
-                <Popover.Target>
-                  <Button size="sm" variant="outline">
-                    {label}
-                  </Button>
-                </Popover.Target>
-                <Popover.Dropdown>
-                  <Column gap="xs" p="sm" style={{ maxWidth: 220 }}>
-                    <Text weight="semibold">{label} placement</Text>
-                    <Text variant="small" colorVariant="secondary">
-                      {description}
-                    </Text>
-                  </Column>
-                </Popover.Dropdown>
-              </Popover>
-            ))}
-          </Row>
-        </Column>
-      </Card>
-    </Column>
+    <Block gap="sm" direction="row">
+      {OPTIONS.map(({ label, position, description }) => (
+        <Popover key={position} position={position} withArrow>
+          <Popover.Target>
+            <Button>
+              {label}
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Block gap="xs" p="sm" style={{ maxWidth: 220 }}>
+              <Text weight="semibold">{label} placement</Text>
+              <Text variant="small" colorVariant="secondary">
+                {description}
+              </Text>
+            </Block>
+          </Popover.Dropdown>
+        </Popover>
+      ))}
+    </Block>
   );
 }

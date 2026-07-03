@@ -32,6 +32,7 @@ export const Switch = factory<{
     defaultChecked = false,
     onChange,
     size = 'md',
+    variant = 'filled',
     color = 'primary',
     label,
     disabled = false,
@@ -71,8 +72,13 @@ export const Switch = factory<{
     error: !!error,
     size,
     color,
+    variant,
     theme
   });
+
+  const isOutline = variant === 'outline';
+  const isIOS = variant === 'ios';
+  const isAndroid = variant === 'android';
 
   // Animation setup
   const animationProgress = useSharedValue(effectiveChecked ? 1 : 0);
@@ -112,13 +118,33 @@ export const Switch = factory<{
     : (resolvedDimensions ?? baseDimensions);
   const { width, height, thumb } = switchDimensions;
 
-  // Calculate thumb positions with visual centering
-  // Adjust positions independently for optimal visual balance
+  // Per-variant thumb geometry. `ios` uses a large thumb that nearly fills the
+  // track; `android` grows a small "dot" thumb into a larger one as it turns on.
   const borderWidth = 2;
-  const leftPadding = -2; // Move left position even further left
-  const rightPadding = 2; // Keep right position as is (looks good)
-  const leftPosition = borderWidth + leftPadding; // 1px from left edge
-  const rightPosition = width - thumb - borderWidth - rightPadding; // 4px from right edge
+
+  // Resting (off) and active (on) thumb diameters.
+  const offThumb = isAndroid ? Math.round(height * 0.42) : (isIOS ? height - 4 : thumb);
+  const onThumb = (isAndroid || isIOS) ? (isIOS ? height - 4 : Math.round(height * 0.72)) : thumb;
+
+  // Horizontal travel for the thumb's left edge.
+  let leftPosition: number;
+  let rightPosition: number;
+  if (isIOS) {
+    leftPosition = 2;
+    rightPosition = width - onThumb - 2;
+  } else if (isAndroid) {
+    leftPosition = (height - offThumb) / 2; // inset the small dot from the edge
+    rightPosition = width - onThumb - (height - onThumb) / 2;
+  } else {
+    const leftPadding = -2; // Move left position even further left
+    const rightPadding = 2; // Keep right position as is (looks good)
+    leftPosition = borderWidth + leftPadding; // 1px from left edge
+    rightPosition = width - thumb - borderWidth - rightPadding; // 4px from right edge
+  }
+
+  // Vertical centering per thumb size (android animates between the two).
+  const offTop = (height - offThumb) / 2;
+  const onTop = (height - onThumb) / 2;
 
   // Animated styles
   const thumbAnimatedStyle = useAnimatedStyle(() => {
@@ -128,15 +154,93 @@ export const Switch = factory<{
       [leftPosition, rightPosition]
     );
 
+    const colorKey = color as keyof typeof theme.colors;
+    const activeColor = theme.colors[colorKey]?.[6] || theme.colors.primary[6];
+
+    // iOS: a constant large white thumb that only slides.
+    if (isIOS) {
+      return {
+        transform: [{ translateX }],
+        width: onThumb,
+        height: onThumb,
+        borderRadius: onThumb / 2,
+        top: onTop,
+      };
+    }
+
+    // Android: the dot grows and whitens as the switch turns on.
+    if (isAndroid) {
+      const sizeT = interpolate(animationProgress.value, [0, 1], [offThumb, onThumb]);
+      const top = interpolate(animationProgress.value, [0, 1], [offTop, onTop]);
+      const backgroundColor = disabled
+        ? theme.colors.gray[4]
+        : interpolateColor(animationProgress.value, [0, 1], [theme.colors.gray[5], 'white']);
+      return {
+        transform: [{ translateX }],
+        width: sizeT,
+        height: sizeT,
+        borderRadius: sizeT / 2,
+        top,
+        backgroundColor,
+      };
+    }
+
+    // Outline: the thumb is the colored element, tinting from gray → active color.
+    if (isOutline && !disabled) {
+      const backgroundColor = interpolateColor(
+        animationProgress.value,
+        [0, 1],
+        [theme.colors.gray[4], activeColor]
+      );
+      return {
+        transform: [{ translateX }],
+        backgroundColor,
+      };
+    }
+
     return {
       transform: [{ translateX }],
     };
-  }, [leftPosition, rightPosition]); // Add dependencies
+  }, [leftPosition, rightPosition, isOutline, isIOS, isAndroid, onThumb, offThumb, onTop, offTop, disabled, color, theme.colors]); // Add dependencies
 
   const trackAnimatedStyle = useAnimatedStyle(() => {
     const colorKey = color as keyof typeof theme.colors;
     const activeColor = theme.colors[colorKey]?.[6] || theme.colors.primary[6];
-    
+
+    if (isOutline) {
+      // Transparent track; the border animates from the resting gray to the
+      // active color as the switch turns on.
+      const borderColor = interpolateColor(
+        animationProgress.value,
+        [0, 1],
+        [theme.colors.gray[4], activeColor]
+      );
+      return {
+        backgroundColor: 'transparent',
+        ...(error || disabled ? {} : { borderColor }),
+      };
+    }
+
+    if (isAndroid) {
+      // Material: a gray filled track whose fill and border both take the active
+      // color as it turns on.
+      const backgroundColor = interpolateColor(
+        animationProgress.value,
+        [0, 1],
+        [theme.colors.gray[3], activeColor]
+      );
+      const borderColor = interpolateColor(
+        animationProgress.value,
+        [0, 1],
+        [theme.colors.gray[4], activeColor]
+      );
+      return {
+        backgroundColor: disabled ? theme.colors.gray[2] : backgroundColor,
+        ...(error || disabled ? {} : { borderColor }),
+      };
+    }
+
+    // filled + ios: solid track that fills with the active color.
     const backgroundColor = interpolateColor(
       animationProgress.value,
       [0, 1],
@@ -146,7 +250,7 @@ export const Switch = factory<{
     return {
       backgroundColor: disabled ? theme.colors.gray[2] : backgroundColor,
     };
-  }, [color, theme.colors, disabled]); // Add dependencies
+  }, [color, theme.colors, disabled, error, isOutline, isAndroid]); // Add dependencies
 
   const handlePress = useCallback(() => {
     if (disabled) return;
@@ -185,7 +289,7 @@ export const Switch = factory<{
     </View>
   );
 
-  const labelElement = labelContent && (
+  const labelElement = labelContent ? (
     <Pressable
       style={styles.labelContainer}
       onPress={handlePress}
@@ -203,11 +307,11 @@ export const Switch = factory<{
         labelProps={labelProps}
         descriptionProps={descriptionProps}
       />
-      {error && (
+      {error ? (
         <Text style={styles.error} size="sm" selectable={false}>{error}</Text>
-      )}
+      ) : null}
     </Pressable>
-  );
+  ) : null;
 
   const containerStyle = [
     styles.container,

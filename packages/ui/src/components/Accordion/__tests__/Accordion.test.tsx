@@ -10,7 +10,15 @@ const mockTheme = {
   },
   text: {
     primary: '#0f172a',
+    secondary: '#475569',
     disabled: '#94a3b8',
+  },
+  backgrounds: {
+    base: '#ffffff',
+    subtle: '#f8fafc',
+    surface: '#ffffff',
+    elevated: '#ffffff',
+    border: '#e2e8f0',
   },
 };
 

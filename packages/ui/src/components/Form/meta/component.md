@@ -1,51 +1,24 @@
 ---
-title: Flex
-description: A flexible layout component based on CSS Flexbox for arranging children with customizable direction, alignment, justification, and spacing.
+name: Form
+title: Form
+category: inputs
+tags: [form, fields, validation, submit]
+playground: true
 source: "@platform-blocks/ui"
 status: "stable"
-category: "Layout"
-accessibility: "Semantic layout structure with proper focus management and screen reader support"
-variants:
-  - name: "basic"
-    description: "Simple flex container with default settings and gap spacing"
-  - name: "direction"
-    description: "Row and column direction layouts for different arrangements"
-  - name: "justify"
-    description: "Content justification options along the main axis"
-  - name: "align"
-    description: "Item alignment options along the cross axis"
-dependencies:
-  - "@platform-blocks/core"
 related:
-  - "Column"
-  - "Row"
-  - "Stack"
-  - "Grid"
+  - "Input"
+  - "Select"
+  - "Checkbox"
 props:
-  - name: "direction"
-    type: "'row' | 'column' | 'row-reverse' | 'column-reverse'"
-    description: "Main axis direction for child arrangement"
-  - name: "justify"
-    type: "'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'"
-    description: "Content justification along the main axis"
-  - name: "align"
-    type: "'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'"
-    description: "Item alignment along the cross axis"
-  - name: "wrap"
-    type: "'nowrap' | 'wrap' | 'wrap-reverse'"
-    description: "Whether items should wrap to new lines"
-  - name: "gap"
-    type: "number | string"
-    description: "Space between child elements"
-  - name: "grow"
-    type: "number"
-    description: "Flex grow factor"
-  - name: "shrink"
-    type: "number"
-    description: "Flex shrink factor"
-  - name: "style"
-    type: "ViewStyle"
-    description: "Additional style properties"
+  children: Form fields and controls (typically Form.Field / Form.Submit)
+  initialValues: Initial field values keyed by field name
+  validationSchema: Declarative validation rules per field
+  onSubmit: Called with the collected values when the form is submitted
+  validate: Custom validation function returning a map of field errors
+  disabled: Disable all fields at once
+  validateOnChange: Run validation as values change
+  validateOnBlur: Run validation when a field is blurred
 ---
 
-Flex provides a powerful and intuitive way to create flexible layouts using CSS Flexbox principles. It handles spacing, alignment, and direction with a clean API that works consistently across platforms.
+Form manages values, validation, and submission state for a group of inputs. Wrap each control in a `Form.Field` (which injects value and change handlers via context) and submit with `Form.Submit`.

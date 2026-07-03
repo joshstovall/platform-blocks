@@ -1,5 +1,6 @@
 ---
 name: AppStoreBadge
+playground: true
 title: AppStoreBadge
 category: data-display
 tags: [appstore, badge, icon]

@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { View, Pressable } from 'react-native';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { View, Pressable, Animated, Platform } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { Text } from '../Text';
 import { FieldHeader } from '../_internal/FieldHeader';
@@ -31,6 +31,7 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
     children,
     testID,
     style,
+    accessibilityLabel,
     ...spacingProps
   } = props;
 
@@ -87,28 +88,105 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
     onChange?.(next);
   }, [effectiveChecked, indeterminate, disabled, isControlled, onChange]);
 
+  // Whether a glyph (check or minus) should currently be showing
+  const active = effectiveChecked || indeterminate;
+
+  // Pixel size of the box — drives how far the mark travels as it flies in.
+  const checkboxSizeMap: Record<string, number> = {
+    xs: 16, sm: 20, md: 24, lg: 28, xl: 32, '2xl': 36, '3xl': 40,
+  };
+  const checkboxSize = checkboxSizeMap[size as string] ?? 24;
+
+  // Interior of the box (inside the 2px border) — the fill rises to cover this.
+  const interior = checkboxSize - 4;
+
+  // Keep the last-shown glyph mounted while it animates out so "off" reverses
+  // the "on" motion instead of just disappearing.
+  const [iconType, setIconType] = useState<'check' | 'minus' | null>(
+    indeterminate ? 'minus' : effectiveChecked ? 'check' : null
+  );
+
+  // Two-phase drivers: the colored fill slides up first (`fill`), then the
+  // checkmark grows from the center (`mark`). Reversed on uncheck.
+  const fill = useRef(new Animated.Value(active ? 1 : 0)).current;
+  const mark = useRef(new Animated.Value(active ? 1 : 0)).current;
+
+  useEffect(() => {
+    const native = Platform.OS !== 'web';
+    if (active) {
+      setIconType(indeterminate ? 'minus' : 'check');
+      // Fill rises; the mark starts growing before the fill fully lands so the
+      // two phases overlap slightly instead of running strictly back-to-back.
+      Animated.parallel([
+        // Fill height can't run on the native driver, so keep it on JS.
+        Animated.timing(fill, { toValue: 1, duration: 160, useNativeDriver: false }),
+        Animated.sequence([
+          Animated.delay(110),
+          Animated.spring(mark, { toValue: 1, friction: 5, tension: 200, useNativeDriver: native }),
+        ]),
+      ]).start();
+    } else {
+      // Mark shrinks; the fill starts sliding down before it's fully gone.
+      Animated.parallel([
+        Animated.timing(mark, { toValue: 0, duration: 100, useNativeDriver: native }),
+        Animated.sequence([
+          Animated.delay(60),
+          Animated.timing(fill, { toValue: 0, duration: 150, useNativeDriver: false }),
+        ]),
+      ]).start(({ finished }) => {
+        if (finished) setIconType(null);
+      });
+    }
+  }, [active, indeterminate, fill, mark]);
+
+  const glyphColor = disabled ? theme.text.disabled : theme.text.onPrimary || 'white';
+
+  // Base (unfilled) box color, revealed above the rising fill during the slide.
+  const unfilledBg = theme.colors.gray[1];
+
+  // Colored fill that rises from the bottom of the box.
+  const fillColor = disabled ? theme.colors.gray[3] : resolvedColor;
+  const fillOverlay = (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: fill.interpolate({ inputRange: [0, 1], outputRange: [0, interior] }),
+        backgroundColor: fillColor,
+      }}
+    />
+  );
+
   const renderCheckIcon = () => {
-    if (indeterminate) {
-      return indeterminateIcon || (
-        <Icon
-          name="minus"
-          size={size}
-          color={disabled ? theme.text.disabled : theme.text.onPrimary || 'white'}
-        />
-      );
-    }
+    if (!iconType) return null;
 
-    if (effectiveChecked) {
-      return icon || (
-        <Icon
-          name="check"
-          size={size}
-          color={disabled ? theme.text.disabled : theme.text.onPrimary || 'white'}
-        />
-      );
-    }
+    const custom = iconType === 'minus' ? indeterminateIcon : icon;
 
-    return null;
+    const glyph = custom || (
+      <Icon
+        name={iconType === 'minus' ? 'minus' : 'check'}
+        size={size}
+        stroke={5}
+        color={glyphColor}
+      />
+    );
+
+    return (
+      <Animated.View
+        style={{
+          // Grows from the center once the fill has risen.
+          transform: [
+            { scale: mark.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.15] }) },
+          ],
+          opacity: mark,
+        }}
+      >
+        {glyph}
+      </Animated.View>
+    );
   };
 
   const labelContent = children || label || undefined;
@@ -120,7 +198,9 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
     <View style={styles.checkboxContainer}>
       <Pressable
         ref={ref}
-        style={[styles.checkbox, style]}
+        // Keep the box body unfilled so the animated fill is what colors it in.
+        // The border still switches to the active color for a crisp frame.
+        style={[styles.checkbox, { backgroundColor: unfilledBg }, style]}
         onPress={handlePress}
         disabled={disabled}
         testID={testID}
@@ -130,8 +210,9 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
           checked: indeterminate ? 'mixed' : effectiveChecked,
           disabled
         }}
-        accessibilityLabel={typeof labelContent === 'string' ? labelContent : undefined}
+        accessibilityLabel={accessibilityLabel ?? (typeof labelContent === 'string' ? labelContent : undefined)}
       >
+        {fillOverlay}
         <View style={styles.checkboxInner}>
           {renderCheckIcon()}
         </View>
@@ -158,9 +239,9 @@ export const Checkbox = React.forwardRef<View, CheckboxProps>((props, ref) => {
         labelProps={labelProps}
         descriptionProps={descriptionProps}
       />
-      {error && (
+      {error ? (
         <Text style={styles.error} size="sm" selectable={false}>{error}</Text>
-      )}
+      ) : null}
     </Pressable>
   );
 

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Bubble Chart
 tags: [chart, bubble, scatter]
 category: charts

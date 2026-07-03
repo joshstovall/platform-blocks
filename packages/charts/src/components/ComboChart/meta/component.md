@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Combo Chart
 tags: [chart, combo, mixed]
 category: charts

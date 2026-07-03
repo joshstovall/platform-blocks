@@ -14,7 +14,7 @@ import type { PlatformBlocksTheme } from '../../core/theme/types';
 import { SpacingProps, getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import type { AccordionProps, AccordionRef } from './types';
 import { fastHash } from '../../core/utils/hash';
-import { getAccordionStyles } from './styles';
+import { getAccordionStyles, buildAccentStyles, type AccordionAccentStyles } from './styles';
 import { AccordionItemComponent } from './AccordionItem';
 
 // (Item component + styles moved to separate files)
@@ -171,12 +171,20 @@ const AccordionBase = (props: AccordionProps, ref: React.Ref<AccordionRef>) => {
     getExpanded: () => [...expanded],
   }), [expanded, items, type, variant, controlledExpanded]);
 
+  // Accordion-level accent; reused unless an item overrides `color`.
+  const defaultAccent: AccordionAccentStyles = {
+    activeHeaderText: styles.activeHeaderText,
+    activeItem: styles.activeItem,
+    activeChevronColor: styles.activeChevronColor,
+  };
+
   return (
     <View style={[styles.container, spacingStyles, style]} {...otherProps}>
       {items.map((item, index) => {
         const isExpanded = expanded.includes(item.key);
         const isDisabled = item.disabled;
         const isLast = index === items.length - 1;
+        const accent = item.color ? buildAccentStyles(theme, item.color) : defaultAccent;
 
         return (
           <AccordionItemComponent
@@ -189,8 +197,9 @@ const AccordionBase = (props: AccordionProps, ref: React.Ref<AccordionRef>) => {
             onPress={() => handleItemPress(item.key)}
             showChevron={showChevron}
             styles={styles}
-            chevronColor={theme.colors.gray[6]}
-            disabledChevronColor={theme.colors.gray[4]}
+            accent={accent}
+            chevronColor={theme.text.secondary}
+            disabledChevronColor={theme.text.disabled}
             headerStyle={headerStyle}
             contentStyle={contentStyle}
             headerTextStyle={headerTextStyle}

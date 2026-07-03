@@ -486,6 +486,182 @@ function collectDemos() {
       componentWarnings[comp][type] = (componentWarnings[comp][type] || 0) + 1;
     }
   };
+
+  // ---- Interface parsing + `extends` resolution -------------------------------
+  // Locate an interface/type-alias `${name}Props` in a source string, returning
+  // its body and the raw `extends` clause (empty for type aliases).
+  const NESTED_GENERIC = '<(?:[^<>]|<[^<>]*>)*>';
+  function extractPropsShape(name: string, source: string): { body: string | null; ext: string } {
+    const iface = new RegExp(`(?:export\\s+)?interface\\s+${name}Props(?:\\s*${NESTED_GENERIC})?((?:\\s+extends[^{]+)?)\\s*{`, 'm');
+    const typeAlias = new RegExp(`(?:export\\s+)?type\\s+${name}Props(?:\\s*${NESTED_GENERIC})?\\s*=\\s*{`, 'm');
+    let ext = '';
+    let m = iface.exec(source);
+    if (m) ext = (m[1] || '').replace(/^\s*extends\s+/, '').replace(/\s+/g, ' ').trim();
+    else m = typeAlias.exec(source);
+    if (!m) return { body: null, ext: '' };
+    const startIdx = source.indexOf('{', m.index);
+    if (startIdx === -1) return { body: null, ext: '' };
+    let depth = 0;
+    for (let i = startIdx; i < source.length; i++) {
+      const ch = source[i];
+      if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth === 0) return { body: source.substring(startIdx + 1, i), ext }; }
+    }
+    addWarning('unbalanced-interface');
+    return { body: null, ext: '' };
+  }
+
+  // Parse an interface body into prop records. Self-contained (own dedupe) so it
+  // can be reused for both a component's own interface and any base it extends.
+  function parseBody(body: string): any[] {
+    const collected: any[] = [];
+    const dedupe = new Set<string>();
+    const lines = body.split(/\n/);
+    let inJsDoc = false;
+    let jsDocLines: string[] = [];
+    let pendingLineComment: string | undefined;
+    const flushJsDoc = () => {
+      if (!jsDocLines.length) return { description: undefined as string | undefined, tags: '' };
+      const content = jsDocLines.join('\n');
+      const cleaned = jsDocLines
+        .map(l => l.replace(/^\s*\* ?/, ''))
+        .filter(l => !l.trim().startsWith('@'))
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      jsDocLines = [];
+      return { description: cleaned || undefined, tags: content };
+    };
+    const bracketDepth = (s: string) => {
+      let d = 0;
+      for (const ch of s.replace(/=>/g, '')) {
+        if (ch === '{' || ch === '<' || ch === '(' || ch === '[') d++;
+        else if (ch === '}' || ch === '>' || ch === ')' || ch === ']') d--;
+      }
+      return d;
+    };
+    const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/, '').trim();
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      if (!line) continue;
+      if (line.startsWith('/**')) {
+        inJsDoc = true;
+        jsDocLines.push(line.replace('/**', ''));
+        if (line.includes('*/')) { inJsDoc = false; jsDocLines[jsDocLines.length - 1] = jsDocLines[jsDocLines.length - 1].replace('*/', ''); }
+        continue;
+      }
+      if (inJsDoc) {
+        jsDocLines.push(line);
+        if (line.includes('*/')) { inJsDoc = false; jsDocLines[jsDocLines.length - 1] = jsDocLines[jsDocLines.length - 1].replace('*/', ''); }
+        continue;
+      }
+      if (line.startsWith('//')) { pendingLineComment = line.replace(/^\/\//, '').trim() || pendingLineComment; continue; }
+      const sigMatch = line.match(/^(readonly\s+)?([A-Za-z0-9_]+)\??:\s*(.+)$/);
+      if (!sigMatch) continue;
+      const name = sigMatch[2];
+      if (dedupe.has(name)) { pendingLineComment = undefined; jsDocLines = []; continue; }
+      let typePortion = sigMatch[3];
+      // Consume continuation lines while inside unbalanced brackets so inline
+      // object/generic types like `ChartTooltip<{ record: T }>` stay whole.
+      while (i + 1 < lines.length && (bracketDepth(typePortion) > 0 || (!typePortion.includes(';') && !lines[i + 1].trim().match(/^(readonly\s+)?[A-Za-z0-9_]+\??:/)))) { i++; const seg = stripComments(lines[i]); if (seg) typePortion += ' ' + seg; }
+      let trailingComment: string | undefined;
+      const commentSplit = typePortion.split(/\/\/+/);
+      if (commentSplit.length > 1) { trailingComment = commentSplit.slice(1).join('//').trim(); typePortion = commentSplit[0].trim(); }
+      if (typePortion.endsWith(';')) typePortion = typePortion.slice(0, -1).trim();
+      let defaultValue: string | undefined;
+      const eqIdx = typePortion.indexOf('=');
+      if (eqIdx !== -1) { const two = typePortion.substring(eqIdx, eqIdx + 2); if (two !== '=>') { defaultValue = typePortion.slice(eqIdx + 1).trim(); typePortion = typePortion.slice(0, eqIdx).trim(); } }
+      const optional = sigMatch[0].includes(name + '?:');
+      const { description: jsDesc, tags } = flushJsDoc();
+      const description = jsDesc || pendingLineComment || trailingComment;
+      let deprecated: boolean | undefined; let internal: boolean | undefined; let jsDefault: string | undefined;
+      if (tags) {
+        const tagLines = tags.split(/@/).slice(1).map(s => s.trim());
+        for (const t of tagLines) {
+          if (t.startsWith('deprecated')) deprecated = true;
+          if (t.startsWith('internal')) internal = true;
+          const defMatch = t.match(/^default\s+([^\n]*)/); if (defMatch) jsDefault = defMatch[1].trim();
+        }
+      }
+      pendingLineComment = undefined;
+      if (name) { collected.push({ name, type: typePortion, required: !optional, defaultValue: jsDefault || defaultValue, description, deprecated, internal }); dedupe.add(name); }
+    }
+    return collected;
+  }
+
+  // Global index of every named interface (name -> { body, extends clause }),
+  // built lazily from shared type files so base interfaces such as
+  // `BaseChartProps`, `SpacingProps`, `LineChartProps` can be resolved.
+  const ifaceIndex = new Map<string, { body: string; ext: string }>();
+  const scannedFiles = new Set<string>();
+  const scanForInterfaces = (file: string) => {
+    if (scannedFiles.has(file)) return;
+    scannedFiles.add(file);
+    let src: string;
+    try { if (!fs.existsSync(file)) return; src = fs.readFileSync(file, 'utf8'); } catch { return; }
+    const re = new RegExp(`(?:export\\s+)?interface\\s+([A-Za-z0-9_]+)(?:\\s*${NESTED_GENERIC})?((?:\\s+extends[^{]+)?)\\s*{`, 'g');
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src))) {
+      const name = m[1];
+      const ext = (m[2] || '').replace(/^\s*extends\s+/, '').replace(/\s+/g, ' ').trim();
+      const startIdx = src.indexOf('{', m.index);
+      if (startIdx === -1) continue;
+      let depth = 0, end = -1;
+      for (let i = startIdx; i < src.length; i++) { const ch = src[i]; if (ch === '{') depth++; else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } } }
+      if (end === -1) continue;
+      if (!ifaceIndex.has(name)) ifaceIndex.set(name, { body: src.substring(startIdx + 1, end), ext });
+    }
+  };
+  // Pre-scan shared type files: everything under packages/charts/src plus each UI
+  // component's `types.ts`. This covers cross-component bases (LineChartProps,
+  // ComboChartProps) and shared bases (BaseChartProps, SpacingProps).
+  const walkTs = (dir: string, pick: (f: string) => boolean, acc: string[] = []): string[] => {
+    let entries: fs.Dirent[];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return acc; }
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== 'node_modules' && e.name !== 'lib' && e.name !== 'demos') walkTs(full, pick, acc); }
+      else if (e.isFile() && pick(full)) acc.push(full);
+    }
+    return acc;
+  };
+  const chartsSrc = path.join(ROOT, 'packages', 'charts', 'src');
+  for (const f of walkTs(chartsSrc, f => f.endsWith('.ts') && !f.endsWith('.d.ts'))) scanForInterfaces(f);
+  for (const f of walkTs(UI_COMPONENTS_DIR, f => /(?:^|\/)types\.ts$|\.types\.ts$/.test(f.replace(/\\/g, '/')))) scanForInterfaces(f);
+
+  // Split an `extends` clause into base specs, honouring `Omit<Base, 'k' | 'j'>`.
+  const splitExtends = (ext: string): Array<{ name: string; omit?: string[] }> => {
+    if (!ext) return [];
+    const parts: string[] = []; let d = 0, cur = '';
+    for (const ch of ext) { if (ch === '<') d++; else if (ch === '>') d--; if (ch === ',' && d === 0) { parts.push(cur); cur = ''; } else cur += ch; }
+    if (cur.trim()) parts.push(cur);
+    const out: Array<{ name: string; omit?: string[] }> = [];
+    for (const raw of parts.map(s => s.trim()).filter(Boolean)) {
+      const omitM = raw.match(/^Omit\s*<\s*([A-Za-z0-9_]+)\s*,\s*([\s\S]+)>$/);
+      if (omitM) { const keys = (omitM[2].match(/'([^']+)'|"([^"]+)"/g) || []).map(k => k.replace(/['"]/g, '')); out.push({ name: omitM[1], omit: keys }); continue; }
+      const bare = raw.replace(/\s*<[\s\S]*>\s*$/, '').trim();
+      if (/^[A-Za-z0-9_]+$/.test(bare)) out.push({ name: bare });
+    }
+    return out;
+  };
+  // Recursively resolve all props inherited through an interface's `extends`
+  // chain. Own props win over inherited; earlier bases win over later ones.
+  const resolveBaseProps = (name: string, seen: Set<string>): any[] => {
+    if (seen.has(name)) return [];
+    seen.add(name);
+    const entry = ifaceIndex.get(name);
+    if (!entry) return [];
+    const own = parseBody(entry.body);
+    const names = new Set(own.map(p => p.name));
+    const result = [...own];
+    for (const base of splitExtends(entry.ext)) {
+      let baseProps = resolveBaseProps(base.name, seen);
+      if (base.omit) baseProps = baseProps.filter(p => !base.omit!.includes(p.name));
+      for (const p of baseProps) { if (!names.has(p.name)) { names.add(p.name); result.push(p); } }
+    }
+    return result;
+  };
+
   for (const comp of Object.keys(componentMeta)) {
     const compDir = componentSourceDir[comp] || path.join(UI_COMPONENTS_DIR, comp);
     const candidateFiles = [
@@ -500,102 +676,27 @@ function collectDemos() {
       /charts\/src\//.test(compDir.replace(/\\/g, '/')) ? path.join(ROOT, 'packages', 'charts', 'src', 'types.ts') : ''
     ].filter(f => f && fs.existsSync(f));
     if (!candidateFiles.length) continue;
+    for (const f of candidateFiles) scanForInterfaces(f);
 
     let collected: any[] = [];
-    const dedupe = new Set<string>();
-    function extractPropsShape(name: string, source: string): { body: string | null } {
-      const iface = new RegExp(`(?:export\\s+)?interface\\s+${name}Props(?:\\s*<[^>]+>)?(?:\\s+extends[^{]+)?\\s*{`, 'm');
-      const typeAlias = new RegExp(`(?:export\\s+)?type\\s+${name}Props(?:\\s*<[^>]+>)?\\s*=\\s*{`, 'm');
-      let m = iface.exec(source);
-      if (!m) m = typeAlias.exec(source);
-      if (!m) return { body: null };
-      const startIdx = source.indexOf('{', m.index);
-      if (startIdx === -1) return { body: null };
-      let depth = 0;
-      for (let i = startIdx; i < source.length; i++) {
-        const ch = source[i];
-        if (ch === '{') depth++;
-        else if (ch === '}') {
-          depth--;
-          if (depth === 0) return { body: source.substring(startIdx + 1, i) };
-        }
-      }
-      addWarning('unbalanced-interface');
-      return { body: null };
-    }
-
+    let ownExt = '';
     for (const file of candidateFiles) {
       const raw = fs.readFileSync(file, 'utf8');
       const extracted = extractPropsShape(comp, raw);
-      if (!extracted.body) continue;
-      const body = extracted.body;
-      const lines = body.split(/\n/);
-      let inJsDoc = false;
-      let jsDocLines: string[] = [];
-      let pendingLineComment: string | undefined;
-      const flushJsDoc = () => {
-        if (!jsDocLines.length) return { description: undefined, tags: '' };
-        const content = jsDocLines.join('\n');
-        const cleaned = jsDocLines
-          .map(l => l.replace(/^\s*\* ?/, ''))
-          .filter(l => !l.trim().startsWith('@'))
-          .join(' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        jsDocLines = [];
-        return { description: cleaned || undefined, tags: content };
-      };
-      for (let i = 0; i < lines.length; i++) {
-        let original = lines[i];
-        let line = original.trim();
-        if (!line) continue;
-        if (line.startsWith('/**')) {
-          inJsDoc = true;
-          jsDocLines.push(line.replace('/**', ''));
-          if (line.includes('*/')) {
-            inJsDoc = false;
-            jsDocLines[jsDocLines.length - 1] = jsDocLines[jsDocLines.length - 1].replace('*/', '');
-          }
-          continue;
-        }
-        if (inJsDoc) {
-          jsDocLines.push(line);
-          if (line.includes('*/')) {
-            inJsDoc = false;
-            jsDocLines[jsDocLines.length - 1] = jsDocLines[jsDocLines.length - 1].replace('*/', '');
-          }
-          continue;
-        }
-        if (line.startsWith('//')) { pendingLineComment = line.replace(/^\/\//, '').trim() || pendingLineComment; continue; }
-        const sigMatch = line.match(/^(readonly\s+)?([A-Za-z0-9_]+)\??:\s*(.+)$/);
-        if (!sigMatch) continue;
-        const name = sigMatch[2];
-        if (dedupe.has(name)) { pendingLineComment = undefined; jsDocLines = []; continue; }
-        let typePortion = sigMatch[3];
-        while (!typePortion.includes(';') && i + 1 < lines.length && !lines[i + 1].trim().match(/^(readonly\s+)?[A-Za-z0-9_]+\??:/)) { i++; typePortion += ' ' + lines[i].trim(); }
-        let trailingComment: string | undefined;
-        const commentSplit = typePortion.split(/\/\/+/);
-        if (commentSplit.length > 1) { trailingComment = commentSplit.slice(1).join('//').trim(); typePortion = commentSplit[0].trim(); }
-        if (typePortion.endsWith(';')) typePortion = typePortion.slice(0, -1).trim();
-        let defaultValue: string | undefined;
-        const eqIdx = typePortion.indexOf('=');
-        if (eqIdx !== -1) { const two = typePortion.substring(eqIdx, eqIdx + 2); if (two !== '=>') { defaultValue = typePortion.slice(eqIdx + 1).trim(); typePortion = typePortion.slice(0, eqIdx).trim(); } }
-        const optional = sigMatch[0].includes(name + '?:');
-        const { description: jsDesc, tags } = flushJsDoc();
-        let description = jsDesc || pendingLineComment || trailingComment;
-        let deprecated: boolean | undefined; let internal: boolean | undefined; let jsDefault: string | undefined;
-        if (tags) {
-          const tagLines = tags.split(/@/).slice(1).map(s => s.trim());
-          for (const t of tagLines) {
-            if (t.startsWith('deprecated')) deprecated = true;
-            if (t.startsWith('internal')) internal = true;
-            const defMatch = t.match(/^default\s+([^\n]*)/); if (defMatch) jsDefault = defMatch[1].trim();
-          }
-        }
-        pendingLineComment = undefined;
-        if (name) { collected.push({ name, type: typePortion, required: !optional, defaultValue: jsDefault || defaultValue, description, deprecated, internal }); dedupe.add(name); }
+      if (extracted.body == null) continue;
+      const parsed = parseBody(extracted.body);
+      // Accept the interface if it has own props OR is a thin alias that only
+      // re-exports a base via `extends` (e.g. `interface FooProps extends BarProps {}`).
+      if (parsed.length || extracted.ext) { collected = parsed; ownExt = extracted.ext; break; }
+    }
+    // Merge in props inherited through the `extends` chain (own props win).
+    if (ownExt) {
+      const dedupe = new Set(collected.map(p => p.name));
+      for (const base of splitExtends(ownExt)) {
+        let baseProps = resolveBaseProps(base.name, new Set<string>());
+        if (base.omit) baseProps = baseProps.filter(p => !base.omit!.includes(p.name));
+        for (const p of baseProps) { if (!dedupe.has(p.name)) { dedupe.add(p.name); collected.push(p); } }
       }
-      if (collected.length) break;
     }
     if (collected.length) {
       // Attempt to augment with default values from implementation destructuring
@@ -608,9 +709,21 @@ function collectDemos() {
             // Collapse newlines inside destructure for simpler splitting while preserving spaces
             const blockRaw = destructureMatch[1];
             const block = blockRaw.replace(/\n+/g, ' ').replace(/\s+/g, ' ');
-            const parts = block.split(',').map(p => p.trim()).filter(Boolean);
+            // Split only on top-level commas so array/object/call defaults such
+            // as `range = [36, 576]` stay intact. Track `[] {} ()` depth only —
+            // `<>` is skipped to avoid miscounting `=>` arrows.
+            const parts: string[] = [];
+            let depth = 0, cur = '';
+            for (const ch of block) {
+              if (ch === '[' || ch === '{' || ch === '(') depth++;
+              else if (ch === ']' || ch === '}' || ch === ')') depth--;
+              if (ch === ',' && depth <= 0) { parts.push(cur); cur = ''; }
+              else cur += ch;
+            }
+            parts.push(cur);
+            const trimmedParts = parts.map(p => p.trim()).filter(Boolean);
             const defaultsMap: Record<string, string> = {};
-            for (let part of parts) {
+            for (let part of trimmedParts) {
               if (!part || part.startsWith('...')) continue;
               // Ignore rest or spread or direct renames with colon (alias)
               if (/^[A-Za-z0-9_]+\s*:/.test(part)) continue;

@@ -12,30 +12,16 @@ const TEAM = [
 
 export default function Demo() {
   return (
-    <Column gap="xl">
-      <Column gap="xs">
-        <Text weight="medium">Simple group</Text>
-        <AvatarGroup>
-          {TEAM.map(({ id, initials, color }) => (
-            <Avatar key={id} fallback={initials} backgroundColor={color} size="md" />
-          ))}
-        </AvatarGroup>
-        <Text variant="small" colorVariant="muted">
-          Groups overlap avatars automatically to conserve space.
-        </Text>
-      </Column>
-
-      <Column gap="xs">
-        <Text weight="medium">Overflow handling</Text>
-        <AvatarGroup limit={3} size="md">
-          {TEAM.map(({ id, initials, color }) => (
-            <Avatar key={id} fallback={initials} backgroundColor={color} />
-          ))}
-        </AvatarGroup>
-        <Text variant="small" colorVariant="muted">
-          Set `limit` to cap visible avatars and show the remaining count.
-        </Text>
-      </Column>
+    <Column gap="xs">
+      <Text weight="medium">Simple group</Text>
+      <AvatarGroup>
+        {TEAM.map(({ id, initials, color }) => (
+          <Avatar key={id} fallback={initials} backgroundColor={color} size="md" />
+        ))}
+      </AvatarGroup>
+      <Text variant="small" colorVariant="muted">
+        Groups overlap avatars automatically to conserve space.
+      </Text>
     </Column>
   );
 }

@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Scatter Chart
 tags: [chart, scatter, xy]
 category: charts

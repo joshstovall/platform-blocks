@@ -27,7 +27,14 @@ export interface ButtonProps extends SpacingProps, LayoutProps, BorderRadiusProp
   /** Called when the button layout is calculated */
   onLayout?: (event: any) => void;
   /** Button visual variant */
-  variant?: 'filled' | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'link' | 'none';
+  variant?: 'filled' | 'light' | 'subtle' | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'link' | 'none';
+  /**
+   * Theme color the button is tinted with. A palette token (`primary`, `success`,
+   * `error`, …) or any raw CSS/hex color. Applies to the color-bearing variants
+   * (`filled`, `light`, `subtle`, `outline`, `gradient`) and to the text of
+   * `ghost`/`link`. Defaults to `primary`. `secondary` stays neutral by design.
+   */
+  color?: string;
   /** Button size */
   size?: SizeValue;
   /** Whether the button is disabled */

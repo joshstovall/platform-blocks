@@ -1,4 +1,5 @@
 ---
+playground: true
 title: DataTable
 description: A powerful data table component with sorting, pagination, and selection
 source: ui/src/components/DataTable
@@ -23,6 +24,13 @@ props:
   - name: onPaginationChange
     type: function
     description: Callback when pagination changes
+  - name: manualPagination
+    type: boolean
+    description: Server-side pagination — render `data` as the current page verbatim and use `pagination.total` as the authoritative count (no client slicing/filtering/sorting)
+    default: false
+  - name: paginationProps
+    type: "Omit<PaginationProps, 'current' | 'total' | 'onChange'>"
+    description: Props forwarded to the footer Pagination component (siblings, boundaries, variant, size, showFirst, labels, etc.)
   - name: selectedRows
     type: (string|number)[]
     description: Array of selected row IDs
@@ -54,6 +62,8 @@ props:
 examples:
   - basic
   - comprehensive
+  - server-side
+  - fixed-height
   - text-customization
 ---
 

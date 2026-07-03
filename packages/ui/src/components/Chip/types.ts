@@ -12,6 +12,10 @@ export interface ChipProps extends SpacingProps, BorderRadiusProps, ShadowProps 
   variant?: 'filled' | 'outline' | 'light' | 'subtle' | 'gradient';
   color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'gray' | string;
   onPress?: () => void;
+  /** Show a small leading status dot. Defaults to the chip's resolved text color. */
+  dot?: boolean;
+  /** Override the dot color (any CSS/theme color string). Only used when `dot` is set. */
+  dotColor?: string;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   onRemove?: () => void;

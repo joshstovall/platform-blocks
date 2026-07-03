@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Pressable, Animated, Dimensions } from 'react-native';
 import { Card, Flex, Text, Avatar, Icon, Menu, MenuItem, MenuDivider, MenuDropdown, useTheme, Button, Image, Carousel } from '@platform-blocks/ui';
 import { getUser } from './mockData';
@@ -32,7 +32,9 @@ export const PostCard: React.FC<PostCardProps> = React.memo(function PostCard({
   const [index, setIndex] = React.useState(0);
   const [carouselSize, setCarouselSize] = React.useState(0);
   const lastTapRef = useRef<number | null>(null);
-  const likeAnim = useRef(new Animated.Value(0)).current;
+  // Held in state (lazy init) rather than a ref so the value is stable and can be
+  // read during render (likeAnim.interpolate) without tripping react-hooks/refs.
+  const [likeAnim] = useState(() => new Animated.Value(0));
 
   React.useEffect(() => {
     setIndex(0);

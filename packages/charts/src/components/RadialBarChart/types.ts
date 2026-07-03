@@ -41,10 +41,14 @@ export interface RadialBarChartProps
   endAngle?: number;
   /** Animate value growth */
   animate?: boolean;
-  /** Show value labels inside arcs */
+  /** Show value labels at the tip of each arc */
   showValueLabels?: boolean;
   /** Format value for label */
   valueFormatter?: (value: number, datum: RadialBarDatum, index: number) => string;
+  /** Primary text rendered in the empty center (e.g. an aggregate value) */
+  centerLabel?: string;
+  /** Secondary text rendered beneath the center label */
+  centerSubLabel?: string;
   /** Enable aggregated tooltip across arcs */
   multiTooltip?: boolean;
   /** Keep tooltip following the pointer */

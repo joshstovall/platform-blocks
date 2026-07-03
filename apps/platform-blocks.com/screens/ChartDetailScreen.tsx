@@ -36,7 +36,10 @@ export default function ChartDetailScreen({ chart = 'Unknown' }: ChartDetailScre
     return `import { ${chartDoc?.slug ?? chartSlug} } from '${pkg}';`;
   }, [chartDoc, chartSlug]);
 
+  // Genuine demo-loading effect: flips the loading flag and asynchronously
+  // attaches demo code when the chart changes.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- demo-loading orchestration
     setLoading(true);
     if (chartSlug && hasNewDemosArtifacts()) {
       const demos = attachDemoCode(chartSlug, getNewDemos(chartSlug));

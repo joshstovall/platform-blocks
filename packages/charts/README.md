@@ -98,10 +98,9 @@ export function RevenueChart({ data }) {
 | `useChartData` | Data management and updates |
 | `useDataDecimation` | Optimize rendering of large datasets |
 | `useDomains` | Calculate value ranges |
-| `useNearestPoint` | Find the closest data point for tooltips |
+| `useChartPointer` | Normalized pointer events + hit-testing for interaction |
 | `usePanZoom` | Pan and zoom gesture handling |
 | `useStreamingData` | Handle real-time data feeds |
-| `useTooltipAggregator` | Multi-series tooltip aggregation |
 
 ## Shared tooltip provider
 

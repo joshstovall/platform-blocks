@@ -11,6 +11,8 @@ export { CSSVariables } from './CSSVariables';
 export { useColorScheme } from './useColorScheme';
 export type { ColorScheme } from './useColorScheme';
 export type { PlatformBlocksThemeProviderProps } from './ThemeProvider';
+export * from './colorUtils';
+export * from './variantRoles';
 export * from './sizes';
 export * from './componentSize';
 export * from './radius';

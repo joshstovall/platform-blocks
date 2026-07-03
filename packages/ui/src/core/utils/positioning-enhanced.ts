@@ -150,6 +150,23 @@ export interface PositioningOptions {
 }
 
 /**
+ * Default fallback placements for a given primary placement.
+ *
+ * Fallbacks stay on the SAME axis as the request: a vertical placement (top/bottom)
+ * falls back only to the opposite vertical side, and a horizontal placement only to
+ * the opposite horizontal side. Switching axes (e.g. a `top` popover jumping to
+ * `right` when it can't fit above/below) is surprising and was a real bug — an
+ * explicit directional request should flip, not rotate. `auto` still considers all
+ * four sides since it has no requested axis.
+ */
+function getDirectionalFallbacks(placement: PlacementType): PlacementType[] {
+  const side = String(placement).split('-')[0];
+  if (side === 'top' || side === 'bottom') return ['bottom', 'top'];
+  if (side === 'left' || side === 'right') return ['right', 'left'];
+  return ['bottom', 'top', 'right', 'left'];
+}
+
+/**
  * Enhanced overlay positioning that prevents off-screen rendering with intelligent caching
  */
 export function calculateOverlayPositionEnhanced(
@@ -165,7 +182,7 @@ export function calculateOverlayPositionEnhanced(
     flip = true,
     shift = true,
     boundary = 8,
-    fallbackPlacements = ['bottom', 'top', 'right', 'left'],
+    fallbackPlacements = getDirectionalFallbacks(placement),
     matchAnchorWidth = false,
   } = options;
 

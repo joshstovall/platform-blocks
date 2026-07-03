@@ -20,8 +20,7 @@ function RatingBase(rawProps: RatingProps, ref: React.Ref<View>) {
     count = 5,
     readOnly = false,
     allowFraction = false,
-    allowHalf = false, // Deprecated but kept for backward compatibility
-    precision = allowFraction ? 0.1 : (allowHalf ? 0.5 : 1),
+    precision = allowFraction ? 0.1 : 1,
     size = 'md',
     color,
     emptyColor,
@@ -45,7 +44,7 @@ function RatingBase(rawProps: RatingProps, ref: React.Ref<View>) {
   const spacingStyles = getSpacingStyles(spacingProps);
   const renderDisclaimer = useDisclaimer(disclaimerData.disclaimer, disclaimerData.disclaimerProps);
 
-  const fractionalEnabled = allowFraction || allowHalf;
+  const fractionalEnabled = allowFraction;
   const actualPrecision = Math.max(0.01, Math.min(1, precision));
 
   const [internalValue, setInternalValue] = useState(defaultValue);

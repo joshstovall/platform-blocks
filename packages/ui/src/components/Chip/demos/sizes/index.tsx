@@ -1,13 +1,13 @@
-import { Chip, Column } from '@platform-blocks/ui'
+import { Chip, Row } from '@platform-blocks/ui'
 
 export default function Demo() {
   return (
-    <Column gap="sm">
-      <Chip size="xs">Extra Small</Chip>
-      <Chip size="sm">Small</Chip>
-      <Chip size="md">Medium</Chip>
-      <Chip size="lg">Large</Chip>
-      <Chip size="xl">Extra Large</Chip>
-    </Column>
+    <Row>
+      <Chip size="xs">XS</Chip>
+      <Chip size="sm">SM</Chip>
+      <Chip size="md">MD</Chip>
+      <Chip size="lg">LG</Chip>
+      <Chip size="xl">XL</Chip>
+    </Row>
   )
 }

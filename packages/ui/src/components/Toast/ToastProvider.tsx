@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { View, ViewStyle, Platform, Dimensions } from 'react-native';
 import { Toast } from './Toast';
-import { ToastProps } from './types';
+import { ToastProps, ToastVariant } from './types';
 import { Icon } from '../Icon';
 
 type ToastRequestListener = () => void;
@@ -36,6 +36,57 @@ export function onToastRequested(listener: ToastRequestListener) {
   return () => {
     toastRequestListeners.delete(listener);
   };
+}
+
+// ---- Viewport offset bridge ----
+// The ToastProvider commonly sits ABOVE the app shell (header / navbar) in the
+// component tree, so it cannot read the shell layout via context. Any component
+// rendered *inside* the shell can publish the safe viewport offset here — e.g.
+// header height plus the status-bar / safe-area inset — and the toast layer
+// positions its stacks clear of that chrome instead of overlapping it.
+export interface ToastViewportOffset {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+}
+
+let currentToastViewportOffset: ToastViewportOffset = {};
+const toastViewportOffsetListeners = new Set<(offset: ToastViewportOffset) => void>();
+
+/** Imperatively set the viewport offset applied to all toast stacks. */
+export function setToastViewportOffset(offset: ToastViewportOffset | null | undefined) {
+  currentToastViewportOffset = offset ?? {};
+  toastViewportOffsetListeners.forEach(listener => {
+    try {
+      listener(currentToastViewportOffset);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('[toasts] viewport offset listener error', error);
+      }
+    }
+  });
+}
+
+function subscribeToastViewportOffset(listener: (offset: ToastViewportOffset) => void) {
+  toastViewportOffsetListeners.add(listener);
+  listener(currentToastViewportOffset);
+  return () => {
+    toastViewportOffsetListeners.delete(listener);
+  };
+}
+
+/**
+ * Publish a viewport offset for the toast layer while the calling component is
+ * mounted (resets to zero on unmount). Call this from inside the app shell with
+ * the header height + safe-area inset so toasts never overlap the shell chrome.
+ */
+export function useToastViewportOffset(offset: ToastViewportOffset) {
+  const { top = 0, bottom = 0, left = 0, right = 0 } = offset || {};
+  useEffect(() => {
+    setToastViewportOffset({ top, bottom, left, right });
+    return () => setToastViewportOffset({});
+  }, [top, bottom, left, right]);
 }
 
 export type ToastPosition = 
@@ -211,6 +262,14 @@ interface ToastProviderProps {
   limit?: number;
   /** Default auto hide duration */
   autoHide?: number;
+  /** Default visual variant applied to toasts that don't specify their own */
+  defaultVariant?: ToastVariant;
+  /**
+   * Static viewport offset (px) reserved for app chrome. A dynamic offset
+   * published via `useToastViewportOffset` / `setToastViewportOffset` takes
+   * precedence per-axis when set.
+   */
+  offset?: ToastViewportOffset;
   /** Queue management options */
   queueOptions?: Partial<ToastQueueOptions>;
 }
@@ -220,9 +279,22 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   defaultPosition = 'top-center',
   limit = 5,
   autoHide = 4000,
+  defaultVariant,
+  offset,
   queueOptions
 }) => {
   const [toasts, setToast] = useState<ToastItem[]>([]);
+
+  // Track the shell-published viewport offset so toast stacks stay clear of the
+  // app header / status bar. Falls back to the static `offset` prop per axis.
+  const [dynamicOffset, setDynamicOffset] = useState<ToastViewportOffset>(currentToastViewportOffset);
+  useEffect(() => subscribeToastViewportOffset(setDynamicOffset), []);
+  const viewportOffset = useMemo(() => ({
+    top: dynamicOffset.top ?? offset?.top ?? 0,
+    bottom: dynamicOffset.bottom ?? offset?.bottom ?? 0,
+    left: dynamicOffset.left ?? offset?.left ?? 0,
+    right: dynamicOffset.right ?? offset?.right ?? 0,
+  }), [dynamicOffset, offset?.top, offset?.bottom, offset?.left, offset?.right]);
 
   // Default queue options
   const defaultQueueOptions: ToastQueueOptions = {
@@ -244,6 +316,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
       ...options,
       id,
       position,
+      variant: options.variant ?? defaultVariant,
       visible: true,
       children: options.message || options.children,
       timestamp: Date.now(),
@@ -271,7 +344,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
     }
     
     return id;
-  }, [defaultPosition, limit, autoHide]);
+  }, [defaultPosition, limit, autoHide, defaultVariant]);
 
   const hide = useCallback((id: string) => {
     setToast(prev => prev.map(toast => 
@@ -414,12 +487,23 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   }, [contextValue]);
 
   const getPositionStyle = (position: ToastPosition): ViewStyle => {
+    // App-shell aware offsets (header height, safe-area/status bar, sidebars).
+    const { top: oTop, bottom: oBottom, left: oLeft, right: oRight } = viewportOffset;
+    // Keep centered stacks centered within the content region between any side
+    // chrome (e.g. a left navbar shifts the visual center rightward).
+    const centerShift = (oLeft - oRight) / 2;
+
     if (Platform.OS === 'web') {
       const horizontalMargin = 20;
       const windowWidth = Dimensions.get('window')?.width ?? 1024;
       const availableWidth = Math.max(windowWidth - horizontalMargin * 2, 0);
       const centerWidth = Math.min(400, availableWidth || 400);
-      const centerLeft = Math.max((windowWidth - centerWidth) / 2, horizontalMargin);
+      const centerLeft = Math.max((windowWidth - centerWidth) / 2 + centerShift, horizontalMargin);
+
+      const topPos = 20 + oTop;
+      const bottomPos = 20 + oBottom;
+      const leftPos = horizontalMargin + oLeft;
+      const rightPos = horizontalMargin + oRight;
 
       const webBase: ViewStyle = {
         position: 'fixed' as any,
@@ -431,19 +515,19 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 
       switch (position) {
         case 'top-left':
-          return { ...webBase, top: 20, left: horizontalMargin };
+          return { ...webBase, top: topPos, left: leftPos };
         case 'top-right':
-          return { ...webBase, top: 20, right: horizontalMargin };
+          return { ...webBase, top: topPos, right: rightPos };
         case 'top-center':
-          return { ...webBase, top: 20, left: centerLeft, width: centerWidth };
+          return { ...webBase, top: topPos, left: centerLeft, width: centerWidth };
         case 'bottom-left':
-          return { ...webBase, bottom: 20, left: horizontalMargin };
+          return { ...webBase, bottom: bottomPos, left: leftPos };
         case 'bottom-right':
-          return { ...webBase, bottom: 20, right: horizontalMargin };
+          return { ...webBase, bottom: bottomPos, right: rightPos };
         case 'bottom-center':
-          return { ...webBase, bottom: 20, left: centerLeft, width: centerWidth };
+          return { ...webBase, bottom: bottomPos, left: centerLeft, width: centerWidth };
         default:
-          return { ...webBase, top: 20, right: horizontalMargin };
+          return { ...webBase, top: topPos, right: rightPos };
       }
     }
 
@@ -451,7 +535,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
     const screenWidth = Dimensions.get('window').width;
     const rawWidth = screenWidth - horizontalMargin * 2;
     const containerWidth = rawWidth > 0 ? Math.min(400, rawWidth) : Math.min(400, screenWidth);
-    const centerLeft = Math.max((screenWidth - containerWidth) / 2, horizontalMargin);
+    const centerLeft = Math.max((screenWidth - containerWidth) / 2 + centerShift, horizontalMargin);
+
+    const topPos = 20 + oTop;
+    const bottomPos = 20 + oBottom;
+    const leftPos = horizontalMargin + oLeft;
+    const rightPos = horizontalMargin + oRight;
 
     const nativeBase: ViewStyle = {
       position: 'absolute',
@@ -462,19 +551,19 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 
     switch (position) {
       case 'top-left':
-        return { ...nativeBase, top: 20, left: horizontalMargin };
+        return { ...nativeBase, top: topPos, left: leftPos };
       case 'top-right':
-        return { ...nativeBase, top: 20, right: horizontalMargin };
+        return { ...nativeBase, top: topPos, right: rightPos };
       case 'top-center':
-        return { ...nativeBase, top: 20, left: centerLeft };
+        return { ...nativeBase, top: topPos, left: centerLeft };
       case 'bottom-left':
-        return { ...nativeBase, bottom: 20, left: horizontalMargin };
+        return { ...nativeBase, bottom: bottomPos, left: leftPos };
       case 'bottom-right':
-        return { ...nativeBase, bottom: 20, right: horizontalMargin };
+        return { ...nativeBase, bottom: bottomPos, right: rightPos };
       case 'bottom-center':
-        return { ...nativeBase, bottom: 20, left: centerLeft };
+        return { ...nativeBase, bottom: bottomPos, left: centerLeft };
       default:
-        return { ...nativeBase, top: 20, right: horizontalMargin };
+        return { ...nativeBase, top: topPos, right: rightPos };
     }
   };
 

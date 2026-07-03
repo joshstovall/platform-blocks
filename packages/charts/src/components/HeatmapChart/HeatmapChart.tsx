@@ -11,13 +11,15 @@ import {
   HeatmapLabelDisplayRule,
 } from '../../types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, usePointer } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { CellGridHitTester } from '../../core/hittest/grid';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { getColorFromScheme, colorSchemes, clamp, formatNumber } from '../../utils';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { AnimatedHeatmapCell } from './AnimatedHeatmapCell';
-import { useHeatmapSeriesRegistration } from './useHeatmapSeriesRegistration';
 import type { Scale } from '../../utils/scales';
 
 function interpolateColor(a: string, b: string, t: number) {
@@ -183,9 +185,7 @@ export const HeatmapChart: React.FC<HeatmapChartProps> = (props) => {
   } catch {
     interaction = null;
   }
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
 
   // Normalize data and preserve matrix labels when provided
   const normalized = React.useMemo(() => {
@@ -527,14 +527,49 @@ export const HeatmapChart: React.FC<HeatmapChartProps> = (props) => {
   const totalCells = processedCells.length;
   const animationDisabled = disableAnimation || totalCells > maxAnimatedCells;
 
-  // Register series for tooltip interaction
-  useHeatmapSeriesRegistration({
-    cells: processedCells,
-    seriesName: title || 'Heatmap',
-    registerSeries,
+  // New interaction engine: every cell is a rect mark carrying its container-origin
+  // rectangle + { row, col }. The cell tester resolves the hovered cell by rect
+  // membership; the resolved target feeds the shared tooltip.
+  const hitSeries: HitSeries[] = React.useMemo(() => {
+    const marks: Mark[] = processedCells.map((cell) => {
+      const rectX = cell.pixelX + padding.left;
+      const rectY = cell.pixelY + padding.top;
+      const raw = cell.formattedValue ?? cell.displayValue ?? cell.value;
+      return {
+        id: cell.index,
+        pixel: { x: rectX + cell.width / 2, y: rectY + cell.height / 2 },
+        value: cell.value,
+        datum: cell,
+        label: String(cell.label ?? `${cell.rowLabel ?? cell.y} · ${cell.columnLabel ?? cell.x}`),
+        extent: {
+          rect: { x: rectX, y: rectY, width: cell.width, height: cell.height },
+          cell: { row: cell.y, col: cell.x },
+        },
+        formattedValue: raw == null ? undefined : String(raw),
+      };
+    });
+    return [{ id: 'heatmap', name: title || 'Heatmap', color: theme.colors.accentPalette?.[0], visible: true, marks }];
+  }, [processedCells, padding.left, padding.top, title, theme.colors.accentPalette]);
+
+  const tester = React.useMemo(() => new CellGridHitTester(hitSeries), [hitSeries]);
+
+  React.useEffect(() => {
+    if (!register) return;
+    register('heatmap', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'cell' }, series: hitSeries });
+    return () => register('heatmap', null);
+  }, [register, hitSeries]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && totalCells > 0,
+    hover: true,
+    press: false,
+    tester,
   });
 
-  const pointer = interaction?.pointer;
+  const pointer = usePointer();
   const hoverCell = React.useMemo(() => {
     if (!pointer || !pointer.inside) return null;
     const localX = pointer.x - padding.left;
@@ -587,15 +622,7 @@ export const HeatmapChart: React.FC<HeatmapChartProps> = (props) => {
           useSVG={true}
         />
       )}
-      <Svg width={width} height={height} style={{ position: 'absolute' }}
-        // @ts-expect-error web-only mouse event prop not in RN types
-        onMouseMove={(e) => {
-          if (!setPointer) return; const rect = (e.currentTarget as any).getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
-          // update crosshair to current column index for multiTooltip aggregator
-          const localX = x - padding.left; if (localX >= 0 && localX <= plotWidth) { const col = Math.floor(localX / (cellW + gap)); if (col >= 0 && col < uniqueX) setCrosshair?.({ dataX: col, pixelX: x }); }
-        }}
-        onMouseLeave={() => { if (interaction?.pointer) setPointer?.({ ...interaction.pointer, inside: false }); }}
-      >
+      <Svg width={width} height={height} style={{ position: 'absolute' }}>
         <G x={padding.left} y={padding.top}>
           {hoverCell && hoverOverlay.showColumn && columnHighlight && (
             <SvgRect
@@ -707,6 +734,19 @@ export const HeatmapChart: React.FC<HeatmapChartProps> = (props) => {
           labelColor={yAxis?.titleColor || theme.colors.textPrimary}
           labelFontSize={yAxis?.titleFontSize}
           style={{ width: padding.left, height: plotHeight }}
+        />
+      )}
+
+      {/* Gesture surface driven by useChartPointer + the cell hit-tester. Full-chart
+          overlay so pointer coords are container-origin, matching the cell rects;
+          feeds the pointer (for the row/column highlight) + the tooltip. */}
+      {Boolean(interaction) && totalCells > 0 && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="heatmap-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

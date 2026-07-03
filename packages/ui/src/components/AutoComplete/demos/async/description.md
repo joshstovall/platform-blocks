@@ -1,5 +1,5 @@
 ---
-title: Async
+title: Async auto-complete
 category: features
 order: 30
 tags: [async, loading, api, remote]
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Simulated remote search with debounced queries and highlighted matches.
+Performs a debounced search against a simulated API before returning matches.

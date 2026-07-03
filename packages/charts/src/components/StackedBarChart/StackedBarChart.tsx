@@ -2,9 +2,8 @@ import React, {
   useMemo,
   useEffect,
   useCallback,
-  useRef,
 } from 'react';
-import { Platform } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Rect, G } from 'react-native-svg';
 import Animated, {
   useSharedValue,
@@ -21,6 +20,9 @@ import { useChartTheme } from '../../theme/ChartThemeContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { ChartInteractionEvent } from '../../types';
 import { bandScale, linearScale, generateNiceTicks } from '../../utils/scales';
 import type { Scale } from '../../utils/scales';
@@ -75,27 +77,14 @@ interface LayoutResult {
   segmentLookup: Map<string, RawSegment>;
 }
 
-const toNativePointerEvent = (event: any) => {
-  const rect = event?.currentTarget?.getBoundingClientRect?.();
-  return {
-    nativeEvent: {
-      locationX: rect ? event.clientX - rect.left : 0,
-      locationY: rect ? event.clientY - rect.top : 0,
-      pageX: event?.pageX ?? event?.clientX,
-      pageY: event?.pageY ?? event?.clientY,
-    },
-  };
-};
 
+// Pure visual segment. Pointer/press is handled by the shared gesture surface +
+// hit-test engine (see the overlay + useChartPointer below), not per-rect handlers.
 const AnimatedStackedSegment: React.FC<{
   segment: ComputedSegment;
   animationProgress: SharedValue<number>;
   borderRadius: number;
-  disabled: boolean;
-  onHoverIn: (segment: ComputedSegment) => void;
-  onHoverOut: (segment: ComputedSegment) => void;
-  onPress: (segment: ComputedSegment, event: any) => void;
-}> = React.memo(({ segment, animationProgress, borderRadius, disabled, onHoverIn, onHoverOut, onPress }) => {
+}> = React.memo(({ segment, animationProgress, borderRadius }) => {
   const animatedProps = useAnimatedProps(() => {
     const progress = animationProgress.value;
     const height = segment.height * progress;
@@ -108,8 +97,6 @@ const AnimatedStackedSegment: React.FC<{
     } as any;
   }, [segment]);
 
-  const isWeb = Platform.OS === 'web';
-
   return (
     <AnimatedRect
       animatedProps={animatedProps}
@@ -117,27 +104,7 @@ const AnimatedStackedSegment: React.FC<{
       ry={borderRadius}
       fill={segment.color}
       opacity={segment.visible ? 1 : 0}
-      pointerEvents={segment.visible ? 'auto' : 'none'}
-      {...(isWeb
-        ? {
-            onPointerEnter: () => !disabled && onHoverIn(segment),
-            onPointerLeave: () => onHoverOut(segment),
-            onPointerDown: (event: any) => {
-              if (disabled) return;
-              event.currentTarget?.setPointerCapture?.(event.pointerId);
-            },
-            onPointerUp: (event: any) => {
-              if (disabled) return;
-              event.currentTarget?.releasePointerCapture?.(event.pointerId);
-              onPress(segment, toNativePointerEvent(event));
-            },
-            onPointerCancel: () => onHoverOut(segment),
-          }
-        : {
-            onPressIn: () => !disabled && onHoverIn(segment),
-            onPressOut: () => onHoverOut(segment),
-            onPress: (event: any) => !disabled && onPress(segment, { nativeEvent: event.nativeEvent }),
-          })}
+      pointerEvents="none"
     />
   );
 });
@@ -170,13 +137,11 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
 
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
   const interactionSeries = interaction?.series;
 
-  const basePadding = { top: 40, right: 24, bottom: 64, left: 80 };
+  const basePadding = { top: 40, right: 24, bottom: 64, left: yAxis?.title ? 104 : 80 };
   const padding = React.useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -387,24 +352,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
     return scale;
   }, [valueScale, valueTicks]);
 
-  const segmentHoverRef = useRef<string | null>(null);
-
-  const handleHoverIn = useCallback((segment: ComputedSegment) => {
-    segmentHoverRef.current = segment.id;
-    const pointerX = padding.left + segment.x + segment.width / 2;
-    const pointerY = padding.top + segment.y + segment.height / 2;
-    setPointer?.({ x: pointerX, y: pointerY, inside: true });
-    setCrosshair?.({ dataX: segment.categoryIndex, pixelX: pointerX });
-  }, [padding.left, padding.top, setPointer, setCrosshair]);
-
-  const handleHoverOut = useCallback((segment: ComputedSegment) => {
-    if (segmentHoverRef.current !== segment.id) return;
-    segmentHoverRef.current = null;
-    setPointer?.(null);
-    setCrosshair?.(null);
-  }, [setPointer, setCrosshair]);
-
-  const handlePress = useCallback((segment: ComputedSegment, pressEvent: any) => {
+  const handleSegmentPress = useCallback((segment: ComputedSegment, nativeEvent: any) => {
     const dataPoint: BarChartDataPoint = segment.dataPoint || {
       category: segment.category,
       value: segment.value,
@@ -415,7 +363,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
     const chartY = (padding.top + segment.y + segment.height / 2) / height;
 
     const interactionEvent: ChartInteractionEvent<BarChartDataPoint> = {
-      nativeEvent: pressEvent.nativeEvent,
+      nativeEvent,
       chartX,
       chartY,
       dataX: segment.categoryIndex,
@@ -427,41 +375,54 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
     onPress?.(interactionEvent);
   }, [height, width, onDataPointPress, onPress, padding.left, padding.top]);
 
-  const registerSignatureRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    const signature = dataSignature;
-    if (registerSignatureRef.current === signature) return;
-    registerSignatureRef.current = signature;
-
-    resolvedSeries.forEach((seriesEntry) => {
-      const points = categories.map((category) => {
-        const segment = layoutResult.segmentLookup.get(`${seriesEntry.id}::${category}`);
-        const value = segment?.value ?? 0;
-        const meta = segment?.dataPoint || {
-          category,
-          value,
-        };
-        return {
-          x: categoryIndexMap.get(category) ?? 0,
-          y: value,
-          meta: {
-            ...meta,
-            stackedStart: segment?.y0 ?? 0,
-            stackedEnd: segment?.y1 ?? value,
-          },
-        };
-      });
-
-      registerSeries({
-        id: seriesEntry.id,
-        name: seriesEntry.name || `Series ${seriesEntry.seriesIndex + 1}`,
-        color: seriesEntry.color,
-        points,
-        visible: seriesEntry.visible,
+  // New interaction engine: each stacked segment is a band mark carrying its rect
+  // (container-origin) and its category index (the band tester's category key). One
+  // hit-series per stack series → rect membership resolves the hovered segment and
+  // slice() returns every series' segment at the category (the full-stack tooltip).
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const bySeries = new Map<string, Mark[]>();
+    resolvedSeries.forEach((s) => bySeries.set(s.id, []));
+    computedSegments.forEach(({ segments }) => {
+      segments.forEach((seg) => {
+        const arr = bySeries.get(seg.seriesId);
+        if (!arr) return;
+        arr.push({
+          id: seg.categoryIndex,
+          pixel: { x: seg.x + seg.width / 2 + padding.left, y: seg.y + padding.top },
+          value: seg.value,
+          datum: seg,
+          extent: { rect: { x: seg.x + padding.left, y: seg.y + padding.top, width: seg.width, height: seg.height } },
+          formattedValue: `${seg.category}: ${seg.value}`,
+        });
       });
     });
-  }, [registerSeries, resolvedSeries, categories, layoutResult.segmentLookup, categoryIndexMap, dataSignature]);
+    return resolvedSeries.map((s) => ({
+      id: s.id,
+      name: s.name || `Series ${s.seriesIndex + 1}`,
+      color: s.color,
+      visible: s.visible !== false,
+      marks: bySeries.get(s.id) ?? [],
+    }));
+  }, [computedSegments, resolvedSeries, padding.left, padding.top]);
+
+  const tester = useMemo(() => new BandCategoryHitTester(hitSeries, { orientation: 'x' }), [hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register('stacked-bar', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: 'x' }, series: hitSeries });
+    return () => register('stacked-bar', null);
+  }, [register, hitSeries]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: true,
+    tester,
+    onPress: (e, target) => { if (target) handleSegmentPress(target.datum as ComputedSegment, (e.raw as any)?.nativeEvent ?? e.raw); },
+  });
 
   return (
     <ChartContainer
@@ -509,10 +470,6 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
                   segment={segment}
                   animationProgress={animationProgress}
                   borderRadius={3}
-                  disabled={disabled}
-                  onHoverIn={handleHoverIn}
-                  onHoverOut={handleHoverOut}
-                  onPress={handlePress}
                 />
               ) : null
             ))}
@@ -590,6 +547,19 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = (props) => {
               updateSeriesVisibility(id, !(currentVisible !== false));
             }
           } : undefined}
+        />
+      )}
+
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder). Full-chart overlay so pointer coords are container-origin,
+          matching the registered segment rects. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="stacked-bar-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

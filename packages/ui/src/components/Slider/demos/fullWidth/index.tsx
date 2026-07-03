@@ -114,7 +114,7 @@ export default function Demo() {
                 min={0}
                 max={100}
                 step={1}
-                size="lg"
+                size="3xl"
                 fullWidth
               />
             </Block>

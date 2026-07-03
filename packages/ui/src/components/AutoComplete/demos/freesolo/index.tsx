@@ -15,10 +15,6 @@ export default function Demo() {
 
   return (
     <Column gap="sm" fullWidth>
-      <Text weight="semibold">Free-form entry</Text>
-      <Text size="sm" colorVariant="secondary">
-        Suggests fruits but allows any custom value to be submitted.
-      </Text>
       <AutoComplete
         label="Favorite fruit"
         placeholder="Type anything..."

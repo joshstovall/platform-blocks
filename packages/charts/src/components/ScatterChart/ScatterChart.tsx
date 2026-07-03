@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { View, Pressable, Text, PanResponder, Platform } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { ScatterChartProps, ChartInteractionEvent, ChartDataPoint } from '../../types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useOptionalChartInteraction, useChartInteractionVolatile } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { touchDistance } from '../../interaction/useOptionalPinch';
+import { PointSeriesHitTester } from '../../core/hittest/point';
+import type { HitSeries, Mark } from '../../core/hittest/types';
+import type { NormalizedPointerEvent } from '../../interaction/pointerNormalize';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
 
@@ -24,10 +29,18 @@ import {
   distance as calculateDistance
 } from '../../utils';
 import type { Scale } from '../../utils/scales';
-import { useNearestPoint } from '../../hooks/useNearestPoint';
 import { usePanZoom } from '../../hooks/usePanZoom';
-import { useScatterSeriesRegistration } from './useScatterSeriesRegistration';
-import type { ScatterChartSeriesRegistration } from './useScatterSeriesRegistration';
+
+/** Per-series shape fed to the hit-test engine (points augmented with layout coordinates). */
+interface ScatterChartSeriesRegistration {
+  id: string;
+  name?: string;
+  color: string;
+  visible?: boolean;
+  pointColor?: string;
+  pointSize?: number;
+  chartPoints: Array<ChartDataPoint & { chartX: number; chartY: number }>;
+}
 
 const SPACING_PROP_KEYS = ['m', 'mt', 'mr', 'mb', 'ml', 'mx', 'my', 'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py'] as const;
 type SpacingPropKey = typeof SPACING_PROP_KEYS[number];
@@ -114,7 +127,6 @@ const AnimatedScatterPoint: React.FC<{
 
 AnimatedScatterPoint.displayName = 'AnimatedScatterPoint';
 const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
-  const isWeb = Platform.OS === 'web';
   const {
     data: initialData,
     width = 400,
@@ -143,13 +155,12 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
   } = props;
 
   const theme = useChartTheme();
-  let interaction: ReturnType<typeof useChartInteractionContext> | null = null;
-  try { interaction = useChartInteractionContext(); } catch { /* noop */ }
+  const interaction = useOptionalChartInteraction();
+  // Volatile subscription: ScatterChart draws crosshair guides from the active target +
+  // pointer, so it re-renders each frame during hover.
+  const { activeTarget, pointer } = useChartInteractionVolatile();
   const crosshairEnabled = enableCrosshair !== false && interaction?.config?.enableCrosshair !== false;
-  const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
   const [data, setData] = useState<ChartDataPoint[]>(initialData);
   // Normalize multi-series (fallback to single-series wrapper)
   const normalizedSeries = React.useMemo(() => {
@@ -206,7 +217,7 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
   const paddedYDomain: [number, number] = [yDomain[0] - yPadding, yDomain[1] + yPadding];
 
   // Chart dimensions - adjust padding based on legend position to prevent overlap
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const padding = React.useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -240,10 +251,34 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
     })
   }));
 
-  useScatterSeriesRegistration({
-    series: chartSeries,
-    registerSeries,
-  });
+  // New interaction engine: build container-origin marks + a point hit-tester,
+  // register it with the store, and let the shared engine drive hover/tooltip.
+  const hitSeries: HitSeries[] = useMemo(() => chartSeries.map((s) => ({
+    id: s.id,
+    name: s.name,
+    color: s.pointColor || s.color,
+    visible: s.visible !== false,
+    marks: s.chartPoints.map((p, i): Mark => ({
+      id: p.id ?? i,
+      pixel: { x: p.chartX + padding.left, y: p.chartY + padding.top },
+      value: p.y,
+      datum: p,
+      dataX: p.x,
+      dataY: p.y,
+      label: p.label,
+      // Chart-precomputed tooltip value (mirrors the selected-point readout):
+      // "(x, y)", or "label" when the point carries one.
+      formattedValue: p.label ? String(p.label) : `(${formatNumber(p.x)}, ${formatNumber(p.y)})`,
+    })),
+  })), [chartSeries, padding.left, padding.top]);
+
+  const tester = useMemo(() => new PointSeriesHitTester(hitSeries), [hitSeries]);
+  const register = interaction?.register;
+  useEffect(() => {
+    if (!register) return;
+    register('scatter', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'point' }, series: hitSeries });
+    return () => register('scatter', null);
+  }, [register, hitSeries]);
 
   const xTicks = React.useMemo(() => {
     switch (props.xScaleType) {
@@ -400,17 +435,6 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
 
   const resolvedTextColor = theme.colors.textSecondary;
 
-  const nearestPoint = useNearestPoint(chartSeries as any, paddedXDomain, paddedYDomain, plotWidth, plotHeight);
-
-  const evaluateNearestPoint = useCallback((chartX: number, chartY: number) => {
-    const res = nearestPoint(chartX, chartY, 30) as any;
-    if (res && res.dataPoint) {
-      setSelectedPoint(res.dataPoint);
-      setPointer?.({ x: chartX, y: chartY, inside: true });
-      if (enableCrosshair !== false) setCrosshair?.({ dataX: res.dataPoint.x, pixelX: chartX });
-    }
-  }, [nearestPoint, setPointer, setCrosshair, enableCrosshair]);
-
   // Calculate trend line (simple linear regression)
   const calculateTrendline = () => {
     if (data.length < 2) return null;
@@ -486,13 +510,8 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
     }];
   }, [showTrendline, chartSeries, paddedXDomain, paddedYDomain, plotWidth, plotHeight, trendlineColor, theme.colors.accentPalette]);
 
-  // Register scatter points as a single series for unified tooltip
   // Pan/Zoom integration
-  const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null);
-  const lastPanRef = React.useRef<{ x: number; y: number } | null>(null);
-  const [pinchTracking, setPinchTracking] = useState(false);
   const pinchTrackingRef = React.useRef(false);
-  const [lastTapTime, setLastTapTime] = useState(0);
   const lastTapTimeRef = React.useRef<number>(0);
   const dragStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const panZoom = usePanZoom(
@@ -514,187 +533,110 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
     }
   );
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponderCapture: () => true,
-    onMoveShouldSetPanResponderCapture: () => true,
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (e, gestureState) => {
-      const native: any = e.nativeEvent || {};
-      const touches = native.touches || [];
-      // Record drag start for tap vs drag detection
-      const { locationX: grantX, locationY: grantY } = native;
-      if (typeof grantX === 'number' && typeof grantY === 'number') {
-        dragStartRef.current = { x: grantX, y: grantY };
+  // --- Unified pointer engine (replaces PanResponder + web mouse dual paths) ---
+  const panningRef = useRef(false);
+
+  const handlePointer = useCallback((e: NormalizedPointerEvent) => {
+    const enablePanZoom = props.enablePanZoom;
+    if (e.phase === 'down') {
+      dragStartRef.current = { x: e.plotX, y: e.plotY };
+      const dist = touchDistance(e.raw);
+      if (enablePanZoom && dist != null) {
+        panZoom.startPinch(dist);
+        pinchTrackingRef.current = true;
+        return;
       }
-      if (props.enablePanZoom && (touches.length === 2 || gestureState.numberActiveTouches === 2)) {
-        if (touches.length === 2) {
-          const dx = touches[1].pageX - touches[0].pageX;
-          const dy = touches[1].pageY - touches[0].pageY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          panZoom.startPinch(distance);
+      if (enablePanZoom) {
+        panZoom.startPan(e.plotX, e.plotY);
+        panningRef.current = true;
+      }
+      return;
+    }
+    if (e.phase === 'move') {
+      const dist = touchDistance(e.raw);
+      if (enablePanZoom && dist != null) {
+        if (!pinchTrackingRef.current) {
+          panZoom.startPinch(dist);
           pinchTrackingRef.current = true;
-          setPinchTracking(true);
-          return;
-        }
-      }
-      const { locationX, locationY } = native;
-      if (typeof locationX === 'number' && typeof locationY === 'number') {
-        lastPanRef.current = { x: locationX, y: locationY };
-        setLastPan({ x: locationX, y: locationY });
-        panZoom.startPan(locationX, locationY);
-        evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
-      }
-    },
-    onPanResponderMove: (e, gestureState) => {
-      const native: any = e.nativeEvent || {};
-      const touches = native.touches || [];
-      const activeTouches = touches.length || gestureState.numberActiveTouches;
-      const isPinching = pinchTrackingRef.current;
-      if (props.enablePanZoom && activeTouches === 2) {
-        if (!isPinching && touches.length === 2) {
-          const dx0 = touches[1].pageX - touches[0].pageX;
-          const dy0 = touches[1].pageY - touches[0].pageY;
-          const startDistance = Math.sqrt(dx0 * dx0 + dy0 * dy0);
-          panZoom.startPinch(startDistance);
-          lastPanRef.current = null;
-          pinchTrackingRef.current = true;
-          setPinchTracking(true);
-          return;
-        }
-        if (isPinching && touches.length === 2) {
-          const dx = touches[1].pageX - touches[0].pageX;
-          const dy = touches[1].pageY - touches[0].pageY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          panZoom.updatePinch(distance);
-          return;
-        }
-      }
-      if (props.enablePanZoom && !isPinching && lastPanRef.current && activeTouches === 1) {
-        const { locationX, locationY } = native;
-        if (typeof locationX === 'number' && typeof locationY === 'number') {
-          panZoom.updatePan(locationX, locationY, plotWidth, plotHeight);
-          lastPanRef.current = { x: locationX, y: locationY };
-          setLastPan({ x: locationX, y: locationY });
-          evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
+          panningRef.current = false;
+        } else {
+          panZoom.updatePinch(dist);
         }
         return;
       }
-      if (activeTouches === 1) {
-        const { locationX, locationY } = native;
-        if (typeof locationX === 'number' && typeof locationY === 'number') {
-          evaluateNearestPoint(locationX - padding.left, locationY - padding.top);
-        }
+      if (enablePanZoom && panningRef.current && !pinchTrackingRef.current) {
+        panZoom.updatePan(e.plotX, e.plotY, plotWidth, plotHeight);
       }
-    },
-    onPanResponderRelease: (e) => {
-      // Double tap / click reset detection — only count taps, not drags
-      if (props.resetOnDoubleTap) {
-        const native: any = e.nativeEvent || {};
-        const endX = typeof native.locationX === 'number' ? native.locationX : (dragStartRef.current?.x ?? 0);
-        const endY = typeof native.locationY === 'number' ? native.locationY : (dragStartRef.current?.y ?? 0);
-        const startPt = dragStartRef.current;
-        const dragDistance = startPt
-          ? Math.sqrt(Math.pow(endX - startPt.x, 2) + Math.pow(endY - startPt.y, 2))
-          : 0;
-        const wasTap = dragDistance < 10;
-
-        if (wasTap) {
+      return;
+    }
+    if (e.phase === 'up') {
+      // Double-tap reset (only counts taps, not drags).
+      if (props.resetOnDoubleTap && dragStartRef.current) {
+        const dragDistance = Math.hypot(e.plotX - dragStartRef.current.x, e.plotY - dragStartRef.current.y);
+        if (dragDistance < 10) {
           const now = Date.now();
           if (now - lastTapTimeRef.current < 300) {
             setXDomainState(null);
             setYDomainState(null);
             lastTapTimeRef.current = 0;
-            setLastTapTime(0);
             // @ts-expect-error optional web-only onDomainChange prop not in base type
             props.onDomainChange?.(computedXDomain, computedYDomain);
           } else {
             lastTapTimeRef.current = now;
-            setLastTapTime(now);
           }
         }
       }
       dragStartRef.current = null;
       panZoom.endPan();
-      lastPanRef.current = null;
-      setLastPan(null);
-      if (pinchTrackingRef.current) { panZoom.endPinch(); pinchTrackingRef.current = false; setPinchTracking(false); }
-      // fire domain change callback after gesture ends
+      panningRef.current = false;
+      if (pinchTrackingRef.current) { panZoom.endPinch(); pinchTrackingRef.current = false; }
       // @ts-expect-error optional
       props.onDomainChange?.(xDomain, yDomain);
-    },
-    onPanResponderTerminationRequest: () => true,
-  });
+    }
+  }, [props.enablePanZoom, props.resetOnDoubleTap, plotWidth, plotHeight, panZoom, xDomain, yDomain, computedXDomain, computedYDomain]);
 
-  // Handle chart interaction
-  const handlePress = (event: any) => {
+  const handlePress = useCallback((e: NormalizedPointerEvent, target: import('../../core/hittest/types').ActiveTarget | null) => {
     if (disabled) return;
-
-    const { locationX, locationY } = event.nativeEvent;
-    const chartX = locationX - padding.left;
-    const chartY = locationY - padding.top;
-
-    // Check if we're clicking on an existing point
-    const closest = chartSeries.flatMap(s => s.chartPoints.map(p => ({ series: s, p })))
-      .reduce<{ distance: number; point: any } | null>((acc, cur) => {
-        const dx = cur.p.chartX - chartX;
-        const dy = cur.p.chartY - chartY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const threshold = (cur.p.size || pointSize) + 6;
-        if (dist <= threshold) {
-          if (!acc || dist < acc.distance) return { distance: dist, point: cur.p };
-        }
-        return acc;
-      }, null);
-
-    if (closest) {
-      setSelectedPoint(closest.point);
-      const interactionEvent: ChartInteractionEvent = {
-        nativeEvent: event,
-        chartX,
-        chartY,
-        dataPoint: closest.point,
-        distance: closest.distance,
-      };
-      onDataPointPress?.(closest.point, interactionEvent);
-      setPointer?.({ x: chartX, y: chartY, inside: true });
-      if (enableCrosshair !== false) setCrosshair?.({ dataX: closest.point.x, pixelX: chartX });
-    } else if (allowAddPoints && chartX >= 0 && chartX <= plotWidth && chartY >= 0 && chartY <= plotHeight) {
-      // Add new point
-      const dataCoords = chartToDataCoordinates(
-        chartX,
-        chartY,
-        { x: 0, y: 0, width: plotWidth, height: plotHeight },
-        paddedXDomain,
-        paddedYDomain
-      );
-
+    const chartX = e.plotX;
+    const chartY = e.plotY;
+    const datum = target?.datum;
+    const hitThreshold = ((datum?.size ?? pointSize) + 6);
+    if (target && datum && target.distance <= hitThreshold) {
+      setSelectedPoint(datum);
+      onDataPointPress?.(datum, { nativeEvent: e.raw, chartX, chartY, dataPoint: datum, distance: target.distance });
+    } else if (allowAddPoints && e.inside) {
+      const dataCoords = chartToDataCoordinates(chartX, chartY, { x: 0, y: 0, width: plotWidth, height: plotHeight }, paddedXDomain, paddedYDomain);
       const newPoint: ChartDataPoint = {
         id: Date.now(),
         x: Math.round(dataCoords.x * 100) / 100,
         y: Math.round(dataCoords.y * 100) / 100,
         color: pointColor || getColorFromScheme(data.length, colorSchemes.default),
       };
-
       setData([...data, newPoint]);
       setSelectedPoint(newPoint);
-      setPointer?.({ x: chartX, y: chartY, inside: true });
-      setCrosshair?.({ dataX: newPoint.x, pixelX: chartX });
     }
+    onPress?.({ nativeEvent: e.raw, chartX, chartY });
+  }, [disabled, pointSize, allowAddPoints, plotWidth, plotHeight, paddedXDomain, paddedYDomain, pointColor, data, onDataPointPress, onPress]);
 
-    const interactionEvent: ChartInteractionEvent = {
-      nativeEvent: event,
-      chartX,
-      chartY,
-    };
-    onPress?.(interactionEvent);
-  };
-
-  // Handle point dragging (simplified - for full gesture support, use react-native-gesture-handler)
-  const handlePointPanGesture = (event: any, point: any) => {
-    if (!allowDragPoints || disabled) return;
-    // Simplified drag handling - in production, implement with proper gesture library
-  };
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: !disabled,
+    hover: crosshairEnabled,
+    press: true,
+    wheel: !!props.enableWheelZoom,
+    tester,
+    maxDistance: 30,
+    onPointer: handlePointer,
+    onPress: handlePress,
+    onWheel: (g) => { if (props.enablePanZoom) panZoom.wheelZoom(g.deltaY, g.anchorXRatio, g.anchorYRatio); },
+    onLeave: () => {
+      panZoom.endPan();
+      panningRef.current = false;
+      if (pinchTrackingRef.current) { panZoom.endPinch(); pinchTrackingRef.current = false; }
+    },
+  });
 
   // Ticks already computed earlier (xTicks, yTicks)
 
@@ -789,61 +731,9 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
           width: plotWidth,
           height: plotHeight,
         }}
-        {...(!isWeb ? panResponder.panHandlers : {})}
-        {...(!isWeb
-          ? {
-              onStartShouldSetResponder: () => true,
-              onMoveShouldSetResponder: () => true,
-            }
-          : {})}
-        // @ts-expect-error web-only hover support
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          if ((props.enablePanZoom) && (e.buttons === 1)) { // actively dragging
-            panZoom.updatePan(x, y, plotWidth, plotHeight);
-          } else {
-            evaluateNearestPoint(x, y);
-          }
-          setPointer?.({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
-          if (enableCrosshair !== false) {
-            const dataX = xDomain[0] + (x / plotWidth) * (xDomain[1] - xDomain[0]);
-            setCrosshair?.({ dataX, pixelX: x });
-          }
-        }}
-        onMouseLeave={() => { setPointer?.(interaction?.pointer ? { ...interaction.pointer, inside: false } : null); setCrosshair?.(null); panZoom.endPan(); }}
-        // @ts-expect-error web-only mouse event prop not in RN types
-        onMouseDown={(e) => {
-          if (!props.enablePanZoom) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          panZoom.startPan(x, y);
-        }}
-        onMouseUp={() => {
-          if (!props.enablePanZoom) return;
-          panZoom.endPan();
-          // @ts-expect-error optional web-only onDomainChange prop not in base type
-          props.onDomainChange?.(xDomain, yDomain);
-        }}
-        onWheel={props.enableWheelZoom ? (e: any) => {
-          if (!props.enablePanZoom) return;
-          if (e.cancelable) e.preventDefault();
-          e.stopPropagation?.();
-          const rect = e.currentTarget.getBoundingClientRect();
-          const pointerX = (e.clientX - rect.left);
-          const pointerY = (e.clientY - rect.top);
-          panZoom.wheelZoom(e.deltaY, pointerX / plotWidth, pointerY / plotHeight);
-        } : undefined}
+        pointerEvents="none"
       >
-        <Pressable
-          onPress={handlePress}
-          style={{ flex: 1 }}
-          android_disableSound
-          {...(!isWeb ? panResponder.panHandlers : {})}
-          collapsable={false}
-        >
+        <View style={{ flex: 1 }} collapsable={false} pointerEvents="none">
           {/* Quadrant background overlays */}
           {quadrantLayout && (
             <>
@@ -1052,13 +942,14 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
             );
           }) : null)}
 
-          {/* Crosshair overlays */}
-          {crosshairEnabled && interaction?.crosshair && plotHeight > 0 && (
+          {/* Crosshair overlays (driven by the normalized active target / pointer,
+              converted from container-origin to plot-local by subtracting padding) */}
+          {crosshairEnabled && activeTarget && plotHeight > 0 && (
             <View
               pointerEvents="none"
               style={{
                 position: 'absolute',
-                left: Math.max(0, Math.min(plotWidth - 1, interaction.crosshair.pixelX)),
+                left: Math.max(0, Math.min(plotWidth - 1, activeTarget.pixel.x - padding.left)),
                 top: 0,
                 height: plotHeight,
                 width: 1,
@@ -1066,13 +957,13 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
               }}
             />
           )}
-          {crosshairEnabled && interaction?.pointer?.inside && typeof interaction.pointer?.y === 'number' && plotWidth > 0 && (
+          {crosshairEnabled && pointer?.inside && typeof pointer?.y === 'number' && plotWidth > 0 && (
             <View
               pointerEvents="none"
               style={{
                 position: 'absolute',
                 left: 0,
-                top: Math.max(0, Math.min(plotHeight - 1, interaction.pointer.y)),
+                top: Math.max(0, Math.min(plotHeight - 1, pointer.y - padding.top)),
                 width: plotWidth,
                 height: 1,
                 backgroundColor: theme.colors.grid || 'rgba(0,0,0,0.2)',
@@ -1113,8 +1004,20 @@ const ScatterChartInner: React.FC<ScatterChartProps> = (props) => {
               </View>
             );
           })()}
-        </Pressable>
+        </View>
       </View>
+
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder). Full-chart overlay so pointer coords are container-origin,
+          matching registered mark pixels. Sits below the legend (zIndex 10). */}
+      {!disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          style={{ position: 'absolute', left: 0, top: 0, width, height, zIndex: 1 }}
+          {...pointerHandlers}
+        />
+      )}
 
       {/* Instructions for interactive features */}
       {(allowAddPoints || allowDragPoints) && (
@@ -1188,7 +1091,6 @@ export const ScatterChart: React.FC<ScatterChartProps> = (props) => {
     suppressPopover,
     testID,
   } = props;
-  const popoverProps = (props as any).popoverProps;
 
   const spacingProps: Partial<Record<SpacingPropKey, number>> = {};
   const spacingSource = props as Record<SpacingPropKey, number | undefined>;
@@ -1237,7 +1139,6 @@ export const ScatterChart: React.FC<ScatterChartProps> = (props) => {
       useOwnInteractionProvider={useOwnInteractionProvider}
       suppressPopover={suppressPopover}
       testID={testID}
-      popoverProps={popoverProps}
       {...spacingProps}
     >
       <ScatterChartInner

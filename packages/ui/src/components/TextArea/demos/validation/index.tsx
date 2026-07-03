@@ -41,10 +41,6 @@ export default function Demo() {
 
   return (
     <Column gap="lg" fullWidth>
-      <Text weight="semibold">Text area validation</Text>
-      <Text size="sm" colorVariant="secondary">
-        Demonstrates required, length, and summary messaging for feedback flows.
-      </Text>
 
       <Column gap="sm">
         <Text size="sm" weight="semibold">
@@ -71,41 +67,16 @@ export default function Demo() {
         />
       </Column>
 
-      <Column gap="sm">
-        <Text size="sm" weight="semibold">
-          Optional follow-up message
-        </Text>
-        <Text size="sm" colorVariant="secondary">
-          Includes a character counter and enforces a 500 character limit.
-        </Text>
-        <TextArea
-          label="Additional message"
-          placeholder="Add more context (optional, max 500 characters)"
-          value={message}
-          onChangeText={(value) => {
-            setMessage(value);
-            if (errors.message && value.length <= 500) {
-              setErrors((prev) => ({ ...prev, message: undefined }));
-            }
-          }}
-          error={errors.message}
-          rows={3}
-          maxLength={500}
-          showCharCounter
-          helperText="Use this field for any extra details."
-          fullWidth
-        />
-      </Column>
 
       <Button variant="filled" onPress={handleSubmit}>
         Submit feedback
       </Button>
 
-      {status && (
+      {status ? (
         <Text size="xs" colorVariant="success">
           {status}
         </Text>
-      )}
+      ) : null}
 
       {Object.keys(errors).length > 0 && (
         <Column

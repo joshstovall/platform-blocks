@@ -3,7 +3,7 @@ title: Management View
 category: usage
 order: 30
 tags: [datatable, selection]
-highlightLines: [66-80]
+highlightLines: [132-151]
 status: stable
 since: 1.0.0
 hidden: false

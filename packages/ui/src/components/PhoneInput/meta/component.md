@@ -1,4 +1,5 @@
 ---
+playground: true
 title: PhoneInput
 description: A phone number input with masking, raw and formatted value handling, and international support.
 category: input

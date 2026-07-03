@@ -12,6 +12,9 @@ import Animated, {
 import { HistogramChartProps, HistogramBin, HistogramBinSummary } from './types';
 import { ChartContainer, ChartTitle } from '../../ChartBase';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { Axis } from '../../core/Axis';
 import { ChartGrid } from '../../core/ChartGrid';
@@ -219,9 +222,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
     interaction = null;
   }
 
-  const registerSeries = interaction?.registerSeries;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const register = interaction?.register;
 
   // Use custom hook for bins computation
   const { bins, min, max } = useHistogramBins(data, binMethod, binsOverride);
@@ -230,7 +231,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
   const maxCount = Math.max(...bins.map((b: HistogramBin) => b.count), 1);
 
   // Layout constants - adjust padding based on legend position to prevent overlap
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  const basePadding = { top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const padding = useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -383,24 +384,6 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
     [binSummaries, onBinBlur, onBinFocus]
   );
 
-  const findBinIndexForValue = useCallback(
-    (value: number | null) => {
-      if (value == null || !binSummaries.length) return null;
-      const first = binSummaries[0];
-      const last = binSummaries[binSummaries.length - 1];
-      if (value < first.start || value > last.end) return null;
-      for (let i = 0; i < binSummaries.length; i++) {
-        const bin = binSummaries[i];
-        const isLast = i === binSummaries.length - 1;
-        if (value >= bin.start && (value < bin.end || (isLast && value <= bin.end))) {
-          return i;
-        }
-      }
-      return null;
-    },
-    [binSummaries]
-  );
-
   useEffect(() => {
     if (activeBinRef.current != null) {
       const currentIndex = activeBinRef.current;
@@ -412,70 +395,58 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
     }
   }, [binSummaries, onBinBlur]);
 
-  const registrationSignature = useMemo(() => {
-    const binsSignature = bins
-      .map((b: HistogramBin) => `${b.start}:${b.end}:${b.count}:${b.density}`)
-      .join('|');
-    const densitySignature = showDensity
-      ? densityCurve.samples.map(s => `${s.x}:${s.y}`).join('|')
-      : '';
-    return `bins:${binsSignature}|density:${densitySignature}|total:${total}`;
-  }, [bins, showDensity, densityCurve.samples, total]);
+  // New interaction engine: each bin is a band mark carrying its bar rectangle
+  // (container-origin) so the tester resolves rect membership + nearest-category.
+  // The mark id is the bin index (the band tester's category key).
+  const histColor = barColor || getColorFromScheme(0, colorSchemes.default);
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const marks: Mark[] = bins.map((bin: HistogramBin, i: number) => {
+      const x0 = xScale(bin.start);
+      const x1 = xScale(bin.end);
+      const w = Math.max(1, x1 - x0);
+      const gap = w * barGap;
+      const effectiveW = w - gap;
+      const value = density ? bin.density : bin.count;
+      const y = yScale(value);
+      const rectX = x0 + gap / 2 + padding.left;
+      const rectY = y + padding.top;
+      const height = Math.max(0, plotHeight - y);
+      const summary = binSummaries[i];
+      const rangeLabel = `${Number(bin.start).toFixed(2)} – ${Number(bin.end).toFixed(2)}`;
+      return {
+        id: i,
+        pixel: { x: rectX + effectiveW / 2, y: rectY },
+        value,
+        datum: summary ?? bin,
+        extent: { rect: { x: rectX, y: rectY, width: effectiveW, height } },
+        formattedValue: valueFormatter && summary
+          ? valueFormatter(bin.count, summary)
+          : `${rangeLabel} · ${density ? bin.density.toFixed(3) : bin.count}`,
+      };
+    });
+    return [{ id: 'hist-bins', name: 'Count', color: histColor, visible: true, marks }];
+  }, [bins, binSummaries, xScale, yScale, padding.left, padding.top, plotHeight, barGap, density, valueFormatter, histColor]);
 
-  const registeredSignatureRef = useRef<string | null>(null);
+  const tester = useMemo(() => new BandCategoryHitTester(hitSeries, { orientation: 'x' }), [hitSeries]);
 
   useEffect(() => {
-    if (!registerSeries || !registrationSignature) return;
-    if (registeredSignatureRef.current === registrationSignature) return;
+    if (!register) return;
+    register('histogram', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: 'x' }, series: hitSeries });
+    return () => register('histogram', null);
+  }, [register, hitSeries]);
 
-    // Register bins series
-    registerSeries({
-      id: 'hist-bins',
-      name: 'Count',
-      color: barColor || getColorFromScheme(0, colorSchemes.default),
-      points: binSummaries.map((summary) => ({
-        x: summary.midpoint,
-        y: density ? summary.density : summary.count,
-        meta: {
-          ...summary,
-          binSize: summary.width,
-          totalCount: total,
-          formattedValue: valueFormatter
-            ? valueFormatter(summary.count, summary)
-            : undefined,
-        },
-      })),
-      visible: true,
-    });
-
-    // Register density series if enabled
-    if (showDensity && densityCurve.samples.length) {
-      registerSeries({
-        id: 'hist-density',
-        name: 'Density',
-        color: densityColor,
-        points: densityCurve.samples.map(s => ({
-          x: s.x,
-          y: s.y,
-          meta: { density: s.y },
-        })),
-        visible: true,
-      });
-    }
-
-    registeredSignatureRef.current = registrationSignature;
-  }, [
-    registerSeries,
-    binSummaries,
-    densityCurve.samples,
-    showDensity,
-    density,
-    barColor,
-    densityColor,
-    valueFormatter,
-    total,
-    registrationSignature,
-  ]);
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    hover: liveTooltip !== false,
+    press: false,
+    tester,
+    // Keep the bar-highlight (activeBinIndex) in sync with the resolved target.
+    onPointer: (_e, target) => focusBin(target ? Number(target.markId) : null),
+    onLeave: () => focusBin(null),
+  });
 
   // Grid ticks
   const normalizedXTicks = useMemo(() => {
@@ -568,41 +539,6 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
         width={width}
         height={height}
         style={{ position: 'absolute' }}
-        // @ts-expect-error web events
-        onMouseMove={(e) => {
-          if (!setPointer) return;
-          if (plotWidth <= 0) return;
-          const rect = (e.currentTarget as any).getBoundingClientRect();
-          const px = e.clientX - rect.left - padding.left;
-          const py = e.clientY - rect.top - padding.top;
-          const clampedPx = Math.max(0, Math.min(plotWidth, px));
-          const dataX = min + (clampedPx / plotWidth) * (max - min || 1);
-          const binIndex = findBinIndexForValue(dataX);
-          const summary = binIndex != null ? binSummaries[binIndex] : null;
-
-          focusBin(binIndex);
-
-          setPointer({
-            x: px + padding.left,
-            y: py + padding.top,
-            inside: true,
-            pageX: e.pageX,
-            pageY: e.pageY,
-            data: summary
-              ? {
-                  type: 'histogram-bin',
-                  bin: summary,
-                }
-              : null,
-          });
-
-          setCrosshair?.({ dataX, pixelX: px + padding.left });
-        }}
-        onMouseLeave={() => {
-          focusBin(null);
-          setCrosshair?.(null);
-          setPointer?.(null);
-        }}
       >
         <G x={padding.left} y={padding.top}>
           {/* Range highlights */}
@@ -821,6 +757,19 @@ export const HistogramChart: React.FC<HistogramChartProps> = (props) => {
         tickLabelFontSize={yAxis?.labelFontSize ?? 11}
         label={yAxis?.title}
       />
+
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder). Full-chart overlay so pointer coords are container-origin,
+          matching the registered bar rects. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="histogram-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
+        />
+      )}
     </ChartContainer>
   );
 };

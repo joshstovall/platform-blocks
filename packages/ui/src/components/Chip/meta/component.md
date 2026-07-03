@@ -15,6 +15,7 @@ props:
 examples:
   - basic
   - variants
+  - theme-matrix
   - colors
   - sizes
   - shadow

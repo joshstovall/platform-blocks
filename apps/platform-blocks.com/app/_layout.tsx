@@ -2,6 +2,7 @@ import React from 'react';
 import { Stack, useGlobalSearchParams, usePathname, router } from 'expo-router';
 import { AppLayoutProvider, AppLayoutRenderer } from '@platform-blocks/ui';
 import { AppProviders } from '../components/layout/Providers';
+import { ToastShellOffsetBridge } from '../components/layout/ToastShellOffsetBridge';
 import { docsLayout } from '../config/docsLayout';
 
 const PureStackNavigator = React.memo(() => (
@@ -43,6 +44,7 @@ function RootLayoutInner() {
       }}
     >
       <AppLayoutRenderer>
+        <ToastShellOffsetBridge />
         <PureStackNavigator />
       </AppLayoutRenderer>
     </AppLayoutProvider>

@@ -11,7 +11,7 @@ const SUPPORT_RESOURCES = [
     title: 'Discord Community',
     description: 'Join our Discord server to chat with the community, ask questions, and get help in real-time.',
     icon: 'discord',
-    action: 'Join Discord',
+    action: 'Discord',
     url: DISCORD_INVITE,
   },
   {

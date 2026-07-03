@@ -233,7 +233,13 @@ export function FinderExample() {
     if (!id) return undefined;
     return visibleFiles.find(f => f.id === id);
   }, [visibleFiles, state.selected, state.selectedIds]);
-  useEffect(() => { setImageError(false); }, [selectedFile?.id]);
+  // Reset the image-error flag when the selected file changes. Adjusting state
+  // during render (React's recommended pattern) avoids a setState-in-effect.
+  const [prevSelectedFileId, setPrevSelectedFileId] = useState(selectedFile?.id);
+  if (selectedFile?.id !== prevSelectedFileId) {
+    setPrevSelectedFileId(selectedFile?.id);
+    setImageError(false);
+  }
 
   const renderThumb = (file: FinderFile, size: number) => {
     const isImage = file.type === 'file' && file.uri && file.mime?.startsWith('image/');

@@ -317,6 +317,17 @@ export const Badge: React.FC<BadgeProps> = (props) => {
     />
   ) : null;
 
+  // Foreground row that must paint above the absolute gradient fill. On web,
+  // positioned elements paint above non-positioned in-flow siblings regardless
+  // of DOM order, so an opaque gradient would otherwise cover the label.
+  const contentStyles = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    position: 'relative' as const,
+    zIndex: 1,
+  };
+
   return (
     <Component
       style={[badgeStyles, spacingStyles, style]}
@@ -325,32 +336,34 @@ export const Badge: React.FC<BadgeProps> = (props) => {
       {...otherProps}
     >
       {gradientOverlay}
-      {removePosition === 'left' && removeButton && (
-        <View style={{ marginRight: iconSpacing }}>
-          {removeButton}
-        </View>
-      )}
-
-      {startIcon && (
-        <View style={{ marginRight: iconSpacing }}>
-          {startIcon}
-        </View>
-      )}
-
-      <Text
-        {...mergeSlotProps(
-          { weight: '500' as const, style: [badgeTextStyles, textStyle] },
-          labelProps,
+      <View style={contentStyles}>
+        {removePosition === 'left' && removeButton && (
+          <View style={{ marginRight: iconSpacing }}>
+            {removeButton}
+          </View>
         )}
-      >
-        {children}
-      </Text>
 
-      {(endIcon || (onRemove && removePosition === 'right')) && (
-        <View style={{ marginLeft: iconSpacing }}>
-          {removePosition === 'right' && removeButton ? removeButton : endIcon}
-        </View>
-      )}
+        {startIcon && (
+          <View style={{ marginRight: iconSpacing }}>
+            {startIcon}
+          </View>
+        )}
+
+        <Text
+          {...mergeSlotProps(
+            { weight: '500' as const, style: [badgeTextStyles, textStyle] },
+            labelProps,
+          )}
+        >
+          {children}
+        </Text>
+
+        {(endIcon || (onRemove && removePosition === 'right')) && (
+          <View style={{ marginLeft: iconSpacing }}>
+            {removePosition === 'right' && removeButton ? removeButton : endIcon}
+          </View>
+        )}
+      </View>
     </Component>
   );
 };

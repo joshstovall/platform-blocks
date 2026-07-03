@@ -22,7 +22,7 @@ const accordionVariants = [
 export default function Demo() {
   return (
     <Column gap="lg">
-      <Card p="md">
+      <Card p="md" variant="ghost">
         <Column gap="lg">
           <Text size="sm" colorVariant="secondary">
             Adjust visual weight with the `variant` prop while reusing the same item content.

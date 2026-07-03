@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Candlestick Chart
 tags: [chart, financial, ohlc]
 category: charts

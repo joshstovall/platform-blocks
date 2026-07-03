@@ -13,6 +13,7 @@ export type { CheckboxProps } from './Checkbox';
 export type { ChipProps } from './Chip';
 export type { CodeBlockProps } from './CodeBlock/types';
 export type { CopyButtonProps } from './CopyButton/types';
+export type { ColorInputProps } from './ColorInput';
 export type { ColorPickerProps } from './ColorPicker';
 export type { KeyboardAwareLayoutProps } from './KeyboardAwareLayout';
 export type { DialogProps } from './Dialog';

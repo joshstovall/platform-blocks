@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Marimekko Chart
 tags: [chart, marimekko, mosaic]
 category: charts

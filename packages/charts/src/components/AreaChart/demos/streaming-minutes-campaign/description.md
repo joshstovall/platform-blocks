@@ -1,4 +1,5 @@
 **Story focus**
+
 - Tracks how a marketing push shifts audience attention across Originals, TV, film, and live sports week-by-week.
 - Highlights the share-based stack so teams can see when new content overtakes legacy catalog minutes.
 - Surfaces total minute contribution per category inside the tooltip for quick campaign readouts.

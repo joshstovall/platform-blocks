@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Image
 group: Media
 status: beta

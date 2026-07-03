@@ -18,6 +18,9 @@ import { Axis } from '../../core/Axis';
 import { ChartGrid as Grid } from '../../core/ChartGrid';
 import { linearScale } from '../../utils/scales';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { BandCategoryHitTester } from '../../core/hittest/band';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { generateTicks, getColorFromScheme, colorSchemes, formatNumber } from '../../utils';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
@@ -236,9 +239,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
 
-  const registerSeries = interaction?.registerSeries;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const register = interaction?.register;
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pressedIndex, setPressedIndex] = useState<number | null>(null);
@@ -392,7 +393,8 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     return visibleSeries;
   }, [resolvedLayout, visibleSeries, normalizedSeries]);
 
-  const basePadding = { top: 40, right: 20, bottom: 60, left: 80 };
+  // Reserve extra room on the left for a rotated y-axis title so it clears the tick labels.
+  const basePadding = { top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 };
   const chartDimensions = useMemo(
     () => {
       const adjustedPadding = !legend?.show ? basePadding : (() => {
@@ -411,7 +413,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
         plotHeight: height - adjustedPadding.top - adjustedPadding.bottom,
       };
     },
-    [width, height, legend?.show, legend?.position]
+    [width, height, legend?.show, legend?.position, yAxis?.title]
   );
 
   const { padding, plotWidth, plotHeight } = chartDimensions;
@@ -681,40 +683,6 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     startAnimation();
   }, [startAnimation, dataSignature]);
 
-  const lastSignatureRef = React.useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    const signature = `${dataSignature}:${Array.from(hiddenSeries).sort().join(',')}:${valueFormatter ? 'vf' : 'plain'}`;
-    if (lastSignatureRef.current === signature) return;
-    lastSignatureRef.current = signature;
-
-    normalizedSeries.forEach((seriesItem) => {
-      const samplePoint = seriesItem.points.find((point) => !point.isSynthetic);
-      const palette = theme.colors.accentPalette ?? colorSchemes.default;
-      registerSeries({
-        id: seriesItem.id,
-        name: seriesItem.name,
-        color:
-          samplePoint?.color ||
-          resolvedSeries[seriesItem.seriesIndex]?.color ||
-          barColor ||
-          getColorFromScheme(seriesItem.seriesIndex, palette),
-        visible: !hiddenSeries.has(seriesItem.id),
-        points: seriesItem.points.map((point, pointIndex) => ({
-          x: point.categoryIndex,
-          y: point.value,
-          meta: {
-            ...point.datum,
-            seriesId: seriesItem.id,
-            seriesName: seriesItem.name,
-            formattedValue: valueFormatter
-              ? valueFormatter(point.datum.value, point.datum, pointIndex)
-              : undefined,
-          },
-        })),
-      });
-    });
-  }, [registerSeries, normalizedSeries, resolvedSeries, barColor, theme.colors.accentPalette, hiddenSeries, dataSignature, valueFormatter]);
 
   const gridXTicks = useMemo(() => {
     if (!grid?.show) return [] as number[];
@@ -731,23 +699,6 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     const band = plotHeight / Math.max(categories.length, 1);
     return categories.map((_, index) => ((index + 0.5) * band) / plotHeight);
   }, [grid?.show, orientation, valueTicks, valueScaleY, plotHeight, categories.length]);
-
-  const handlePressIn = useCallback(
-    (index: number) => {
-      if (disabled) return;
-      setPressedIndex(index);
-      updateScale(index, 0.92);
-    },
-    [disabled, updateScale]
-  );
-
-  const handlePressOut = useCallback(
-    (index: number) => {
-      setPressedIndex(null);
-      updateScale(index, hoveredIndex === index ? 1.05 : 1);
-    },
-    [hoveredIndex, updateScale]
-  );
 
   const handlePress = useCallback(
     (bar: ComputedBar, event: any) => {
@@ -768,83 +719,70 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     [disabled, onDataPointPress, onPress]
   );
 
-  const updatePointerState = useCallback((x: number, y: number, meta?: { pageX?: number; pageY?: number; data?: any }) => {
-    if (!setPointer && !setCrosshair) return;
-    const insideX = x >= 0 && x <= plotWidth;
-    const insideY = y >= 0 && y <= plotHeight;
-    if (setPointer) {
-      setPointer({
-        x,
-        y,
-        inside: insideX && insideY,
-        insideX,
-        insideY,
-        pageX: meta?.pageX,
-        pageY: meta?.pageY,
-        data: meta?.data ?? null,
+  // Bar-highlight (scale + hoveredIndex) driven from the hit-test engine's onPointer.
+  const hoveredRef = React.useRef<number | null>(null);
+  const setHovered = useCallback((idx: number | null) => {
+    if (hoveredRef.current === idx) return;
+    if (hoveredRef.current != null) updateScale(hoveredRef.current, 1);
+    if (idx != null) updateScale(idx, 1.05);
+    hoveredRef.current = idx;
+    setHoveredIndex(idx);
+  }, [updateScale]);
+
+  // New interaction engine: each bar is a band mark with its container-origin rect +
+  // category-index key. One hit-series per data series → rect membership resolves the
+  // hovered bar; slice() returns every series' bar at the category. Band axis is x for
+  // vertical bars, y for horizontal.
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const bySeries = new Map<string, { name?: string; color?: string; marks: Mark[] }>();
+    bars.forEach((bar) => {
+      const key = String(bar.seriesId);
+      let entry = bySeries.get(key);
+      if (!entry) { entry = { name: bar.seriesName, color: bar.color, marks: [] }; bySeries.set(key, entry); }
+      const rectX = bar.x + padding.left;
+      const rectY = bar.y + padding.top;
+      entry.marks.push({
+        id: bar.globalIndex,
+        pixel: { x: rectX + bar.width / 2, y: rectY + bar.height / 2 },
+        value: bar.originalValue,
+        datum: bar,
+        label: bar.seriesName ?? String(bar.datum.category),
+        color: bar.color,
+        extent: { rect: { x: rectX, y: rectY, width: bar.width, height: bar.height }, cell: { row: 0, col: bar.categoryIndex } },
+        formattedValue: valueFormatter ? String(valueFormatter(bar.originalValue, bar.datum, bar.globalIndex)) : formatNumber(bar.originalValue),
       });
-    }
-    if (setCrosshair && insideX) {
-      const clampedX = Math.max(0, Math.min(plotWidth, x));
-      let dataX: number;
-      if (orientation === 'vertical') {
-        const rawIndex = categoryScaleX.invert ? categoryScaleX.invert(clampedX) : 0;
-        const maxIndex = Math.max(categories.length - 1, 0);
-        dataX = Math.max(0, Math.min(maxIndex, Math.round(rawIndex)));
-      } else {
-        dataX = valueScaleX.invert ? valueScaleX.invert(clampedX) : metrics.minValue;
-      }
-      setCrosshair({ dataX, pixelX: clampedX });
-    }
-  }, [setPointer, setCrosshair, plotWidth, plotHeight, orientation, categoryScaleX, categories.length, valueScaleX, metrics.minValue]);
+    });
+    return Array.from(bySeries.entries()).map(([id, e]) => ({ id, name: e.name, color: e.color || '', visible: true, marks: e.marks }));
+  }, [bars, padding.left, padding.top, valueFormatter]);
 
-  const handleHoverOut = useCallback((options?: { preserveCrosshair?: boolean; suppressPointerReset?: boolean }) => {
-    if (hoveredIndex != null) {
-      updateScale(hoveredIndex, 1);
-    }
-    setHoveredIndex(null);
-    if (!options?.suppressPointerReset && setPointer) {
-      setPointer({ x: 0, y: 0, inside: false, insideX: false, insideY: false, data: null });
-    }
-    const shouldPreserve = options?.preserveCrosshair ?? true;
-    if (!shouldPreserve) {
-      setCrosshair?.(null);
-    }
-  }, [hoveredIndex, updateScale, setPointer, setCrosshair]);
-
-  const handleHoverIn = useCallback(
-    (bar: ComputedBar) => {
-      if (disabled) return;
-      setHoveredIndex(bar.globalIndex);
-      updateScale(bar.globalIndex, pressedIndex === bar.globalIndex ? 0.92 : 1.05);
-
-      const pointerX = bar.x + bar.width / 2;
-      const pointerY = orientation === 'vertical' ? bar.y : bar.y + bar.height / 2;
-      const formattedValue = valueFormatter
-        ? valueFormatter(bar.originalValue, bar.datum, bar.globalIndex)
-        : formatNumber(bar.originalValue);
-      updatePointerState(pointerX, pointerY, {
-        data: {
-          type: 'bar',
-          label: bar.datum.category,
-          value: bar.originalValue,
-          formattedValue,
-          seriesId: bar.seriesId,
-          seriesName: bar.seriesName,
-          datum: bar.datum,
-          percentContribution: bar.percentContribution,
-        },
-      });
-    },
-    [disabled, updateScale, pressedIndex, orientation, valueFormatter, updatePointerState]
+  const tester = useMemo(
+    () => new BandCategoryHitTester(hitSeries, { orientation: orientation === 'vertical' ? 'x' : 'y' }),
+    [hitSeries, orientation]
   );
 
   useEffect(() => {
-    if (hoveredIndex == null) return;
-    if (!bars.some((bar) => bar.globalIndex === hoveredIndex)) {
-      handleHoverOut();
-    }
-  }, [bars, hoveredIndex, handleHoverOut]);
+    if (!register) return;
+    register('bar', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'band', orientation: orientation === 'vertical' ? 'x' : 'y' }, series: hitSeries });
+    return () => register('bar', null);
+  }, [register, hitSeries, orientation]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: true,
+    tester,
+    onPointer: (_e, target) => setHovered(target ? (target.datum as ComputedBar).globalIndex : null),
+    onLeave: () => setHovered(null),
+    onPress: (e, target) => { if (target) handlePress(target.datum as ComputedBar, (e.raw as any)?.nativeEvent ?? e.raw); },
+  });
+
+  useEffect(() => {
+    if (hoveredRef.current == null) return;
+    if (!bars.some((bar) => bar.globalIndex === hoveredRef.current)) setHovered(null);
+  }, [bars, setHovered]);
 
   const thresholdsBack = useMemo(() => thresholdsConfig.filter((threshold) => threshold.position === 'back'), [thresholdsConfig]);
   const thresholdsFront = useMemo(() => thresholdsConfig.filter((threshold) => threshold.position === 'front'), [thresholdsConfig]);
@@ -965,63 +903,6 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
     },
     [allowLegendToggles, autoLegend, normalizedSeries]
   );
-
-  const handlePointer = useCallback(
-    (nativeEvent: any, firePress: boolean = false) => {
-      if (!nativeEvent || disabled) return;
-      const { locationX, locationY, pageX, pageY } = nativeEvent;
-      if (typeof locationX !== 'number' || typeof locationY !== 'number') return;
-      const x = locationX;
-      const y = locationY;
-
-      updatePointerState(x, y, { pageX, pageY });
-
-      let target: ComputedBar | null = null;
-      let bestDistance = Number.POSITIVE_INFINITY;
-
-      for (const bar of bars) {
-        const withinX = x >= bar.x && x <= bar.x + bar.width;
-        const withinY = y >= bar.y && y <= bar.y + bar.height;
-        if (withinX && withinY) {
-          const centerX = bar.x + bar.width / 2;
-          const centerY = bar.y + bar.height / 2;
-          const distance = Math.hypot(centerX - x, centerY - y);
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            target = bar;
-          }
-        }
-      }
-
-      if (target) {
-        handleHoverIn(target);
-        if (firePress) {
-          handlePress(target, {
-            nativeEvent: { locationX: x, locationY: y, pageX, pageY },
-          });
-        }
-      } else {
-        handleHoverOut({ preserveCrosshair: true, suppressPointerReset: true });
-      }
-    },
-    [bars, disabled, handleHoverIn, handlePress, handleHoverOut, updatePointerState]
-  );
-
-  const handlePointerEnd = useCallback(() => {
-    handleHoverOut({ preserveCrosshair: false });
-  }, [handleHoverOut]);
-
-  const isWeb = Platform.OS === 'web';
-
-  const mapWebPointerEvent = useCallback((event: any) => {
-    const rect = event.currentTarget?.getBoundingClientRect?.();
-    return {
-      locationX: rect ? event.clientX - rect.left : 0,
-      locationY: rect ? event.clientY - rect.top : 0,
-      pageX: event.pageX ?? event.clientX,
-      pageY: event.pageY ?? event.clientY,
-    };
-  }, []);
 
   const valueAxisTickSize = yAxis?.tickLength ?? 4;
   const categoryAxisTickSize = xAxis?.tickLength ?? 4;
@@ -1193,11 +1074,6 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
                 opacity={opacity}
                 stroke={stroke}
                 strokeWidth={isHovered ? 1.5 : 0}
-                onHoverIn={() => handleHoverIn(bar)}
-                onHoverOut={() => handleHoverOut({ preserveCrosshair: true, suppressPointerReset: true })}
-                onPress={(e) => handlePress(bar, e)}
-                onPressIn={() => handlePressIn(bar.globalIndex)}
-                onPressOut={() => handlePressOut(bar.globalIndex)}
               />
             );
           })}
@@ -1262,50 +1138,18 @@ export const BarChart: React.FC<BarChartProps> = React.memo((props) => {
         {thresholdsFront.length > 0 && renderThresholds(thresholdsFront)}
       </Svg>
 
-      <View
-        style={{
-          position: 'absolute',
-          left: padding.left,
-          top: padding.top,
-          width: plotWidth,
-          height: plotHeight,
-        }}
-        pointerEvents={disabled ? 'none' : isWeb ? 'auto' : 'box-only'}
-        {...(isWeb
-          ? {
-              onPointerMove: (event: any) => {
-                handlePointer(mapWebPointerEvent(event));
-              },
-              onPointerDown: (event: any) => {
-                event.preventDefault?.();
-                event.currentTarget?.setPointerCapture?.(event.pointerId);
-                handlePointer(mapWebPointerEvent(event));
-              },
-              onPointerUp: (event: any) => {
-                event.currentTarget?.releasePointerCapture?.(event.pointerId);
-                handlePointer(mapWebPointerEvent(event), true);
-                handlePointerEnd();
-              },
-              onPointerLeave: () => {
-                handlePointerEnd();
-              },
-              onPointerCancel: () => {
-                handlePointerEnd();
-              },
-            }
-          : {
-              onStartShouldSetResponder: () => !disabled,
-              onMoveShouldSetResponder: () => !disabled,
-              onResponderGrant: (e: any) => handlePointer(e.nativeEvent),
-              onResponderMove: (e: any) => handlePointer(e.nativeEvent),
-              onResponderRelease: (e: any) => {
-                handlePointer(e.nativeEvent, true);
-                handlePointerEnd();
-              },
-              onResponderTerminate: handlePointerEnd,
-              onResponderTerminationRequest: () => true,
-            })}
-      />
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder), driven by useChartPointer + the band hit-tester. Full-chart
+          overlay so pointer coords are container-origin, matching the bar rects. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="bar-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
+        />
+      )}
 
       {legend?.show && legendItems.length > 0 && (
         <ChartLegend

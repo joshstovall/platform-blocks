@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Gallery
 description: Responsive media gallery with thumbnails, navigation, and modal viewing.
 source: ui/src/components/Gallery

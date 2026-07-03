@@ -32,6 +32,7 @@ const columns: DataTableColumn<Employee>[] = [
     header: 'Email',
     accessor: 'email',
     sortable: true,
+    minWidth: 200,
   },
   {
     key: 'role',

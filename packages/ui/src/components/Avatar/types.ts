@@ -46,4 +46,6 @@ export interface AvatarGroupProps {
   size?: ComponentSizeValue;
   /** Whether to add borders around avatars for separation */
   bordered?: boolean;
+  /** When `limit` hides avatars, wrap the `+N` surplus indicator in a Tooltip with this label. */
+  surplusTooltip?: string;
 }

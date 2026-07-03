@@ -18,9 +18,14 @@ export function DAWExample() {
   const [showTrackList, setShowTrackList] = useState(() => !isMobile);
   const rafRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  // Follow the viewport when it crosses the mobile breakpoint, while still
+  // allowing the user to toggle the track list independently. Adjusting state
+  // during render (React's recommended pattern) avoids a setState-in-effect.
+  const [prevIsMobile, setPrevIsMobile] = useState(isMobile);
+  if (isMobile !== prevIsMobile) {
+    setPrevIsMobile(isMobile);
     setShowTrackList(!isMobile);
-  }, [isMobile]);
+  }
 
   // Playback loop
   useEffect(() => {

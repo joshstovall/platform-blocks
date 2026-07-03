@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { View } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Line, Rect, Text as SvgText } from 'react-native-svg';
 
 import type {
@@ -14,11 +14,13 @@ import { useChartTheme } from '../../theme/ChartThemeContext';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
-import { clamp, colorSchemes, getColorFromScheme } from '../../utils';
+import { colorSchemes, getColorFromScheme } from '../../utils';
 import { linearScale } from '../../utils/scales';
 import { AnimatedSparkline } from './AnimatedSparkline';
 import { useSparklineGeometry } from './useSparklineGeometry';
-import { useSparklineSeriesRegistration } from './useSparklineSeriesRegistration';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { PointSeriesHitTester } from '../../core/hittest/point';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 
 const DEFAULT_PADDING = { top: 4, right: 4, bottom: 4, left: 4 };
 
@@ -118,9 +120,7 @@ export const SparklineChart: React.FC<SparklineChartProps> = (props) => {
     // Allow standalone usage without provider
   }
 
-  const registerSeries = interaction?.registerSeries;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const register = interaction?.register;
   const interactionSeries = interaction?.series;
 
   const normalizedData = useMemo(() => normalizeData(data), [data]);
@@ -292,119 +292,46 @@ export const SparklineChart: React.FC<SparklineChartProps> = (props) => {
   const seriesVisibility = interactionSeries?.find((series) => series.id === seriesId)?.visible;
   const isSeriesVisible = seriesVisibility !== false;
 
-  useSparklineSeriesRegistration({
+  // New interaction engine: build container-origin marks + a point hit-tester,
+  // register it with the store, and let the shared engine drive hover/tooltip.
+  // chartPoints' chartX/chartY are already container-origin (from the sparkline
+  // geometry's scales), so no padding offset is needed here.
+  const hitSeries: HitSeries[] = useMemo(() => [{
     id: seriesId,
     name,
     color: strokeColor,
-    points: chartPoints,
-    registerSeries,
-    valueFormatter,
     visible: isSeriesVisible,
+    marks: chartPoints.map((p, i): Mark => ({
+      id: i,
+      pixel: { x: p.chartX, y: p.chartY },
+      value: p.y,
+      datum: p,
+      dataX: p.x,
+      dataY: p.y,
+      formattedValue: valueFormatter ? valueFormatter(p.y) : String(p.y),
+    })),
+  }], [seriesId, name, strokeColor, isSeriesVisible, chartPoints, valueFormatter]);
+
+  const tester = useMemo(() => new PointSeriesHitTester(hitSeries), [hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register(seriesId, { frame: { kind: 'cartesian' } as any, geometry: { kind: 'point' }, series: hitSeries });
+    return () => register(seriesId, null);
+  }, [register, seriesId, hitSeries]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    // Honour the per-chart liveTooltip prop; multi-series slice is governed by the
+    // shared store config (config.multiTooltip) via useChartPointer.
+    hover: liveTooltip !== false,
+    press: false,
+    tester,
+    maxDistance: 30,
   });
-
-  const pointerShouldUpdate = Boolean(
-    interaction && !disabled && (liveTooltip !== false || multiTooltip !== false)
-  );
-
-  const findNearestPoint = useCallback(
-    (targetX: number) => {
-      if (!chartPoints.length) return null;
-      let left = 0;
-      let right = chartPoints.length - 1;
-
-      while (left < right) {
-        const mid = (left + right) >> 1;
-        if (chartPoints[mid].chartX < targetX) {
-          left = mid + 1;
-        } else {
-          right = mid;
-        }
-      }
-
-      const candidate = chartPoints[left];
-      const prev = left > 0 ? chartPoints[left - 1] : null;
-      if (prev && Math.abs(prev.chartX - targetX) < Math.abs(candidate.chartX - targetX)) {
-        return prev;
-      }
-      return candidate;
-    },
-    [chartPoints]
-  );
-
-  const handlePointerMove = useCallback(
-    (x: number, y: number, nativePosition?: { pageX?: number; pageY?: number }) => {
-      if (!pointerShouldUpdate || !chartPoints.length) {
-        return;
-      }
-
-      const clampedX = clamp(x, padding.left, padding.left + plotWidth);
-      const clampedY = clamp(y, padding.top, padding.top + plotHeight);
-
-      const nearestPoint = findNearestPoint(clampedX) ?? chartPoints[0];
-
-      if (setPointer) {
-        setPointer({
-          x: clampedX,
-          y: clampedY,
-          inside: true,
-          pageX: nativePosition?.pageX,
-          pageY: nativePosition?.pageY,
-        });
-      }
-
-      setCrosshair?.({ dataX: nearestPoint.x, pixelX: nearestPoint.chartX });
-    },
-    [chartPoints, findNearestPoint, padding.left, padding.top, plotHeight, plotWidth, pointerShouldUpdate, setPointer, setCrosshair]
-  );
-
-  const handlePointerLeave = useCallback(() => {
-    if (!pointerShouldUpdate) {
-      return;
-    }
-
-    setPointer?.({ x: 0, y: 0, inside: false });
-    setCrosshair?.(null);
-  }, [pointerShouldUpdate, setCrosshair, setPointer]);
-
-  const handleWebPointerMove = useCallback(
-    (event: any) => {
-      if (!pointerShouldUpdate) {
-        return;
-      }
-      const rect = event?.currentTarget?.getBoundingClientRect?.();
-      if (!rect) {
-        return;
-      }
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      handlePointerMove(x, y, { pageX: event.pageX, pageY: event.pageY });
-    },
-    [handlePointerMove, pointerShouldUpdate]
-  );
-
-  const handleNativeResponderMove = useCallback(
-    (event: any) => {
-      if (!pointerShouldUpdate) {
-        return;
-      }
-      const { locationX, locationY, pageX, pageY } = event.nativeEvent ?? {};
-      handlePointerMove(locationX ?? 0, locationY ?? 0, { pageX, pageY });
-    },
-    [handlePointerMove, pointerShouldUpdate]
-  );
-
-  const pointerHandlers = Platform.OS === 'web'
-    ? {
-        onPointerMove: handleWebPointerMove,
-        onPointerLeave: handlePointerLeave,
-      }
-    : {
-        onStartShouldSetResponder: () => pointerShouldUpdate,
-        onResponderMove: handleNativeResponderMove,
-        onResponderGrant: handleNativeResponderMove,
-        onResponderRelease: handlePointerLeave,
-        onResponderTerminate: handlePointerLeave,
-      };
 
   const baselineTicks = useMemo(() => (
     zeroNormalized != null && Number.isFinite(zeroNormalized)
@@ -451,7 +378,7 @@ export const SparklineChart: React.FC<SparklineChartProps> = (props) => {
         yTicks={baselineTicks}
       />
 
-      <Svg width={width} height={height} {...pointerHandlers}>
+      <Svg width={width} height={height}>
         {fill && fillPath ? (
           <Defs>
             <LinearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
@@ -488,6 +415,19 @@ export const SparklineChart: React.FC<SparklineChartProps> = (props) => {
 
         {thresholdRender.labels}
       </Svg>
+
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder). Full-chart overlay so pointer coords are container-origin,
+          matching registered mark pixels. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="sparkline-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
+        />
+      )}
     </View>
   );
 };

@@ -1,5 +1,5 @@
 ---
-title: Multi Select
+title: Multi-select tags
 category: features
 order: 20
 tags: [multi-select, multiple, selection]
@@ -9,4 +9,5 @@ since: 1.0.0
 hidden: false
 ---
 
-Multi-select AutoComplete that toggles genres and renders removable chips.
+Tap an item to add or remove it. Selected genres render as removable chips.
+

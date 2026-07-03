@@ -28,8 +28,8 @@
     "npm": "NPM",
     "toggleTheme": "Toggle theme",
     "switchLocale": "Switch Locale",
-    "starOnGithub": "Star on GitHub",
-    "joinDiscord": "Join Discord",
+    "starOnGithub": "GitHub",
+    "joinDiscord": "Discord",
     "githubShort": "GitHub",
     "discordShort": "Discord"
   },

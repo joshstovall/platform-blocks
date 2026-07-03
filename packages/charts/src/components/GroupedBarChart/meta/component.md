@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Grouped Bar Chart
 tags: [chart, bar, grouped]
 category: charts

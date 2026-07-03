@@ -645,9 +645,12 @@ export function useDeviceInfo(options: UseDeviceInfoOptions = {}): DeviceInfo {
     return () => window.removeEventListener('languagechange', handler);
   }, []);
 
-  // Extended data (network + capabilities)
+  // Extended data (network + capabilities). This is a genuine async data-fetch
+  // effect — marking readiness here (and in the promise handlers below) is the
+  // correct pattern, so the synchronous setReady is intentional.
   useEffect(() => {
     if (!enableExtendedData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- async data-fetch orchestration
       setReady(true);
       return;
     }
@@ -668,8 +671,11 @@ export function useDeviceInfo(options: UseDeviceInfoOptions = {}): DeviceInfo {
     };
   }, [enableExtendedData]);
 
-  // Update timestamp whenever relevant measurements change
+  // Update timestamp whenever relevant measurements change. The value is an
+  // impure Date.now() reading captured as a side effect of those changes, so it
+  // genuinely belongs in an effect.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- timestamp captured on change
     setUpdatedAt(Date.now());
   }, [screen, colorScheme, contrast, reducedMotion, locale, input, safeAreaInsets, extended, ready]);
 

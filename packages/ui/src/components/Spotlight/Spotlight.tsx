@@ -279,6 +279,26 @@ function SpotlightAction({
     return plain.length > MAX_DESC ? plain.slice(0, MAX_DESC - 1).trimEnd() + '…' : plain;
   }, [description]);
 
+  // Match AutoComplete's highlighted-text treatment: primary-colored bold text
+  // on a transparent background (rather than the default amber highlight fill).
+  const highlightColor = React.useMemo(() => {
+    const primaryPalette = theme.colors.primary || [];
+    if (theme.colorScheme === 'dark') {
+      return primaryPalette[5] || primaryPalette[4] || '#60A5FA';
+    }
+    return primaryPalette[6] || primaryPalette[5] || '#3B82F6';
+  }, [theme.colors.primary, theme.colorScheme]);
+
+  const labelHighlightProps = React.useMemo(() => ({
+    color: highlightColor,
+    style: [styles.actionLabel, styles.highlightText],
+  }), [highlightColor]);
+
+  const descriptionHighlightProps = React.useMemo(() => ({
+    color: highlightColor,
+    style: [styles.actionDescription, styles.highlightText],
+  }), [highlightColor]);
+
   const actionStyle = [
     styles.action,
     {
@@ -344,7 +364,7 @@ function SpotlightAction({
           <Highlight
             highlight={highlightQuery}
             style={styles.actionLabel}
-            highlightProps={{ style: styles.actionLabel }}
+            highlightProps={labelHighlightProps}
           >
             {label}
           </Highlight>
@@ -352,7 +372,7 @@ function SpotlightAction({
             <Highlight
               highlight={highlightQuery}
               style={styles.actionDescription}
-              highlightProps={{ style: styles.actionDescription }}
+              highlightProps={descriptionHighlightProps}
             >
               {truncatedDescription}
             </Highlight>
@@ -767,6 +787,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     lineHeight: 20,
+  },
+  highlightText: {
+    backgroundColor: 'transparent',
+    fontWeight: '700',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   actionLeftSection: {
     alignItems: 'center',

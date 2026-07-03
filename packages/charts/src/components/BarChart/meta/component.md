@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Bar Chart
 tags: [chart, bar, categorical]
 category: charts

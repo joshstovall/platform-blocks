@@ -39,7 +39,9 @@ const UI_COMPONENT_NAV_ITEMS: NavItem[] = toNavItems(
 
 const CHART_COMPONENT_NAV_ITEMS: NavItem[] = toNavItems(
   UNIQUE_CORE_COMPONENTS.filter(component => component.category === 'charts'),
-  'charts',
+  // Chart docs are served by ComponentDetailScreen under /components/<Name>
+  // (it handles the `charts` category), so keep the sidebar links consistent.
+  'components',
 );
 
 export const NAV_SECTIONS: NavSection[] = [
@@ -50,7 +52,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Components', route: '/components', icon: 'grid', bottom: true, searchable: true },
       // { label: 'Charts', route: '/charts', icon: 'linechart', bottom: true, searchable: true },
       { label: 'Hooks', route: '/hooks', icon: 'hook', searchable: true, description: 'Reference for reusable React hooks in Platform Blocks' },
-      { label: 'Examples', route: '/examples', icon: 'code', bottom: true, searchable: true },
       { label: 'Icons', route: '/icons', icon: 'star', searchable: true, description: 'Test custom icons package integration' },
     ]
   },

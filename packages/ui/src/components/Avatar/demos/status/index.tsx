@@ -21,7 +21,6 @@ const STATUS_AVATARS = [
     description: 'Focus time',
     size: 'lg' as const,
     src: 'https://randomuser.me/api/portraits/men/2.jpg',
-    indicatorColor: 'warning' as const
   },
   {
     key: 'offline',

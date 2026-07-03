@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Behaves like a Select by opening with every option visible before filtering on input.
+Behaves like a Select: the field is non-editable (`editable={false}`), so it can't be typed into or filtered. Tapping opens the full option list (`filter={() => true}`) and the value is chosen from it.

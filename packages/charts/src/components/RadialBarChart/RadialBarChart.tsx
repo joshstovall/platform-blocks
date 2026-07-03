@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import Animated, {
   useSharedValue,
@@ -13,10 +13,14 @@ import Animated, {
 import { RadialBarChartProps, RadialBarDatum } from './types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { AngularSliceHitTester } from '../../core/hittest/angular';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { getColorFromScheme, colorSchemes, formatNumber } from '../../utils';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 const polarToCartesian = (cx: number, cy: number, r: number, angleDeg: number) => {
   'worklet';
@@ -47,29 +51,21 @@ const AnimatedRadialBar: React.FC<{
   animationProgress: SharedValue<number>;
   color: string;
   trackColor: string;
-  showLabels: boolean;
   disabled: boolean;
-  onHover?: () => void;
-  onHoverOut?: () => void;
-  theme: ReturnType<typeof useChartTheme>;
-}> = React.memo(({ 
-  datum, 
-  index, 
-  centerX, 
-  centerY, 
-  radius, 
-  thickness, 
-  startAngle, 
-  endAngle, 
-  globalMax, 
-  animationProgress, 
-  color, 
-  trackColor, 
-  showLabels, 
+}> = React.memo(({
+  datum,
+  index,
+  centerX,
+  centerY,
+  radius,
+  thickness,
+  startAngle,
+  endAngle,
+  globalMax,
+  animationProgress,
+  color,
+  trackColor,
   disabled,
-  onHover,
-  onHoverOut,
-  theme
 }) => {
   const scale = useSharedValue(disabled ? 1 : 0);
 
@@ -106,15 +102,9 @@ const AnimatedRadialBar: React.FC<{
     } as any;
   }, [startAngle, targetSpan, centerX, centerY, radius]);
 
-  const isWeb = Platform.OS === 'web';
-
   return (
-    <G
-      {...(isWeb ? {
-        onMouseEnter: onHover,
-        onMouseLeave: onHoverOut,
-      } : {})}
-    >
+    <G>
+      {/* Pointer/hover handled by the shared gesture surface + angular hit-tester. */}
       {/* Track */}
       <Path
         d={trackPath}
@@ -133,20 +123,6 @@ const AnimatedRadialBar: React.FC<{
         strokeLinecap="round"
         fill="none"
       />
-      
-      {/* Label */}
-      {showLabels && datum.label && (
-        <SvgText
-          x={centerX}
-          y={centerY - radius + thickness / 2}
-          fontSize={theme.fontSize.sm}
-          fill={theme.colors.textSecondary}
-          fontFamily={theme.fontFamily}
-          textAnchor="middle"
-        >
-          {datum.label}
-        </SvgText>
-      )}
     </G>
   );
 });
@@ -175,6 +151,8 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
     liveTooltip = true,
     disabled = false,
     animationDuration = 800,
+    centerLabel,
+    centerSubLabel,
   } = props;
 
   const theme = useChartTheme();
@@ -185,14 +163,48 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
     interaction = null;
   }
 
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
 
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const maxRadius = radius ?? Math.min(width, height) / 2 - 24;
+  // Reserve vertical space for the (absolutely positioned) title band so the
+  // outer ring doesn't overlap the title/subtitle.
+  const titleInset = (title || subtitle) ? (subtitle ? 44 : 26) : 0;
+
+  // Normalized bounding box of the arc sweep (unit circle, component angle
+  // convention). Lets partial sweeps (e.g. a semicircle gauge) fill the plot
+  // area and stay centered instead of reserving an empty half. A full circle
+  // yields the usual centered layout.
+  const arcExtent = useMemo(() => {
+    let uxMin = Infinity, uxMax = -Infinity, uyMin = Infinity, uyMax = -Infinity;
+    const lo = Math.min(startAngle, endAngle);
+    const hi = Math.max(startAngle, endAngle);
+    for (let a = lo; a <= hi + 0.0001; a += 1) {
+      const rad = (a - 90) * Math.PI / 180;
+      const x = Math.cos(rad), y = Math.sin(rad);
+      if (x < uxMin) uxMin = x; if (x > uxMax) uxMax = x;
+      if (y < uyMin) uyMin = y; if (y > uyMax) uyMax = y;
+    }
+    if (!isFinite(uxMin)) { uxMin = -1; uxMax = 1; uyMin = -1; uyMax = 1; }
+    return { uxMin, uxMax, uyMin, uyMax };
+  }, [startAngle, endAngle]);
+
+  const PAD = 20;
+  const spanX = Math.max(1e-3, arcExtent.uxMax - arcExtent.uxMin);
+  const spanY = Math.max(1e-3, arcExtent.uyMax - arcExtent.uyMin);
+  const availW = Math.max(1, width - PAD * 2);
+  const availH = Math.max(1, height - titleInset - PAD * 2);
+  // Outer extent radius (to the outer edge of the outermost stroke).
+  const outerExtent = radius != null
+    ? radius + barThickness / 2
+    : Math.min(availW / spanX, availH / spanY);
+  const maxRadius = Math.max(0, outerExtent - barThickness / 2);
+  // Center so the arc's bounding box is centered in the available plot area.
+  const centerX = width / 2 - ((arcExtent.uxMin + arcExtent.uxMax) / 2) * outerExtent;
+  const centerY = titleInset + (height - titleInset) / 2
+    - ((arcExtent.uyMin + arcExtent.uyMax) / 2) * outerExtent;
+  // Visual middle of the arc's bounding box (used for the center readout so it
+  // sits in the bowl of a partial sweep rather than on the geometric center).
+  const layoutCenterY = titleInset + (height - titleInset) / 2;
 
   const values = data.map(d => d.value);
   const maxDatumValue = Math.max(...values, 1);
@@ -216,39 +228,10 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
     });
   }, [animationProgress, animationDuration, dataSignature, disabled]);
 
-  // Series registration with memoization and signature guard
-  const registrationSignature = useMemo(() => {
-    return data
-      .map(d => `${d.id || 'auto'}-${d.label || ''}-${d.value}-${d.max || globalMax}`)
-      .join('|');
-  }, [data, globalMax]);
-
-  const registeredSignatureRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!registerSeries || !registrationSignature) return;
-    if (registeredSignatureRef.current === registrationSignature) return;
-
-    data.forEach((d, i) => {
-      registerSeries({
-        id: d.id ?? i,
-        name: d.label || String(d.id ?? i),
-        color: d.color || getColorFromScheme(i, colorSchemes.default),
-        points: [{
-          x: i,
-          y: d.value,
-          meta: {
-            ...d,
-            percentage: (d.max ? d.value / d.max : d.value / globalMax) * 100,
-            formattedValue: valueFormatter ? valueFormatter(d.value, d, i) : undefined,
-          },
-        }],
-        visible: true,
-      });
-    });
-
-    registeredSignatureRef.current = registrationSignature;
-  }, [registerSeries, data, globalMax, valueFormatter, registrationSignature]);
+  // Labels fade in as the arcs draw.
+  const labelOpacityProps = useAnimatedProps(() => ({
+    opacity: animationProgress.value,
+  }));
 
   // Compute ring positions and visibility
   const rings = useMemo(() => {
@@ -272,33 +255,57 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
     });
   }, [data, maxRadius, barThickness, gap, theme.colors.background, interaction?.series]);
 
-  const handleRingHover = (index: number) => {
-    if (!setPointer || !setCrosshair) return;
-    
-    // Calculate approximate position for pointer
-    const ring = rings[index];
-    if (!ring) return;
-    
-    const angle = startAngle + ((endAngle - startAngle) * 0.5); // Mid-point
-    const point = polarToCartesian(centerX, centerY, ring.radius, angle);
-    
-    setPointer({
-      x: point.x,
-      y: point.y,
-      inside: true,
-      pageX: point.x,
-      pageY: point.y,
-    });
-    
-    setCrosshair({ dataX: index, pixelX: point.x });
-  };
+  // New interaction engine: each ring is a single angular-sector mark (annular band
+  // at the ring's radius across the full track). The angular hit-tester resolves
+  // which ring the pointer is over; the tooltip reads the resolved target.
+  const hitSeries: HitSeries[] = useMemo(() => rings.map((ring) => {
+    const d = ring.datum;
+    const maxValue = d.max || globalMax;
+    const percentage = maxValue > 0 ? (d.value / maxValue) * 100 : 0;
+    const midAngle = startAngle + (endAngle - startAngle) * 0.5;
+    const anchor = polarToCartesian(centerX, centerY, ring.radius, midAngle);
+    const mark: Mark = {
+      id: ring.index,
+      pixel: { x: anchor.x, y: anchor.y },
+      value: d.value,
+      datum: { ...d, percentage },
+      extent: {
+        slice: {
+          startAngle,
+          endAngle,
+          innerRadius: Math.max(0, ring.radius - barThickness / 2),
+          outerRadius: ring.radius + barThickness / 2,
+        },
+        ringIndex: ring.index,
+      },
+      formattedValue: valueFormatter ? valueFormatter(d.value, d, ring.index) : `${percentage.toFixed(0)}%`,
+    };
+    return {
+      id: d.id ?? ring.index,
+      name: d.label || String(d.id ?? ring.index),
+      color: ring.color,
+      visible: ring.visible !== false,
+      marks: [mark],
+    };
+  }), [rings, globalMax, startAngle, endAngle, centerX, centerY, barThickness, valueFormatter]);
 
-  const handleRingHoverOut = () => {
-    setCrosshair?.(null);
-    if (interaction?.pointer && setPointer) {
-      setPointer({ ...interaction.pointer, inside: false });
-    }
-  };
+  const tester = useMemo(() => new AngularSliceHitTester(centerX, centerY, hitSeries), [centerX, centerY, hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register('radial-bar', { frame: { kind: 'polar', cx: centerX, cy: centerY } as any, geometry: { kind: 'slice', cx: centerX, cy: centerY }, series: hitSeries });
+    return () => register('radial-bar', null);
+  }, [register, hitSeries, centerX, centerY]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    plotWidth: width,
+    plotHeight: height,
+    enabled: Boolean(interaction) && !disabled,
+    hover: true,
+    press: false,
+    tester,
+  });
 
   return (
     <ChartContainer
@@ -329,14 +336,94 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
                 animationProgress={animationProgress}
                 color={ring.color}
                 trackColor={ring.trackColor}
-                showLabels={showValueLabels}
                 disabled={disabled}
-                onHover={() => handleRingHover(ring.index)}
-                onHoverOut={handleRingHoverOut}
-                theme={theme}
               />
             );
           })}
+
+          {/* Value labels at the tip of each filled arc */}
+          {showValueLabels && (
+            <AnimatedG animatedProps={labelOpacityProps}>
+              {rings.map(ring => {
+                if (!ring.visible || !ring.isValid) return null;
+                const d = ring.datum;
+                const maxValue = d.max || globalMax;
+                const percentage = maxValue > 0 ? d.value / maxValue : 0;
+                const tipAngle = startAngle + (endAngle - startAngle) * percentage;
+                // Sit just beyond the bar tip so inner-ring labels clear the
+                // center readout rather than overlapping it.
+                const labelRadius = ring.radius + barThickness / 2 + 4;
+                const tip = polarToCartesian(centerX, centerY, labelRadius, tipAngle);
+                const text = valueFormatter
+                  ? valueFormatter(d.value, d, ring.index)
+                  : `${(percentage * 100).toFixed(0)}%`;
+                return (
+                  <G key={`label-${ring.datum.id ?? ring.index}`}>
+                    {/* White halo for legibility over arcs */}
+                    <SvgText
+                      x={tip.x}
+                      y={tip.y}
+                      dy={theme.fontSize.sm * 0.35}
+                      fontSize={theme.fontSize.sm}
+                      fontWeight="700"
+                      fill={theme.colors.background || '#ffffff'}
+                      stroke={theme.colors.background || '#ffffff'}
+                      strokeWidth={4}
+                      fontFamily={theme.fontFamily}
+                      textAnchor="middle"
+                    >
+                      {text}
+                    </SvgText>
+                    <SvgText
+                      x={tip.x}
+                      y={tip.y}
+                      dy={theme.fontSize.sm * 0.35}
+                      fontSize={theme.fontSize.sm}
+                      fontWeight="700"
+                      fill={ring.color}
+                      fontFamily={theme.fontFamily}
+                      textAnchor="middle"
+                    >
+                      {text}
+                    </SvgText>
+                  </G>
+                );
+              })}
+            </AnimatedG>
+          )}
+
+          {/* Center readout */}
+          {(centerLabel || centerSubLabel) && (
+            <AnimatedG animatedProps={labelOpacityProps}>
+              {centerLabel && (
+                <SvgText
+                  x={centerX}
+                  y={layoutCenterY}
+                  dy={centerSubLabel ? -theme.fontSize.sm * 0.2 : theme.fontSize.lg * 0.35}
+                  fontSize={theme.fontSize.lg * 1.6}
+                  fontWeight="700"
+                  fill={theme.colors.textPrimary}
+                  fontFamily={theme.fontFamily}
+                  textAnchor="middle"
+                >
+                  {centerLabel}
+                </SvgText>
+              )}
+              {centerSubLabel && (
+                <SvgText
+                  x={centerX}
+                  y={layoutCenterY}
+                  dy={theme.fontSize.md * 1.15}
+                  fontSize={theme.fontSize.sm}
+                  fill={theme.colors.textSecondary}
+                  fontFamily={theme.fontFamily}
+                  textAnchor="middle"
+                >
+                  {centerSubLabel}
+                </SvgText>
+              )}
+            </AnimatedG>
+          )}
         </G>
       </Svg>
 
@@ -379,6 +466,19 @@ export const RadialBarChart: React.FC<RadialBarChartProps> = (props) => {
               updateSeriesVisibility(id, !current);
             }
           }}
+        />
+      )}
+
+      {/* Unified cross-platform gesture surface driven by useChartPointer + the
+          angular hit-tester. Full-chart overlay (radial geometry is centered on
+          the whole container). */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="radial-bar-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

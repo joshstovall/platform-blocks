@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Spoiler
 description: A component that collapses overflowing content beyond a specified height
 source: ui/src/components/Spoiler

@@ -55,6 +55,7 @@ export default function ComponentListScreen() {
       }
 
       if (categoryParam) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the URL (external system)
         setSelectedCategory(categoryParam.toLowerCase());
       }
     } catch (error) {
@@ -69,8 +70,10 @@ export default function ComponentListScreen() {
         const urlParams = new URLSearchParams(window.location.search);
         const categoryParam = urlParams.get('category');
         if (categoryParam) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the URL (external system)
           setSelectedCategory(categoryParam.toLowerCase());
         } else {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the URL (external system)
           setSelectedCategory(null);
         }
       } catch (error) {
@@ -266,7 +269,9 @@ interface AnimatedComponentCardProps {
 const AnimatedComponentCard: React.FC<AnimatedComponentCardProps> = ({ component, onPress, theme }) => {
   const coreConfig = getCoreComponentConfig(component.name);
   const componentCategory = coreConfig?.category || (component as any).category;
-  const scale = React.useRef(new Animated.Value(1)).current;
+  // Held in state (lazy init) rather than a ref so it's stable and can be read
+  // during render (transform) without tripping react-hooks/refs.
+  const [scale] = React.useState(() => new Animated.Value(1));
   const reduceMotion = usePrefersReducedMotion();
   const animateTo = (to: number) => {
     if (reduceMotion) { scale.setValue(1); return; }

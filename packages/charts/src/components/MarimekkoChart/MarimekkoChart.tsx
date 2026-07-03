@@ -9,6 +9,7 @@ import { useChartTheme } from '../../theme/ChartThemeContext';
 import { ChartGrid } from '../../core/ChartGrid';
 import { Axis } from '../../core/Axis';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import type { ActiveTarget } from '../../core/hittest/types';
 import { ChartInteractionEvent } from '../../types';
 import { linearScale, type Scale } from '../../utils/scales';
 import { createColorAssigner } from '../../colors';
@@ -96,7 +97,7 @@ const AnimatedMarimekkoSegment: React.FC<{
   animation: SharedValue<number>;
   borderRadius: number;
   disabled: boolean;
-  onHoverIn: (segment: ComputedSegment) => void;
+  onHoverIn: (segment: ComputedSegment, event?: any) => void;
   onHoverOut: (segment: ComputedSegment) => void;
   onPress: (segment: ComputedSegment, event: any) => void;
 }> = React.memo(({ segment, animation, borderRadius, disabled, onHoverIn, onHoverOut, onPress }) => {
@@ -120,6 +121,7 @@ const AnimatedMarimekkoSegment: React.FC<{
 
   return (
     <AnimatedRect
+      testID={`marimekko-segment-${segment.id}`}
       animatedProps={animatedProps}
       fill={segment.color}
       rx={borderRadius}
@@ -128,7 +130,8 @@ const AnimatedMarimekkoSegment: React.FC<{
       pointerEvents={segment.visible ? 'auto' : 'none'}
       {...(isWeb
         ? {
-            onPointerEnter: () => !disabled && onHoverIn(segment),
+            onPointerEnter: (event: any) => !disabled && onHoverIn(segment, event),
+            onPointerMove: (event: any) => !disabled && onHoverIn(segment, event),
             onPointerLeave: () => onHoverOut(segment),
             onPointerDown: (event: any) => {
               if (disabled) return;
@@ -142,7 +145,7 @@ const AnimatedMarimekkoSegment: React.FC<{
             onPointerCancel: () => onHoverOut(segment),
           }
         : {
-            onPressIn: () => !disabled && onHoverIn(segment),
+            onPressIn: (event: any) => !disabled && onHoverIn(segment, event),
             onPressOut: () => onHoverOut(segment),
             onPress: (event: any) => !disabled && onPress(segment, { nativeEvent: event.nativeEvent }),
           })}
@@ -316,10 +319,10 @@ export const MarimekkoChart: React.FC<MarimekkoChartProps> = (props) => {
     interaction = useChartInteractionContext();
   } catch { /* noop */ }
 
-  const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
   const interactionSeries = interaction?.series;
 
   const visibilityBySegmentLabel = useMemo(() => {
@@ -519,13 +522,35 @@ export const MarimekkoChart: React.FC<MarimekkoChartProps> = (props) => {
 
   const hoverRef = useRef<string | null>(null);
 
-  const handleHoverIn = useCallback((segment: ComputedSegment) => {
+  const handleHoverIn = useCallback((segment: ComputedSegment, event?: any) => {
     hoverRef.current = segment.id;
     const pointerX = padding.left + segment.center.x;
     const pointerY = padding.top + segment.center.y;
-    setPointer?.({ x: pointerX, y: pointerY, inside: true, data: segment.dataPoint });
-    setCrosshair?.({ dataX: segment.categoryIndex, pixelX: pointerX });
-  }, [padding.left, padding.top, setPointer, setCrosshair]);
+    // Feed the shared tooltip the real page coordinates so the portal (position: fixed)
+    // anchors at the cursor. Without these it falls back to the segment-center container
+    // coords, which land far from a tall segment's cursor. Updates on move to follow.
+    const pageX = event?.pageX ?? event?.nativeEvent?.pageX;
+    const pageY = event?.pageY ?? event?.nativeEvent?.pageY;
+    setPointer?.({ x: pointerX, y: pointerY, inside: true, pageX, pageY, data: segment.dataPoint });
+    // Engine-swap: the hovered segment is a single ActiveTarget (cell-like geometry).
+    const dp = segment.dataPoint;
+    const target: ActiveTarget = {
+      seriesId: segment.segmentId,
+      markId: segment.id,
+      kind: 'cell',
+      datum: dp,
+      pixel: { x: pointerX, y: pointerY },
+      value: dp.value,
+      distance: 0,
+      label: dp.segmentLabel,
+      color: dp.color ?? segment.color,
+      formattedValue: dp.formattedValue,
+      customTooltip: `${dp.formattedValue} · ${dp.formattedVisibleSegmentShareOfTotal} of total (${dp.formattedVisibleSegmentShareOfCategory} of category)`,
+      categoryIndex: segment.categoryIndex,
+    };
+    setActiveTarget?.(target);
+    setActiveSlice?.([target]);
+  }, [padding.left, padding.top, setPointer, setActiveTarget, setActiveSlice]);
 
   const handleHoverOut = useCallback((segment: ComputedSegment) => {
     if (hoverRef.current !== segment.id) {
@@ -533,8 +558,9 @@ export const MarimekkoChart: React.FC<MarimekkoChartProps> = (props) => {
     }
     hoverRef.current = null;
     setPointer?.(null);
-    setCrosshair?.(null);
-  }, [setPointer, setCrosshair]);
+    setActiveTarget?.(null);
+    setActiveSlice?.([]);
+  }, [setPointer, setActiveTarget, setActiveSlice]);
 
   const handlePress = useCallback((segment: ComputedSegment, pressEvent: any) => {
     const absoluteX = padding.left + segment.center.x;
@@ -569,48 +595,6 @@ export const MarimekkoChart: React.FC<MarimekkoChartProps> = (props) => {
   const legendPosition = legend?.position ?? 'bottom';
   const legendAlign = legend?.align ?? 'center';
   const showLegend = legend?.show ?? true;
-
-  const registerSignatureRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!registerSeries) return;
-    if (!segmentDefinitions.length) return;
-    const signature = `${dataSignature}|${segmentDefinitions.map((def) => `${def.label}:${def.color}`).join(';')}`;
-    if (registerSignatureRef.current === signature) return;
-    registerSignatureRef.current = signature;
-
-    segmentDefinitions.forEach((definition) => {
-      const points = layout.categories.map((category, index) => {
-        const matching = category.segments.find((segment) => segment.segmentLabel === definition.label);
-        const share = matching ? matching.dataPoint.visibleSegmentShareOfTotal : 0;
-        return {
-          x: index,
-          y: share,
-          meta: matching
-            ? {
-                label: matching.dataPoint.segmentLabel,
-                formattedValue: matching.dataPoint.formattedValue,
-                value: matching.dataPoint.value,
-                shareOfTotal: matching.dataPoint.visibleSegmentShareOfTotal,
-                formattedShareOfTotal: matching.dataPoint.formattedVisibleSegmentShareOfTotal,
-                shareOfCategory: matching.dataPoint.visibleSegmentShareOfCategory,
-                formattedShareOfCategory: matching.dataPoint.formattedVisibleSegmentShareOfCategory,
-                customTooltip: `${matching.dataPoint.formattedValue} · ${matching.dataPoint.formattedVisibleSegmentShareOfTotal} of total (${matching.dataPoint.formattedVisibleSegmentShareOfCategory} of category)`,
-                color: matching.dataPoint.color,
-                raw: matching.dataPoint,
-              }
-            : undefined,
-        };
-      });
-
-      registerSeries({
-        id: definition.id,
-        name: definition.label,
-        color: definition.color,
-        points,
-        visible: visibilityBySegmentLabel.get(definition.label) !== false,
-      });
-    });
-  }, [registerSeries, segmentDefinitions, layout.categories, visibilityBySegmentLabel, dataSignature]);
 
   const xTickFormatter = useCallback((value: string) => {
     const category = layout.categories.find((entry) => entry.label === value);

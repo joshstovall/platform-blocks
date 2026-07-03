@@ -74,19 +74,25 @@ export function ChromaticTunerApp() {
   const simulatedFreq = useSimulatedPitch(listening, lockNote ? lockedNoteFreq : targetA4);
   const detected = useMemo(() => frequencyToNoteData(simulatedFreq), [simulatedFreq]);
 
+  // Reset the counter as soon as listening stops. Adjusting state during render
+  // (React's recommended pattern) avoids a synchronous setState inside the effect.
+  const [prevListening, setPrevListening] = useState(listening);
+  if (listening !== prevListening) {
+    setPrevListening(listening);
+    if (!listening) setElapsed(0);
+  }
+
   // Track elapsed listening time
   useEffect(() => {
-    let t: any;
-    if (listening) {
-      if (!listenStartRef.current) listenStartRef.current = Date.now();
-      t = setInterval(() => {
-        if (listenStartRef.current) setElapsed(Math.floor((Date.now() - listenStartRef.current) / 1000));
-      }, 1000);
-    } else {
+    if (!listening) {
       listenStartRef.current = null;
-      setElapsed(0);
+      return undefined;
     }
-    return () => t && clearInterval(t);
+    if (!listenStartRef.current) listenStartRef.current = Date.now();
+    const t = setInterval(() => {
+      if (listenStartRef.current) setElapsed(Math.floor((Date.now() - listenStartRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(t);
   }, [listening]);
 
   // Build rolling history (mock) when recording

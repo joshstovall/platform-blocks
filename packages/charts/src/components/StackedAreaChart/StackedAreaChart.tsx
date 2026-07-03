@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import Svg, { Path, G, Defs, LinearGradient, Stop } from 'react-native-svg';
 import Animated, { 
   useSharedValue, 
@@ -13,6 +13,9 @@ import { LineChartProps, LineChartSeries } from '../LineChart/types';
 import { ChartDataPoint } from '../../types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
 import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { PointSeriesHitTester } from '../../core/hittest/point';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { 
   getMultiSeriesDomain, 
@@ -266,10 +269,8 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
     interaction = null;
   }
 
-  const registerSeries = interaction?.registerSeries;
+  const register = interaction?.register;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
-  const setCrosshair = interaction?.setCrosshair;
-  const setPointer = interaction?.setPointer;
 
   // Use custom hooks for data processing
   const stackedData = useStackedData(series, stackOrder, interaction);
@@ -310,7 +311,7 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
   const yDomain: [number, number] = useMemo(() => [0, yMax], [yMax]);
 
   // Adjust padding based on legend position to prevent overlap with axis labels
-  const basePadding = useMemo(() => ({ top: 40, right: 20, bottom: 60, left: 80 }), []);
+  const basePadding = useMemo(() => ({ top: 40, right: 20, bottom: 60, left: yAxis?.title ? 104 : 80 }), [yAxis?.title]);
   const padding = useMemo(() => {
     if (!legend?.show) return basePadding;
     const position = legend.position || 'bottom';
@@ -365,60 +366,47 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
     });
   }, [animationProgress, animationDuration, dataSignature, disabled]);
 
-  // Series registration with memoization and signature guard
-  const seriesRegistrations = useMemo(() => {
-    return layers.map((layer, index) => ({
-      id: layer.id,
-      name: layer.name || `Series ${index + 1}`,
-      color: layer.color,
-      points: layer.points.map((p) => ({
-        x: p.x,
-        y: p.y1 - p.y0, // The actual value for this layer
-        meta: {
-          raw: p.raw,
-          y0: p.y0,
-          y1: p.y1,
-          absoluteY0: p.absoluteY0,
-          absoluteY1: p.absoluteY1,
-          absoluteValue: p.absoluteY1 - p.absoluteY0,
-          percentage: stackMode === 'percentage' ? (p.y1 - p.y0) : undefined,
-        },
-      })),
-      visible: layer.visible,
-    }));
-  }, [layers, stackMode]);
+  // New interaction engine: one point hit-series per stacked layer, anchored at
+  // the layer's upper edge (y1). Registering all layers lets the shared engine
+  // resolve the nearest point on hover and produce a multi-series slice tooltip
+  // (every layer's value at the hovered x). Legend visibility is driven separately
+  // via updateSeriesVisibility (upsert), so no legacy registerSeries is needed.
+  const hitSeries: HitSeries[] = useMemo(() => layers.map((layer, index) => ({
+    id: layer.id,
+    name: layer.name || `Series ${index + 1}`,
+    color: layer.color,
+    visible: layer.visible !== false,
+    marks: layer.points.map((p, i): Mark => ({
+      id: i,
+      pixel: { x: scaleX(p.x) + padding.left, y: scaleY(p.y1) + padding.top },
+      value: p.absoluteY1 - p.absoluteY0,
+      datum: p,
+      dataX: p.x,
+      dataY: p.y1,
+      formattedValue: stackMode === 'percentage'
+        ? `${((p.y1 - p.y0) * 100).toFixed(1)}%`
+        : String(p.absoluteY1 - p.absoluteY0),
+    })),
+  })), [layers, scaleX, scaleY, padding.left, padding.top, stackMode]);
 
-  const registrationSignature = useMemo(() => {
-    if (!seriesRegistrations.length) return null;
-    return seriesRegistrations
-      .map((payload) => {
-        const pointsSignature = payload.points
-          .map((point) => {
-            const meta = point.meta?.raw as ChartDataPoint | undefined;
-            const metaId = meta?.id ?? `${meta?.x ?? ''}:${meta?.y ?? ''}`;
-            return `${point.x}:${point.y}:${metaId}:${point.meta?.y0 ?? ''}:${point.meta?.y1 ?? ''}:${point.meta?.absoluteY0 ?? ''}:${point.meta?.absoluteY1 ?? ''}`;
-          })
-          .join('|');
-        return `${payload.id}:${payload.name}:${payload.color}:${payload.visible ? 1 : 0}:${pointsSignature}`;
-      })
-      .join('||');
-  }, [seriesRegistrations]);
-
-  const registeredSignatureRef = useRef<string | null>(null);
+  const tester = useMemo(() => new PointSeriesHitTester(hitSeries), [hitSeries]);
 
   useEffect(() => {
-    if (!registerSeries || !seriesRegistrations.length || !registrationSignature) return;
-    if (registeredSignatureRef.current === registrationSignature) return;
-    
-    seriesRegistrations.forEach((payload) => registerSeries(payload));
-    registeredSignatureRef.current = registrationSignature;
-  }, [registerSeries, seriesRegistrations, registrationSignature]);
+    if (!register) return;
+    register('stacked-area', { frame: { kind: 'cartesian' } as any, geometry: { kind: 'point' }, series: hitSeries });
+    return () => register('stacked-area', null);
+  }, [register, hitSeries]);
 
-  useEffect(() => {
-    if (!seriesRegistrations.length) {
-      registeredSignatureRef.current = null;
-    }
-  }, [seriesRegistrations.length]);
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding,
+    plotWidth,
+    plotHeight,
+    enabled: Boolean(interaction) && !disabled,
+    hover: liveTooltip !== false,
+    press: false,
+    tester,
+    maxDistance: 40,
+  });
 
   // Generate ticks and scales for axes
   const xTicks = useMemo(() => generateTicks(xDomain[0], xDomain[1], 6), [xDomain]);
@@ -447,32 +435,6 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
     scale.ticks = (count?: number) => (yTicks.length ? yTicks : generateTicks(yDomain[0], yDomain[1], count ?? 5));
     return scale;
   }, [scaleY, plotHeight, yDomain, yTicks]);
-
-  // Interaction handling
-  const handleAreaHover = useCallback((layerIndex: number) => {
-    if (!setPointer || !setCrosshair) return;
-    
-    const layer = areaPaths[layerIndex];
-    if (!layer) return;
-    
-    // Simple hover implementation - can be enhanced with more sophisticated hit detection
-    setPointer({
-      x: plotWidth / 2,
-      y: plotHeight / 2,
-      inside: true,
-      pageX: plotWidth / 2,
-      pageY: plotHeight / 2,
-    });
-    
-    setCrosshair({ dataX: layerIndex, pixelX: plotWidth / 2 });
-  }, [areaPaths, setPointer, setCrosshair, plotWidth, plotHeight]);
-
-  const handleAreaHoverOut = useCallback(() => {
-    setCrosshair?.(null);
-    if (interaction?.pointer && setPointer) {
-      setPointer({ ...interaction.pointer, inside: false });
-    }
-  }, [setCrosshair, setPointer, interaction?.pointer]);
 
   const theme = useChartTheme();
   const xAxisTickSize = xAxis?.tickLength ?? 4;
@@ -524,24 +486,10 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
       )}
 
       {/* Stacked Areas */}
-      <Svg 
-        style={{ position: 'absolute', left: padding.left, top: padding.top }} 
-        width={plotWidth} 
+      <Svg
+        style={{ position: 'absolute', left: padding.left, top: padding.top }}
+        width={plotWidth}
         height={plotHeight}
-        // @ts-expect-error web events
-        onMouseMove={(e) => {
-          if (!interaction?.setPointer) return;
-          const rect = (e.currentTarget as any).getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          interaction.setPointer({ x, y, inside: true, pageX: e.pageX, pageY: e.pageY });
-          
-          // Basic crosshair support
-          setCrosshair?.({ dataX: x / plotWidth, pixelX: x });
-        }}
-        onMouseLeave={() => {
-          if (interaction?.pointer) interaction?.setPointer?.({ ...interaction.pointer, inside: false });
-        }}
       >
         <Defs>
           {areaPaths.map((area, index) => (
@@ -564,8 +512,6 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
                 opacity={opacity}
                 animationProgress={animationProgress}
                 disabled={disabled}
-                onHover={() => handleAreaHover(index)}
-                onHoverOut={handleAreaHoverOut}
               />
             );
           })}
@@ -659,6 +605,19 @@ export const StackedAreaChart: React.FC<StackedAreaChartProps> = (props) => {
               updateSeriesVisibility(id, !current);
             }
           }}
+        />
+      )}
+
+      {/* Unified cross-platform gesture surface (web PointerEvents | native
+          Responder). Full-chart overlay so pointer coords are container-origin,
+          matching the registered mark pixels. */}
+      {Boolean(interaction) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="stacked-area-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
         />
       )}
     </ChartContainer>

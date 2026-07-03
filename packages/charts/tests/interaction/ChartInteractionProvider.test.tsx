@@ -1,27 +1,29 @@
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
-import { ChartInteractionProvider, useChartInteractionContext } from '../../src/interaction/ChartInteractionContext';
+import { ChartInteractionProvider, useChartInteractionContext, useChartInteractionVolatile } from '../../src/interaction/ChartInteractionContext';
+import type { ActiveTarget } from '../../src/core/hittest/types';
 
 interface ProviderHandle {
   setPointer: ReturnType<typeof useChartInteractionContext>['setPointer'];
   getPointer: () => ReturnType<typeof useChartInteractionContext>['pointer'];
-  setCrosshair: ReturnType<typeof useChartInteractionContext>['setCrosshair'];
-  getCrosshair: () => ReturnType<typeof useChartInteractionContext>['crosshair'];
+  setActiveTarget: ReturnType<typeof useChartInteractionContext>['setActiveTarget'];
+  getActiveTarget: () => ReturnType<typeof useChartInteractionContext>['activeTarget'];
 }
 
 const InteractionHarness = React.forwardRef<ProviderHandle>((_, ref) => {
-  const ctx = useChartInteractionContext();
+  // Merge stable (setters) + volatile (pointer/activeTarget) so the harness reads both.
+  const ctx = { ...useChartInteractionContext(), ...useChartInteractionVolatile() };
   const pointerRef = React.useRef(ctx.pointer);
-  const crosshairRef = React.useRef(ctx.crosshair);
+  const activeTargetRef = React.useRef(ctx.activeTarget);
 
   pointerRef.current = ctx.pointer;
-  crosshairRef.current = ctx.crosshair;
+  activeTargetRef.current = ctx.activeTarget;
 
   React.useImperativeHandle(ref, () => ({
     setPointer: ctx.setPointer,
     getPointer: () => pointerRef.current,
-    setCrosshair: ctx.setCrosshair,
-    getCrosshair: () => crosshairRef.current,
+    setActiveTarget: ctx.setActiveTarget,
+    getActiveTarget: () => activeTargetRef.current,
   }), [ctx]);
 
   return null;
@@ -64,49 +66,40 @@ describe('ChartInteractionProvider', () => {
     });
   });
 
-  it('schedules crosshair updates when crosshairRAF is enabled', async () => {
+  it('stores and clears the hit-test engine active target', async () => {
     const handle = React.createRef<ProviderHandle>();
-    const rafCalls: FrameRequestCallback[] = [];
-    const originalRAF = global.requestAnimationFrame;
-    const originalWindow = (global as any).window;
-    const rafMock = (cb: FrameRequestCallback) => {
-      rafCalls.push(cb);
-      return rafCalls.length;
+    render(
+      <ChartInteractionProvider config={{ pointerRAF: false }}>
+        <InteractionHarness ref={handle} />
+      </ChartInteractionProvider>
+    );
+
+    expect(handle.current?.getActiveTarget()).toBeNull();
+
+    const target: ActiveTarget = {
+      seriesId: 's1',
+      markId: 0,
+      kind: 'point',
+      datum: { x: 1, y: 2 },
+      pixel: { x: 20, y: 40 },
+      value: 2,
+      distance: 0,
     };
-    (global as any).requestAnimationFrame = rafMock;
-    (global as any).window = {
-      ...(originalWindow || {}),
-      requestAnimationFrame: rafMock,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-    };
 
-    try {
-      render(
-        <ChartInteractionProvider config={{ crosshairRAF: true }}>
-          <InteractionHarness ref={handle} />
-        </ChartInteractionProvider>
-      );
+    act(() => {
+      handle.current?.setActiveTarget(target);
+    });
 
-      act(() => {
-        handle.current?.setCrosshair({ dataX: 1, pixelX: 20 });
-      });
+    await waitFor(() => {
+      expect(handle.current?.getActiveTarget()).toEqual(target);
+    });
 
-      expect(handle.current?.getCrosshair()).toBeNull();
-      expect(rafCalls).toHaveLength(1);
+    act(() => {
+      handle.current?.setActiveTarget(null);
+    });
 
-      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      act(() => {
-        rafCalls.forEach((cb) => cb(now));
-      });
-
-      await waitFor(() => {
-        expect(handle.current?.getCrosshair()).toEqual({ dataX: 1, pixelX: 20 });
-      });
-    } finally {
-      (global as any).requestAnimationFrame = originalRAF;
-      if (originalWindow) (global as any).window = originalWindow;
-      else delete (global as any).window;
-    }
+    await waitFor(() => {
+      expect(handle.current?.getActiveTarget()).toBeNull();
+    });
   });
 });

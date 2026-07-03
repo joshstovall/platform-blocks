@@ -102,7 +102,10 @@ const HookDetailScreen: React.FC<HookDetailScreenProps> = ({ hook }) => {
 
   useBrowserTitle(formatPageTitle(meta?.title || hook || 'Hooks'));
 
+  // Genuine demo-loading effect: clears prior demos then asynchronously loads
+  // the ones for the current hook.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- demo-loading orchestration
     setDemos([]);
     setLoadedExports({});
 

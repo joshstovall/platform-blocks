@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -27,6 +28,7 @@ export interface AnimatedNodeProps {
   onFocus?: () => void;
   onBlur?: () => void;
   onPress?: () => void;
+  testID?: string;
 }
 
 export const AnimatedNode: React.FC<AnimatedNodeProps> = React.memo(
@@ -44,6 +46,7 @@ export const AnimatedNode: React.FC<AnimatedNodeProps> = React.memo(
     onFocus,
     onBlur,
     onPress,
+    testID,
   }) => {
     const cx = useSharedValue(x);
     const cy = useSharedValue(y);
@@ -90,15 +93,21 @@ export const AnimatedNode: React.FC<AnimatedNodeProps> = React.memo(
       <AnimatedGroup
         animatedProps={groupProps}
         key={id}
+        testID={testID}
         pointerEvents="auto"
         onPress={onPress ? handlePress : undefined}
-        onPressIn={onFocus ? handleFocus : undefined}
-        onPressOut={onBlur ? handleBlur : undefined}
-        // @ts-expect-error web hover events
-        onMouseEnter={onFocus ? handleFocus : undefined}
-        onMouseLeave={onBlur ? handleBlur : undefined}
-        onHoverIn={onFocus ? handleFocus : undefined}
-        onHoverOut={onBlur ? handleBlur : undefined}
+        // Web hover maps to focus/blur; native touch uses press-in/out. Passing
+        // onPressIn/onPressOut on web leaks them to the DOM node (react-native-svg
+        // only maps onPress), which React warns about as unknown event handlers.
+        {...((Platform.OS === 'web'
+          ? {
+              onMouseEnter: onFocus ? handleFocus : undefined,
+              onMouseLeave: onBlur ? handleBlur : undefined,
+            }
+          : {
+              onPressIn: onFocus ? handleFocus : undefined,
+              onPressOut: onBlur ? handleBlur : undefined,
+            }) as Record<string, any>)}
       >
         <AnimatedCircle
           animatedProps={nodeProps}

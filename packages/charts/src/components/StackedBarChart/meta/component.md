@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Stacked Bar Chart
 tags: [chart, bar, stacked]
 category: charts

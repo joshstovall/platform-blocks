@@ -21,7 +21,7 @@ const rows: Member[] = [
 
 const columns: DataTableColumn<Member>[] = [
   { key: 'name', header: 'Name', accessor: 'name', sortable: true },
-  { key: 'email', header: 'Email', accessor: 'email', sortable: true },
+  { key: 'email', header: 'Email', accessor: 'email', sortable: true, minWidth: 200 },
   {
     key: 'role',
     header: 'Role',

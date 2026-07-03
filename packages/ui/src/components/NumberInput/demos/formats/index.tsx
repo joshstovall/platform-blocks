@@ -12,11 +12,6 @@ export default function Demo() {
 
   return (
     <Column gap="lg">
-      <Text weight="semibold">Formatted values</Text>
-      <Text size="sm" colorVariant="secondary">
-        Pair currency formatting with percentage discounts to display a calculated total.
-      </Text>
-
       <Column gap="sm">
         <NumberInput
           label="List price"

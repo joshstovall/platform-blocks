@@ -118,7 +118,9 @@ const getVariantThumbStyle = (
     case 'outline':
       return {
         style: {
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : '#fff',
+          // Scheme-aware surface (white in light, dark surface in dark). Avoid
+          // theme.colors.dark[...] — that palette doesn't exist on the theme.
+          backgroundColor: theme.backgrounds?.surface ?? '#fff',
           borderWidth: 2,
           borderColor: disabled ? theme.colors.gray[4] : resolvedThumbColor,
           boxShadow: 'none',

@@ -137,7 +137,7 @@ export function ChatroomExample() {
   };
   return (
     <Block
-      // @ts-ignore - backgroundImage not yet in BlockProps
+      // @ts-expect-error - backgroundImage not yet in BlockProps
       backgroundImage={backgroundImage}
       style={styles.chatBlock}
     >

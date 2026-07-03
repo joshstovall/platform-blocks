@@ -63,6 +63,9 @@ export interface CheckboxProps extends BaseComponentProps {
 
   /** Checkbox content/children (alternative to label) */
   children?: React.ReactNode;
+
+  /** Accessibility label, used when there is no visible text label */
+  accessibilityLabel?: string;
 }
 
 export interface CheckboxStyleProps {

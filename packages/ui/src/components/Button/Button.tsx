@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { Pressable, View, Animated, Easing, Platform, LayoutChangeEvent, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
+import { normalizeHex, adjustHexColor } from '../../core/theme/colorUtils';
+import { resolveVariantRoles, CORE_COLORS, type VariantRole, type VariantRoles } from '../../core/theme/variantRoles';
 import { SizeValue, getFontSize, getSpacing, getHeight } from '../../core/theme/sizes';
 import { createRadiusStyles } from '../../core/theme/radius';
 import type { PlatformBlocksTheme } from '../../core/theme/types';
@@ -26,7 +28,7 @@ const getButtonStyles = (
   height: number,
   radiusStyles: any,
   shadowStyles: any,
-  customColor?: string,
+  roles: VariantRoles | null,
   isIconButton: boolean = false,
   fullWidth: boolean = false
 ): any => {
@@ -56,99 +58,49 @@ const getButtonStyles = (
     }),
   };
 
-  // If custom color is provided, use it for filled/secondary variants
-  if (customColor) {
-    const variantStyles = {
-      primary: {
-        backgroundColor: customColor,
-        borderColor: customColor
-      },
-      filled: {
-        backgroundColor: customColor,
-        borderColor: customColor
-      },
-      secondary: {
-        backgroundColor: theme.colors.gray[1],
-        borderColor: customColor
-      },
-      outline: {
-        backgroundColor: 'transparent',
-        borderColor: customColor
-      },
-      ghost: {
-        backgroundColor: 'transparent',
-        borderColor: 'transparent'
-      },
-      gradient: {
-        backgroundColor: customColor,
-        borderColor: customColor
-      },
-      link: {
+  // Color-bearing variants (filled / light / subtle / outline / gradient) resolve
+  // fill + border through the shared, theme-independent variant model.
+  if (roles) {
+    const styled = { ...baseStyles, backgroundColor: roles.fill, borderColor: roles.border };
+    // Solid variants carry the button's shadow; tinted / outline stay flat.
+    return variant === 'filled' || variant === 'gradient'
+      ? { ...styled, ...shadowStyles }
+      : styled;
+  }
+
+  // Neutral / special variants keep their bespoke styling and ignore `color`.
+  const isDark = theme.colorScheme === 'dark';
+  switch (variant) {
+    case 'secondary':
+      return {
+        ...baseStyles,
+        // gray[1] equals the surface in dark mode, so lift the fill a step there.
+        backgroundColor: isDark ? theme.colors.gray[3] : theme.colors.gray[1],
+        borderColor: isDark ? theme.colors.gray[4] : theme.colors.gray[3],
+        ...shadowStyles,
+      };
+    case 'link':
+      return {
+        ...baseStyles,
         backgroundColor: 'transparent',
         borderColor: 'transparent',
-      },
-      none: {
+        textDecorationLine: 'underline' as const,
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+      };
+    case 'none':
+      return {
+        ...baseStyles,
         backgroundColor: 'transparent',
         borderColor: 'transparent',
         height: 'auto' as const,
         paddingHorizontal: 0,
-        paddingVertical: 0
-      }
-    };
-    return {
-      ...baseStyles,
-      ...(variant === 'none' ? { ...baseStyles, ...variantStyles[variant] } : variantStyles[variant])
-    };
+        paddingVertical: 0,
+      };
+    case 'ghost':
+    default:
+      return { ...baseStyles, backgroundColor: 'transparent', borderColor: 'transparent' };
   }
-
-  const variantStyles = {
-    primary: {
-      backgroundColor: theme.colors.primary[5],
-      borderColor: theme.colors.primary[5]
-    },
-    filled: {
-      backgroundColor: theme.colors.primary[5],
-      borderColor: theme.colors.primary[5]
-    },
-    secondary: {
-      backgroundColor: theme.colors.gray[1],
-      borderColor: theme.colors.gray[3]
-    },
-    outline: {
-      backgroundColor: 'transparent',
-      borderColor: theme.colors.primary[5]
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      borderColor: 'transparent'
-    },
-    gradient: {
-      backgroundColor: theme.colors.primary[5], // Fallback solid color for now
-      borderColor: theme.colors.primary[5]
-    },
-    link: {
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
-      weight: 'normal' as const,
-      textDecorationLine: 'underline' as const,
-      paddingHorizontal: 0,
-      paddingVertical: 0,
-      color: theme.colors.primary[5],
-    },
-    none: {
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
-      height: 'auto' as const,
-      paddingHorizontal: 0,
-      paddingVertical: 0
-    }
-  };
-
-  return {
-    ...baseStyles,
-    ...(variant === 'none' ? { ...baseStyles, ...variantStyles[variant] } : variantStyles[variant]),
-    ...shadowStyles,
-  };
 };
 
 export const Button: React.FC<ButtonProps> = (allProps) => {
@@ -170,6 +122,7 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
     disabled = false,
     loading = false,
     loadingTitle,
+    color,
     colorVariant,
     textColor: textColorProp,
     icon,
@@ -328,38 +281,61 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
     return token; // raw css color
   };
 
-  const resolvedCustomColor = resolveTokenColor(colorVariant);
-  const buttonStyles = getButtonStyles(theme, effectiveVariant, size, disabled, loading, height, radiusStyles, shadowStyles, resolvedCustomColor, isIconButton, layoutProps.fullWidth || false);
+  // Resolve the tint color for the color-bearing variants. Explicit `color` wins,
+  // then legacy `colorVariant`, else `primary`. Core palette tokens pass through as
+  // tokens (the shared resolver does its own palette lookup); `palette.shade` and
+  // raw CSS/hex colors are pre-resolved to a concrete value.
+  const roleColorToken = color ?? colorVariant;
+  const hasExplicitColor = roleColorToken != null;
+  const resolvedRoleColor = !roleColorToken
+    ? 'primary'
+    : (CORE_COLORS as readonly string[]).includes(roleColorToken)
+      ? roleColorToken
+      : (resolveTokenColor(roleColorToken) ?? roleColorToken);
 
-  // derive contrasted text color if filled/filled background
-  const pickContrast = (bg?: string): string => {
-    if (!bg) return theme.text.primary;
-    if (/^#?[0-9a-fA-F]{6}$/.test(bg)) {
-      const hex = bg.replace('#', '');
-      const r = parseInt(hex.slice(0, 2), 16); const g = parseInt(hex.slice(2, 4), 16); const b = parseInt(hex.slice(4, 6), 16);
-      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-      return yiq >= 160 ? '#222' : '#FFF';
+  // Gradient stops — also used to render the LinearGradient overlay so it honors `color`.
+  const gradientStops = useMemo<[string, string]>(() => {
+    if ((CORE_COLORS as readonly string[]).includes(resolvedRoleColor)) {
+      const pal = ((theme.colors as any)[resolvedRoleColor] as string[]) ?? theme.colors.primary;
+      return [pal[3] ?? pal[0], pal[7] ?? pal[pal.length - 1] ?? pal[8]];
     }
-    return '#FFF';
-  };
+    const n = normalizeHex(resolvedRoleColor);
+    return n ? [n, adjustHexColor(n, -30)] : [resolvedRoleColor, resolvedRoleColor];
+  }, [resolvedRoleColor, theme.colors]);
+
+  // Map Button variants onto the canonical color-bearing set. Neutral / special
+  // variants (secondary, ghost, link, none) resolve to null and keep bespoke styling.
+  const canonicalVariant: VariantRole | undefined = (
+    { filled: 'filled', light: 'light', subtle: 'subtle', outline: 'outline', gradient: 'gradient' } as
+      Record<string, VariantRole | undefined>
+  )[effectiveVariant as string];
+
+  const roles = useMemo<VariantRoles | null>(() => (
+    canonicalVariant
+      ? resolveVariantRoles(theme, { variant: canonicalVariant, color: resolvedRoleColor, gradientStops })
+      : null
+  ), [canonicalVariant, theme, resolvedRoleColor, gradientStops]);
+
+  // Accent text for ghost/link when a color is explicitly requested (else they keep
+  // their neutral defaults, so existing call sites are unchanged).
+  const accentText = useMemo(
+    () => resolveVariantRoles(theme, { variant: 'outline', color: resolvedRoleColor }).text,
+    [theme, resolvedRoleColor],
+  );
+
+  const buttonStyles = getButtonStyles(theme, effectiveVariant, size, disabled, loading, height, radiusStyles, shadowStyles, roles, isIconButton, layoutProps.fullWidth || false);
 
   const textColor = useMemo(() => {
     if (textColorProp) return resolveTokenColor(textColorProp) || textColorProp;
-    if (resolvedCustomColor) {
-      if (effectiveVariant === 'filled' || effectiveVariant === 'gradient') return pickContrast(resolvedCustomColor);
-      if (effectiveVariant === 'outline' || effectiveVariant === 'ghost' || effectiveVariant === 'none' || effectiveVariant === 'secondary') return resolvedCustomColor;
-    }
+    if (roles) return roles.text;
     switch (effectiveVariant) {
-      case 'filled': return '#FFFFFF';
-      case 'gradient': return '#FFFFFF';
       case 'secondary': return theme.colors.gray[7];
-      case 'outline': return theme.colors.primary[5];
-      case 'ghost': return theme.colors.gray[7];
-      case 'link': return theme.colors.primary[5];
+      case 'ghost': return hasExplicitColor ? accentText : theme.colors.gray[7];
+      case 'link': return hasExplicitColor ? accentText : theme.colors.primary[5];
       case 'none': return 'currentColor';
-      default: return '#FFFFFF';
+      default: return theme.text.primary;
     }
-  }, [textColorProp, resolvedCustomColor, effectiveVariant, theme.colors.gray, theme.colors.primary]);
+  }, [textColorProp, roles, effectiveVariant, hasExplicitColor, accentText, theme]);
 
   // Memoize text props. The base styling is the Button's defaults; if the
   // consumer passes `labelProps`, those win (weight/ff/colorVariant/style)
@@ -383,23 +359,8 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
     [size, textColor, labelProps],
   );
 
-  // Memoize loader color calculation
-  const loaderColor = useMemo(() => {
-    if (resolvedCustomColor) {
-      if (effectiveVariant === 'filled') return pickContrast(resolvedCustomColor);
-      return resolvedCustomColor;
-    }
-    switch (effectiveVariant) {
-      case 'filled': return '#FFFFFF';
-      case 'secondary': return theme.colors.gray[7];
-      case 'outline': return theme.colors.primary[5];
-      case 'ghost': return theme.colors.gray[7];
-      case 'gradient': return '#FFFFFF';
-      case 'link': return theme.colors.primary[5];
-      case 'none': return 'currentColor';
-      default: return '#FFFFFF';
-    }
-  }, [resolvedCustomColor, effectiveVariant, theme.colors.gray, theme.colors.primary]);
+  // Loader shares the text color so it reads on every variant.
+  const loaderColor = textColor;
 
   // Helper function to inject color into icon components
   const renderIconWithColor = (iconElement: React.ReactNode) => {
@@ -443,6 +404,21 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
   };
 
   const [isPressing, setIsPressing] = useState(false);
+  // Drives the gradient variant's sideways drift on hover (web). Animated so the
+  // shift eases in/out instead of relying on CSS `transition`, which RN-web drops.
+  const hoverAnim = useRef(new Animated.Value(0)).current;
+  const animateHover = useCallback((toValue: number) => {
+    Animated.timing(hoverAnim, {
+      toValue,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [hoverAnim]);
+  const gradientDrift = useMemo(
+    () => hoverAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 44] }),
+    [hoverAnim]
+  );
   const { impactPressIn, impactPressOut } = useHaptics();
   const handlePressIn = () => {
     if (!isInteractionDisabled) {
@@ -530,23 +506,38 @@ export const Button: React.FC<ButtonProps> = (allProps) => {
           onLayout={handleLayout}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          onHoverIn={onHoverIn}
-          onHoverOut={onHoverOut}
+          onHoverIn={() => { animateHover(1); onHoverIn?.(); }}
+          onHoverOut={() => { animateHover(0); onHoverOut?.(); }}
           onLongPress={onLongPress}
           disabled={isInteractionDisabled}
         >
 
           {variant === 'gradient' && hasLinearGradient && (
-            <OptionalLinearGradient
-              colors={
-                resolvedCustomColor
-                  ? [resolvedCustomColor, theme.colors.primary[7]]
-                  : [theme.colors.primary[5], theme.colors.primary[7]]
-              }
-              style={{ position: 'absolute', zIndex: -1, top: 0, left: 0, right: 0, bottom: 0, borderRadius: radiusStyles.borderRadius }}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            />
+            // Clip layer (matches the button's rounded rect) so the overscanned
+            // gradient inside can drift sideways on hover without exposing a gap.
+            <View
+              pointerEvents="none"
+              style={{ position: 'absolute', zIndex: -1, top: 0, left: 0, right: 0, bottom: 0, borderRadius: radiusStyles.borderRadius, overflow: 'hidden' }}
+            >
+              <Animated.View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  // Overscan both edges so the drift never exposes the corners.
+                  left: -20,
+                  right: -20,
+                  transform: [{ translateX: gradientDrift }],
+                }}
+              >
+                <OptionalLinearGradient
+                  colors={gradientStops}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ flex: 1 }}
+                />
+              </Animated.View>
+            </View>
           )}
 
           {loading ? (

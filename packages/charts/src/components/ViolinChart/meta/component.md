@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Violin Chart
 tags: [chart, violin, distribution]
 category: charts

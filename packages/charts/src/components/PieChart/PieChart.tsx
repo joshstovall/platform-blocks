@@ -33,7 +33,10 @@ import { ChartContainer, ChartLegend, ChartTitle } from '../../ChartBase';
 import { ChartInteractionEvent } from '../../types';
 import type { ChartAnimation } from '../../types/base';
 import { useChartTheme } from '../../theme/ChartThemeContext';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, usePointer } from '../../interaction/ChartInteractionContext';
+import { useChartPointer } from '../../interaction/useChartPointer';
+import { AngularSliceHitTester } from '../../core/hittest/angular';
+import type { HitSeries, Mark } from '../../core/hittest/types';
 import { colorSchemes, formatPercentage, getColorFromScheme, getPointOnCircle } from '../../utils';
 import { platformShadow } from '../../utils/platformShadow';
 import type {
@@ -736,9 +739,10 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
     // component can work without interaction provider
   }
 
-  const registerSeries = interactionContext?.registerSeries;
+  const register = interactionContext?.register;
   const setPointer = interactionContext?.setPointer;
-  const pointer = interactionContext?.pointer ?? null;
+  // PieChart reads pointer for its own tooltip position — pointer subscription.
+  const pointer = usePointer();
 
   const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
@@ -1026,25 +1030,72 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
     [legendToggleEnabled, normalisedData, hoveredKey, handleHover],
   );
 
-  useEffect(() => {
-    if (!registerSeries || !baseLayer) return;
-    registerSeries({
-      id: 'pie-base',
-      name: 'Pie',
-      color: baseLayer.slices[0]?.color ?? theme.colors.accentPalette?.[0],
-      points: baseLayer.slices.map((slice) => ({
-        x: slice.index,
-        y: slice.value,
-        meta: {
+  // New interaction engine: every visible slice (across all layers) is an angular
+  // sector mark. The tester resolves the hovered slice; we drive PieChart's own
+  // hover state (highlight + tooltip) from it. feedStore is off so we don't also
+  // populate the store's activeTarget — PieChart renders its own tooltip, and a
+  // second ChartActiveTooltip would double up.
+  const pieCx = width / 2;
+  const pieCy = height / 2;
+  const hitSeries: HitSeries[] = useMemo(() => {
+    const marks: Mark[] = layoutLayers
+      .flatMap((layer) => layer.slices)
+      .filter((slice) => slice.visible && slice.valueRatio > 0)
+      .map((slice) => {
+        const midRadius = (slice.innerRadius + slice.outerRadius) / 2;
+        const anchor = polarToCartesian(pieCx, pieCy, midRadius, slice.centerAngle);
+        return {
           id: slice.key,
+          pixel: { x: anchor.x, y: anchor.y },
+          value: slice.value,
+          datum: slice,
           label: slice.label,
-          ratio: slice.valueRatio,
-          layer: slice.layerId,
-        },
-      })),
-      visible: true,
-    });
-  }, [registerSeries, baseLayer, theme.colors.accentPalette]);
+          color: slice.color,
+          extent: {
+            slice: {
+              // PieChart's polarToCartesian uses the raw math convention (0° = right),
+              // but the hit-tester's angleFromPoint is canonical (0° = top). Convert the
+              // slice sweep to canonical (canonical = mathAngle + 90) so hover/press
+              // membership lines up with the drawn wedges instead of being rotated 90°.
+              startAngle: slice.startAngle + 90,
+              endAngle: slice.endAngle + 90,
+              innerRadius: slice.innerRadius,
+              outerRadius: slice.outerRadius,
+            },
+          },
+          formattedValue: String(slice.value),
+        };
+      });
+    return [{ id: 'pie', name: 'Pie', color: theme.colors.accentPalette?.[0], visible: true, marks }];
+  }, [layoutLayers, pieCx, pieCy, theme.colors.accentPalette]);
+
+  const tester = useMemo(() => new AngularSliceHitTester(pieCx, pieCy, hitSeries), [pieCx, pieCy, hitSeries]);
+
+  useEffect(() => {
+    if (!register) return;
+    register('pie', { frame: { kind: 'polar', cx: pieCx, cy: pieCy } as any, geometry: { kind: 'slice', cx: pieCx, cy: pieCy }, series: hitSeries });
+    return () => register('pie', null);
+  }, [register, hitSeries, pieCx, pieCy]);
+
+  const { handlers: pointerHandlers, ref: surfaceRef, onLayout: surfaceOnLayout } = useChartPointer({
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    plotWidth: width,
+    plotHeight: height,
+    enabled: Boolean(interactionContext) && !disabled,
+    hover: true,
+    press: true,
+    tester,
+    feedStore: false,
+    onPointer: (e, target) => {
+      setPointer?.({ x: e.containerX, y: e.containerY, inside: e.inside, pageX: e.pageX, pageY: e.pageY });
+      handleHover(target ? (target.datum as ComputedSlice) : null);
+    },
+    onLeave: () => {
+      setPointer?.({ x: 0, y: 0, inside: false });
+      handleHover(null);
+    },
+    onPress: (e, target) => { if (target) handleSlicePress(target.datum as ComputedSlice, (e.raw as any)?.nativeEvent ?? e.raw); },
+  });
 
   const focusableKeys = useMemo(
     () => (baseLayer ? baseLayer.slices.filter((slice) => slice.visible).map((slice) => slice.key) : []),
@@ -1161,27 +1212,6 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
     totalValue,
   ]);
 
-  const handlePointerMove = useCallback(
-    (event: any) => {
-      if (!setPointer) return;
-      const rect = event.currentTarget?.getBoundingClientRect?.();
-      if (!rect) return;
-      const pointer = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-        inside: true,
-        pageX: event.pageX,
-        pageY: event.pageY,
-      };
-      setPointer(pointer);
-    },
-    [setPointer],
-  );
-
-  const handlePointerLeave = useCallback(() => {
-    setPointer?.({ x: 0, y: 0, inside: false });
-    handleHover(null);
-  }, [setPointer, handleHover]);
 
   return (
     <ChartContainer
@@ -1200,9 +1230,6 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
         <Svg
           width={width}
           height={height}
-          // @ts-expect-error web-only events
-          onMouseMove={handlePointerMove}
-          onMouseLeave={handlePointerLeave}
         >
           <Defs>
             {gradients.map(({ id, gradient }) => {
@@ -1309,8 +1336,6 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
                     filterId={slice.shadowId}
                     accessibilityLabel={accessibilityLabel}
                     onPress={(event) => handleSlicePress(slice, event)}
-                    onHoverIn={() => handleHover(slice)}
-                    onHoverOut={() => handleHover(null)}
                   />
                 );
               }),
@@ -1356,6 +1381,19 @@ export const PieChart: React.FC<PieChartProps> = (props) => {
           )}
         </Svg>
       </Animated.View>
+
+      {/* Gesture surface driven by useChartPointer + the angular hit-tester. Drives
+          PieChart's own hover state (highlight + tooltip); feedStore is off so the
+          shared ChartActiveTooltip doesn't double up with the built-in tooltip. */}
+      {Boolean(interactionContext) && !disabled && (
+        <View
+          ref={surfaceRef}
+          onLayout={surfaceOnLayout}
+          testID="pie-gesture-surface"
+          style={{ position: 'absolute', left: 0, top: 0, width, height }}
+          {...pointerHandlers}
+        />
+      )}
 
       {tooltipEnabled && tooltipInfo && (
         <View

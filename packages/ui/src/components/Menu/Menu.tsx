@@ -12,10 +12,11 @@ import React, {
 } from 'react';
 import { View, ScrollView, Pressable, Platform, ViewStyle } from 'react-native';
 import { Text } from '../Text';
+import { Icon } from '../Icon';
 import { ListGroup, ListGroupBody, ListGroupDivider } from '../ListGroup';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
-import { useOverlay } from '../../core/providers/OverlayProvider';
+import { useOverlayApi } from '../../core/providers/OverlayProvider';
 import { measureElement, calculateOverlayPositionEnhanced } from '../../core/utils/positioning-enhanced';
 import { getSpacingStyles, extractSpacingProps } from '../../core/utils';
 import { MenuItemButton } from '../MenuItemButton';
@@ -25,6 +26,7 @@ import {
   MenuLabelProps,
   MenuDividerProps,
   MenuDropdownProps,
+  MenuSubProps,
 } from './types';
 import { useMenuStyles } from './styles';
 
@@ -109,7 +111,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
   const isOpenedRef = useRef(false);
   const containerRef = useRef<View>(null);
   const triggerRef = useRef<View>(null);
-  const { openOverlay, closeOverlay, updateOverlay } = useOverlay();
+  const { openOverlay, closeOverlay, updateOverlay } = useOverlayApi();
   const overlayIdRef = useRef<string | null>(null);
   const lastResolvedWidthRef = useRef<number | undefined>(undefined);
   const theme = useTheme();
@@ -262,6 +264,7 @@ function MenuBase(props: MenuProps, ref: React.Ref<View>) {
       const overlayId = openOverlay({
         content: menuDropdown,
         anchor: { x: positionResult.x, y: positionResult.y, width: overlaySize.width, height: overlaySize.height },
+        anchorNode: containerRef.current ?? triggerRef.current,
         placement: (positionResult as any).placement || position,
         closeOnClickOutside,
         closeOnEscape,
@@ -473,21 +476,194 @@ function MenuDropdownBase(props: MenuDropdownProps, ref: React.Ref<View>) {
   return null;
 }
 
+// Menu.Sub component — a flyout submenu, like nested context menus.
+// Renders a trigger row inside the parent dropdown that opens its own overlay
+// to the side (hover on web, press elsewhere). Nested overlays unmount as a
+// cascade when any ancestor closes (see the unmount cleanup below), so selecting
+// a leaf item or dismissing the root tears the whole chain down.
+const SUBMENU_CLOSE_DELAY = 220;
+
+function MenuSubBase(props: MenuSubProps, ref: React.Ref<View>) {
+  const { spacingProps, otherProps } = extractSpacingProps(props as any);
+  const {
+    label,
+    children,
+    startSection,
+    disabled = false,
+    color = 'default',
+    w = 200,
+    maxH = 300,
+    testID,
+  } = otherProps as MenuSubProps;
+
+  const parentContext = useMenuContext();
+  const { openOverlay, closeOverlay, updateOverlay } = useOverlayApi();
+  const styles = useMenuStyles();
+
+  const itemRef = useRef<View>(null);
+  const overlayIdRef = useRef<string | null>(null);
+  const openRef = useRef(false);
+  const closeTimerRef = useRef<any>(null);
+  const [, forceOpenState] = useState(false);
+
+  const tone: 'default' | 'danger' | 'success' | 'warning' =
+    color === 'danger' ? 'danger' : color === 'success' ? 'success' : color === 'warning' ? 'warning' : 'default';
+
+  const cancelScheduledClose = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const closeSelf = useCallback(() => {
+    cancelScheduledClose();
+    if (overlayIdRef.current) {
+      closeOverlay(overlayIdRef.current);
+      overlayIdRef.current = null;
+    }
+    openRef.current = false;
+    forceOpenState(false);
+  }, [cancelScheduledClose, closeOverlay]);
+
+  // Selecting a leaf item closes this submenu *and* bubbles up so the whole chain
+  // (including the root menu) dismisses.
+  const closeChain = useCallback(() => {
+    closeSelf();
+    parentContext.closeMenu();
+  }, [closeSelf, parentContext]);
+
+  const scheduleClose = useCallback(() => {
+    cancelScheduledClose();
+    closeTimerRef.current = setTimeout(() => closeSelf(), SUBMENU_CLOSE_DELAY);
+  }, [cancelScheduledClose, closeSelf]);
+
+  const subContextValue = useMemo(
+    () => ({ closeMenu: closeChain, opened: true }),
+    [closeChain]
+  );
+
+  const buildSubContent = useCallback((resolvedWidth: number) => {
+    const listGroupStyle: ViewStyle = {
+      ...(styles.dropdown as any),
+      maxHeight: maxH,
+      width: resolvedWidth,
+    };
+    return (
+      <MenuContext.Provider value={subContextValue}>
+        <View
+          {...(Platform.OS === 'web'
+            ? { onMouseEnter: cancelScheduledClose, onMouseLeave: scheduleClose }
+            : {})}
+        >
+          <ListGroup variant="default" size="sm" style={listGroupStyle}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              style={{ maxHeight: maxH }}
+            >
+              <ListGroupBody>{children}</ListGroupBody>
+            </ScrollView>
+          </ListGroup>
+        </View>
+      </MenuContext.Provider>
+    );
+  }, [styles.dropdown, maxH, subContextValue, children, cancelScheduledClose, scheduleClose]);
+
+  const openSub = useCallback(async () => {
+    if (disabled || openRef.current) return;
+    openRef.current = true;
+
+    const resolvedWidth = typeof w === 'number' ? w : 200;
+    const triggerRect = await measureElement(itemRef);
+    const overlaySize = { width: resolvedWidth, height: Math.min(maxH, 240) };
+    const positionResult = calculateOverlayPositionEnhanced(triggerRect, overlaySize, {
+      placement: 'right-start',
+      offset: 2,
+      strategy: Platform.OS === 'web' ? 'fixed' : 'absolute',
+      fallbackPlacements: ['right-start', 'left-start', 'right', 'left'],
+    });
+
+    const overlayId = openOverlay({
+      content: buildSubContent(resolvedWidth),
+      anchor: { x: positionResult.x, y: positionResult.y, width: overlaySize.width, height: overlaySize.height },
+      anchorNode: itemRef.current,
+      placement: (positionResult as any).placement || 'right-start',
+      closeOnClickOutside: true,
+      closeOnEscape: true,
+      strategy: Platform.OS === 'web' ? 'fixed' : 'portal',
+      onClose: () => {
+        overlayIdRef.current = null;
+        openRef.current = false;
+        forceOpenState(false);
+      },
+    });
+    overlayIdRef.current = overlayId;
+    forceOpenState(true);
+  }, [disabled, w, maxH, buildSubContent, openOverlay]);
+
+  // Keep the submenu content in sync when its children change while open.
+  useEffect(() => {
+    if (!openRef.current || !overlayIdRef.current) return;
+    updateOverlay(overlayIdRef.current, { content: buildSubContent(typeof w === 'number' ? w : 200) });
+  }, [buildSubContent, updateOverlay, w]);
+
+  // Cascade cleanup: when an ancestor overlay closes, this component unmounts and
+  // tears down its own overlay + timer.
+  useEffect(() => () => {
+    if (overlayIdRef.current) closeOverlay(overlayIdRef.current);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+  }, [closeOverlay]);
+
+  const combinedRef = useCallback((node: any) => {
+    itemRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) (ref as any).current = node;
+  }, [ref]);
+
+  return (
+    <MenuItemButton
+      ref={combinedRef}
+      onPress={() => (openRef.current ? closeSelf() : openSub())}
+      disabled={disabled}
+      startIcon={startSection}
+      endIcon={<Icon name="chevron-right" size={16} />}
+      tone={tone}
+      testID={testID}
+      {...spacingProps}
+      {...(Platform.OS === 'web'
+        ? {
+            onHoverIn: () => {
+              cancelScheduledClose();
+              openSub();
+            },
+            onHoverOut: scheduleClose,
+          }
+        : {})}
+    >
+      {label}
+    </MenuItemButton>
+  );
+}
+
 // Create factory components
 export const Menu = factory<MenuFactoryPayload>(MenuBase);
 export const MenuItem = factory<{ props: MenuItemProps; ref: View }>(MenuItemBase);
 export const MenuLabel = factory<{ props: MenuLabelProps; ref: View }>(MenuLabelBase);
 export const MenuDivider = factory<{ props: MenuDividerProps; ref: View }>(MenuDividerBase);
 export const MenuDropdown = factory<{ props: MenuDropdownProps; ref: View }>(MenuDropdownBase);
+export const MenuSub = factory<{ props: MenuSubProps; ref: View }>(MenuSubBase);
 
 // Add compound components with type assertion
 (Menu as any).Item = MenuItem;
 (Menu as any).Label = MenuLabel;
 (Menu as any).Divider = MenuDivider;
 (Menu as any).Dropdown = MenuDropdown;
+(Menu as any).Sub = MenuSub;
 
 Menu.displayName = 'Menu';
 MenuItem.displayName = 'Menu.Item';
 MenuLabel.displayName = 'Menu.Label';
 MenuDivider.displayName = 'Menu.Divider';
 MenuDropdown.displayName = 'Menu.Dropdown';
+MenuSub.displayName = 'Menu.Sub';

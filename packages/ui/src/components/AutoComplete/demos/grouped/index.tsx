@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AutoComplete, Column, Text } from '@platform-blocks/ui'
+import { AutoComplete } from '@platform-blocks/ui'
 import type { AutoCompleteOption } from '../../types'
 
 const countries: AutoCompleteOption[] = [
@@ -21,33 +21,22 @@ export default function Demo() {
   const [selectedCountry, setSelectedCountry] = useState<AutoCompleteOption | null>(null)
 
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Grouped suggestions</Text>
-      <Text size="sm" colorVariant="secondary">
-        Countries are organized by region to make large lists easier to scan.
-      </Text>
-      <AutoComplete
-        label="Search countries"
-        placeholder="Search for a country..."
-        data={countries}
-        value={value}
-        onChangeText={(next) => {
-          setValue(next)
-          if (!next) setSelectedCountry(null)
-        }}
-        onSelect={(item) => {
-          setSelectedCountry(item)
-          setValue(item.label)
-        }}
-        minSearchLength={1}
-        highlightMatches
-        fullWidth
-      />
-      {selectedCountry && (
-        <Text size="xs" colorVariant="secondary">
-          Selected: {selectedCountry.label}
-        </Text>
-      )}
-    </Column>
+    <AutoComplete
+      label="Search countries"
+      placeholder="Search for a country..."
+      data={countries}
+      value={value}
+      onChangeText={(next) => {
+        setValue(next)
+        if (!next) setSelectedCountry(null)
+      }}
+      onSelect={(item) => {
+        setSelectedCountry(item)
+        setValue(item.label)
+      }}
+      minSearchLength={1}
+      highlightMatches
+      fullWidth
+    />
   )
 }

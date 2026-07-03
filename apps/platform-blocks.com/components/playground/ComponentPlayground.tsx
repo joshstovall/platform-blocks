@@ -11,11 +11,14 @@ import {
   NumberInput,
   Slider,
   Chip,
-  ColorSwatch,
+  ColorPicker,
   Space,
   CodeBlock
 } from '@platform-blocks/ui';
 import * as Blocks from '@platform-blocks/ui';
+import * as Charts from '@platform-blocks/charts';
+import { GlobalChartsRoot } from '@platform-blocks/charts';
+import { DOCS_CHART_INTERACTION_CONFIG } from '../../config/chartInteraction';
 import type { ComponentPlaygroundConfig, PlaygroundControlOverride, PlaygroundControlType, PlaygroundExtraControl } from './registry';
 
 interface PropDoc {
@@ -68,7 +71,6 @@ const CONTROL_TYPES_WITH_FIELD_LABEL = new Set<PlaygroundControlType>([
   'select',
   'number',
   'size-slider',
-  'color',
   'text'
 ]);
 
@@ -93,35 +95,70 @@ function serializeDefaults(defaults: Record<string, any>): string {
   }
 }
 
+// Catches render-time errors thrown by the previewed component and shows a
+// fallback. A try/catch around JSX construction can't do this — React renders
+// the element later, so the throw happens outside the try — hence a real
+// error boundary (react-hooks/error-boundaries).
+class PreviewErrorBoundary extends React.Component<
+  { fallback: React.ReactNode; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.warn('[ComponentPlayground] Failed to render preview', error);
+  }
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
 export function ComponentPlayground({ component, propsMeta, config }: ComponentPlaygroundProps) {
   const { width } = useWindowDimensions();
   const isStacked = width < 1100;
   const targetName = config.component || component;
-  const targetComponent = Blocks[targetName as keyof typeof Blocks] as React.ComponentType | undefined;
+  const blockComponent = Blocks[targetName as keyof typeof Blocks] as React.ComponentType | undefined;
+  const chartComponent = Charts[targetName as keyof typeof Charts] as React.ComponentType | undefined;
+  const targetComponent = blockComponent || chartComponent;
+  // Charts live in @platform-blocks/charts and need a ChartsProvider (GlobalChartsRoot)
+  // around them for shared crosshair/tooltip behavior — mirror the demo host.
+  const isChart = !blockComponent && !!chartComponent;
 
   const { controls, defaults } = useMemo(() => deriveControls(propsMeta, config), [propsMeta, config]);
   const defaultsKey = useMemo(() => serializeDefaults(defaults), [defaults]);
   const [values, setValues] = useState<Record<string, any>>(defaults);
 
-  useEffect(() => {
+  // Reset control values when the component's defaults change (e.g. navigating
+  // to a different component). Adjusting state during render (React's recommended
+  // pattern) avoids a setState-in-effect.
+  const [prevDefaultsKey, setPrevDefaultsKey] = useState(defaultsKey);
+  if (defaultsKey !== prevDefaultsKey) {
+    setPrevDefaultsKey(defaultsKey);
     setValues(defaults);
-  }, [defaultsKey]);
+  }
 
-  const previewProps = useMemo(() => {
-    const merged = { ...(config.initialProps || {}), ...values };
-    return config.transformProps ? config.transformProps(merged) : merged;
-  }, [config.initialProps, config.transformProps, values]);
+  // Plain computations (not useMemo): `values` can be reset via a state update
+  // during render above, which the React Compiler can't reconcile with manual
+  // memoization (react-hooks/preserve-manual-memoization). These are cheap and
+  // React handles the element re-creation via reconciliation.
+  const mergedProps = { ...(config.initialProps || {}), ...values };
+  const previewProps = config.transformProps ? config.transformProps(mergedProps) : mergedProps;
 
-  const renderedComponent = useMemo(() => {
-    if (!targetComponent) return null;
-    try {
-      const node = React.createElement(targetComponent, previewProps);
-      return config.previewWrapper ? config.previewWrapper(node, previewProps) : node;
-    } catch (err) {
-      console.warn('[ComponentPlayground] Failed to render preview', err);
-      return <Text colorVariant="error">Component threw while rendering. Check console for details.</Text>;
-    }
-  }, [config.previewWrapper, previewProps, targetComponent]);
+  let renderedComponent: React.ReactNode = null;
+  if (targetComponent) {
+    const node = React.createElement(targetComponent, previewProps);
+    const wrapped = config.previewWrapper ? config.previewWrapper(node, previewProps) : node;
+    renderedComponent = isChart ? (
+      <GlobalChartsRoot
+        style={{ width: '100%', alignItems: 'center' }}
+        config={DOCS_CHART_INTERACTION_CONFIG}
+      >
+        {wrapped}
+      </GlobalChartsRoot>
+    ) : wrapped;
+  }
 
   const snippet = useMemo(() => buildSnippet(targetName, previewProps), [previewProps, targetName]);
 
@@ -167,28 +204,50 @@ export function ComponentPlayground({ component, propsMeta, config }: ComponentP
   );
 
   return (
-    <View style={[styles.wrapper, isStacked && styles.wrapperStack]}>
-      <View style={[styles.previewColumn, isStacked && styles.fullWidth]}>
-        <Card style={styles.previewCard}>
-          {targetComponent ? (
-            renderedComponent || (
-              <Text variant="p" colorVariant="muted">
-                Component rendered no output.
+    <View style={styles.root}>
+      <View style={[styles.wrapper, isStacked && styles.wrapperStack]}>
+        {/* Left column holds only the live preview so it stays short and can
+            stay pinned for the full length of the (often long) controls list.
+            The JSX snippet moves below the row where it can scroll freely. */}
+        <View
+          style={[
+            styles.previewColumn,
+            isStacked
+              ? styles.fullWidth
+              : ({ position: 'sticky', top: 88, alignSelf: 'flex-start' } as any),
+          ]}
+        >
+          <Card style={styles.previewCard}>
+            {targetComponent ? (
+              <PreviewErrorBoundary
+                key={snippet}
+                fallback={
+                  <Text colorVariant="error">
+                    Component threw while rendering. Check console for details.
+                  </Text>
+                }
+              >
+                {renderedComponent || (
+                  <Text variant="p" colorVariant="muted">
+                    Component rendered no output.
+                  </Text>
+                )}
+              </PreviewErrorBoundary>
+            ) : (
+              <Text variant="p" colorVariant="error">
+                {`Component "${targetName}" is not exported from @platform-blocks/ui or @platform-blocks/charts.`}
               </Text>
-            )
-          ) : (
-            <Text variant="p" colorVariant="error">
-              {`Component "${targetName}" is not exported from @platform-blocks/ui.`}
-            </Text>
-          )}
-        </Card>
-        <Card style={styles.snippetCard}>
-          <Text variant="small" colorVariant="muted" style={styles.snippetLabel}>JSX preview</Text>
-            <CodeBlock fullWidth>{snippet}</CodeBlock>
+            )}
+          </Card>
+        </View>
+        <Card style={[styles.controlsCard, isStacked && styles.fullWidth]}>
+          {controlsContent}
         </Card>
       </View>
-      <Card style={[styles.controlsCard, isStacked && styles.fullWidth]}>
-        {controlsContent}
+
+      <Card variant="ghost">
+        <Text variant="small" colorVariant="muted" style={styles.snippetLabel}>JSX preview</Text>
+        <CodeBlock fullWidth>{snippet}</CodeBlock>
       </Card>
     </View>
   );
@@ -248,25 +307,28 @@ function renderControl(
           ? control.initialValue
           : min;
       return (
-        <View>
-          <Slider
-            label={control.label}
-            // description={control.description}
-            required={control.required}
-            value={sliderValue}
-            min={min}
-            max={max}
-            step={step}
-            onChange={(next: number) => handleChange(next)}
-          />
-          <Space h="xs" />
-          <NumberInput
-            value={sliderValue}
-            min={min}
-            max={max}
-            step={step}
-            onChange={(next) => handleChange(typeof next === 'number' ? next : sliderValue)}
-          />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <Slider
+              label={control.label}
+              // description={control.description}
+              required={control.required}
+              value={sliderValue}
+              min={min}
+              max={max}
+              step={step}
+              onChange={(next: number) => handleChange(next)}
+            />
+          </View>
+          <View style={{ width: 96 }}>
+            <NumberInput
+              value={sliderValue}
+              min={min}
+              max={max}
+              step={step}
+              onChange={(next) => handleChange(typeof next === 'number' ? next : sliderValue)}
+            />
+          </View>
         </View>
       );
     }
@@ -305,26 +367,11 @@ function renderControl(
       const presets = control.colorPresets?.length ? control.colorPresets : DEFAULT_COLOR_PRESETS;
       const currentValue = typeof value === 'string' ? value : (control.initialValue ?? presets[0]);
       return (
-        <View>
-          <Input
-            label={control.label}
-            // description={control.description}
-            required={control.required}
-            value={currentValue || ''}
-            onChangeText={(text) => handleChange(text)}
-            placeholder={commonPlaceholder}
-          />
-          <Flex direction="row" wrap="wrap" gap={8} style={styles.colorRow}>
-            {presets.map(color => (
-              <ColorSwatch
-                key={`${control.name}-${color}`}
-                color={color}
-                selected={currentValue === color}
-                onPress={() => handleChange(color)}
-              />
-            ))}
-          </Flex>
-        </View>
+        <ColorPicker
+          value={currentValue || ''}
+          onChange={(color) => handleChange(color)}
+          swatches={presets}
+        />
       );
     }
     case 'text':
@@ -397,6 +444,17 @@ function deriveControls(propsMeta: PropDoc[], config: ComponentPlaygroundConfig)
   return { controls, defaults };
 }
 
+const FUNCTION_ALIAS_SUFFIX = /(Formatter|Renderer|Accessor|Predicate|Comparator|Getter|Selector|Callback|Handler|Fn)$/;
+
+// True when every `|`-separated member of the type is a callback-shaped alias
+// (name ending in Formatter/Renderer/… or containing `=>`). Returns false for
+// unions that also permit a non-function member, so those stay editable.
+function isFunctionAliasType(type: string): boolean {
+  const members = type.split('|').map(part => part.trim()).filter(Boolean);
+  if (!members.length) return false;
+  return members.every(member => member.includes('=>') || FUNCTION_ALIAS_SUFFIX.test(member));
+}
+
 function shouldSkipProp(prop: PropDoc, hidden: Set<string>): boolean {
   if (!prop?.name) return true;
   if (hidden.has(prop.name)) return true;
@@ -404,6 +462,13 @@ function shouldSkipProp(prop: PropDoc, hidden: Set<string>): boolean {
   if (/^on[A-Z]/.test(prop.name)) return true;
   if (prop.internal) return true;
   if (type.includes('=>') || /function/i.test(type)) return true;
+  // Function-typed props are often declared via a named alias (e.g.
+  // `centerValueFormatter?: DonutCenterValueFormatter`), so the raw type string
+  // has no `=>`. If every member of the type is a callback-shaped alias, skip it
+  // — otherwise a text control would emit `''`, which downstream `fn?.()` calls
+  // treat as non-nullish and invoke, throwing "x is not a function". Unions that
+  // also allow a primitive (e.g. `string | DonutCenterLabelFormatter`) are kept.
+  if (isFunctionAliasType(type)) return true;
   if (/React\.ReactNode|ReactNode|ReactElement|JSX\./i.test(type)) return true;
   if (/StyleProp|ViewStyle|TextStyle/i.test(type)) return true;
   return false;
@@ -536,11 +601,13 @@ function deriveInitialValue(
     return typeof parsedDefault === 'boolean' ? parsedDefault : false;
   }
 
-  if ((controlType === 'segmented' || controlType === 'select') && options?.length) {
+  if ((controlType === 'segmented' || controlType === 'select' || controlType === 'size-slider') && options?.length) {
     if (parsedDefault && options.includes(String(parsedDefault))) {
       return parsedDefault;
     }
-    return options[0];
+    // Prefer a sensible mid token for size sliders so we never emit an empty
+    // string (which downstream size lookups can't resolve).
+    return options.includes('md') ? 'md' : options[0];
   }
 
   if (controlType === 'number') {
@@ -632,6 +699,15 @@ function formatAttribute(key: string, value: any): string | null {
     const escaped = value.replace(/"/g, '\\"');
     return `${key}="${escaped}"`;
   }
+  // React element (e.g. an injected onIcon/offIcon node) — render a compact,
+  // readable JSX placeholder instead of dumping the element's internals.
+  if (value && typeof value === 'object' && (value as any).$$typeof) {
+    const elProps = (value as any).props || {};
+    if (typeof elProps.name === 'string') {
+      return `${key}={<Icon name="${elProps.name}" />}`;
+    }
+    return `${key}={/* node */}`;
+  }
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const inner = Object.entries(value)
       .filter(([, v]) => v !== undefined && typeof v !== 'function')
@@ -659,9 +735,13 @@ function formatObjectValue(value: any): string {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    gap: 16
+  },
   wrapper: {
     flexDirection: 'row',
-    gap: 24
+    gap: 24,
+    alignItems: 'flex-start'
   },
   wrapperStack: {
     flexDirection: 'column'
@@ -708,9 +788,6 @@ const styles = StyleSheet.create({
   },
   typeText: {
     marginTop: 2
-  },
-  colorRow: {
-    marginTop: 8
   },
   emptyState: {
     flex: 1,

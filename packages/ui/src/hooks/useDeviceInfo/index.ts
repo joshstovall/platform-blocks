@@ -307,6 +307,14 @@ const detectLocale = (): LocaleState => {
   };
 };
 
+const inputStateEqual = (a: InputState, b: InputState): boolean =>
+  a.primaryPointer === b.primaryPointer &&
+  a.hasTouch === b.hasTouch &&
+  a.hasMouse === b.hasMouse &&
+  a.hasKeyboard === b.hasKeyboard &&
+  a.pointerTypes.length === b.pointerTypes.length &&
+  a.pointerTypes.every((type, index) => type === b.pointerTypes[index]);
+
 const getInputState = (): InputState => {
   if (!canUseDOM() || Platform.OS !== 'web') {
     const brand = Platform.OS === 'ios' || Platform.OS === 'android' ? 'touch' : 'unknown';
@@ -644,7 +652,11 @@ export function useDeviceInfo(options: UseDeviceInfoOptions = {}): DeviceInfo {
   // Pointer/input detection listeners (web only)
   useEffect(() => {
     if (Platform.OS !== 'web' || !canUseDOM()) return;
-    const update = () => setInput(getInputState());
+    const update = () =>
+      setInput((prev) => {
+        const next = getInputState();
+        return inputStateEqual(prev, next) ? prev : next;
+      });
 
     const events = ['pointerdown', 'mousemove', 'touchstart', 'keydown'];
     events.forEach((eventName) => window.addEventListener(eventName, update));

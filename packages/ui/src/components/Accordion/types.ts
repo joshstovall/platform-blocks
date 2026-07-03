@@ -35,11 +35,16 @@ export interface AccordionItem {
    * Optional decorative or status icon rendered alongside the title.
    */
   icon?: ReactNode;
+  /**
+   * Overrides the accordion-level `color` for this item's expanded emphasis
+   * (title, chevron, and surface tint). Lets a single accordion mix accents.
+   */
+  color?: AccordionColor;
 }
 
 export type AccordionType = 'single' | 'multiple';
 export type AccordionVariant = 'default' | 'separated' | 'bordered';
-export type AccordionColor = 'primary' | 'secondary' | 'gray';
+export type AccordionColor = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'gray';
 
 /**
  * Props for the `Accordion` component.

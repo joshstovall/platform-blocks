@@ -55,14 +55,8 @@ export default function FAQScreen() {
         type="multiple"
         variant="separated"
         items={FAQ_DATA}
-        defaultExpanded={[
-          'what-is',
-          'expo-compatibility',
-          'does-support',
-          'can-customize',
-          'can-use-custom-fonts',
-          'how-report-bugs',
-        ]}
+        defaultExpanded={[]}//FAQ_DATA.map((item) => item.key)}
+        headerTextStyle={{ fontWeight: '600', fontSize: 17 }}
       />
     </PageWrapper>
   );

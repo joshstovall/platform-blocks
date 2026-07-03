@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
 import { useTheme } from '../../core/theme';
 import { Avatar } from './Avatar';
+import { Tooltip } from '../Tooltip';
 import type { AvatarGroupProps } from './types';
 
 export function AvatarGroup({
@@ -11,6 +12,7 @@ export function AvatarGroup({
   style,
   size,
   bordered = true,
+  surplusTooltip,
 }: AvatarGroupProps) {
   const theme = useTheme();
   
@@ -47,16 +49,21 @@ export function AvatarGroup({
         return null;
       })}
       
-      {remainingCount > 0 && (
-        <View style={avatarWrapperStyle(visibleChildren.length)}>
-          <Avatar
-            fallback={`+${remainingCount}`}
-            backgroundColor={theme.colors.gray[6]}
-            textColor={theme.colors.gray[0]}
-            size={size}
-          />
-        </View>
-      )}
+      {remainingCount > 0 && (() => {
+        const surplus = (
+          <View style={avatarWrapperStyle(visibleChildren.length)}>
+            <Avatar
+              fallback={`+${remainingCount}`}
+              backgroundColor={theme.colors.gray[6]}
+              textColor={theme.colors.gray[0]}
+              size={size}
+            />
+          </View>
+        );
+        return surplusTooltip
+          ? <Tooltip label={surplusTooltip} multiline width={220}>{surplus}</Tooltip>
+          : surplus;
+      })()}
     </View>
   );
 }

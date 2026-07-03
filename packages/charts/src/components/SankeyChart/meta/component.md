@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Sankey Chart
 tags: [chart, flow, sankey]
 category: charts

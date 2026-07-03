@@ -15,8 +15,9 @@ import {
   Checkbox,
   Chip,
   CodeBlock,
-  ColorPicker,
+  ColorInput,
   ColorSwatch,
+  DataList,
   DatePickerInput,
   Divider,
   Flex,
@@ -78,7 +79,7 @@ const COMPONENT_TABS: { key: string; label: string; }[] = [
 
 const CATEGORIES: { label: string; icon: string; count: number; route: string }[] = [
   { label: 'Inputs', icon: 'input', count: 21, route: '/components?category=input' },
-  { label: 'Charts', icon: 'chart-bar', count: 25, route: '/charts' },
+  { label: 'Charts', icon: 'chart-bar', count: 25, route: '/components?category=charts' },
   { label: 'Display', icon: 'card', count: 10, route: '/components?category=display' },
   { label: 'Typography', icon: 'text', count: 11, route: '/components?category=typography' },
   { label: 'Dates', icon: 'calendar', count: 10, route: '/components?category=dates' },
@@ -117,7 +118,7 @@ const CHART_HOOKS: { icon: string; name: string; description: string }[] = [
   { icon: 'search', name: 'usePanZoom', description: 'Pan and zoom gesture handling for chart interaction' },
   { icon: 'refresh', name: 'useStreamingData', description: 'Handle real-time data feeds with automatic chart updates' },
   { icon: 'sparkles', name: 'useChartAnimation', description: 'Control animation timing and transitions' },
-  { icon: 'target', name: 'useNearestPoint', description: 'Find the closest data point for tooltip display' },
+  { icon: 'target', name: 'useChartPointer', description: 'Normalized pointer + hit-testing for chart interaction' },
 ];
 
 const FEATURES: { icon: string; title: string; description: string }[] = [
@@ -194,7 +195,6 @@ function InputsDemo() {
   const [color, setColor] = useState('#6366f1');
   const [plan, setPlan] = useState('pro');
   return (
-    <Card p="lg">
       <Block direction="column" gap="md">
         <Input label="Project name" placeholder="my-app" description="The name of your new project" />
         <Select
@@ -221,10 +221,9 @@ function InputsDemo() {
             { label: 'Enterprise', value: 'enterprise' },
           ]}
         />
-        <ColorPicker label="Brand color" value={color} onChange={setColor} swatches={['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6']} />
+        <ColorInput label="Brand color" value={color} onChange={setColor} swatches={['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6']} />
         <PinInput length={5} placeholder="○" />
       </Block>
-    </Card>
   );
 }
 
@@ -260,7 +259,6 @@ function ActionsDemo() {
 
 function FeedbackDemo() {
   return (
-    <Card p="lg">
       <Block direction="column" gap="md">
         <Notice sev="info" title="Update available">A new version of Platform Blocks is ready to install.</Notice>
         <Notice sev="success" title="Changes saved">Your settings have been updated successfully.</Notice>
@@ -284,7 +282,6 @@ function FeedbackDemo() {
           </Block>
         </Block>
       </Block>
-    </Card>
   );
 }
 
@@ -292,7 +289,6 @@ function NavigationDemo() {
   const [page, setPage] = useState(1);
   const [step, setStep] = useState(1);
   return (
-    <Card p="lg">
       <Block direction="column" gap="lg">
         <Breadcrumbs items={[
           { label: 'Home', onPress: () => {} },
@@ -306,13 +302,11 @@ function NavigationDemo() {
         </Stepper>
         <Pagination total={5} current={page} onChange={setPage} />
       </Block>
-    </Card>
   );
 }
 
 function DisplayDemo() {
   return (
-    <Card p="lg">
       <Block direction="column" gap="md">
         <Block direction="row" gap="sm" align="center">
           <AvatarGroup>
@@ -343,24 +337,20 @@ function DisplayDemo() {
           { key: 'accessible', title: 'Is it accessible?', content: <Text size="sm" colorVariant="secondary">All components follow WAI-ARIA guidelines with screen reader and keyboard support.</Text> },
         ]} />
       </Block>
-    </Card>
   );
 }
 
 function DatesDemo() {
   return (
-    <Card p="lg">
       <Block direction="column" gap="md">
         <DatePickerInput label="Start date" placeholder="Pick a start date" />
         <DatePickerInput label="End date" placeholder="Pick an end date" />
       </Block>
-    </Card>
   );
 }
 
 function TypographyDemo() {
   return (
-    <Card p="lg">
       <Block direction="column" gap="md">
         <Title order={3} afterline underlineStroke={3}>Section heading</Title>
         <ShimmerText size="lg" weight="bold" duration={3} repeat>Platform Blocks</ShimmerText>
@@ -376,14 +366,12 @@ function TypographyDemo() {
           <Text size="sm" colorVariant="secondary">to open the command palette</Text>
         </Block>
       </Block>
-    </Card>
   );
 }
 
 function DataDemo() {
   const [rating, setRating] = useState(3.5);
   return (
-    <Card p="lg">
       <Block direction="column" gap="lg">
         <Block direction="row" gap="sm" wrap>
           <Chip variant="filled" color="primary">React Native</Chip>
@@ -391,6 +379,20 @@ function DataDemo() {
           <Chip variant="outline" color="warning">v0.8.0</Chip>
         </Block>
         <Rating value={rating} onChange={setRating} count={5} size="md" label="Rate this library" />
+        <Block direction="row" gap="lg" align="center">
+          <DataList
+            orientation="horizontal"
+            withDivider
+            style={{ flex: 1 }}
+            data={[
+              { label: 'Package', value: '@platform-blocks/ui' },
+              { label: 'Version', value: '0.10.1' },
+              { label: 'License', value: 'MIT' },
+              { label: 'Components', value: '116+' },
+            ]}
+          />
+          <Ring value={100} size={72} thickness={7} label="MIT" />
+        </Block>
         <Table
           data={{
             head: ['Component', 'Category', 'Status'],
@@ -416,7 +418,6 @@ function DataDemo() {
           </Timeline.Item>
         </Timeline>
       </Block>
-    </Card>
   );
 }
 
@@ -470,9 +471,11 @@ export default function HomeScreen() {
           subtitle="Build cross-platform apps faster than ever — Platform Blocks includes more than 100 customizable components, 25+ chart types, and a hooks library to cover you in any situation"
         >Platform Blocks</Title>
         <Space h="xl" />
-        <Block direction="row" gap="md" wrap>
+        <Block direction="row" gap="md" wrap justify="space-around">
           <Button title="Get Started" variant="gradient" onPress={() => router.push('/getting-started')} />
-          <BrandButton title="GitHub" brand="github" variant="outline" onPress={() => openUrl(GITHUB_REPO)} />
+          <Button title="Get Started" variant="gradient" onPress={() => router.push('/getting-started')} />
+                 <Button title="Get Started" variant="gradient" onPress={() => router.push('/getting-started')} textColor="white"/>
+   {/* <BrandButton title="GitHub" brand="github" variant="outline" onPress={() => openUrl(GITHUB_REPO)} /> */}
         </Block>
       </Block>
 
@@ -563,7 +566,7 @@ export default function HomeScreen() {
         <Grid columns={isMobile ? 3 : isTablet ? 4 : 6} gap="sm" style={{ width: '100%' }}>
           {CHART_TYPES.map((chart) => (
             <GridItem key={chart.slug} span={1}>
-              <Pressable onPress={() => router.push(`/charts/${chart.slug}`)}>
+              <Pressable onPress={() => router.push(`/components/${chart.slug}`)}>
                 <Card variant="elevated" p="sm" style={{ alignItems: 'center' }}>
                   <Icon name={chart.icon} size="md" color={theme.colors.primary[6]} />
                   <Space h="xs" />

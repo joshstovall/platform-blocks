@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Ridge Chart
 tags: [chart, ridge, density]
 category: charts

@@ -114,6 +114,50 @@ export function generateLabelPositions(min: number, max: number, count: number) 
   return positions;
 }
 
+/**
+ * Bounding box of an arc swept from `startAngle` to `endAngle` (gauge degrees,
+ * 0 = top, clockwise) on a unit circle centred at the origin, using the same
+ * angle convention as `getPointOnCircle` (x = sin θ, y = -cos θ).
+ *
+ * Evaluates the two endpoints plus every cardinal direction (top/right/bottom/
+ * left) that falls inside the swept range, since the extrema of the arc can
+ * only occur at endpoints or where it crosses an axis. Returns fractions of the
+ * radius so callers can fit the gauge into an arbitrary box.
+ */
+export function arcBoundingBox(startAngle: number, endAngle: number) {
+  const pointAt = (deg: number) => {
+    const a = degreesToRadians(deg);
+    return { x: Math.sin(a), y: -Math.cos(a) };
+  };
+
+  const start = Math.min(startAngle, endAngle);
+  const end = Math.max(startAngle, endAngle);
+
+  const xs: number[] = [];
+  const ys: number[] = [];
+  const add = (deg: number) => {
+    const p = pointAt(deg);
+    xs.push(p.x);
+    ys.push(p.y);
+  };
+
+  add(start);
+  add(end);
+
+  // Cardinal extrema (top=0, right=90, bottom=180, left=270) within the sweep.
+  const firstCardinal = Math.ceil(start / 90) * 90;
+  for (let deg = firstCardinal; deg <= end; deg += 90) {
+    add(deg);
+  }
+
+  return {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys),
+  };
+}
+
 export function angleDifference(current: number, target: number) {
   const currentNorm = normalizeAngle(current);
   const targetNorm = normalizeAngle(target);

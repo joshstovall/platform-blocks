@@ -36,7 +36,6 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
 
   const codeBlock = shouldShowCode && code ? (
     <CodeBlock
-      // fullWidth={true}//{renderStyle === 'auto'}
       showCopyButton={codeCopy !== false}
       showLineNumbers={codeLineNumbers === true}
       highlightLines={highlightLines as any}
@@ -44,8 +43,6 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
       spoilerMaxHeight={codeSpoilerMaxHeight}
       language="tsx"
       wrap={false}
-      // githubUrl prop added to frontmatter in demo description.md files
-      // TODO: test this
       githubUrl={githubUrl}
       // title prop added to frontmatter in demo description.md files
       // Future: wire demo.fileName / demo.fileIcon if added to generator
@@ -121,7 +118,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
                   {preview}
                 </Card>
               )}
-              {codeBlock && {codeBlock}}
+              {codeBlock && { codeBlock }}
             </>
           )}
         </Block>
@@ -131,7 +128,7 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
 
   // auto (default)
   return (
-   <Block>
+    <Block>
       {!effectiveCodeFirst && shouldShowPreview && (
         <View
           style={{
@@ -146,18 +143,18 @@ export const DemoRenderer: React.FC<DemoRendererProps> = ({ demo, preview, mode 
       )}
       {codeBlock}
       {effectiveCodeFirst && shouldShowPreview && (
-       <Card variant="outline">
-    <View
-          style={{
-            marginTop: shouldShowCode ? 12 : 0,
-            width: '100%',
-            alignItems: previewCenter ? 'center' : undefined,
-            justifyContent: previewCenter ? 'center' : undefined
-          }}
-        >
-          {preview}
-        </View>
-    </Card>
+        <Card variant="outline">
+          <View
+            style={{
+              marginTop: shouldShowCode ? 12 : 0,
+              width: '100%',
+              alignItems: previewCenter ? 'center' : undefined,
+              justifyContent: previewCenter ? 'center' : undefined
+            }}
+          >
+            {preview}
+          </View>
+        </Card>
       )}
     </Block>
   );

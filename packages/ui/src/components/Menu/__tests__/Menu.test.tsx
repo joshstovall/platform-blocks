@@ -58,6 +58,11 @@ jest.mock('../../../core/providers/OverlayProvider', () => ({
     updateOverlay: mockUpdateOverlay,
     overlays: [],
   }),
+  useOverlayApi: () => ({
+    openOverlay: mockOpenOverlay,
+    closeOverlay: mockCloseOverlay,
+    updateOverlay: mockUpdateOverlay,
+  }),
 }));
 
 jest.mock('../../../core/utils/positioning-enhanced', () => ({

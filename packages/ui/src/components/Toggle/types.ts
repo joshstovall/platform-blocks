@@ -61,6 +61,12 @@ export interface ToggleGroupProps extends SpacingProps, LayoutProps, BorderRadiu
   testID?: string;
 }
 
+/**
+ * Props for a single toggle. Alias of {@link ToggleButtonProps} so the docs
+ * site / playground can resolve controls for the `Toggle` component page.
+ */
+export type ToggleProps = ToggleButtonProps;
+
 export interface ToggleGroupContextValue {
   value?: string | number | (string | number)[];
   onChange?: (value: string | number) => void;

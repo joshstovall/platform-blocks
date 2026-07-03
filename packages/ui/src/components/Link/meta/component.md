@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Link
 description: A navigation component for creating clickable links with various styles and states.
 category: navigation

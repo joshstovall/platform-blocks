@@ -1,1 +1,1 @@
-Override highlight rendering with `highlightStyles`. Provide either a style object or a function that receives the current theme for dynamic styling.
+Swap the marker color with the `highlightColor` prop, passing any theme palette name. The default marker style (yellow background, unchanged text) is preserved.

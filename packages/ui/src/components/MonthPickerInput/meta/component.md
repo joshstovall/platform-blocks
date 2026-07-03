@@ -1,5 +1,6 @@
 ---
 name: MonthPickerInput
+playground: true
 category: input
 status: stable
 since: 0.1.0

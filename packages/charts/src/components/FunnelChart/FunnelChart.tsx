@@ -21,7 +21,8 @@ import {
   FunnelDataTablePayload,
 } from './types';
 import { ChartContainer, ChartTitle, ChartLegend } from '../../ChartBase';
-import { useChartInteractionContext } from '../../interaction/ChartInteractionContext';
+import { useChartInteractionContext, usePointer } from '../../interaction/ChartInteractionContext';
+import type { ActiveTarget } from '../../core/hittest/types';
 import { useChartTheme } from '../../theme/ChartThemeContext';
 import { getColorFromScheme, colorSchemes, formatNumber } from '../../utils';
 
@@ -280,7 +281,7 @@ const AnimatedFunnelSegment: React.FC<{
   valueFormatter?: FunnelValueFormatter;
   steps: FunnelStep[];
   disabled: boolean;
-  onHover?: () => void;
+  onHover?: (event?: any) => void;
   onHoverOut?: () => void;
   theme: ReturnType<typeof useChartTheme>;
 }> = React.memo(({ segment, animationProgress, showConversion, valueFormatter, steps, disabled, onHover, onHoverOut, theme }) => {
@@ -377,10 +378,15 @@ const AnimatedFunnelSegment: React.FC<{
 
   return (
     <G
-      {...(isWeb ? {
+      testID={`funnel-segment-${segment.id}`}
+      {...((isWeb ? {
         onMouseEnter: onHover,
+        onMouseMove: onHover,
         onMouseLeave: onHoverOut,
-      } : {})}
+      } : {
+        onPressIn: onHover,
+        onPressOut: onHoverOut,
+      }) as Record<string, any>)}
     >
       <AnimatedPath
         animatedProps={animatedProps}
@@ -442,13 +448,15 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
   } catch {
     interaction = null;
   }
+  // FunnelChart resolves the hovered segment from the live pointer — pointer subscription.
+  const pointer = usePointer();
 
   const theme = useChartTheme();
 
-  const registerSeries = interaction?.registerSeries;
   const updateSeriesVisibility = interaction?.updateSeriesVisibility;
   const setPointer = interaction?.setPointer;
-  const setCrosshair = interaction?.setCrosshair;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
 
   const seriesArr = useMemo(() => (Array.isArray(series) ? series : [series]), [series]);
   const padding = useMemo(() => ({ top: 50, bottom: 40, left: 40, right: 40 }), []);
@@ -575,44 +583,6 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
     });
   }, [animationProgress, animationDuration, dataSignature, disabled]);
 
-  const registrationSignature = dataSignature;
-  const registeredSignatureRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!registerSeries || !registrationSignature) return;
-    if (registeredSignatureRef.current === registrationSignature) return;
-
-    segments.forEach((segment) => {
-      registerSeries({
-        id: segment.id,
-        name:
-          seriesArr.length > 1
-            ? `${segment.step.label} (${segment.seriesName ?? `Series ${segment.seriesIndex + 1}`})`
-            : segment.step.label,
-        color: segment.color,
-        points: [
-          {
-            x: segment.stepIndex,
-            y: segment.value,
-            meta: {
-              step: segment.step,
-              seriesIndex: segment.seriesIndex,
-              seriesId: segment.seriesId,
-              seriesName: segment.seriesName,
-              cumulativeConversion: segment.cumulativeConversion,
-              stepConversion: segment.stepConversion,
-              dropRate: segment.dropRate,
-              dropValue: segment.dropValue,
-            },
-          },
-        ],
-        visible: true,
-      });
-    });
-
-    registeredSignatureRef.current = registrationSignature;
-  }, [registerSeries, registrationSignature, segments, seriesArr.length]);
-
   const visibleSegments = useMemo(() => {
     if (!interaction?.series) return segments;
     const overrides = new Map(interaction.series.map((entry) => [entry.id, entry.visible])) as Map<string | number, boolean | undefined>;
@@ -640,33 +610,57 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
   );
 
   const activeSegment = useMemo(() => {
-    if (!interaction?.pointer?.inside) return null;
-    const { x, y } = interaction.pointer;
+    if (!pointer?.inside) return null;
+    const { x, y } = pointer;
     return findSegmentAtPoint(x, y);
-  }, [findSegmentAtPoint, interaction?.pointer]);
+  }, [findSegmentAtPoint, pointer]);
 
   const handleSegmentHover = useCallback(
-    (segment: ComputedSegment | null) => {
+    (segment: ComputedSegment | null, event?: any) => {
       if (!segment) {
-        if (interaction?.pointer && setPointer) {
-          setPointer({ ...interaction.pointer, inside: false });
+        if (pointer && setPointer) {
+          setPointer({ ...pointer, inside: false });
         }
-        setCrosshair?.(null);
+        setActiveTarget?.(null);
+        setActiveSlice?.([]);
         return;
       }
 
-      if (!setPointer || !setCrosshair) return;
       const midPoint = segment.center;
-      setPointer({
+      // Feed the real page coordinates so the portal tooltip (position: fixed) anchors at
+      // the cursor. `segment.center` is container-origin, so using it as page coords would
+      // misplace the tooltip; only pass page coords when the event supplies real ones.
+      const pageX = event?.pageX ?? event?.nativeEvent?.pageX;
+      const pageY = event?.pageY ?? event?.nativeEvent?.pageY;
+      setPointer?.({
         x: midPoint.x,
         y: midPoint.y,
         inside: true,
-        pageX: midPoint.x,
-        pageY: midPoint.y,
+        pageX,
+        pageY,
       });
-      setCrosshair({ dataX: segment.stepIndex, pixelX: midPoint.x });
+      // Engine-swap: the hovered funnel segment is a single ActiveTarget (segment geometry).
+      const name = seriesArr.length > 1
+        ? `${segment.step.label} (${segment.seriesName ?? `Series ${segment.seriesIndex + 1}`})`
+        : segment.step.label;
+      const target: ActiveTarget = {
+        seriesId: segment.seriesId ?? segment.seriesIndex,
+        markId: segment.id,
+        kind: 'cell',
+        datum: segment,
+        pixel: { x: midPoint.x, y: midPoint.y },
+        value: segment.value,
+        distance: 0,
+        label: name,
+        color: segment.color,
+        formattedValue: `${segment.value}`,
+        customTooltip: `${name} · ${segment.value} · ${(segment.cumulativeConversion * 100).toFixed(1)}% of first step`,
+        categoryIndex: segment.stepIndex,
+      };
+      setActiveTarget?.(target);
+      setActiveSlice?.([target]);
     },
-    [interaction?.pointer, setPointer, setCrosshair]
+    [pointer, setPointer, setActiveTarget, setActiveSlice, seriesArr.length]
   );
 
   const handleSegmentHoverOut = useCallback(() => handleSegmentHover(null), [handleSegmentHover]);
@@ -744,8 +738,8 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
           const y = e.clientY - rect.top;
           const segmentAtPoint = findSegmentAtPoint(x, y);
           if (segmentAtPoint) {
-            handleSegmentHover(segmentAtPoint);
-          } else if (interaction?.pointer?.inside) {
+            handleSegmentHover(segmentAtPoint, e);
+          } else if (pointer?.inside) {
             handleSegmentHover(null);
           }
         }}
@@ -801,7 +795,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = (props) => {
                 valueFormatter={valueFormatter}
                 steps={seriesStepsForSegment}
                 disabled={disabled}
-                onHover={() => handleSegmentHover(segment)}
+                onHover={(e?: any) => handleSegmentHover(segment, e)}
                 onHoverOut={handleSegmentHoverOut}
                 theme={theme}
               />

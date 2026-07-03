@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Donut Chart
 tags: [chart, donut, circular]
 category: charts

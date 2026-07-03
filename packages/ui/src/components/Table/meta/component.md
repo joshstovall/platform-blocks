@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Table
 description: Simple semantic table primitive for lightweight tabular layouts.
 source: ui/src/components/Table

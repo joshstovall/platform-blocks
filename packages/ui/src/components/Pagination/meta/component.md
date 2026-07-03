@@ -15,6 +15,12 @@ props:
   size: Size variant of the pagination component
   variant: Visual style variant
   maxVisiblePages: Maximum number of page buttons to show
+  showTotal: Render an "X-Y of N" summary (boolean or custom render function); requires totalItems
+  totalItems: Total number of items across all pages (used by showTotal and the size changer)
+  showSizeChanger: Show a rows-per-page selector; requires onPageSizeChange
+  pageSizeOptions: Available page sizes for the size changer
+  pageSize: Current page size (used by showTotal ranges and the size-changer label)
+  onPageSizeChange: Callback fired when the page size changes
   disabled: Whether pagination is disabled
   loading: Whether pagination is in loading state
   textStyle: Raw TextStyle escape hatch applied to every page label
@@ -30,6 +36,7 @@ examples:
   - Pagination with first/last buttons
   - Different size variants
   - Advanced pagination with custom controls
+  - Total & size changer (showTotal / showSizeChanger)
   - Label customization (labelProps / activeLabelProps)
 ---
 

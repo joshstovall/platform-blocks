@@ -32,7 +32,45 @@ export { MarimekkoChart } from './components/MarimekkoChart';
 export { ChartRoot } from './core/ChartContext';
 export { ChartContainer, ChartTitle, ChartLegend } from './ChartBase';
 export { ChartsProvider, GlobalChartsRoot } from './ChartsProvider';
-export { ChartPopover } from './interaction/ChartPopover';
+// New interaction engine (Phase 2)
+export { ChartActiveTooltip } from './interaction/ChartActiveTooltip';
+export { ChartGestureSurface } from './interaction/ChartGestureSurface';
+export type { ChartGestureSurfaceProps } from './interaction/ChartGestureSurface';
+export { useChartPointer } from './interaction/useChartPointer';
+export type { UseChartPointerOptions, ChartPointerHandlers } from './interaction/useChartPointer';
+export { useElementOffset } from './interaction/useElementOffset';
+export { useOptionalChartInteraction } from './interaction/ChartInteractionContext';
+export { normalizePointer } from './interaction/pointerNormalize';
+export type {
+  NormalizedPointerEvent,
+  PointerPhase,
+  PointerSource,
+  PanGesture,
+  PinchGesture,
+  WheelGesture,
+} from './interaction/pointerNormalize';
+export { touchDistance, touchCenter, resolveGestureHandler } from './interaction/useOptionalPinch';
+// Frame + hit-test engine (Phase 1)
+export * from './core/frame';
+export {
+  createHitTester,
+  PointSeriesHitTester,
+  BandCategoryHitTester,
+  CellGridHitTester,
+  AngularSliceHitTester,
+  RadarAxisHitTester,
+} from './core/hittest';
+export type {
+  ChartRegistration,
+  GeometrySpec,
+  HitTester,
+  HitQuery,
+  ActiveTarget,
+  TargetKind,
+  Mark,
+  MarkExtent,
+  HitSeries,
+} from './core/hittest';
 export { ChartGrid } from './core/ChartGrid';
 export { Axis } from './core/Axis';
 export { ChartPlot, ChartLayer } from './core/ChartLayers';
@@ -44,12 +82,14 @@ export { useChartAnimation } from './hooks/useChartAnimation';
 export { useChartData } from './hooks/useChartData';
 export { useDataDecimation } from './hooks/useDataDecimation';
 export { useDomains } from './hooks/useDomains';
-export { useNearestPoint } from './hooks/useNearestPoint';
 export { usePanZoom } from './hooks/usePanZoom';
 export { useStreamingData } from './hooks/useStreamingData';
-export { useTooltipAggregator } from './hooks/useTooltipAggregator';
 
 // Utilities, scales, types
 export * from './utils/scales';
+export * from './utils/geometry';
 export * from './types';
 export * from './utils';
+// Canonical tick generators live in ./utils/scales; disambiguate the duplicate
+// names still present in ./utils (removed once all charts migrate off them).
+export { generateLogTicks, generateTimeTicks } from './utils/scales';

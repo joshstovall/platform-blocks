@@ -24,7 +24,7 @@ This demo showcases the components that have been successfully migrated to use t
 1. **Input** - Uses new ClearButton component
 2. **Select** - Migrated to ClearButton
 3. **AutoComplete** - Updated for consistency
-4. **ColorPicker** - Uses unified clear button
+4. **ColorInput** - Uses unified clear button
 5. **Button** - Integrated with design tokens
 6. **Card** - Uses design token spacing and shadows
 7. **Badge** - Consistent sizing system

@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import { useOverlay } from '../../../core/providers/OverlayProvider';
+import { createElement, useCallback, useRef } from 'react';
+import { useOverlayApi } from '../../../core/providers/OverlayProvider';
 import { ColumnSettings } from '../ColumnSettings';
 import type { DataTableColumn } from '../types';
 
@@ -23,7 +23,7 @@ export function useColumnSettings<T = any>({
   onHideColumn
 }: UseColumnSettingsProps<T>): UseColumnSettingsReturn {
   
-  const { openOverlay, closeOverlay } = useOverlay();
+  const { openOverlay, closeOverlay } = useOverlayApi();
   const currentOverlayId = useRef<string | null>(null);
 
   const openColumnSettings = useCallback((
@@ -58,7 +58,7 @@ export function useColumnSettings<T = any>({
     }
 
     const overlayId = openOverlay({
-      content: ColumnSettings({
+      content: createElement(ColumnSettings, {
         column,
         onClose: () => {
           if (currentOverlayId.current) {

@@ -1,5 +1,5 @@
 ---
-title: Grouped
+title: Grouped suggestions
 category: features
 order: 50
 tags: [grouped, categories, sections]
@@ -9,4 +9,4 @@ since: 1.0.0
 hidden: false
 ---
 
-Organizes countries into regional group headers for faster scanning.
+Countries are organized by region to make large lists easier to scan.

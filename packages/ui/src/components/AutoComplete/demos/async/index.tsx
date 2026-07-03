@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AutoComplete, Column, Text } from '@platform-blocks/ui'
+import { AutoComplete } from '@platform-blocks/ui'
 import type { AutoCompleteOption } from '../../types'
 
 const programmingLanguages: AutoCompleteOption[] = [
@@ -30,34 +30,23 @@ export default function Demo() {
   const [selectedLanguage, setSelectedLanguage] = useState<AutoCompleteOption | null>(null)
 
   return (
-    <Column gap="sm" fullWidth>
-      <Text weight="semibold">Async auto-complete</Text>
-      <Text size="sm" colorVariant="secondary">
-        Performs a debounced search against a simulated API before returning matches.
-      </Text>
-      <AutoComplete
-        label="Search programming languages"
-        placeholder="Start typing..."
-        onSearch={searchLanguages}
-        value={inputValue}
-        onChangeText={(value) => {
-          setInputValue(value)
-          if (!value) setSelectedLanguage(null)
-        }}
-        onSelect={(item) => {
-          setSelectedLanguage(item)
-          setInputValue(item.label)
-        }}
-        minSearchLength={2}
-        searchDelay={300}
-        highlightMatches
-        fullWidth
-      />
-      {selectedLanguage && (
-        <Text size="xs" colorVariant="secondary">
-          Selected: {selectedLanguage.label}
-        </Text>
-      )}
-    </Column>
+    <AutoComplete
+      label="Search programming languages"
+      placeholder="Start typing..."
+      onSearch={searchLanguages}
+      value={inputValue}
+      onChangeText={(value) => {
+        setInputValue(value)
+        if (!value) setSelectedLanguage(null)
+      }}
+      onSelect={(item) => {
+        setSelectedLanguage(item)
+        setInputValue(item.label)
+      }}
+      minSearchLength={2}
+      searchDelay={300}
+      highlightMatches
+      fullWidth
+    />
   )
 }

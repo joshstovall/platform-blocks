@@ -3,7 +3,7 @@ import { View, Platform, Pressable, ViewStyle } from 'react-native';
 import { factory } from '../../core/factory';
 import { useTheme } from '../../core/theme';
 import { getRadius, getSpacing } from '../../core/theme/sizes';
-import { useOverlay } from '../../core/providers/OverlayProvider';
+import { useOverlayApi } from '../../core/providers/OverlayProvider';
 import { measureElement, calculateOverlayPositionEnhanced } from '../../core/utils/positioning-enhanced';
 import type { HoverCardProps, HoverCardFactoryPayload } from './types';
 
@@ -41,7 +41,7 @@ function HoverCardBase(props: HoverCardProps, ref: React.Ref<View>) {
   const isHoveringOverlayRef = useRef(false);
   const isOpenedRef = useRef(false);
   const theme = useTheme();
-  const { openOverlay, closeOverlay } = useOverlay();
+  const { openOverlay, closeOverlay } = useOverlayApi();
 
   const isOpened = controlledOpened !== undefined ? controlledOpened : opened;
   isOpenedRef.current = isOpened;

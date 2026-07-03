@@ -22,7 +22,17 @@ export interface SwitchProps extends BaseComponentProps, DisclaimerSupport {
   
   /** Switch size */
   size?: SizeValue;
-  
+
+  /**
+   * Visual style of the switch.
+   * - `filled` (default): solid track that fills with `color` when on, white thumb.
+   * - `outline`: transparent track with a colored border and a colored thumb when on.
+   * - `ios`: iOS-style pill — a large white thumb that nearly fills a rounded track.
+   * - `android`: Material-3-style — an outlined track with a small dot thumb that
+   *   grows and turns white as the switch turns on.
+   */
+  variant?: 'filled' | 'outline' | 'ios' | 'android';
+
   /** Switch color theme when on */
   color?: ColorValue;
   
@@ -79,4 +89,5 @@ export interface SwitchStyleProps {
   error: boolean;
   size: SizeValue;
   color: ColorValue;
+  variant?: 'filled' | 'outline' | 'ios' | 'android';
 }

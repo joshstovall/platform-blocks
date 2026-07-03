@@ -1,12 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View, ViewProps } from 'react-native';
-import { ChartInteractionProvider, InteractionConfig, useChartInteractionContext } from './interaction/ChartInteractionContext';
-import { ChartPopover } from './interaction/ChartPopover';
+import { ChartInteractionProvider, InteractionConfig, useOptionalChartInteraction } from './interaction/ChartInteractionContext';
+import { ChartActiveTooltip } from './interaction/ChartActiveTooltip';
+import { useElementOffset } from './interaction/useElementOffset';
 
 export interface ChartsProviderProps extends ViewProps {
   /** Shared interaction configuration for all nested charts */
   config?: InteractionConfig;
-  /** Automatically render a single shared ChartPopover (disable to mount manually) */
+  /** Automatically render the single shared tooltip (disable to mount manually) */
   withPopover?: boolean;
   /** Render children */
   children: React.ReactNode;
@@ -27,7 +28,7 @@ export const ChartsProvider: React.FC<ChartsProviderProps> = ({ config, withPopo
     <ChartInteractionProvider config={config}>
       <RootOffsetCapture style={style} {...rest}>
         {children}
-        {withPopover && <ChartPopover />}
+        {withPopover && <ChartActiveTooltip />}
       </RootOffsetCapture>
     </ChartInteractionProvider>
   );
@@ -36,38 +37,22 @@ export const ChartsProvider: React.FC<ChartsProviderProps> = ({ config, withPopo
 // Alias more explicit name for docs friendliness
 export const GlobalChartsRoot = ChartsProvider;
 
-// Internal wrapper to capture the absolute page offset once so shared popover can position correctly.
+// Internal wrapper to capture the container's page offset cross-platform
+// (web: getBoundingClientRect + scroll; native: measureInWindow) so the shared
+// popover positions correctly on both platforms.
 const RootOffsetCapture: React.FC<ViewProps> = ({ children, style, ...rest }) => {
-  const ref = useRef<View>(null);
-  let ctx: any = null; try { ctx = useChartInteractionContext(); } catch { /* optional: no ChartInteractionProvider */ }
+  const ctx = useOptionalChartInteraction();
+  const { offset, onLayout, ref } = useElementOffset();
 
-  const measure = React.useCallback(() => {
-    if (!ref.current || !ctx?.setRootOffset) return;
-    // Attempt to measure DOM node (web). React Native web: stateNode or ref itself.
-    const el = (ref.current as any)?._internalFiberInstanceHandleDEV?.stateNode || ref.current;
-    if (el && el.getBoundingClientRect) {
-      const r = el.getBoundingClientRect();
-      ctx.setRootOffset({ left: r.left + window.scrollX, top: r.top + window.scrollY });
-    }
-  }, [ctx?.setRootOffset]);
-
-  // Synchronous initial measurement so offset is available before first paint
-  React.useLayoutEffect(() => {
-    measure();
-  }, [measure]);
-
-  // Async listener setup for scroll/resize updates
   useEffect(() => {
-    if (!ref.current || !ctx?.setRootOffset || typeof window === 'undefined') return;
-    window.addEventListener?.('scroll', measure, { passive: true } as any);
-    window.addEventListener?.('resize', measure as any);
-    return () => {
-      window.removeEventListener?.('scroll', measure as any);
-      window.removeEventListener?.('resize', measure as any);
-    };
-  }, [ctx?.setRootOffset, measure]);
+    ctx?.setRootOffset?.({ left: offset.left, top: offset.top });
+  }, [ctx, offset.left, offset.top]);
 
-  return <View ref={ref} style={[{ position:'relative' }, style]} {...rest}>{children}</View>;
+  return (
+    <View ref={ref} onLayout={onLayout} style={[{ position: 'relative' }, style]} {...rest}>
+      {children}
+    </View>
+  );
 };
 
 ChartsProvider.displayName = 'ChartsProvider';

@@ -4,15 +4,22 @@ type TrialMeta = {
   dropReason?: string;
 };
 
+const compact = (value: number) => {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return `${value}`;
+};
+
 const TRIAL_CONVERSION = {
   id: 'trial-to-paid',
   name: 'Trial to paid conversion',
   steps: [
-    { label: 'Trial sign-ups', value: 12800, color: '#1d4ed8', trendDelta: 0.04 },
-    { label: 'Onboarding completed', value: 9100, color: '#2563eb', meta: { dropReason: 'Setup friction and confusing success criteria' } as TrialMeta, trendDelta: 0.06 },
-    { label: 'Week 1 active teams', value: 6200, color: '#3b82f6', meta: { dropReason: 'No team invites or connected data sources' } as TrialMeta, trendDelta: -0.03 },
-    { label: 'Contracts created', value: 2900, color: '#60a5fa', meta: { dropReason: 'Security review backlog and pricing clarity' } as TrialMeta, trendDelta: 0.01 },
-    { label: 'Paid conversions', value: 1850, color: '#93c5fd', meta: { dropReason: 'Budget timing & procurement approvals' } as TrialMeta, trendDelta: 0.05 },
+    { label: 'Sign-ups', value: 12800, color: '#1d4ed8' },
+    { label: 'Onboarded', value: 9100, color: '#2563eb', meta: { dropReason: 'Setup friction and confusing success criteria' } as TrialMeta },
+    { label: 'Week-1 active', value: 6200, color: '#3b82f6', meta: { dropReason: 'No team invites or connected data sources' } as TrialMeta },
+    { label: 'Contracts', value: 2900, color: '#60a5fa', meta: { dropReason: 'Security review backlog and pricing clarity' } as TrialMeta },
+    { label: 'Paid', value: 1850, color: '#93c5fd', meta: { dropReason: 'Budget timing & procurement approvals' } as TrialMeta },
   ],
 };
 
@@ -20,41 +27,18 @@ export default function Demo() {
   return (
     <FunnelChart
       title="SaaS trial-to-paid conversion"
-      subtitle="Retention view with the leading drop reason surfaced per stage"
-      width={640}
-      height={520}
+      subtitle="Retention from sign-up to paid"
+      width={520}
+      height={440}
       series={TRIAL_CONVERSION}
       layout={{
         shape: 'trapezoid',
-        gap: 14,
-        align: 'left',
-        minSegmentHeight: 68,
+        gap: 8,
+        align: 'center',
         showConversion: false,
-        connectors: { show: true, labelOffset: 6 },
+        connectors: { show: false },
       }}
-      valueFormatter={(value, index, context) => {
-        const step = TRIAL_CONVERSION.steps[index];
-        const lines: string[] = [`${value.toLocaleString()} accounts`];
-        if (context?.previousValue) {
-          const dropRate = context.dropRate * 100;
-          const dropCaption = `${context.dropValue.toLocaleString()} dropped (${dropRate.toFixed(1)}%)`;
-          lines.push(dropCaption);
-        } else {
-          lines.push('Starting cohort');
-        }
-        const reason = (step.meta as TrialMeta | undefined)?.dropReason;
-        if (reason && context?.previousValue) {
-          lines.push(`Top reason: ${reason}`);
-        }
-        if (step.trendDelta != null) {
-          const arrow = step.trendDelta > 0 ? '▲' : step.trendDelta < 0 ? '▼' : '◆';
-          lines.push(`Trend ${arrow} ${(Math.abs(step.trendDelta) * 100).toFixed(1)}% vs. prior cohort`);
-        }
-        if (context) {
-          lines.push(`Retention ${(context.conversion * 100).toFixed(1)}% of sign-ups`);
-        }
-        return lines;
-      }}
+      valueFormatter={(value) => compact(value)}
       legend={{ show: false }}
       tooltip={{
         show: true,

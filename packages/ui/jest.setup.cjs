@@ -2,6 +2,35 @@
 // Note: @testing-library/jest-native is deprecated, use built-in matchers instead
 // import '@testing-library/react-native/extend-expect';
 
+// The @react-native/jest-preset polyfills requestAnimationFrame as
+// `setTimeout(() => callback(jest.now()), 0)`. React Native internals (overlay
+// focus, Animated, layout) schedule frames during a render, and if one of those
+// 0ms timers is still pending when a test finishes, it fires *after* Jest tears
+// down the environment — the `jest.now()` call then throws "trying to access a
+// property or method of the Jest environment outside of the scope of the test
+// code", which surfaces as flaky failures in unrelated suites.
+//
+// Re-polyfill with a cancelable, Date.now()-based version (so a late frame can
+// never touch the torn-down Jest environment) and cancel any strays after each
+// test.
+const scheduledFrames = new Set();
+global.requestAnimationFrame = (callback) => {
+  const id = setTimeout(() => {
+    scheduledFrames.delete(id);
+    callback(Date.now());
+  }, 0);
+  scheduledFrames.add(id);
+  return id;
+};
+global.cancelAnimationFrame = (id) => {
+  scheduledFrames.delete(id);
+  clearTimeout(id);
+};
+afterEach(() => {
+  scheduledFrames.forEach((id) => clearTimeout(id));
+  scheduledFrames.clear();
+});
+
 // Mock React Native Reanimated
 jest.mock('react-native-reanimated', () => {
   const View = require('react-native').View;

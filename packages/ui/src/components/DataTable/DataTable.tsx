@@ -19,6 +19,7 @@ import { ToggleButton, ToggleGroup } from '../Toggle';
 import { Pagination } from '../Pagination';
 import { Table, TableTh, TableTd, TableTr } from '../Table';
 import { Icon } from '../Icon';
+import { Tooltip } from '../Tooltip';
 import { Collapse } from '../Collapse';
 import { useRowSelection } from './hooks/useRowSelection';
 import { useDataTableState } from './hooks/useDataTableState';
@@ -67,6 +68,64 @@ const formatValue = (value: any, dataType: ColumnDataType = 'text'): string => {
   }
 };
 
+const isNumericType = (dataType?: ColumnDataType): boolean =>
+  dataType === 'number' || dataType === 'currency' || dataType === 'percentage';
+
+// Reduce a column's values over a set of rows per its aggregate spec. Numeric
+// aggregates coerce values to numbers and ignore null/undefined; `count` is the
+// row count; a function receives the rows directly.
+const computeAggregate = <T,>(
+  agg: import('./types').AggregateType<T>,
+  rows: T[],
+  column: DataTableColumn<T>
+): number | string => {
+  if (typeof agg === 'function') return agg(rows);
+  if (agg === 'count') return rows.length;
+  const nums = rows
+    .map(r => getValue(r, column.accessor))
+    .filter(v => v !== null && v !== undefined && v !== '')
+    .map(Number)
+    .filter(n => !Number.isNaN(n));
+  if (nums.length === 0) return agg === 'sum' ? 0 : '';
+  switch (agg) {
+    case 'sum': return nums.reduce((a, b) => a + b, 0);
+    case 'avg': return nums.reduce((a, b) => a + b, 0) / nums.length;
+    case 'min': return Math.min(...nums);
+    case 'max': return Math.max(...nums);
+    default: return '';
+  }
+};
+
+// Fallback width used when a column has no explicit numeric width — also the
+// basis for computing sticky (pinned) column offsets.
+const DEFAULT_COLUMN_WIDTH = 120;
+// Fixed leading/trailing helper-column widths (selection / expand / actions).
+const SELECT_COL_WIDTH = 50;
+const EXPAND_COL_WIDTH = 50;
+
+const getColumnAlign = <T,>(column: DataTableColumn<T>): 'left' | 'center' | 'right' =>
+  column.align ?? (isNumericType(column.dataType) ? 'right' : 'left');
+
+// Resolve the filter UI/operator set for a column. Falls back from an explicit
+// `filterType`, to a `select` when discrete options exist, to the column's
+// `dataType`, and finally to free-text `contains`.
+const getColumnFilterType = <T,>(column: DataTableColumn<T>): FilterType => {
+  if (column.filterType) return column.filterType;
+  if (column.filterOptions) return 'select';
+  switch (column.dataType) {
+    case 'number':
+    case 'currency':
+    case 'percentage':
+      return 'number';
+    case 'date':
+      return 'date';
+    case 'boolean':
+      return 'boolean';
+    default:
+      return 'text';
+  }
+};
+
 const sortData = <T,>(data: T[], sortBy: DataTableSort[], columns: DataTableColumn<T>[]): T[] => {
   if (!sortBy.length) return data;
 
@@ -97,9 +156,30 @@ const sortData = <T,>(data: T[], sortBy: DataTableSort[], columns: DataTableColu
   });
 };
 
+// Normalize a value (Date, timestamp, ISO or `YYYY-MM-DD` string) to a
+// timezone-safe, comparable day key (e.g. 2024-01-15 -> 20240115). Returns
+// null when the value cannot be parsed as a date. Plain date-only strings are
+// parsed literally to avoid the UTC-midnight shift `new Date('YYYY-MM-DD')`
+// introduces in negative-offset timezones.
+const toDayKey = (value: any): number | null => {
+  const fromDate = (d: Date) =>
+    isNaN(d.getTime())
+      ? null
+      : d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+
+  if (value instanceof Date) return fromDate(value);
+  if (typeof value === 'number') return fromDate(new Date(value));
+  if (typeof value === 'string') {
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return Number(m[1]) * 10000 + Number(m[2]) * 100 + Number(m[3]);
+    return fromDate(new Date(value));
+  }
+  return null;
+};
+
 const filterData = <T,>(
-  data: T[], 
-  filters: DataTableFilter[], 
+  data: T[],
+  filters: DataTableFilter[],
   columns: DataTableColumn<T>[],
   searchValue?: string,
   rowFeatureToggle?: DataTableProps<T>['rowFeatureToggle']
@@ -118,8 +198,37 @@ const filterData = <T,>(
 
         const value = getValue(row, column.accessor);
         const filterValue = filter.value;
+        const op = filter.operator;
 
-        switch (filter.operator) {
+        // Date-aware equality/ordering: compare by calendar day so a
+        // `YYYY-MM-DD` filter value matches Date/ISO row values correctly.
+        const isDateColumn =
+          column.dataType === 'date' || column.filterType === 'date' || value instanceof Date;
+        if (
+          isDateColumn &&
+          (op === 'eq' || op === 'ne' || op === 'lt' || op === 'lte' || op === 'gt' || op === 'gte')
+        ) {
+          const rowKey = toDayKey(value);
+          const filterKey = toDayKey(filterValue);
+          if (filterKey === null) return true; // unparseable filter → no-op
+          if (rowKey === null) return op === 'ne'; // undated row only matches "not equals"
+          switch (op) {
+            case 'eq':
+              return rowKey === filterKey;
+            case 'ne':
+              return rowKey !== filterKey;
+            case 'lt':
+              return rowKey < filterKey;
+            case 'lte':
+              return rowKey <= filterKey;
+            case 'gt':
+              return rowKey > filterKey;
+            case 'gte':
+              return rowKey >= filterKey;
+          }
+        }
+
+        switch (op) {
           case 'eq':
             return value === filterValue;
           case 'ne':
@@ -179,6 +288,8 @@ export const DataTable = <T,>({
   onFilterChange,
   pagination,
   onPaginationChange,
+  paginationProps,
+  manualPagination = false,
   selectable = false,
   selectedRows = [],
   onSelectionChange,
@@ -226,6 +337,18 @@ export const DataTable = <T,>({
   collapseIcon,
   headerTextProps,
   cellTextProps,
+  ariaLabel,
+  exportable = false,
+  exportFileName = 'data.csv',
+  onExport,
+  enableColumnReordering = false,
+  columnOrder: controlledColumnOrder,
+  onColumnOrderChange,
+  groupBy,
+  groupsDefaultExpanded = true,
+  renderGroupHeader,
+  showFooterTotals = false,
+  footerLabel = 'Total',
   ...props
 }: DataTableProps<T>) => {
   const { spacingProps, otherProps } = extractSpacingProps(props);
@@ -241,21 +364,34 @@ export const DataTable = <T,>({
   const [internalFilters, setInternalFilters] = useState<DataTableFilter[]>([]);
 
   const [tempHeaderEdits, setTempHeaderEdits] = useState<Record<string, string>>({});
+  const [hoveredHeader, setHoveredHeader] = useState<string | null>(null);
+  const [openFilterColumn, setOpenFilterColumn] = useState<string | null>(null);
+
+  // Read a persisted view preference (keyed by the `id` prop). Returns
+  // `fallback` when there is no `id`, no stored value, or storage is unavailable.
+  const readPref = useCallback(<V,>(suffix: string, fallback: V): V => {
+    if (typeof window !== 'undefined' && id) {
+      try {
+        const raw = window.localStorage.getItem(`datatable:${id}:${suffix}`);
+        if (raw) return JSON.parse(raw) as V;
+      } catch { /* storage unavailable */ }
+    }
+    return fallback;
+  }, [id]);
+
   const [columnWidths, setColumnWidths] = useState<Record<string, number | string>>(() => {
     const initial: Record<string, number | string> = {};
     columns.forEach(c => { if (c.width) initial[c.key] = c.width; });
-    return initial;
+    return { ...initial, ...readPref<Record<string, number | string>>('columnWidths', {}) };
   });
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>(() => {
-    if (typeof window !== 'undefined' && id) {
-      try {
-        const raw = window.localStorage.getItem(`datatable:${id}:hiddenColumns`);
-        if (raw) return JSON.parse(raw);
-      } catch {
-        console.warn('Failed to access localStorage for hidden columns');
-      }
-    }
-    return initialHiddenColumns;
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>(() =>
+    readPref<string[]>('hiddenColumns', initialHiddenColumns)
+  );
+  // Runtime column pinning overrides the static `column.sticky` (menu-driven).
+  const [pinnedColumns, setPinnedColumns] = useState<Record<string, 'left' | 'right'>>(() => {
+    const fromColumns: Record<string, 'left' | 'right'> = {};
+    columns.forEach(c => { if (c.sticky) fromColumns[c.key] = c.sticky; });
+    return readPref<Record<string, 'left' | 'right'>>('pinnedColumns', fromColumns);
   });
   const [internalExpandedRows, setInternalExpandedRows] = useState<(string | number)[]>(initialExpandedRows);
   const resizingColRef = useRef<string | null>(null);
@@ -269,7 +405,12 @@ export const DataTable = <T,>({
   // Determine active filters (controlled vs uncontrolled)
   const activeFilters = onFilterChange ? filters : internalFilters;
 
-  const processedData = useMemo(() => {
+  // Full filtered + sorted row set (before pagination). Grouping and grand-total
+  // aggregation operate on this so groups/totals span all matching rows, not
+  // just the current page. Empty in manual mode (the server owns filter/sort).
+  const fullRows = useMemo(() => {
+    if (manualPagination) return data;
+
     // 1. Filter & search (row-level overrides considered)
     const filtered = filterData(data, activeFilters, columns, searchValue, rowFeatureToggle);
 
@@ -287,32 +428,365 @@ export const DataTable = <T,>({
       sortedPortion = sortData(sortedPortion, sortBy, columns);
     }
     // Reattach fixed rows after sorted portion, preserving relative order
-    const merged = [...sortedPortion, ...fixedRows.map(f => f.row)];
+    return [...sortedPortion, ...fixedRows.map(f => f.row)];
+  }, [data, activeFilters, sortBy, searchValue, columns, rowFeatureToggle, manualPagination]);
 
+  const processedData = useMemo(() => {
+    if (manualPagination) return data;
+    // Grouping renders every group (pagination is bypassed), so show all rows.
+    if (groupBy) return fullRows;
     if (pagination) {
       const startIndex = (pagination.page - 1) * pagination.pageSize;
-      return merged.slice(startIndex, startIndex + pagination.pageSize);
+      return fullRows.slice(startIndex, startIndex + pagination.pageSize);
     }
-    return merged;
-  }, [data, activeFilters, sortBy, searchValue, pagination, columns, rowFeatureToggle]);
+    return fullRows;
+  }, [fullRows, data, pagination, manualPagination, groupBy]);
 
   const totalFiltered = useMemo(() => {
+    // In manual mode the server owns the count; trust `pagination.total`.
+    if (manualPagination) return pagination?.total ?? data.length;
     return filterData(data, activeFilters, columns, searchValue, rowFeatureToggle).length;
-  }, [data, activeFilters, columns, searchValue, rowFeatureToggle]);
+  }, [manualPagination, pagination?.total, data, activeFilters, columns, searchValue, rowFeatureToggle]);
 
-  // Persist hidden columns
+  // Client-side page clamp: when filtering/search shrinks the result set below
+  // the current page, snap back to the last valid page so the table never shows
+  // an empty page the user has to manually click away from. Skipped in manual
+  // mode, where the server decides which page exists.
   useEffect(() => {
+    if (manualPagination || !pagination || !onPaginationChange) return;
+    const totalPages = Math.max(1, Math.ceil(totalFiltered / pagination.pageSize));
+    if (pagination.page > totalPages) {
+      onPaginationChange({ ...pagination, page: totalPages });
+    }
+  }, [manualPagination, pagination, onPaginationChange, totalFiltered]);
+
+  // Persist a view preference under `datatable:${id}:${suffix}` (no-op without `id`).
+  const writePref = useCallback((suffix: string, value: any) => {
     if (typeof window !== 'undefined' && id) {
-      try {
-        window.localStorage.setItem(`datatable:${id}:hiddenColumns`, JSON.stringify(hiddenColumns));
-      } catch {
-        console.warn('Failed to access localStorage for hidden columns');
+      try { window.localStorage.setItem(`datatable:${id}:${suffix}`, JSON.stringify(value)); }
+      catch { /* storage unavailable */ }
+    }
+  }, [id]);
+
+  // Persist hidden columns (+ notify).
+  useEffect(() => {
+    writePref('hiddenColumns', hiddenColumns);
+    onColumnVisibilityChange?.(hiddenColumns);
+  }, [hiddenColumns, writePref, onColumnVisibilityChange]);
+
+  // Persist column widths and pin state so they survive reloads.
+  useEffect(() => { writePref('columnWidths', columnWidths); }, [columnWidths, writePref]);
+  useEffect(() => { writePref('pinnedColumns', pinnedColumns); }, [pinnedColumns, writePref]);
+
+  // Column ordering (drag-reorder). Uncontrolled unless `columnOrder` is passed.
+  const [internalColumnOrder, setInternalColumnOrder] = useState<string[] | null>(() =>
+    readPref<string[] | null>('columnOrder', null)
+  );
+  const columnOrder = controlledColumnOrder ?? internalColumnOrder;
+  const dragColKeyRef = useRef<string | null>(null);
+  const [dropTargetKey, setDropTargetKey] = useState<string | null>(null);
+
+  // Persist the uncontrolled column order.
+  useEffect(() => {
+    if (internalColumnOrder) writePref('columnOrder', internalColumnOrder);
+  }, [internalColumnOrder, writePref]);
+
+  // Apply the active order (if any), then append any columns not listed in it
+  // (e.g. newly added ones) so nothing silently disappears.
+  const orderedColumns = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) return columns;
+    const byKey = new Map(columns.map(c => [c.key, c]));
+    const ordered = columnOrder.map(k => byKey.get(k)).filter(Boolean) as DataTableColumn<T>[];
+    const missing = columns.filter(c => !columnOrder.includes(c.key));
+    return [...ordered, ...missing];
+  }, [columns, columnOrder]);
+
+  const visibleColumns = useMemo(
+    () => orderedColumns.filter(c => !hiddenColumns.includes(c.key)),
+    [orderedColumns, hiddenColumns]
+  );
+
+  // Move column `fromKey` to `toKey`'s position within the full order.
+  const reorderColumn = useCallback((fromKey: string, toKey: string) => {
+    if (fromKey === toKey) return;
+    const base = (columnOrder && columnOrder.length ? columnOrder : columns.map(c => c.key)).slice();
+    const from = base.indexOf(fromKey);
+    const to = base.indexOf(toKey);
+    if (from === -1 || to === -1) return;
+    base.splice(from, 1);
+    base.splice(to, 0, fromKey);
+    if (!controlledColumnOrder) setInternalColumnOrder(base);
+    onColumnOrderChange?.(base);
+  }, [columnOrder, columns, controlledColumnOrder, onColumnOrderChange]);
+
+  // Column reordering uses native HTML5 drag-and-drop, but RN Web's View strips
+  // `draggable` / drag-event props — so we attach them imperatively to each
+  // header cell's DOM node (obtained via ref). `dragStateRef` keeps the latest
+  // reorder/setDrop callbacks so the listeners stay stable.
+  const headerNodeRefs = useRef<Record<string, any>>({});
+  const dragStateRef = useRef<{ from: string | null; reorder: (f: string, t: string) => void; setDrop: (k: string | null) => void }>({
+    from: null,
+    reorder: () => {},
+    setDrop: () => {},
+  });
+  dragStateRef.current.reorder = reorderColumn;
+  dragStateRef.current.setDrop = setDropTargetKey;
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !enableColumnReordering) return;
+    const cleanups: Array<() => void> = [];
+    visibleColumns.forEach(col => {
+      const node = headerNodeRefs.current[col.key];
+      if (!node?.setAttribute) return;
+      node.setAttribute('draggable', 'true');
+      const onDragStart = (e: any) => {
+        dragStateRef.current.from = col.key;
+        if (e?.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', col.key); } catch { /* ignore */ }
+        }
+      };
+      const onDragOver = (e: any) => { e?.preventDefault?.(); if (e?.dataTransfer) e.dataTransfer.dropEffect = 'move'; dragStateRef.current.setDrop(col.key); };
+      const onDragLeave = () => dragStateRef.current.setDrop(null);
+      const onDrop = (e: any) => {
+        e?.preventDefault?.();
+        const from = dragStateRef.current.from;
+        if (from) dragStateRef.current.reorder(from, col.key);
+        dragStateRef.current.from = null;
+        dragStateRef.current.setDrop(null);
+      };
+      const onDragEnd = () => { dragStateRef.current.from = null; dragStateRef.current.setDrop(null); };
+      node.addEventListener('dragstart', onDragStart);
+      node.addEventListener('dragover', onDragOver);
+      node.addEventListener('dragleave', onDragLeave);
+      node.addEventListener('drop', onDrop);
+      node.addEventListener('dragend', onDragEnd);
+      cleanups.push(() => {
+        node.removeAttribute?.('draggable');
+        node.removeEventListener('dragstart', onDragStart);
+        node.removeEventListener('dragover', onDragOver);
+        node.removeEventListener('dragleave', onDragLeave);
+        node.removeEventListener('drop', onDrop);
+        node.removeEventListener('dragend', onDragEnd);
+      });
+    });
+    return () => cleanups.forEach(fn => fn());
+  }, [enableColumnReordering, visibleColumns]);
+
+  // --- Row grouping & aggregation ------------------------------------------
+  // Grouping applies in the non-virtual path only (virtual rows can be
+  // unmounted). Groups are built from the full filtered+sorted set so they span
+  // all pages. Per-group expansion is tracked as a set of keys toggled away from
+  // the `groupsDefaultExpanded` default.
+  const groupingActive = !!groupBy && !virtual;
+  const [toggledGroups, setToggledGroups] = useState<Set<string>>(() => new Set());
+  const isGroupExpanded = useCallback(
+    (key: string) => (groupsDefaultExpanded ? !toggledGroups.has(key) : toggledGroups.has(key)),
+    [groupsDefaultExpanded, toggledGroups]
+  );
+  const toggleGroup = useCallback((key: string) => {
+    setToggledGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const groups = useMemo(() => {
+    if (!groupingActive) return null;
+    const col = columns.find(c => c.key === groupBy);
+    const order: Array<{ key: string; value: any }> = [];
+    const byKey = new Map<string, T[]>();
+    fullRows.forEach(row => {
+      const value = col ? getValue(row, col.accessor) : undefined;
+      const key = String(value);
+      if (!byKey.has(key)) { byKey.set(key, []); order.push({ key, value }); }
+      byKey.get(key)!.push(row);
+    });
+    return order.map(o => ({ key: o.key, value: o.value, rows: byKey.get(o.key)! }));
+  }, [groupingActive, columns, groupBy, fullRows]);
+
+  // Format an aggregate for a column: honor a per-column formatter, else use the
+  // column's dataType (rounding averages to 2 dp), else the raw value.
+  const formatAggregate = useCallback((column: DataTableColumn<T>, value: number | string): React.ReactNode => {
+    if (value === '' || value === null || value === undefined) return null;
+    if (column.aggregateFormat) return column.aggregateFormat(value);
+    if (typeof value === 'number' && column.aggregate === 'count') return String(value);
+    if (typeof value === 'number') {
+      const rounded = column.aggregate === 'avg' ? Math.round(value * 100) / 100 : value;
+      return formatValue(rounded, column.dataType);
+    }
+    return String(value);
+  }, []);
+
+  // Export the current view (filtered + sorted, all pages) as CSV using the
+  // visible columns. On web, triggers a file download; if `onExport` is given it
+  // receives the CSV string instead (also the only path on native).
+  const handleExport = useCallback(() => {
+    const cols = visibleColumns;
+    const rows = manualPagination
+      ? data
+      : sortData(filterData(data, activeFilters, columns, searchValue, rowFeatureToggle), sortBy, columns);
+    // RFC-4180 escaping: wrap in quotes and double any embedded quotes when the
+    // value contains a comma, quote, or newline.
+    const esc = (v: any) => {
+      const s = v == null ? '' : String(v);
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headerLine = cols.map(c => esc(typeof c.header === 'string' ? c.header : c.key)).join(',');
+    const bodyLines = rows.map(row =>
+      cols.map(c => esc(formatValue(getValue(row, c.accessor), c.dataType))).join(',')
+    );
+    const csv = [headerLine, ...bodyLines].join('\r\n');
+
+    if (onExport) { onExport(csv, rows); return; }
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = exportFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }, [visibleColumns, manualPagination, data, activeFilters, columns, searchValue, sortBy, rowFeatureToggle, onExport, exportFileName]);
+
+  // --- Sticky (pinned) columns ---------------------------------------------
+  // `column.sticky: 'left' | 'right'` freezes a column in place during
+  // horizontal scroll via CSS `position: sticky`. This has no native RN
+  // equivalent, so it is web-only (a documented no-op elsewhere). Offsets are
+  // the cumulative pixel width of the helper columns and any preceding pinned
+  // columns on the same side. Pinned columns should declare an explicit numeric
+  // `width` so their offsets line up exactly.
+  const stickyEnabled = Platform.OS === 'web';
+
+  // Effective pin side = runtime override (menu) falling back to static `sticky`.
+  const effectiveSticky = useCallback(
+    (c: DataTableColumn<T>): 'left' | 'right' | undefined => pinnedColumns[c.key] ?? c.sticky,
+    [pinnedColumns]
+  );
+
+  const resolveNumericWidth = useCallback((c: DataTableColumn<T>): number => {
+    const w = columnWidths[c.key] ?? c.width;
+    if (typeof w === 'number') return w;
+    if (typeof c.minWidth === 'number') return c.minWidth;
+    return DEFAULT_COLUMN_WIDTH;
+  }, [columnWidths]);
+
+  const sticky = useMemo(() => {
+    const left: Record<string, number> = {};
+    const right: Record<string, number> = {};
+    let lastLeftKey: string | null = null;
+    let firstRightKey: string | null = null;
+    if (stickyEnabled) {
+      let runningLeft = (selectable ? SELECT_COL_WIDTH : 0) + (expandableRowRender ? EXPAND_COL_WIDTH : 0);
+      for (const c of visibleColumns) {
+        if (effectiveSticky(c) === 'left') {
+          left[c.key] = runningLeft;
+          runningLeft += resolveNumericWidth(c);
+          lastLeftKey = c.key; // rightmost left-pinned column → draws the divider
+        }
+      }
+      let runningRight = rowActions ? actionsColumnWidth : 0;
+      for (let i = visibleColumns.length - 1; i >= 0; i--) {
+        const c = visibleColumns[i];
+        if (effectiveSticky(c) === 'right') {
+          right[c.key] = runningRight;
+          runningRight += resolveNumericWidth(c);
+          firstRightKey = c.key; // leftmost right-pinned column → draws the divider
+        }
       }
     }
-    onColumnVisibilityChange?.(hiddenColumns);
-  }, [hiddenColumns, id, onColumnVisibilityChange]);
+    return { left, right, lastLeftKey, firstRightKey };
+  }, [stickyEnabled, visibleColumns, selectable, expandableRowRender, rowActions, actionsColumnWidth, resolveNumericWidth, effectiveSticky]);
 
-  const visibleColumns = useMemo(() => columns.filter(c => !hiddenColumns.includes(c.key)), [columns, hiddenColumns]);
+  const hasStickyColumns = useMemo(
+    () => stickyEnabled && visibleColumns.some(c => !!effectiveSticky(c)),
+    [stickyEnabled, visibleColumns, effectiveSticky]
+  );
+
+  // Build the sticky positioning style for a header/body cell, or null when the
+  // column isn't pinned. `bg` must be opaque so scrolled cells don't bleed
+  // through the frozen column; `elevated` (header) sits above body sticky cells.
+  const getStickyCellStyle = useCallback((column: DataTableColumn<T>, bg: string, elevated = false): any => {
+    const side = effectiveSticky(column);
+    if (!stickyEnabled || !side) return null;
+    const isLeft = side === 'left';
+    const offset = isLeft ? sticky.left[column.key] : sticky.right[column.key];
+    if (offset === undefined) return null;
+    const isDivider = isLeft ? sticky.lastLeftKey === column.key : sticky.firstRightKey === column.key;
+    return {
+      position: 'sticky' as const,
+      [isLeft ? 'left' : 'right']: offset,
+      zIndex: elevated ? 4 : 3,
+      backgroundColor: bg,
+      // A subtle edge shadow on the boundary column signals the frozen region.
+      ...(isDivider
+        ? { boxShadow: isLeft ? '2px 0 4px rgba(0,0,0,0.06)' : '-2px 0 4px rgba(0,0,0,0.06)' }
+        : {}),
+    };
+  }, [stickyEnabled, sticky, effectiveSticky]);
+
+  // Set / clear a column's pin side (runtime, persisted).
+  const setColumnPin = useCallback((columnKey: string, side: 'left' | 'right' | null) => {
+    setPinnedColumns(prev => {
+      const next = { ...prev };
+      if (side) next[columnKey] = side; else delete next[columnKey];
+      return next;
+    });
+  }, []);
+
+  // Move a column one slot left/right among the visible columns.
+  const moveColumn = useCallback((columnKey: string, dir: -1 | 1) => {
+    const idx = visibleColumns.findIndex(c => c.key === columnKey);
+    const targetIdx = idx + dir;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= visibleColumns.length) return;
+    reorderColumn(columnKey, visibleColumns[targetIdx].key);
+  }, [visibleColumns, reorderColumn]);
+
+  // --- Accessibility (web ARIA grid semantics) -----------------------------
+  // RN Web forwards `role` / `aria-*` to the DOM; native RN ignores unknown
+  // aria props (and would warn), so these are emitted web-only. Screen readers
+  // use the grid/row/columnheader/gridcell roles plus aria-sort / aria-selected
+  // to announce structure and state. Row/column indices are 1-based with the
+  // header occupying row 1.
+  const web = Platform.OS === 'web';
+  const helperColsBefore = (selectable ? 1 : 0) + (expandableRowRender ? 1 : 0);
+  const totalColCount = helperColsBefore + visibleColumns.length + (rowActions ? 1 : 0);
+  const pageOffset = pagination ? (pagination.page - 1) * pagination.pageSize : 0;
+  const gridA11y: any = web
+    ? {
+        role: expandableRowRender ? 'treegrid' : 'grid',
+        'aria-label': ariaLabel ?? 'Data table',
+        'aria-rowcount': totalFiltered + 1,
+        'aria-colcount': totalColCount,
+        ...(loading ? { 'aria-busy': true } : {}),
+      }
+    : {};
+  const ariaSortFor = useCallback(
+    (columnKey: string): 'ascending' | 'descending' | 'none' => {
+      const s = sortBy.find(x => x.column === columnKey);
+      return s?.direction === 'asc' ? 'ascending' : s?.direction === 'desc' ? 'descending' : 'none';
+    },
+    [sortBy]
+  );
+
+  // --- Keyboard grid navigation (web, non-virtual) -------------------------
+  // Roving focus via `aria-activedescendant`: the grid container holds DOM focus
+  // and points at the "active" body cell; Arrow / Home / End / PageUp / PageDown
+  // move it and Enter/Space activates it (start editing in edit mode, otherwise
+  // fire the row click). Disabled on native and in virtual mode, where rows can
+  // be unmounted and thus not addressable by id.
+  const reactId = React.useId();
+  const gridDomId = id ? `datatable-${id}` : `datatable-${reactId.replace(/:/g, '')}`;
+  const keyboardNavEnabled = web && !virtual && !groupBy;
+  const gridRef = useRef<any>(null);
+  const [focusedCell, setFocusedCell] = useState<{ r: number; c: number } | null>(null);
+  const cellDomId = useCallback((r: number, c: number) => `${gridDomId}-r${r}-c${c}`, [gridDomId]);
+  // Latest values for the (stable) keydown listener to read without re-binding.
+  const navRef = useRef<any>({});
 
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
@@ -433,12 +907,15 @@ export const DataTable = <T,>({
     const column = columns.find(col => col.key === columnKey);
     if (!column?.editable) return;
 
-    const row = processedData[rowIndex];
+    // Resolve against the rows actually rendered (which differ from
+    // `processedData` when grouping interleaves group-header rows).
+    const row = activeRowsRef.current[rowIndex];
+    if (row === undefined) return;
     const currentValue = getValue(row, column.accessor);
-    
+
     setEditingCell({ row: rowIndex, column: columnKey });
     setEditValue(currentValue);
-  }, [editMode, columns, processedData]);
+  }, [editMode, columns]);
 
   const handleCellEditSave = useCallback(() => {
     if (!editingCell || !onCellEdit) return;
@@ -461,6 +938,99 @@ export const DataTable = <T,>({
     setEditingCell(null);
     setEditValue('');
   }, []);
+
+  // Keep the keydown listener's view of state current without re-binding it.
+  navRef.current = {
+    rows: processedData.length,
+    cols: visibleColumns.length,
+    isRTL,
+    focused: focusedCell,
+    processedData,
+    visibleColumns,
+    onRowClick,
+    editMode,
+    handleCellDoublePress,
+    setFocusedCell,
+  };
+
+  // Drop a stale focused cell whenever the visible row set changes (paging,
+  // filtering, sorting) so the highlight can't point at a since-removed row.
+  useEffect(() => {
+    setFocusedCell(null);
+  }, [processedData.length, visibleColumns.length]);
+
+  // Bind a single keydown listener to the grid container's DOM node (web only).
+  useEffect(() => {
+    if (!keyboardNavEnabled) return;
+    const node = gridRef.current as any;
+    if (!node || typeof node.addEventListener !== 'function') return;
+    node.tabIndex = 0;
+    (node.style || {}).outline = 'none';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const s = navRef.current;
+      if (!s.rows || !s.cols) return;
+      // First navigation key lands on the top-left cell rather than moving.
+      if (!s.focused && ['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End','PageDown','PageUp'].includes(e.key)) {
+        e.preventDefault();
+        s.setFocusedCell({ r: 0, c: 0 });
+        return;
+      }
+      let { r, c } = s.focused ?? { r: 0, c: 0 };
+      const back = s.isRTL ? 1 : -1;
+      const fwd = s.isRTL ? -1 : 1;
+      const clampC = (v: number) => Math.min(s.cols - 1, Math.max(0, v));
+      const clampR = (v: number) => Math.min(s.rows - 1, Math.max(0, v));
+      let handled = true;
+      switch (e.key) {
+        case 'ArrowDown': r = clampR(r + 1); break;
+        case 'ArrowUp': r = clampR(r - 1); break;
+        case 'ArrowRight': c = clampC(c + fwd); break;
+        case 'ArrowLeft': c = clampC(c + back); break;
+        case 'Home': c = 0; if (e.ctrlKey || e.metaKey) r = 0; break;
+        case 'End': c = s.cols - 1; if (e.ctrlKey || e.metaKey) r = s.rows - 1; break;
+        case 'PageDown': r = clampR(r + 10); break;
+        case 'PageUp': r = clampR(r - 10); break;
+        case 'Enter':
+        case ' ': {
+          const row = s.processedData[r];
+          const col = s.visibleColumns[c];
+          if (s.editMode && col?.editable) s.handleCellDoublePress(r, col.key);
+          else s.onRowClick?.(row, r);
+          e.preventDefault();
+          return;
+        }
+        default: handled = false;
+      }
+      if (handled) {
+        e.preventDefault();
+        s.setFocusedCell({ r, c });
+      }
+    };
+
+    node.addEventListener('keydown', onKeyDown);
+    return () => node.removeEventListener('keydown', onKeyDown);
+  }, [keyboardNavEnabled]);
+
+  // Mirror the focused cell to `aria-activedescendant` so assistive tech follows
+  // the roving highlight, and scroll it into view so keyboard navigation stays
+  // visible in scrollable tables (fixed `height` vertical scroll, or wide /
+  // sticky-column horizontal scroll). `block/inline: 'nearest'` is a no-op when
+  // the cell is already visible, so it won't jitter or hijack page scroll.
+  useEffect(() => {
+    if (!keyboardNavEnabled) return;
+    const node = gridRef.current as any;
+    if (!node?.setAttribute) return;
+    if (focusedCell) {
+      node.setAttribute('aria-activedescendant', cellDomId(focusedCell.r, focusedCell.c));
+      const cell = typeof document !== 'undefined'
+        ? document.getElementById(cellDomId(focusedCell.r, focusedCell.c))
+        : null;
+      cell?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    } else {
+      node.removeAttribute('aria-activedescendant');
+    }
+  }, [keyboardNavEnabled, focusedCell, cellDomId]);
 
   // Render functions
   const renderHeader = () => (
@@ -583,7 +1153,7 @@ export const DataTable = <T,>({
                                 gap: DESIGN_TOKENS.spacing.xs
                               }}
                             >
-                              <Text variant="small" style={{ color: theme.colors.primary[7] }}>
+                              <Text variant="small" style={{ color: theme.colors.primary[8] }}>
                                 {column?.header || filter.column}: {filter.operator} "{filter.value}"
                               </Text>
                               <Pressable
@@ -623,6 +1193,17 @@ export const DataTable = <T,>({
             onPress={() => onEditModeChange(!editMode)}
           >
             {editMode ? 'Exit Edit' : 'Edit'}
+          </Button>
+        )}
+        {exportable && (
+          <Button
+            variant="outline"
+            size="sm"
+            startIcon={<Icon name="download" size={14} />}
+            onPress={handleExport}
+            accessibilityLabel="Export as CSV"
+          >
+            Export
           </Button>
         )}
         {showColumnVisibilityManager && (
@@ -716,12 +1297,25 @@ export const DataTable = <T,>({
       return column.cell(value, row, rowIndex);
     }
 
+    const numeric = isNumericType(column.dataType);
     return (
       <Text
         {...mergeSlotProps(
           {
             variant: 'p' as const,
-            style: { textAlign: column.align || 'left', color: theme.text.primary },
+            style: {
+              textAlign: getColumnAlign(column),
+              color: theme.text.primary,
+              // Let long unbroken tokens (emails, urls, ids) wrap to the next
+              // line on web instead of overflowing the column and painting over
+              // the neighbouring cell. Native RN already breaks long words.
+              ...(Platform.OS === 'web'
+                ? { wordBreak: 'break-word' as const, overflowWrap: 'anywhere' as const }
+                : {}),
+              ...(numeric && Platform.OS === 'web'
+                ? { fontVariant: ['tabular-nums' as const] }
+                : {})
+            },
           },
           cellTextProps,
         )}
@@ -765,14 +1359,16 @@ export const DataTable = <T,>({
     return (onFilterChange ? filters : internalFilters).find(f => f.column === columnKey);
   }, [onFilterChange, filters, internalFilters]);
 
-  const renderFilterControl = (col: DataTableColumn<T>) => {
+  const renderFilterControl = (col: DataTableColumn<T>, showOperators = false, autoFocus = false) => {
     const currentFilter = getColumnFilter(col.key);
-    
+
     return (
       <AdvancedFilterControl
-        column={col}
+        column={{ ...col, filterType: getColumnFilterType(col) }}
         currentFilter={currentFilter}
         data={data}
+        showOperators={showOperators}
+        autoFocus={autoFocus}
         onFilterChange={(filter) => {
           if (filter) {
             updateFilter(filter.column, filter.value, filter.operator);
@@ -785,71 +1381,95 @@ export const DataTable = <T,>({
   };
 
   const headerRow = (
-    <TableTr style={{
-      backgroundColor: theme.colors.gray[0],
-      borderBottomWidth: 2,
-      borderBottomColor: theme.colors.gray[3]
-    }}>
+    <TableTr
+      {...(web ? { role: 'row', 'aria-rowindex': 1 } : {})}
+      style={{
+        backgroundColor: theme.colors.surface[1],
+        borderBottomWidth: 2,
+        borderBottomColor: theme.colors.gray[3]
+      }}>
       {selectable && (
-        <TableTh w={50}>
-          <Pressable
-            onPress={rowSelection.toggleAll}
-            style={{
-              width: 20,
-              height: 20,
-              borderWidth: 2,
-              borderColor: theme.colors.primary[5],
-              borderRadius: 4,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: rowSelection.isAllSelected
-                ? theme.colors.primary[5]
-                : rowSelection.isIndeterminate
-                ? theme.colors.primary[3]
-                : 'transparent'
-            }}
-          >
-            {rowSelection.isAllSelected && (
-              <Icon name="check" size={14} color="white" />
-            )}
-            {rowSelection.isIndeterminate && (
-              <Icon name="minus" size={14} color="white" />
-            )}
-          </Pressable>
+        <TableTh w={50} style={{ borderBottomWidth: 0 }} {...(web ? { role: 'columnheader', 'aria-colindex': 1 } : {})}>
+          <Checkbox
+            size="sm"
+            checked={rowSelection.isAllSelected}
+            indeterminate={rowSelection.isIndeterminate}
+            onChange={() => rowSelection.toggleAll()}
+            accessibilityLabel="Select all rows"
+          />
         </TableTh>
       )}
 
-      {expandableRowRender && <TableTh w={50} />}
+      {expandableRowRender && <TableTh w={50} style={{ borderBottomWidth: 0 }} {...(web ? { role: 'columnheader', 'aria-colindex': (selectable ? 2 : 1) } : {})} />}
 
-      {visibleColumns.map(column => {
+      {visibleColumns.map((column, colIdx) => {
         const width = columnWidths[column.key] || column.width;
+        const hasFilter = !!getColumnFilter(column.key);
+        const controlsVisible =
+          Platform.OS !== 'web' ||
+          hoveredHeader === column.key ||
+          openFilterColumn === column.key ||
+          hasFilter;
         return (
           <TableTh
             key={column.key}
             w={width}
             minWidth={column.minWidth}
             maxWidth={column.maxWidth}
-            align={column.align}
+            align={getColumnAlign(column)}
+            {...(web ? {
+              role: 'columnheader',
+              'aria-colindex': helperColsBefore + colIdx + 1,
+              ...(column.sortable ? { 'aria-sort': ariaSortFor(column.key) } : {}),
+            } : {})}
+            ref={enableColumnReordering && web
+              ? (node: any) => {
+                  if (node) headerNodeRefs.current[column.key] = node;
+                  else delete headerNodeRefs.current[column.key];
+                }
+              : undefined}
             style={{
               position: 'relative',
               // paddingVertical: 16,
-              backgroundColor: theme.colors.gray[0]
+              borderBottomWidth: 0,
+              backgroundColor: theme.colors.surface[1],
+              ...getStickyCellStyle(column, theme.colors.surface[1], true),
+              // Drop-target indicator while dragging a column over this header.
+              ...(dropTargetKey === column.key && dragColKeyRef.current && dragColKeyRef.current !== column.key
+                ? { borderLeftWidth: 2, borderLeftColor: theme.colors.primary[5] }
+                : {}),
+              ...(enableColumnReordering && Platform.OS === 'web' ? ({ cursor: 'grab' } as any) : {}),
             }}
           >
             <View
+              {...(Platform.OS === 'web'
+                ? {
+                    onMouseEnter: () => setHoveredHeader(column.key),
+                    onMouseLeave: () =>
+                      setHoveredHeader(prev => (prev === column.key ? null : prev))
+                  }
+                : {})}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent:
-                  column.align === 'center'
+                  getColumnAlign(column) === 'center'
                     ? 'center'
-                    : column.align === 'right'
+                    : getColumnAlign(column) === 'right'
                       ? 'flex-end'
                       : 'flex-start'
               }}
             >
               <Pressable
                 onPress={() => column.sortable && handleSort(column.key)}
+                disabled={!column.sortable}
+                accessibilityRole={column.sortable ? 'button' : undefined}
+                accessibilityLabel={
+                  column.sortable && typeof column.header === 'string'
+                    ? `Sort by ${column.header}`
+                    : undefined
+                }
+                {...(web && column.sortable ? { focusable: true } : {})}
                 style={{ flexDirection: 'row', alignItems: 'center' }}
               >
                 <Text
@@ -860,7 +1480,6 @@ export const DataTable = <T,>({
                       style: {
                         color: theme.text.primary,
                         fontSize: DESIGN_TOKENS.typography.fontSize.sm,
-                        letterSpacing: 0.5,
                         flexDirection: 'row' as const,
                         display: 'flex' as const,
                       },
@@ -894,17 +1513,62 @@ export const DataTable = <T,>({
                   >
                     <Icon
                       name={getSortIcon(column.key) || 'chevron-up'}
-                      size={14}
+                      size={18}
+                      stroke={2.75}
                       color={
                         getSortIcon(column.key)
-                          ? theme.colors.primary[6]
-                          : theme.colors.gray[4]
+                          ? theme.colors.primary[7]
+                          : theme.colors.gray[7]
                       }
-                      style={{ opacity: getSortIcon(column.key) ? 1 : 0.5 }}
+                      style={{ opacity: getSortIcon(column.key) ? 1 : 0.8 }}
                     />
                   </View>
                 )}
               </Pressable>
+              <View
+                pointerEvents={controlsVisible ? 'auto' : 'none'}
+                style={{ opacity: controlsVisible ? 1 : 0, flexDirection: 'row', alignItems: 'center', gap: 2 }}
+              >
+              {column.filterable && (
+                <Popover
+                  position="bottom-end"
+                  offset={{ mainAxis: 8 }}
+                  w={260}
+                  trapFocus
+                  opened={openFilterColumn === column.key}
+                  onChange={(o: boolean) => setOpenFilterColumn(o ? column.key : null)}
+                >
+                  <Popover.Target>
+                    <Pressable
+                      style={{
+                        padding: 4,
+                        borderRadius: 4,
+                        backgroundColor: hasFilter ? theme.colors.primary[1] : 'transparent'
+                      }}
+                    >
+                      <Icon
+                        name="filter"
+                        size={16}
+                        stroke={2.5}
+                        color={hasFilter ? theme.colors.primary[6] : theme.colors.gray[6]}
+                        variant={hasFilter ? 'filled' : 'outlined'}
+                      />
+                    </Pressable>
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                    <View style={{ gap: DESIGN_TOKENS.spacing.xs }}>
+                      <Text
+                        variant="small"
+                        weight="semibold"
+                        style={{ color: theme.colors.gray[7], paddingHorizontal: 4 }}
+                      >
+                        Filter {typeof column.header === 'string' ? column.header : 'column'}
+                      </Text>
+                      {renderFilterControl(column, true, openFilterColumn === column.key)}
+                    </View>
+                  </Popover.Dropdown>
+                </Popover>
+              )}
               <Menu position="bottom-end" offset={4}>
                 <MenuDropdown>
                   <MenuLabel>
@@ -940,6 +1604,65 @@ export const DataTable = <T,>({
                       Sort descending
                     </MenuItem>
                   )}
+                  {column.sortable && sortBy.some(s => s.column === column.key) && (
+                    <MenuItem
+                      startSection={<Icon name="x" size={14} color={theme.colors.gray[7]} />}
+                      onPress={() => onSortChange?.(sortBy.filter(s => s.column !== column.key))}
+                    >
+                      Clear sort
+                    </MenuItem>
+                  )}
+
+                  {stickyEnabled && (
+                    <>
+                      <MenuDivider />
+                      {effectiveSticky(column) !== 'left' && (
+                        <MenuItem
+                          startSection={<Icon name="pin" size={14} color={theme.colors.gray[7]} />}
+                          onPress={() => setColumnPin(column.key, 'left')}
+                        >
+                          Pin left
+                        </MenuItem>
+                      )}
+                      {effectiveSticky(column) !== 'right' && (
+                        <MenuItem
+                          startSection={<Icon name="pin" size={14} color={theme.colors.gray[7]} />}
+                          onPress={() => setColumnPin(column.key, 'right')}
+                        >
+                          Pin right
+                        </MenuItem>
+                      )}
+                      {effectiveSticky(column) && (
+                        <MenuItem
+                          startSection={<Icon name="x" size={14} color={theme.colors.gray[7]} />}
+                          onPress={() => setColumnPin(column.key, null)}
+                        >
+                          Unpin
+                        </MenuItem>
+                      )}
+                    </>
+                  )}
+
+                  {enableColumnReordering && (
+                    <>
+                      <MenuDivider />
+                      <MenuItem
+                        startSection={<Icon name="arrow-left" size={14} color={theme.colors.gray[7]} />}
+                        disabled={visibleColumns[0]?.key === column.key}
+                        onPress={() => moveColumn(column.key, -1)}
+                      >
+                        Move left
+                      </MenuItem>
+                      <MenuItem
+                        startSection={<Icon name="arrow-right" size={14} color={theme.colors.gray[7]} />}
+                        disabled={visibleColumns[visibleColumns.length - 1]?.key === column.key}
+                        onPress={() => moveColumn(column.key, 1)}
+                      >
+                        Move right
+                      </MenuItem>
+                    </>
+                  )}
+
                   <MenuDivider />
                   <MenuItem
                     startSection={<Icon name="knobs" size={14} color={theme.colors.gray[7]} />}
@@ -963,25 +1686,10 @@ export const DataTable = <T,>({
                     opacity: pressed ? 0.6 : 1
                   })}
                 >
-                  <Icon name="dots" size={16} color={theme.colors.gray[5]} />
+                  <Icon name="dots" variant="filled" size={16} color={theme.colors.gray[6]} />
                 </Pressable>
               </Menu>
-
-  <Pressable
-                  onPress={() => {}}
-                  style={({ pressed }) => ({
-                    padding: 4,
-                    marginLeft: 4,
-                    borderRadius: 4,
-                    opacity: pressed ? 0.6 : 1
-                  })}
-                >
-                  <Icon name="filter" size={16} color={theme.colors.gray[5]} 
-                  variant={getColumnFilter(column.key) ? 'filled' : 'outlined'}
-                  />
-                </Pressable>
-            
-              {/* Filter menu */}
+              </View>
             </View>
             {enableColumnResizing && column.resizable && (
               <Pressable
@@ -1068,17 +1776,36 @@ export const DataTable = <T,>({
     const totalColumns =
       (selectable ? 1 : 0) + (expandableRowRender ? 1 : 0) + visibleColumns.length + (rowActions ? 1 : 0);
 
+    // Opaque background for pinned cells so scrolled columns don't show through
+    // the frozen region. Mirrors the row's own background (selected / striped /
+    // base surface). Hover tint is intentionally not mirrored here.
+    const stickyRowBg = isSelected
+      ? theme.colors.primary[1]
+      : isStriped && rowIndex % 2 === 1
+        ? theme.colors.gray[1]
+        : (theme.backgrounds?.surface ?? theme.colors.gray[0]);
+
     const rowElement = (
       <>
         <TableTr
           selected={isSelected}
+          hoverable={hoverHighlight}
+          {...(web ? {
+            role: 'row',
+            'aria-rowindex': pageOffset + rowIndex + 2,
+            ...(rowSelectable ? { 'aria-selected': isSelected } : {}),
+          } : {})}
+          bg={
+            isSelected
+              ? undefined
+              : isStriped && rowIndex % 2 === 1
+                ? theme.colors.gray[1]
+                : 'transparent'
+          }
           onPress={() => onRowClick?.(row, rowIndex)}
           style={{
-            backgroundColor: isSelected
-              ? theme.colors.primary[1]
-              : isStriped && rowIndex % 2 === 1
-                ? theme.colors.gray[0]
-                : 'transparent',
+            borderLeftWidth: 2,
+            borderLeftColor: isSelected ? theme.colors.primary[5] : 'transparent',
             borderBottomWidth: rowBorderWidth || (variant === 'bordered' ? 1 : 0),
             borderBottomColor: rowBorderColor || theme.colors.gray[2],
             borderBottomStyle: rowBorderStyle,
@@ -1086,30 +1813,23 @@ export const DataTable = <T,>({
           }}
         >
           {rowSelectable && (
-            <TableTd>
-              <Pressable
-                onPress={() => rowSelection.toggleRow(rowId)}
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderWidth: 2,
-                  borderColor: isSelected ? theme.colors.primary[5] : theme.colors.gray[4],
-                  borderRadius: 4,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: isSelected ? theme.colors.primary[5] : 'transparent',
-                  boxShadow: isSelected ? `0 1px 2px ${theme.colors.primary[5]}33` : 'none'
-                }}
-              >
-                {isSelected && <Icon name="check" size={14} color="white" />}
-              </Pressable>
+            <TableTd style={{ borderBottomWidth: 0 }} {...(web ? { role: 'gridcell', 'aria-colindex': 1 } : {})}>
+              <Checkbox
+                size="sm"
+                checked={isSelected}
+                onChange={() => rowSelection.toggleRow(rowId)}
+                accessibilityLabel={`Select row ${pageOffset + rowIndex + 1}`}
+              />
             </TableTd>
           )}
 
           {expandableRowRender && (
-            <TableTd>
+            <TableTd style={{ borderBottomWidth: 0 }} {...(web ? { role: 'gridcell', 'aria-colindex': (selectable ? 2 : 1) } : {})}>
               <Pressable
                 onPress={() => handleRowExpand(rowId)}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: isExpanded }}
+                accessibilityLabel={isExpanded ? 'Collapse row' : 'Expand row'}
                 style={{
                   width: 24,
                   height: 24,
@@ -1129,21 +1849,46 @@ export const DataTable = <T,>({
             </TableTd>
           )}
 
-          {visibleColumns.map(column => (
+          {visibleColumns.map((column, colIdx) => {
+           const isFocusedCell =
+             keyboardNavEnabled && focusedCell?.r === rowIndex && focusedCell?.c === colIdx;
+           return (
             <Pressable
               key={column.key}
               onPress={() => handleCellDoublePress(rowIndex, column.key)}
+              {...((web ? {
+                role: 'gridcell',
+                'aria-colindex': helperColsBefore + colIdx + 1,
+                ...(keyboardNavEnabled ? { id: cellDomId(rowIndex, colIdx) } : {}),
+              } : {}) as any)}
               style={{
                 flex: 1,
+                // Honor the column's min/max width so the body cell stays
+                // aligned with its header (which applies the same bounds), and
+                // clip any overflow so wide content never overlaps the
+                // adjacent column. Defaults to minWidth 0 so unconstrained
+                // columns can still shrink to share the row.
+                minWidth: column.minWidth ?? 0,
+                maxWidth: column.maxWidth,
+                overflow: 'hidden',
                 width:
                   typeof columnWidths[column.key] === 'number'
                     ? (columnWidths[column.key] as number)
-                    : undefined
+                    : undefined,
+                ...getStickyCellStyle(column, stickyRowBg),
+                // Roving-focus ring for the active keyboard cell (web).
+                ...(isFocusedCell
+                  ? ({ outline: `2px solid ${theme.colors.primary[5]}`, outlineOffset: -2, zIndex: 2 } as any)
+                  : {}),
               }}
             >
               <TableTd
-                align={column.align}
+                align={getColumnAlign(column)}
                 style={{
+                  // Row separation is owned by the TableTr border logic
+                  // (variant / rowBorderWidth); suppress the cell's default
+                  // hairline so it doesn't draw an extra divider on every row.
+                  borderBottomWidth: 0,
                   borderRightWidth: columnBorderWidth || 0,
                   borderRightColor: columnBorderColor || theme.colors.gray[2]
                 }}
@@ -1151,9 +1896,10 @@ export const DataTable = <T,>({
                 {renderCell(column, row, rowIndex)}
               </TableTd>
             </Pressable>
-          ))}
+           );
+          })}
           {rowActions && (
-            <TableTd align="center" style={{ width: actionsColumnWidth }}>
+            <TableTd align="center" style={{ width: actionsColumnWidth, borderBottomWidth: 0 }} {...(web ? { role: 'gridcell', 'aria-colindex': totalColCount } : {})}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -1164,27 +1910,37 @@ export const DataTable = <T,>({
               >
                 {rowActions(row, rowIndex)
                   ?.filter(action => !action.hidden)
-                  .map(action => (
-                    <Pressable
-                      key={action.key}
-                      onPress={() => action.onPress?.(row, rowIndex)}
-                      disabled={action.disabled}
-                      style={({ pressed }) => ({
-                        opacity: action.disabled ? 0.4 : pressed ? 0.6 : 1,
-                        padding: 8,
-                        borderRadius: 6,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        backgroundColor: pressed ? theme.colors.gray[1] : 'transparent',
-                        borderWidth: 1,
-                        borderColor: 'transparent'
-                      })}
-                    >
-                      {action.icon || (
-                        <Icon name="menu" size={16} color={theme.colors.gray[6]} />
-                      )}
-                    </Pressable>
-                  ))}
+                  .map(action => {
+                    const button = (
+                      <Pressable
+                        onPress={() => action.onPress?.(row, rowIndex)}
+                        disabled={action.disabled}
+                        accessibilityRole="button"
+                        accessibilityLabel={action.label || action.tooltip || action.key}
+                        style={({ pressed }) => ({
+                          opacity: action.disabled ? 0.4 : pressed ? 0.6 : 1,
+                          padding: 8,
+                          borderRadius: 6,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: pressed ? theme.colors.gray[1] : 'transparent',
+                          borderWidth: 1,
+                          borderColor: 'transparent'
+                        })}
+                      >
+                        {action.icon || (
+                          <Icon name="menu" size={16} color={theme.colors.gray[6]} />
+                        )}
+                      </Pressable>
+                    );
+                    return action.tooltip
+                      ? (
+                        <Tooltip key={action.key} label={action.tooltip}>
+                          {button}
+                        </Tooltip>
+                      )
+                      : <React.Fragment key={action.key}>{button}</React.Fragment>;
+                  })}
               </View>
             </TableTd>
           )}
@@ -1194,7 +1950,7 @@ export const DataTable = <T,>({
           <TableTr style={{ borderBottomWidth: 0 }}>
             <TableTd
               colSpan={totalColumns}
-              style={{ padding: 0, backgroundColor: theme.colors.gray[0] }}
+              style={{ padding: 0, backgroundColor: theme.colors.gray[0], borderBottomWidth: 0 }}
             >
               <Collapse isCollapsed={isExpanded} duration={250}>
                 <View style={{ padding: 16 }}>{expandableRowRender(row, rowIndex)}</View>
@@ -1206,7 +1962,7 @@ export const DataTable = <T,>({
     );
 
     return { key: String(rowId), element: rowElement };
-  }, [actionsColumnWidth, collapseIcon, columnBorderColor, columnBorderWidth, columnWidths, density, expandableRowRender, expandIcon, expandedRows, getRowId, handleCellDoublePress, handleRowExpand, onRowClick, renderCell, rowActions, rowBorderColor, rowBorderStyle, rowBorderWidth, rowFeatureToggle, rowSelection, selectable, theme, variant, visibleColumns]);
+  }, [actionsColumnWidth, cellDomId, collapseIcon, columnBorderColor, columnBorderWidth, columnWidths, density, expandableRowRender, expandIcon, expandedRows, focusedCell, getRowId, getStickyCellStyle, handleCellDoublePress, handleRowExpand, helperColsBefore, hoverHighlight, isStriped, keyboardNavEnabled, onRowClick, pageOffset, renderCell, rowActions, rowBorderColor, rowBorderStyle, rowBorderWidth, rowFeatureToggle, rowSelection, selectable, theme, totalColCount, variant, visibleColumns, web]);
 
   const nonVirtualRows = useMemo(() => {
     if (virtual) return null;
@@ -1215,6 +1971,127 @@ export const DataTable = <T,>({
       return <React.Fragment key={key}>{element}</React.Fragment>;
     });
   }, [buildRow, processedData, virtual]);
+
+  // A group-header / footer-totals row: leading helper-cell placeholders, then a
+  // label+toggle+count in the first data column and each aggregate column's
+  // value in its own cell (so totals line up under their columns).
+  const buildAggregateRow = useCallback((
+    opts: {
+      keyPrefix: string;
+      rows: T[];
+      label: React.ReactNode;
+      expanded?: boolean;
+      onToggle?: () => void;
+      isFooter?: boolean;
+    }
+  ) => {
+    const { keyPrefix, rows, label, expanded, onToggle, isFooter } = opts;
+    const bg = isFooter ? theme.colors.surface[1] : theme.colors.gray[1];
+    return (
+      <TableTr
+        key={keyPrefix}
+        {...(web ? { role: isFooter ? 'row' : 'row' } : {})}
+        style={{
+          backgroundColor: bg,
+          borderTopWidth: isFooter ? 2 : 0,
+          borderTopColor: theme.colors.gray[3],
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.gray[2],
+          minHeight: density === 'compact' ? 36 : 44,
+        }}
+      >
+        {selectable && <TableTd style={{ borderBottomWidth: 0 }} />}
+        {expandableRowRender && <TableTd style={{ borderBottomWidth: 0 }} />}
+        {visibleColumns.map((column, colIdx) => {
+          const first = colIdx === 0;
+          const aggValue = column.aggregate !== undefined
+            ? formatAggregate(column, computeAggregate(column.aggregate, rows, column))
+            : null;
+          return (
+            <TableTd
+              key={column.key}
+              align={getColumnAlign(column)}
+              style={{ borderBottomWidth: 0, backgroundColor: bg }}
+            >
+              {first ? (
+                <Pressable
+                  onPress={onToggle}
+                  disabled={!onToggle}
+                  accessibilityRole={onToggle ? 'button' : undefined}
+                  accessibilityState={onToggle ? { expanded: !!expanded } : undefined}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                >
+                  {onToggle && (
+                    <Icon
+                      name={expanded ? 'chevron-down' : 'chevron-right'}
+                      size={14}
+                      color={theme.colors.gray[6]}
+                    />
+                  )}
+                  {typeof label === 'string' || typeof label === 'number'
+                    ? <Text weight="semibold" style={{ color: theme.text.primary }}>{label}</Text>
+                    : label}
+                </Pressable>
+              ) : (
+                aggValue != null
+                  ? <Text weight={isFooter ? 'semibold' : 'medium'} style={{ textAlign: getColumnAlign(column), color: theme.text.primary }}>{aggValue}</Text>
+                  : null
+              )}
+            </TableTd>
+          );
+        })}
+        {rowActions && <TableTd style={{ borderBottomWidth: 0, width: actionsColumnWidth }} />}
+      </TableTr>
+    );
+  }, [theme, density, selectable, expandableRowRender, visibleColumns, rowActions, actionsColumnWidth, web, formatAggregate]);
+
+  // Flat list of the data rows currently rendered (group headers excluded), in
+  // render order — used to resolve a cell's row from its index for editing.
+  const activeRowsRef = useRef<T[]>([]);
+
+  // Grouped body: interleave group-header rows with each group's (optionally
+  // collapsed) rows, keeping a running index so buildRow/editing stay aligned.
+  const groupedRows = useMemo(() => {
+    if (!groupingActive || !groups) return null;
+    const items: React.ReactNode[] = [];
+    const flat: T[] = [];
+    groups.forEach(group => {
+      const expanded = isGroupExpanded(group.key);
+      const label = renderGroupHeader
+        ? renderGroupHeader({ value: group.value, rows: group.rows, count: group.rows.length, expanded, toggle: () => toggleGroup(group.key) })
+        : `${group.value == null || group.value === 'undefined' ? '—' : String(group.value)} (${group.rows.length})`;
+      items.push(buildAggregateRow({
+        keyPrefix: `group-${group.key}`,
+        rows: group.rows,
+        label,
+        expanded,
+        onToggle: () => toggleGroup(group.key),
+      }));
+      if (expanded) {
+        group.rows.forEach(row => {
+          const idx = flat.length;
+          flat.push(row);
+          const { element } = buildRow(row, idx);
+          items.push(<React.Fragment key={`grp-${group.key}-${idx}`}>{element}</React.Fragment>);
+        });
+      }
+    });
+    return { items, flat };
+  }, [groupingActive, groups, isGroupExpanded, renderGroupHeader, toggleGroup, buildAggregateRow, buildRow]);
+
+  // Keep the edit/index lookup pointed at whatever rows are actually rendered.
+  activeRowsRef.current = groupingActive && groupedRows ? groupedRows.flat : processedData;
+
+  // Grand-total footer row across all filtered rows.
+  const footerRow = useMemo(() => {
+    if (!showFooterTotals) return null;
+    const hasAggregates = visibleColumns.some(c => c.aggregate !== undefined);
+    if (!hasAggregates) return null;
+    return buildAggregateRow({ keyPrefix: 'footer-totals', rows: fullRows, label: footerLabel, isFooter: true });
+  }, [showFooterTotals, visibleColumns, fullRows, footerLabel, buildAggregateRow]);
+
+  // The body rows to render in the non-virtual path (grouped or flat).
+  const bodyRows = groupingActive ? groupedRows?.items : nonVirtualRows;
 
   const estimatedRowHeight =
     density === 'compact' ? 44 : density === 'comfortable' ? 60 : 52;
@@ -1243,9 +2120,43 @@ export const DataTable = <T,>({
     borderRadius: showOuterBorder ? 8 : 0
   } as const;
 
+  // Minimum comfortable width for the current column set. When the container is
+  // narrower than this the table scrolls horizontally instead of squeezing
+  // columns (which forces content to wrap); when it's wider the table grows to
+  // fill (fullWidth). Explicit `minWidth`/numeric `width` win, otherwise a
+  // sensible per-column default is used.
+  const scrollMinWidth = useMemo(() => {
+    const widthFor = (c: DataTableColumn<T>) => {
+      if (c.minWidth) return c.minWidth;
+      const w = columnWidths[c.key] ?? c.width;
+      return typeof w === 'number' ? w : DEFAULT_COLUMN_WIDTH;
+    };
+    let total =
+      (selectable ? SELECT_COL_WIDTH : 0) +
+      (expandableRowRender ? EXPAND_COL_WIDTH : 0) +
+      (rowActions ? actionsColumnWidth : 0);
+    total += visibleColumns.reduce((sum, c) => sum + widthFor(c), 0);
+    return total;
+  }, [selectable, expandableRowRender, rowActions, actionsColumnWidth, visibleColumns, columnWidths]);
+
+  // Shared <Table> config for the (possibly split) header/body sections so a
+  // pinned header renders identically to the scrolling body and stays aligned.
+  const tableSectionProps = {
+    striped: isStriped,
+    withTableBorder: variant === 'bordered',
+    withRowBorders: variant !== 'default',
+    verticalSpacing: (density === 'compact' ? 'xs' : density === 'comfortable' ? 'lg' : 'sm') as 'xs' | 'lg' | 'sm',
+    fullWidth,
+    // ARIA rowgroup so the grid > rowgroup > row > gridcell tree is valid (web).
+    ...(web ? { role: 'rowgroup' } : {}),
+  };
+  // When a fixed height is set on a non-virtual table, pin the header and let
+  // the body scroll vertically within the remaining space.
+  const bodyScrollsVertically = !virtual && resolvedHeight != null;
+
   if (loading) {
     return (
-      <View style={[getSpacingStyles(spacingProps), style]} {...otherProps}>
+      <View style={[{ overflow: 'hidden' }, fullWidth && { width: '100%' }, getSpacingStyles(spacingProps), style]} {...otherProps}>
         {renderHeader()}
 
         <Table
@@ -1314,7 +2225,7 @@ export const DataTable = <T,>({
 
   if (error) {
     return (
-      <View style={[getSpacingStyles(spacingProps), style]} {...otherProps}>
+      <View style={[{ overflow: 'hidden' }, fullWidth && { width: '100%' }, getSpacingStyles(spacingProps), style]} {...otherProps}>
         {renderHeader()}
 
         <View
@@ -1339,7 +2250,7 @@ export const DataTable = <T,>({
   }
 
   return (
-    <View style={[getSpacingStyles(spacingProps), style]} {...otherProps}>
+    <View style={[{ overflow: 'hidden' }, fullWidth && { width: '100%' }, getSpacingStyles(spacingProps), style]} {...otherProps}>
       {renderHeader()}
 
       {virtual ? (
@@ -1349,8 +2260,8 @@ export const DataTable = <T,>({
             showsHorizontalScrollIndicator={Platform.OS === 'web'}
             contentContainerStyle={minWidthValue ? { minWidth: minWidthValue } : undefined}
           >
-            <View style={{ flex: 1 }}>
-              <Table
+            <View style={{ flex: 1 }} {...gridA11y}>
+              <Table {...(web ? { role: 'rowgroup' } : {})}
                 striped={isStriped}
                 withTableBorder={variant === 'bordered'}
                 withRowBorders={variant !== 'default'}
@@ -1389,91 +2300,68 @@ export const DataTable = <T,>({
           </ScrollView>
         </View>
       ) : (
-        // <TableScrollContainer style={tableBorderStyle} minWidth={minWidthValue}>
-          <Table
-            striped={isStriped}
-            withTableBorder={variant === 'bordered'}
-            withRowBorders={variant !== 'default'}
-            verticalSpacing={
-              density === 'compact' ? 'xs' : density === 'comfortable' ? 'lg' : 'sm'
-            }
-            fullWidth//</TableScrollContainer>={fullWidth}
+        <View style={[{ width: '100%', overflow: 'hidden' }, tableBorderStyle]}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={Platform.OS === 'web'}
+            contentContainerStyle={{ flexGrow: 1 }}
           >
-            {headerRow}
-            {processedData.length === 0 ? emptyStateRow : nonVirtualRows}
-          </Table>
-        // </TableScrollContainer>
+            {/* minWidth floors the table at its comfortable width so columns
+                don't squeeze (the ScrollView scrolls instead); flexGrow lets it
+                stretch to fill wider containers when fullWidth. */}
+            <View ref={gridRef} style={{ minWidth: scrollMinWidth, flexGrow: fullWidth ? 1 : 0 }} {...gridA11y}>
+              {/* Header is its own <Table> so it stays pinned above the body. */}
+              <Table {...tableSectionProps}>{headerRow}</Table>
+
+              {processedData.length === 0 ? (
+                <Table {...tableSectionProps}>{emptyStateRow}</Table>
+              ) : bodyScrollsVertically ? (
+                <ScrollView
+                  style={{ flex: 1 }}
+                  showsVerticalScrollIndicator={Platform.OS === 'web'}
+                >
+                  <Table {...tableSectionProps}>{bodyRows}</Table>
+                </ScrollView>
+              ) : (
+                <Table {...tableSectionProps}>{bodyRows}</Table>
+              )}
+
+              {/* Grand-total footer row (renders below the body, aligned to columns). */}
+              {footerRow && processedData.length > 0 && (
+                <Table {...tableSectionProps}>{footerRow}</Table>
+              )}
+            </View>
+          </ScrollView>
+        </View>
       )}
 
-      {/* Enhanced Pagination */}
-      {pagination && onPaginationChange && (
-        <View style={{ 
-          marginTop: DESIGN_TOKENS.spacing.xl, 
+      {/* Pagination footer — fully delegated to the Pagination component
+          (page buttons, "X-Y of N" total, and rows-per-page size changer).
+          Hidden while grouping, which renders every group across all pages. */}
+      {pagination && onPaginationChange && !groupingActive && (
+        <View style={{
+          marginTop: DESIGN_TOKENS.spacing.xl,
           width: '100%',
           paddingTop: DESIGN_TOKENS.spacing.md,
           borderTopWidth: 1,
           borderTopColor: theme.colors.gray[2]
         }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: DESIGN_TOKENS.spacing.md, flexWrap: 'wrap' }}>
-            {showRowsPerPageControl && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: DESIGN_TOKENS.spacing.md }}>
-                <Text variant="p" colorVariant="muted" style={{ fontSize: DESIGN_TOKENS.typography.fontSize.sm }}>Rows per page:</Text>
-                <Menu position="top-start" offset={4}>
-                  <MenuDropdown>
-                    <MenuLabel>Rows per page</MenuLabel>
-                    {rowsPerPageOptions.map(size => (
-                      <MenuItem
-                        key={size}
-                        onPress={() => {
-                          if (size === pagination.pageSize) return;
-                          const newTotalPages = Math.max(1, Math.ceil(totalFiltered / size));
-                          let newPage = pagination.page;
-                          if (newPage > newTotalPages) newPage = newTotalPages;
-                          // Prefer resetting to 1 for UX clarity
-                          newPage = 1;
-                          onPaginationChange({ ...pagination, page: newPage, pageSize: size });
-                        }}
-                        startSection={size === pagination.pageSize ? <Icon name="check" size={14} color={theme.colors.primary[6]} /> : undefined}
-                      >{size}</MenuItem>
-                    ))}
-                    {!rowsPerPageOptions.includes(pagination.pageSize) && (
-                      <MenuItem disabled>
-                        {pagination.pageSize}
-                      </MenuItem>
-                    )}
-                    <MenuDivider />
-                    <MenuItem onPress={() => onPaginationChange({ ...pagination, page: 1 })}>First page</MenuItem>
-                  </MenuDropdown>
-                  <Button 
-                    variant="outline" 
-                    size="xs" 
-                    startIcon={<Icon name="menu" size={12} />}
-                    style={{
-                      borderColor: theme.colors.gray[3],
-                      backgroundColor: theme.colors.surface[0]
-                    }}
-                  >
-                    {pagination.pageSize}
-                  </Button>
-                </Menu>
-              </View>
-            )}
-            
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: DESIGN_TOKENS.spacing.md }}>
-              <Pagination
-                current={pagination.page}
-                total={Math.ceil(totalFiltered / pagination.pageSize)}
-                onChange={(page) => onPaginationChange({ ...pagination, page })}
-              />
-            </View>
-            
-            <Text variant="small" colorVariant="muted" style={{ 
-              fontSize: DESIGN_TOKENS.typography.fontSize.xs,
-              color: theme.colors.gray[6]
-            }}>
-              Showing {Math.min((pagination.page - 1) * pagination.pageSize + 1, totalFiltered)} to {Math.min(pagination.page * pagination.pageSize, totalFiltered)} of {totalFiltered} entries
-            </Text>
-          </View>
+          <Pagination
+            current={pagination.page}
+            total={Math.max(1, Math.ceil(totalFiltered / pagination.pageSize))}
+            onChange={(page) => onPaginationChange({ ...pagination, page })}
+            showTotal
+            totalItems={totalFiltered}
+            pageSize={pagination.pageSize}
+            showSizeChanger={showRowsPerPageControl}
+            pageSizeOptions={rowsPerPageOptions}
+            onPageSizeChange={(size) => {
+              if (size === pagination.pageSize) return;
+              // Reset to the first page for clarity when page size changes.
+              onPaginationChange({ ...pagination, page: 1, pageSize: size });
+            }}
+            {...paginationProps}
+          />
         </View>
       )}
     </View>

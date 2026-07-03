@@ -1,4 +1,5 @@
 ---
+playground: true
 title: Pareto Chart
 tags: [chart, pareto, quality]
 category: charts

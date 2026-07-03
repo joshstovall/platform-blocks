@@ -13,12 +13,15 @@
 // Theme & Provider
 export { PlatformBlocksProvider } from './core/theme/PlatformBlocksProvider';
 export { HapticsProvider, useHapticsSettings } from './core/haptics/HapticsProvider';
-export { useTheme, useThemeVisuals, useThemeLayout } from './core/theme/ThemeProvider';
-export type { ThemeVisuals, ThemeLayout } from './core/theme/ThemeProvider';
+export { useTheme, useThemeVisuals, useThemeLayout, PlatformBlocksThemeProvider } from './core/theme/ThemeProvider';
+export type { ThemeVisuals, ThemeLayout, PlatformBlocksThemeProviderProps } from './core/theme/ThemeProvider';
 export { ThemeModeProvider, useThemeMode, type ThemeModeConfig, type ColorSchemeMode } from './core/theme/ThemeModeProvider';
 export { createTheme } from './core/theme/utils';
 export { DEFAULT_THEME } from './core/theme/defaultTheme';
 export { DARK_THEME } from './core/theme/darkTheme';
+export { resolveVariantRoles, CORE_COLORS } from './core/theme/variantRoles';
+export type { VariantRole, VariantRoles, ResolveVariantOptions } from './core/theme/variantRoles';
+export { withAlpha, readableTextOn, contrastRatio, composite, pickReadable } from './core/theme/colorUtils';
 export { useColorScheme } from './core/theme/useColorScheme';
 export { I18nProvider, useI18n } from './core/i18n';
 export { OverlayProvider, useOverlay, useOverlayApi, useOverlays } from './core/providers/OverlayProvider';
@@ -150,6 +153,7 @@ export { Row, Column } from './components/Layout';
 // Text & Typography
 export { Text, H1, H2, H3, H4, H5, H6, P, Small, Strong, Bold, Italic, Emphasis, Underline, Code, Kbd, Mark, Cite, Sub, Sup } from './components/Text';
 export { ShimmerText } from './components/ShimmerText';
+export { GradientText } from './components/GradientText';
 export { Highlight } from './components/Highlight';
 export { Title, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6 } from './components/Title';
 export { Markdown } from './components/Markdown';
@@ -157,15 +161,6 @@ export { Markdown } from './components/Markdown';
 // Form Components
 export { Button } from './components/Button';
 export { BrandButton } from './components/BrandButton';
-export {
-  AppStoreButton,
-  GooglePlayButton,
-  AppleAppStoreButton,
-  MacAppStoreButton,
-  MicrosoftStoreButton,
-  AmazonAppstoreButton,
-  FDroidButton
-} from './components/AppStoreButton';
 export {
   AppStoreBadge,
   AppStoreDownloadBadge,
@@ -215,6 +210,7 @@ export { YearPickerInput } from './components/YearPickerInput';
 export { TimePicker } from './components/TimePicker';
 export { TimePickerInput } from './components/TimePickerInput';
 export { PhoneInput } from './components/PhoneInput';
+export { ColorInput } from './components/ColorInput';
 export { ColorPicker } from './components/ColorPicker';
 export { ColorSwatch } from './components/ColorSwatch';
 export { EmojiPicker } from './components/EmojiPicker';
@@ -223,7 +219,7 @@ export { Form, useFormContext, useOptionalFormContext } from './components/Form'
 
 // Navigation Components
 export { Breadcrumbs } from './components/Breadcrumbs';
-export { Menu, MenuItem, MenuLabel, MenuDivider, MenuDropdown } from './components/Menu';
+export { Menu, MenuItem, MenuLabel, MenuDivider, MenuDropdown, MenuSub } from './components/Menu';
 export { MenuItemButton } from './components/MenuItemButton';
 export { Tabs } from './components/Tabs';
 export { Pagination } from './components/Pagination';
@@ -241,6 +237,7 @@ export { DataTable } from './components/DataTable';
 export { Disclaimer, ComponentWithDisclaimer, useDisclaimer, withDisclaimer, extractDisclaimerProps } from './components/_internal/Disclaimer';
 export { Table } from './components/Table';
 export { Timeline } from './components/Timeline';
+export { DataList } from './components/DataList';
 export { ListGroup, ListGroupItem, ListGroupDivider, ListGroupBody } from './components/ListGroup';
 export { TableOfContents } from './components/TableOfContents';
 export { Tree } from './components/Tree';
@@ -256,10 +253,12 @@ export {
   Toast,
   ToastProvider, useToast,
   useToastApi,
-  onToastsRequested
-
-
+  onToastsRequested,
+  useToastViewportOffset,
+  setToastViewportOffset
 } from './components/Toast';
+
+export type { ToastViewportOffset } from './components/Toast';
 
 // Overlay Components
 export { Dialog, DialogProvider, DialogRenderer, useDialog, useDialogApi, useDialogs, useSimpleDialog, onDialogsRequested } from './components/Dialog';
@@ -341,11 +340,11 @@ export type { UseOverlayModeOptions, UseOverlayModeResult } from './hooks';
 // Component props types (exported alongside components for co-location)
 export type { ButtonProps } from './components/Button';
 export type { BrandButtonProps } from './components/BrandButton';
-export type { AppStoreButtonProps } from './components/AppStoreButton';
 export type { AppStoreBadgeProps, AppStoreBadgeSize, SupportedLocale, BadgeConfig } from './components/AppStoreBadge';
 export type { TreeProps, TreeNode } from './components/Tree';
 export type { TextProps } from './components/Text';
 export type { ShimmerTextProps } from './components/ShimmerText';
+export type { GradientTextProps } from './components/GradientText';
 export type { HighlightProps } from './components/Highlight';
 export type { OverlayProps } from './components/Overlay';
 export type { TitleProps } from './components/Title/types';
@@ -377,12 +376,13 @@ export type { YearPickerInputProps } from './components/YearPickerInput';
 export type { TimePickerProps, TimePickerValue } from './components/TimePicker/types';
 export type { TimePickerInputProps } from './components/TimePickerInput';
 export type { PhoneInputProps } from './components/PhoneInput';
+export type { ColorInputProps } from './components/ColorInput';
 export type { ColorPickerProps } from './components/ColorPicker';
 export type { EmojiPickerProps } from './components/EmojiPicker';
 export type { RatingProps } from './components/Rating';
 export type { FormProps } from './components/Form';
 export type { BreadcrumbsProps } from './components/Breadcrumbs';
-export type { MenuProps, MenuItemProps } from './components/Menu';
+export type { MenuProps, MenuItemProps, MenuSubProps } from './components/Menu';
 export type { TabsProps, TabItem } from './components/Tabs';
 export type { PaginationProps } from './components/Pagination';
 export type { StepperProps } from './components/Stepper';
@@ -399,6 +399,7 @@ export type { DividerVariant, DividerColorVariant } from './components/Divider';
 export type { DisclaimerProps, WithDisclaimerProps, ComponentWithDisclaimerProps, DisclaimerSupport } from './components/_internal/Disclaimer';
 export type { TableProps } from './components/Table';
 export type { TimelineProps } from './components/Timeline';
+export type { DataListProps, DataListItemProps, DataListItemLabelProps, DataListItemValueProps, DataListDataItem, DataListOrientation } from './components/DataList';
 export type { TableOfContentsProps } from './components/TableOfContents';
 export type { NoticeProps } from './components/Notice';
 export type { ProgressProps } from './components/Progress';

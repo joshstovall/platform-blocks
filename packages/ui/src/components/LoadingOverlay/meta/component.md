@@ -1,4 +1,5 @@
 ---
+playground: true
 title: LoadingOverlay
 description: Overlay helper that blocks a section with a centered loader while background work completes.
 source: "@platform-blocks/ui"

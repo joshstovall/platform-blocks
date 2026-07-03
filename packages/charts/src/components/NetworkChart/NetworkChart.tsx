@@ -13,7 +13,7 @@ import { linearScale as createLinearScale } from '../../utils/scales';
 import { AnimatedLink } from './AnimatedLink';
 import { AnimatedNode } from './AnimatedNode';
 import { useNetworkSimulation } from './useNetworkSimulation';
-import { useNetworkSeriesRegistration } from './useNetworkSeriesRegistration';
+import type { ActiveTarget } from '../../core/hittest/types';
 import { useAnimatedNetworkRendering } from './useAnimatedNetworkRendering';
 
 const toNumber = (value: unknown): number => {
@@ -95,8 +95,9 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
     console.warn('NetworkChart: render within a ChartInteractionProvider to enable shared interactions');
   }
 
-  const registerSeries = interaction?.registerSeries;
   const setPointer = interaction?.setPointer;
+  const setActiveTarget = interaction?.setActiveTarget;
+  const setActiveSlice = interaction?.setActiveSlice;
 
   const resolvedWidth = width;
   const resolvedHeight = height;
@@ -240,24 +241,6 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
     nodesRef.current = simulation.nodes;
     linksRef.current = simulation.links;
   }, [simulation.nodes, simulation.links]);
-
-  // Only create snapshots for registration, not for rendering
-  const registrationNodes = React.useMemo(
-    () =>
-      simulation.nodes.map((node) => ({
-        id: node.id,
-        name: node.name,
-        group: node.group,
-        value: node.value,
-        color: node.color,
-        x: node.x,
-        y: node.y,
-        meta: node.meta,
-      })),
-    [simulation.nodes] // Remove simulation.tick dependency
-  );
-
-  useNetworkSeriesRegistration({ nodes: registrationNodes, registerSeries });
 
   // Use optimized rendering hook that throttles updates
   const { renderNodes, renderLinks } = useAnimatedNetworkRendering({
@@ -406,6 +389,34 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
     setPointer({ x: 0, y: 0, inside: false });
   }, [setPointer]);
 
+  // Engine-swap: a focused/hovered node is a single ActiveTarget (element-hover flow),
+  // replacing the legacy registerSeries + nearest-node ChartPopover path.
+  const handleNodeFocus = React.useCallback(
+    (node: { id: string; name?: string; color: string; x: number; y: number; value?: number }) => {
+      const value = typeof node.value === 'number' ? node.value : 0;
+      const target: ActiveTarget = {
+        seriesId: 'network-nodes',
+        markId: node.id,
+        kind: 'point',
+        datum: node,
+        pixel: { x: node.x + padding.left, y: node.y + padding.top },
+        value,
+        distance: 0,
+        label: node.name ?? node.id,
+        color: node.color,
+        formattedValue: node.name ?? node.id,
+      };
+      setActiveTarget?.(target);
+      setActiveSlice?.([target]);
+    },
+    [padding.left, padding.top, setActiveTarget, setActiveSlice]
+  );
+
+  const handleNodeBlur = React.useCallback(() => {
+    setActiveTarget?.(null);
+    setActiveSlice?.([]);
+  }, [setActiveTarget, setActiveSlice]);
+
   const panHandlers = (simulation.panHandlers ?? {}) as Record<string, unknown>;
 
   return (
@@ -529,6 +540,7 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
               <AnimatedNode
                 key={node.id}
                 id={node.id}
+                testID={`network-node-${node.id}`}
                 x={node.x}
                 y={node.y}
                 color={node.color}
@@ -538,8 +550,14 @@ export const NetworkChart: React.FC<NetworkChartProps> = (props) => {
                 disabled={disabled}
                 theme={theme}
                 showLabel={showLabels}
-                onFocus={nodePayload && onNodeFocus ? () => onNodeFocus(nodePayload) : undefined}
-                onBlur={nodePayload && onNodeBlur ? () => onNodeBlur(nodePayload) : undefined}
+                onFocus={() => {
+                  handleNodeFocus(node);
+                  if (nodePayload && onNodeFocus) onNodeFocus(nodePayload);
+                }}
+                onBlur={() => {
+                  handleNodeBlur();
+                  if (nodePayload && onNodeBlur) onNodeBlur(nodePayload);
+                }}
                 onPress={nodePayload && onNodePress ? () => onNodePress(nodePayload) : undefined}
               />
             );
